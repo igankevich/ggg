@@ -1,5 +1,5 @@
 project(
-	'nss-legion',
+	'nss-hierarchy',
 	'cpp',
 	version: '0.1',
 	meson_version: '>=0.31',
@@ -11,11 +11,12 @@ if not cpp.has_header('nss.h')
 	error('Header nss.h is required to compile the module.')
 endif
 
-module_name = 'legion'
+module_name = 'hierarchy'
 config = configuration_data()
 config.set('module_name', module_name)
-config.set('root_directory', '/etc/legion')
+config.set('root_directory', '/etc/' + module_name)
 
 unistdx = dependency('unistdx')
+gtest = dependency('gtest', main: true)
 
 subdir('src')

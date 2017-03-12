@@ -6,7 +6,7 @@ configure_file(
 
 shared_library(
 	'nss_' + module_name + '.so.2',
-	sources: 'pwd.cc',
+	sources: ['pwd.cc'],
 	dependencies: [unistdx]
 )
 
@@ -16,5 +16,14 @@ test(
 		'pwd-test',
 		sources: 'pwd_test.cc',
 		dependencies: [unistdx]
+	)
+)
+
+test(
+	'entity-test',
+	executable(
+		'entity-test',
+		sources: 'entity_test.cc',
+		dependencies: [unistdx, gtest]
 	)
 )
