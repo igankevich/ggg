@@ -45,10 +45,12 @@ TEST(EntityTest, ReadWrite) {
 }
 
 TEST(EntityTest, WriteEmpty) {
+	std::stringstream orig;
+	orig << "::" << sys::uid_type(-1) << ':' << sys::gid_type(-1) << ":::";
 	std::stringstream tmp;
 	legion::entity ent;
 	tmp << ent;
-	EXPECT_EQ("::0:0:::", tmp.str());
+	EXPECT_EQ(orig.str(), tmp.str());
 }
 
 class BareEntityTest: public ::testing::TestWithParam<const char*> {};
@@ -61,8 +63,8 @@ TEST_P(BareEntityTest, Read) {
 	EXPECT_TRUE(tmp.good());
 	EXPECT_STREQ("root", ent.name());
 	EXPECT_EQ(nullptr, ent.password());
-	EXPECT_EQ(0, ent.id());
-	EXPECT_EQ(0, ent.group_id());
+	EXPECT_EQ(sys::uid_type(-1), ent.id());
+	EXPECT_EQ(sys::gid_type(-1), ent.group_id());
 	EXPECT_EQ(nullptr, ent.real_name());
 	EXPECT_EQ(nullptr, ent.home());
 	EXPECT_EQ(nullptr, ent.shell());

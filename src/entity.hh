@@ -92,8 +92,16 @@ namespace legion {
 	class entity: public sys::user {
 
 	public:
+
+		entity(const char* name) {
+			std::memset(this, 0, sizeof(entity));
+			this->pw_name = create_and_copy(name);
+			init_ids();
+		}
+
 		entity() {
 			std::memset(this, 0, sizeof(entity));
+			init_ids();
 		}
 
 		entity(const entity& rhs) {
@@ -128,6 +136,11 @@ namespace legion {
 			#endif
 			delete this->pw_dir;
 			delete this->pw_shell;
+		}
+
+		bool
+		has_id() const noexcept {
+			return this->pw_uid != sys::uid_type(-1);
 		}
 
 		bool
@@ -202,6 +215,12 @@ namespace legion {
 				*rhs = nullptr;
 			}
 			return ptr;
+		}
+
+		void
+		init_ids() {
+			this->pw_uid = -1;
+			this->pw_gid = -1;
 		}
 
 	};
