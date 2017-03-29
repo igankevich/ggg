@@ -45,7 +45,7 @@ namespace legion {
 
 
 		template<>
-		char
+		inline char
 		read_field<ignore_field>(std::istream& in, ignore_field&, char sep) {
 			char ch = 0;
 			while (in.get(ch) and ch != sep and ch != '\n');
@@ -56,7 +56,7 @@ namespace legion {
 		}
 
 		template<>
-		char
+		inline char
 		read_field<char*>(std::istream& in, char*& rhs, char sep) {
 			std::istream::sentry s(in);
 			char ch = 0;
@@ -80,11 +80,6 @@ namespace legion {
 				}
 			}
 			return ch;
-		}
-
-		inline const char*
-		non_null(const char* rhs) {
-			return rhs ? rhs : "";
 		}
 
 		inline void
@@ -150,59 +145,32 @@ namespace legion {
 			delete this->pw_shell;
 		}
 
-		bool
+		inline bool
 		has_id() const noexcept {
 			return this->pw_uid != sys::uid_type(-1);
 		}
 
-		bool
+		inline bool
 		operator==(const entity& rhs) const noexcept {
 			return (name() == nullptr && rhs.name() == nullptr)
 				|| (std::strcmp(name(), rhs.name()) == 0);
 		}
 
-		bool
+		inline bool
 		operator!=(const entity& rhs) const noexcept {
 			return !operator==(rhs);
 		}
 
-		bool
+		inline bool
 		operator<(const entity& rhs) const noexcept {
 			return name() && rhs.name() && std::strcmp(name(), rhs.name()) < 0;
 		}
 
 		friend std::istream&
-		operator>>(std::istream& in, entity& rhs) {
-			std::istream::sentry s(in);
-			if (s) {
-				bits::read_all_fields(
-					in, ':',
-					rhs.pw_name,
-					rhs.pw_passwd,
-					rhs.pw_uid,
-					rhs.pw_gid,
-					#ifdef __linux__
-					rhs.pw_gecos,
-					#endif
-					rhs.pw_dir,
-					rhs.pw_shell
-				);
-			}
-			return in;
-		}
+		operator>>(std::istream& in, entity& rhs);
 
 		friend std::ostream&
-		operator<<(std::ostream& out, const entity& rhs) {
-			using bits::non_null;
-			return out
-				<< non_null(rhs.name()) << ':'
-				<< non_null(rhs.password()) << ':'
-				<< rhs.id() << ':'
-				<< rhs.group_id() << ':'
-				<< non_null(rhs.real_name()) << ':'
-				<< non_null(rhs.home()) << ':'
-				<< non_null(rhs.shell());
-		}
+		operator<<(std::ostream& out, const entity& rhs);
 
 	private:
 		char*
@@ -240,57 +208,12 @@ namespace legion {
 
 	};
 
-	class entity_database: private sys::dirtree {
 
-		typedef sys::dirtree tree_type;
-		typedef sys::pathentry entry_type;
-		enum struct dbstate {
-			scanning,
-			reading
-		};
+	std::istream&
+	operator>>(std::istream& in, entity& rhs);
 
-		entry_type _entry;
-		dbstate _dbstate = dbstate::scanning;
-		std::ifstream _fstr;
-
-		void
-		setdbstate(dbstate rhs) noexcept {
-			_dbstate = rhs;
-		}
-
-		bool
-		is_scanning() const noexcept {
-			return _dbstate == dbstate::scanning;
-		}
-
-		bool
-		is_reading() const noexcept {
-			return _dbstate == dbstate::reading;
-		}
-
-	public:
-
-		entity_database&
-		operator>>(entity& rhs) {
-			while (is_scanning() && !eof()) {
-				if (sys::dirtree::operator>>(_entry)) {
-					_fstr.open(_entry.getpath());
-					setdbstate(dbstate::reading);
-				} else if (!eof()) {
-					clear();
-				}
-			}
-			if (is_reading()) {
-				if (_fstr) {
-					_fstr >> rhs;
-				} else {
-					_fstr.close();
-					setdbstate(dbstate::scanning);
-				}
-			}
-			return *this;
-		}
-	};
+	std::ostream&
+	operator<<(std::ostream& out, const entity& rhs);
 
 }
 

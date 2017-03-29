@@ -1,36 +1,24 @@
 #include "pwd.hh"
-#include "entity.hh"
-
-#include <fstream>
-#include <sys/dir.hh>
+#include "hierarchy.hh"
 
 namespace {
-
-	typedef sys::dirtree_iterator<sys::pathentry> iterator;
-	sys::dirtree root;
-	iterator first;
-	iterator last;
-	std::ifstream in;
-
+	legion::Hierarchy hierarchy;
 }
 
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, pw) {
-	root.clear();
-	root.open(sys::path(legion::root_directory));
 	enum nss_status ret;
-	if (!root.is_open()) {
-		ret = NSS_STATUS_UNAVAIL;
-	} else {
-		first = iterator(root);
+	hierarchy.open(sys::path(legion::root_directory));
+	try {
+		hierarchy.read();
 		ret = NSS_STATUS_SUCCESS;
+	} catch (...) {
+		ret = NSS_STATUS_UNAVAIL;
 	}
 	return ret;
 }
 
 NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, pw) {
-	root.close();
-	first = iterator();
-	in.close();
+	hierarchy.clear();
 	return NSS_STATUS_SUCCESS;
 }
 
