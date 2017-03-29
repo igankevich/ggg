@@ -130,6 +130,22 @@ namespace legion {
 			delete this->pw_shell;
 		}
 
+		bool
+		operator==(const entity& rhs) const noexcept {
+			return (name() == nullptr && rhs.name() == nullptr)
+				|| (std::strcmp(name(), rhs.name()) == 0);
+		}
+
+		bool
+		operator!=(const entity& rhs) const noexcept {
+			return !operator==(rhs);
+		}
+
+		bool
+		operator<(const entity& rhs) const noexcept {
+			return name() && rhs.name() && std::strcmp(name(), rhs.name()) < 0;
+		}
+
 		friend std::istream&
 		operator>>(std::istream& in, entity& rhs) {
 			std::istream::sentry s(in);
@@ -160,6 +176,32 @@ namespace legion {
 				<< non_null(rhs.real_name()) << ':'
 				<< non_null(rhs.home()) << ':'
 				<< non_null(rhs.shell());
+		}
+
+	private:
+		char*
+		create_and_copy(const char* rhs) {
+			char* ptr;
+			if (rhs == nullptr) {
+				ptr = nullptr;
+			} else {
+				const size_t n = std::strlen(rhs);
+				ptr = new char[n];
+				std::strcpy(ptr, rhs);
+			}
+			return ptr;
+		}
+
+		char*
+		move_pointer(char** rhs) {
+			char* ptr;
+			if (*rhs == nullptr) {
+				ptr = nullptr;
+			} else {
+				ptr = *rhs;
+				*rhs = nullptr;
+			}
+			return ptr;
 		}
 
 	};

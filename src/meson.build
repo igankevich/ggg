@@ -10,6 +10,12 @@ shared_library(
 	dependencies: [unistdx]
 )
 
+executable(
+	module_name,
+	sources: ['hierarchy.cc'],
+	dependencies: [unistdx]
+)
+
 test(
 	'pwd-test',
 	executable(
