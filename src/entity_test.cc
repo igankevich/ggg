@@ -16,7 +16,7 @@ TEST_P(EntityTest, Read) {
 	#ifdef __linux__
 	EXPECT_STREQ("root", ent.real_name());
 	#else
-	EXPECT_STREQ(nullptr, ent.real_name());
+	EXPECT_EQ(nullptr, ent.real_name());
 	#endif
 	EXPECT_STREQ("/root", ent.home());
 	EXPECT_STREQ("/bin/bash", ent.shell());
@@ -50,3 +50,31 @@ TEST(EntityTest, WriteEmpty) {
 	tmp << ent;
 	EXPECT_EQ("::0:0:::", tmp.str());
 }
+
+class BareEntityTest: public ::testing::TestWithParam<const char*> {};
+
+TEST_P(BareEntityTest, Read) {
+	std::stringstream tmp;
+	tmp << GetParam();
+	legion::entity ent;
+	tmp >> ent;
+	EXPECT_TRUE(tmp.good());
+	EXPECT_STREQ("root", ent.name());
+	EXPECT_EQ(nullptr, ent.password());
+	EXPECT_EQ(0, ent.id());
+	EXPECT_EQ(0, ent.group_id());
+	EXPECT_EQ(nullptr, ent.real_name());
+	EXPECT_EQ(nullptr, ent.home());
+	EXPECT_EQ(nullptr, ent.shell());
+}
+
+INSTANTIATE_TEST_CASE_P(
+	ReadWithWhiteSpace,
+	BareEntityTest,
+	::testing::Values(
+		"root\n",
+		"root",
+		" root",
+		" root "
+	)
+);

@@ -22,7 +22,7 @@ namespace legion {
 		};
 
 		template<class T>
-		void
+		char
 		read_field(std::istream& in, T& rhs, char sep) {
 			in >> rhs;
 			// tolerate empty and erroneous CSV fields
@@ -36,34 +36,36 @@ namespace legion {
 				in.clear();
 			}
 			in >> std::ws;
-			char ch;
+			char ch = 0;
 			if (in.get(ch) && ch != sep) {
 				in.putback(ch);
 			}
+			return ch;
 		}
 
 
 		template<>
-		void
+		char
 		read_field<ignore_field>(std::istream& in, ignore_field&, char sep) {
-			char ch;
+			char ch = 0;
 			while (in.get(ch) and ch != sep and ch != '\n');
 			if (in.eof()) {
 				in.clear();
 			}
+			return ch;
 		}
 
 		template<>
-		void
+		char
 		read_field<char*>(std::istream& in, char*& rhs, char sep) {
 			std::istream::sentry s(in);
+			char ch = 0;
 			if (s) {
 				if (rhs) {
 					delete rhs;
 					rhs = nullptr;
 				}
 				std::string tmp;
-				char ch;
 				while (in.get(ch) and ch != sep and ch != '\n') {
 					tmp.push_back(ch);
 				}
@@ -77,6 +79,7 @@ namespace legion {
 					in.clear();
 				}
 			}
+			return ch;
 		}
 
 		inline const char*
@@ -109,15 +112,17 @@ namespace legion {
 		operator>>(std::istream& in, entity& rhs) {
 			std::istream::sentry s(in);
 			if (s) {
-				bits::read_field(in, rhs.pw_name, ':');
-				bits::read_field(in, rhs.pw_passwd, ':');
-				bits::read_field(in, rhs.pw_uid, ':');
-				bits::read_field(in, rhs.pw_gid, ':');
-				#ifdef __linux__
-				bits::read_field(in, rhs.pw_gecos, ':');
-				#endif
-				bits::read_field(in, rhs.pw_dir, ':');
-				bits::read_field(in, rhs.pw_shell, ':');
+				char sep = bits::read_field(in, rhs.pw_name, ':');
+				if (sep == ':') {
+					bits::read_field(in, rhs.pw_passwd, ':');
+					bits::read_field(in, rhs.pw_uid, ':');
+					bits::read_field(in, rhs.pw_gid, ':');
+					#ifdef __linux__
+					bits::read_field(in, rhs.pw_gecos, ':');
+					#endif
+					bits::read_field(in, rhs.pw_dir, ':');
+					bits::read_field(in, rhs.pw_shell, ':');
+				}
 			}
 			return in;
 		}
