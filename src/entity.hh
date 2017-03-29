@@ -87,6 +87,18 @@ namespace legion {
 			return rhs ? rhs : "";
 		}
 
+		inline void
+		read_all_fields(std::istream&, char) {}
+
+		template<class T, class ... Args>
+		inline void
+		read_all_fields(std::istream& in, char sep, T& first, Args& ... args) {
+			char lastchar = read_field(in, first, sep);
+			if (lastchar == sep) {
+				read_all_fields(in, sep, args...);
+			}
+		}
+
 	}
 
 	class entity: public sys::user {
@@ -163,17 +175,18 @@ namespace legion {
 		operator>>(std::istream& in, entity& rhs) {
 			std::istream::sentry s(in);
 			if (s) {
-				char sep = bits::read_field(in, rhs.pw_name, ':');
-				if (sep == ':') {
-					bits::read_field(in, rhs.pw_passwd, ':');
-					bits::read_field(in, rhs.pw_uid, ':');
-					bits::read_field(in, rhs.pw_gid, ':');
+				bits::read_all_fields(
+					in, ':',
+					rhs.pw_name,
+					rhs.pw_passwd,
+					rhs.pw_uid,
+					rhs.pw_gid,
 					#ifdef __linux__
-					bits::read_field(in, rhs.pw_gecos, ':');
+					rhs.pw_gecos,
 					#endif
-					bits::read_field(in, rhs.pw_dir, ':');
-					bits::read_field(in, rhs.pw_shell, ':');
-				}
+					rhs.pw_dir,
+					rhs.pw_shell
+				);
 			}
 			return in;
 		}
@@ -221,6 +234,8 @@ namespace legion {
 		init_ids() {
 			this->pw_uid = -1;
 			this->pw_gid = -1;
+			this->pw_shell = create_and_copy("/bin/sh");
+			this->pw_dir = create_and_copy("/");
 		}
 
 	};

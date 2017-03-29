@@ -46,7 +46,7 @@ TEST(EntityTest, ReadWrite) {
 
 TEST(EntityTest, WriteEmpty) {
 	std::stringstream orig;
-	orig << "::" << sys::uid_type(-1) << ':' << sys::gid_type(-1) << ":::";
+	orig << "::" << sys::uid_type(-1) << ':' << sys::gid_type(-1) << "::/:/bin/sh";
 	std::stringstream tmp;
 	legion::entity ent;
 	tmp << ent;
@@ -66,8 +66,8 @@ TEST_P(BareEntityTest, Read) {
 	EXPECT_EQ(sys::uid_type(-1), ent.id());
 	EXPECT_EQ(sys::gid_type(-1), ent.group_id());
 	EXPECT_EQ(nullptr, ent.real_name());
-	EXPECT_EQ(nullptr, ent.home());
-	EXPECT_EQ(nullptr, ent.shell());
+	EXPECT_STREQ("/", ent.home());
+	EXPECT_STREQ("/bin/sh", ent.shell());
 }
 
 INSTANTIATE_TEST_CASE_P(

@@ -1,4 +1,3 @@
-#include "entity_stream.hh"
 #include "entity.hh"
 
 #include <stdx/iterator.hh>
