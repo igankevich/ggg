@@ -96,8 +96,30 @@ namespace legion {
 			std::memset(this, 0, sizeof(entity));
 		}
 
-		entity(const entity&) = delete;
-		entity(entity&&) = delete;
+		entity(const entity& rhs) {
+			this->pw_name = create_and_copy(rhs.pw_name);
+			this->pw_passwd = create_and_copy(rhs.pw_passwd);
+			#ifdef __linux__
+			this->pw_gecos = create_and_copy(rhs.pw_gecos);
+			#endif
+			this->pw_dir = create_and_copy(rhs.pw_dir);
+			this->pw_shell = create_and_copy(rhs.pw_shell);
+			this->pw_uid = rhs.pw_uid;
+			this->pw_gid = rhs.pw_gid;
+		}
+
+		entity(entity&& rhs) {
+			this->pw_name = move_pointer(&rhs.pw_name);
+			this->pw_passwd = move_pointer(&rhs.pw_passwd);
+			#ifdef __linux__
+			this->pw_gecos = move_pointer(&rhs.pw_gecos);
+			#endif
+			this->pw_dir = move_pointer(&rhs.pw_dir);
+			this->pw_shell = move_pointer(&rhs.pw_shell);
+			this->pw_uid = rhs.pw_uid;
+			this->pw_gid = rhs.pw_gid;
+		}
+
 		~entity() {
 			delete this->pw_name;
 			delete this->pw_passwd;
