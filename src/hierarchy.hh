@@ -95,6 +95,17 @@ namespace legion {
 		}
 
 		const_iterator
+		find_by_gid(sys::gid_type gid) const {
+			return std::find_if(
+				begin(),
+				end(),
+				[gid] (const entity& ent) {
+					return ent.group_id() == gid;
+				}
+			);
+		}
+
+		const_iterator
 		find_by_name(const char* name) const {
 			return std::find_if(
 				begin(),
