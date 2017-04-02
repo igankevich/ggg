@@ -10,7 +10,7 @@ hierarchy_src = [
 	'group.cc'
 ]
 
-shared_library(
+libnss_hierarchy = shared_library(
 	'nss_' + module_name,
 	sources: hierarchy_src + ['pwd.cc', 'grp.cc'],
 	dependencies: [unistdx],
@@ -47,6 +47,12 @@ test(
 	executable(
 		'pwd-test',
 		sources: hierarchy_src + ['pwd_test.cc'],
-		dependencies: [unistdx, gtest]
-	)
+		dependencies: [unistdx, gtest],
+		cpp_args: ['-DHIERARCHY_TEST']
+	),
+	env: [
+		'LD_PRELOAD=libnss_wrapper.so',
+		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy.full_path(),
+		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name
+	]
 )

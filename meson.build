@@ -18,5 +18,6 @@ config.set('root_directory', '/etc/' + module_name)
 
 unistdx = dependency('unistdx')
 gtest = dependency('gtest', main: true)
+nss_wrapper = dependency('nss_wrapper')
 
 subdir('src')

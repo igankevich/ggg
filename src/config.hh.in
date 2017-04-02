@@ -3,6 +3,10 @@
 
 #define MODULE_NAME @module_name@
 
+#if defined(HIERARCHY_TEST)
+#define HIERARCHY_ROOT "hierarchy-test"
+#else
 #define HIERARCHY_ROOT "@root_directory@"
+#endif
 
 #endif // CONFIG_HH
