@@ -13,7 +13,7 @@ protected:
 	expect_uid_name(sys::uid_type uid, const char* name) {
 		auto result = hr.find_by_uid(uid);
 		EXPECT_NE(hr.end(), result);
-		EXPECT_STREQ(name, result->name());
+		EXPECT_STREQ(name, result->name().data());
 		result = hr.find_by_name(name);
 		EXPECT_NE(hr.end(), result);
 		EXPECT_EQ(uid, result->id());

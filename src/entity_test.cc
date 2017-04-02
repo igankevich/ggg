@@ -9,17 +9,17 @@ TEST_P(EntityTest, Read) {
 	legion::entity ent;
 	tmp >> ent;
 	EXPECT_TRUE(tmp.good());
-	EXPECT_STREQ("root", ent.name());
-	EXPECT_STREQ("x", ent.password());
+	EXPECT_EQ("root", ent.name());
+	EXPECT_EQ("x", ent.password());
 	EXPECT_EQ(12, ent.id());
 	EXPECT_EQ(34, ent.group_id());
 	#ifdef __linux__
-	EXPECT_STREQ("root", ent.real_name());
+	EXPECT_EQ("root", ent.real_name());
 	#else
-	EXPECT_EQ(nullptr, ent.real_name());
+	EXPECT_EQ("", ent.real_name());
 	#endif
-	EXPECT_STREQ("/root", ent.home());
-	EXPECT_STREQ("/bin/bash", ent.shell());
+	EXPECT_EQ("/root", ent.home());
+	EXPECT_EQ("/bin/bash", ent.shell());
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -61,13 +61,13 @@ TEST_P(BareEntityTest, Read) {
 	legion::entity ent;
 	tmp >> ent;
 	EXPECT_TRUE(tmp.good());
-	EXPECT_STREQ("root", ent.name());
-	EXPECT_EQ(nullptr, ent.password());
+	EXPECT_EQ("root", ent.name());
+	EXPECT_EQ("", ent.password());
 	EXPECT_EQ(sys::uid_type(-1), ent.id());
 	EXPECT_EQ(sys::gid_type(-1), ent.group_id());
-	EXPECT_EQ(nullptr, ent.real_name());
-	EXPECT_STREQ("/", ent.home());
-	EXPECT_STREQ("/bin/sh", ent.shell());
+	EXPECT_EQ("", ent.real_name());
+	EXPECT_EQ("/", ent.home());
+	EXPECT_EQ("/bin/sh", ent.shell());
 }
 
 INSTANTIATE_TEST_CASE_P(

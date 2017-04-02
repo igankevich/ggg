@@ -3,8 +3,6 @@
 
 #include <istream>
 #include <string>
-#include <cstring>
-#include <fstream>
 #include <sys/dir.hh>
 #include <sys/users.hh>
 
@@ -57,30 +55,24 @@ namespace legion {
 
 		template<>
 		inline char
-		read_field<char*>(std::istream& in, char*& rhs, char sep) {
-			std::istream::sentry s(in);
+		read_field<std::string>(std::istream& in, std::string& rhs, char sep) {
 			char ch = 0;
+			std::istream::sentry s(in);
 			if (s) {
-				if (rhs) {
-					delete rhs;
-					rhs = nullptr;
-				}
-				std::string tmp;
+				rhs.clear();
 				while (in.get(ch) and ch != sep and ch != '\n') {
-					tmp.push_back(ch);
+					rhs.push_back(ch);
 				}
-				while (!tmp.empty() && std::isspace(tmp.back())) {
-					tmp.pop_back();
+				while (!rhs.empty() && std::isspace(rhs.back())) {
+					rhs.pop_back();
 				}
-				std::string::size_type n = tmp.size();
-				rhs = new char[n + 1];
-				std::strcpy(rhs, tmp.data());
 				if (in.eof()) {
 					in.clear();
 				}
 			}
 			return ch;
 		}
+
 
 		inline void
 		read_all_fields(std::istream&, char) {}
@@ -107,11 +99,6 @@ namespace legion {
 			return ptr;
 		}
 
-		inline size_t
-		buflen(const char* s) {
-			return s ? (std::strlen(s) + 1) : 0;
-		}
-
 		inline char*
 		bufcopy(char** field, char* dest, const char* src) {
 			*field = dest;
@@ -120,101 +107,61 @@ namespace legion {
 		}
 	}
 
-	class entity: public sys::user {
+	class entity {
+
+		std::string _username;
+		std::string _password;
+		std::string _realname;
+		std::string _homedir = "/";
+		std::string _shell = "/bin/sh";
+		sys::uid_type _uid = -1;
+		sys::gid_type _gid = -1;
 
 	public:
 
 		explicit
-		entity(const char* name) {
-			std::memset(this, 0, sizeof(entity));
-			this->pw_name = bits::create_and_copy(name);
-			init_ids();
-		}
+		entity(const char* name):
+		_username(name)
+		{}
 
-		entity() {
-			std::memset(this, 0, sizeof(entity));
-			init_ids();
-		}
-
-		entity(const entity& rhs) {
-			this->pw_name = bits::create_and_copy(rhs.pw_name);
-			this->pw_passwd = bits::create_and_copy(rhs.pw_passwd);
-			#ifdef __linux__
-			this->pw_gecos = bits::create_and_copy(rhs.pw_gecos);
-			#endif
-			this->pw_dir = bits::create_and_copy(rhs.pw_dir);
-			this->pw_shell = bits::create_and_copy(rhs.pw_shell);
-			this->pw_uid = rhs.pw_uid;
-			this->pw_gid = rhs.pw_gid;
-		}
-
-		entity(entity&& rhs) {
-			this->pw_name = move_pointer(&rhs.pw_name);
-			this->pw_passwd = move_pointer(&rhs.pw_passwd);
-			#ifdef __linux__
-			this->pw_gecos = move_pointer(&rhs.pw_gecos);
-			#endif
-			this->pw_dir = move_pointer(&rhs.pw_dir);
-			this->pw_shell = move_pointer(&rhs.pw_shell);
-			this->pw_uid = rhs.pw_uid;
-			this->pw_gid = rhs.pw_gid;
-		}
-
-		~entity() {
-			delete this->pw_name;
-			delete this->pw_passwd;
-			#ifdef __linux__
-			delete this->pw_gecos;
-			#endif
-			delete this->pw_dir;
-			delete this->pw_shell;
-		}
+		entity() = default;
+		entity(const entity& rhs) = default;
+		entity(entity&& rhs) = default;
+		~entity() = default;
 
 		entity&
-		operator=(const entity& rhs) {
-			this->pw_name = bits::create_and_copy(rhs.pw_name);
-			this->pw_passwd = bits::create_and_copy(rhs.pw_passwd);
-			#ifdef __linux__
-			this->pw_gecos = bits::create_and_copy(rhs.pw_gecos);
-			#endif
-			this->pw_dir = bits::create_and_copy(rhs.pw_dir);
-			this->pw_shell = bits::create_and_copy(rhs.pw_shell);
-			this->pw_uid = rhs.pw_uid;
-			this->pw_gid = rhs.pw_gid;
-			return *this;
-		}
+		operator=(const entity& rhs) = default;
 
 		void
 		copy_to(struct ::passwd* lhs, char* buffer) const {
-			buffer = bits::bufcopy(&lhs->pw_name, buffer, this->pw_name);
-			buffer = bits::bufcopy(&lhs->pw_passwd, buffer, this->pw_passwd);
+			buffer = bits::bufcopy(&lhs->pw_name, buffer, this->_username.data());
+			buffer = bits::bufcopy(&lhs->pw_passwd, buffer, this->_password.data());
 			#ifdef __linux__
-			buffer = bits::bufcopy(&lhs->pw_gecos, buffer, this->pw_gecos);
+			buffer = bits::bufcopy(&lhs->pw_gecos, buffer, this->_realname.data());
 			#endif
-			buffer = bits::bufcopy(&lhs->pw_dir, buffer, this->pw_dir);
-			buffer = bits::bufcopy(&lhs->pw_shell, buffer, this->pw_shell);
-			lhs->pw_uid = this->pw_uid;
-			lhs->pw_gid = this->pw_gid;
+			buffer = bits::bufcopy(&lhs->pw_dir, buffer, this->_homedir.data());
+			buffer = bits::bufcopy(&lhs->pw_shell, buffer, this->_shell.data());
+			lhs->pw_uid = this->_uid;
+			lhs->pw_gid = this->_gid;
 		}
 
 		size_t
 		buffer_size() const noexcept {
-			return bits::buflen(this->pw_name)
-				+ bits::buflen(this->pw_passwd)
-				+ bits::buflen(this->pw_gecos)
-				+ bits::buflen(this->pw_dir)
-				+ bits::buflen(this->pw_shell);
+			return this->_username.size()
+				+ this->_password.size()
+				+ this->_realname.size()
+				+ this->_homedir.size()
+				+ this->_shell.size();
 		}
 
 		inline bool
 		has_id() const noexcept {
-			return this->pw_uid != sys::uid_type(-1);
+			return this->_uid != sys::uid_type(-1);
 		}
 
 		inline bool
 		operator==(const entity& rhs) const noexcept {
-			return (name() == nullptr && rhs.name() == nullptr)
-				|| (std::strcmp(name(), rhs.name()) == 0);
+			return name() == rhs.name();
 		}
 
 		inline bool
@@ -224,7 +171,7 @@ namespace legion {
 
 		inline bool
 		operator<(const entity& rhs) const noexcept {
-			return name() && rhs.name() && std::strcmp(name(), rhs.name()) < 0;
+			return name() < rhs.name();
 		}
 
 		friend std::istream&
@@ -233,26 +180,39 @@ namespace legion {
 		friend std::ostream&
 		operator<<(std::ostream& out, const entity& rhs);
 
-	private:
-
-		char*
-		move_pointer(char** rhs) {
-			char* ptr;
-			if (*rhs == nullptr) {
-				ptr = nullptr;
-			} else {
-				ptr = *rhs;
-				*rhs = nullptr;
-			}
-			return ptr;
+		sys::uid_type
+		id() const noexcept {
+			return _uid;
 		}
 
-		void
-		init_ids() {
-			this->pw_uid = -1;
-			this->pw_gid = -1;
-			this->pw_shell = bits::create_and_copy("/bin/sh");
-			this->pw_dir = bits::create_and_copy("/");
+		sys::uid_type
+		group_id() const noexcept {
+			return _gid;
+		}
+
+		const std::string&
+		name() const noexcept {
+			return _username;
+		}
+
+		const std::string&
+		password() const noexcept {
+			return _password;
+		}
+
+		const std::string&
+		real_name() const noexcept {
+			return _realname;
+		}
+
+		const std::string&
+		home() const noexcept {
+			return _homedir;
+		}
+
+		const std::string&
+		shell() const noexcept {
+			return _shell;
 		}
 
 	};

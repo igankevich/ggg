@@ -100,7 +100,7 @@ namespace legion {
 				begin(),
 				end(),
 				[name] (const entity& ent) {
-					return std::strcmp(ent.name(), name) == 0;
+					return ent.name() == name;
 				}
 			);
 		}
