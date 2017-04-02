@@ -6,12 +6,13 @@ configure_file(
 
 hierarchy_src = [
 	'hierarchy.cc',
-	'entity.cc'
+	'entity.cc',
+	'group.cc'
 ]
 
 shared_library(
 	'nss_' + module_name,
-	sources: hierarchy_src + ['pwd.cc'],
+	sources: hierarchy_src + ['pwd.cc', 'grp.cc'],
 	dependencies: [unistdx],
 	version: '2',
 	install: true
@@ -27,7 +28,7 @@ test(
 	'entity-test',
 	executable(
 		'entity-test',
-		sources: ['entity.cc', 'entity_test.cc'],
+		sources: hierarchy_src + ['entity_test.cc'],
 		dependencies: [unistdx, gtest]
 	)
 )
@@ -36,7 +37,7 @@ test(
 	'hierarchy-test',
 	executable(
 		'hierarchy-test',
-		sources: ['entity.cc', 'hierarchy.cc', 'hierarchy_test.cc'],
+		sources: hierarchy_src + ['hierarchy_test.cc'],
 		dependencies: [unistdx, gtest]
 	)
 )
@@ -45,7 +46,7 @@ test(
 	'pwd-test',
 	executable(
 		'pwd-test',
-		sources: ['entity.cc', 'hierarchy.cc', 'pwd.cc', 'pwd_test.cc'],
+		sources: hierarchy_src + ['pwd_test.cc'],
 		dependencies: [unistdx, gtest]
 	)
 )

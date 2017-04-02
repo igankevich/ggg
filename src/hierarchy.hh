@@ -2,8 +2,7 @@
 #define HIERARCHY_HH
 
 #include "entity.hh"
-
-#include <stdx/iterator.hh>
+#include "group.hh"
 
 #include <algorithm>
 #include <iostream>
@@ -33,9 +32,11 @@ namespace legion {
 
 	class Hierarchy {
 		typedef std::map<entity,std::set<std::string>> map_type;
+		typedef std::set<group> group_container_type;
 
 		map_type _entities;
 		map_type _links;
+		std::set<group> _groups;
 		sys::canonical_path _root;
 		sys::uid_type _minuid = 1000;
 		size_t _maxlinks = 100;
@@ -43,6 +44,8 @@ namespace legion {
 	public:
 		typedef stdx::field_iterator<map_type::iterator,0> iterator;
 		typedef stdx::field_iterator<map_type::const_iterator,0> const_iterator;
+		typedef group_container_type::iterator group_iterator;
+		typedef group_container_type::const_iterator group_const_iterator;
 
 		Hierarchy() = default;
 
@@ -95,17 +98,6 @@ namespace legion {
 		}
 
 		const_iterator
-		find_by_gid(sys::gid_type gid) const {
-			return std::find_if(
-				begin(),
-				end(),
-				[gid] (const entity& ent) {
-					return ent.group_id() == gid;
-				}
-			);
-		}
-
-		const_iterator
 		find_by_name(const char* name) const {
 			return std::find_if(
 				begin(),
@@ -114,6 +106,42 @@ namespace legion {
 					return ent.name() == name;
 				}
 			);
+		}
+
+		group_iterator
+		group_begin() {
+			return _groups.begin();
+		}
+
+		group_iterator
+		group_end() {
+			return _groups.end();
+		}
+
+		group_const_iterator
+		group_begin() const {
+			return _groups.begin();
+		}
+
+		group_const_iterator
+		group_end() const {
+			return _groups.end();
+		}
+
+		group_const_iterator
+		find_group_by_gid(sys::gid_type gid) const {
+			return std::find_if(
+				_groups.begin(),
+				_groups.end(),
+				[gid] (const group& grp) {
+					return grp.id() == gid;
+				}
+			);
+		}
+
+		group_const_iterator
+		find_group_by_name(const char* name) const {
+			return _groups.find(group(name));
 		}
 
 		void
@@ -133,6 +161,12 @@ namespace legion {
 
 		void
 		filter_entities();
+
+		void
+		generate_groups();
+
+		void
+		filter_groups();
 
 		void
 		process_entry(const sys::pathentry& entry, bool& success);

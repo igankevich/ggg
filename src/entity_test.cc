@@ -12,7 +12,7 @@ TEST_P(EntityTest, Read) {
 	EXPECT_EQ("root", ent.name());
 	EXPECT_EQ("x", ent.password());
 	EXPECT_EQ(12, ent.id());
-	EXPECT_EQ(34, ent.group_id());
+	EXPECT_EQ(34, ent.gid());
 	#ifdef __linux__
 	EXPECT_EQ("root", ent.real_name());
 	#else
@@ -64,7 +64,7 @@ TEST_P(BareEntityTest, Read) {
 	EXPECT_EQ("root", ent.name());
 	EXPECT_EQ("", ent.password());
 	EXPECT_EQ(sys::uid_type(-1), ent.id());
-	EXPECT_EQ(sys::gid_type(-1), ent.group_id());
+	EXPECT_EQ(sys::gid_type(-1), ent.gid());
 	EXPECT_EQ("", ent.real_name());
 	EXPECT_EQ("/", ent.home());
 	EXPECT_EQ("/bin/sh", ent.shell());
@@ -80,3 +80,18 @@ INSTANTIATE_TEST_CASE_P(
 		" root "
 	)
 );
+
+TEST_P(EntityTest, ReadEntryWithMissingFields) {
+	std::stringstream tmp;
+	tmp << "mygroup:x:2000:2000:mygroup name:/home:\n";
+	legion::entity ent;
+	tmp >> ent;
+	EXPECT_TRUE(tmp.good());
+	EXPECT_EQ("mygroup", ent.name());
+	EXPECT_EQ("x", ent.password());
+	EXPECT_EQ(2000, ent.id());
+	EXPECT_EQ(2000, ent.gid());
+	EXPECT_EQ("/home", ent.home());
+	EXPECT_EQ("", ent.shell());
+}
+

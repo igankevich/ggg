@@ -37,13 +37,7 @@ namespace legion {
 		copy_to(struct ::passwd* lhs, char* buffer) const;
 
 		size_t
-		buffer_size() const noexcept {
-			return this->_name.size()
-				+ this->_password.size()
-				+ this->_realname.size()
-				+ this->_homedir.size()
-				+ this->_shell.size();
-		}
+		buffer_size() const noexcept;
 
 		inline bool
 		has_id() const noexcept {
@@ -77,7 +71,7 @@ namespace legion {
 		}
 
 		sys::gid_type
-		group_id() const noexcept {
+		gid() const noexcept {
 			return _gid;
 		}
 

@@ -42,9 +42,6 @@ namespace legion {
 		read_field<ignore_field>(std::istream& in, ignore_field&, char sep) {
 			char ch = 0;
 			while (in.get(ch) and ch != sep and ch != '\n');
-			if (in.eof()) {
-				in.clear();
-			}
 			return ch;
 		}
 
@@ -53,16 +50,13 @@ namespace legion {
 		read_field<std::string>(std::istream& in, std::string& rhs, char sep) {
 			char ch = 0;
 			std::istream::sentry s(in);
+			rhs.clear();
 			if (s) {
-				rhs.clear();
 				while (in.get(ch) and ch != sep and ch != '\n') {
 					rhs.push_back(ch);
 				}
 				while (!rhs.empty() && std::isspace(rhs.back())) {
 					rhs.pop_back();
-				}
-				if (in.eof()) {
-					in.clear();
 				}
 			}
 			return ch;

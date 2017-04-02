@@ -3,10 +3,6 @@
 
 #define MODULE_NAME @module_name@
 
-namespace legion {
-
-	const char* root_directory = "@root_directory@";
-
-}
+#define HIERARCHY_ROOT "@root_directory@"
 
 #endif // CONFIG_HH

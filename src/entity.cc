@@ -16,6 +16,9 @@ legion::operator>>(std::istream& in, entity& rhs) {
 			rhs._homedir,
 			rhs._shell
 		);
+		if (in.eof()) {
+			in.clear();
+		}
 	}
 	return in;
 }
@@ -26,10 +29,19 @@ legion::operator<<(std::ostream& out, const entity& rhs) {
 		<< rhs.name() << ':'
 		<< rhs.password() << ':'
 		<< rhs.id() << ':'
-		<< rhs.group_id() << ':'
+		<< rhs.gid() << ':'
 		<< rhs.real_name() << ':'
 		<< rhs.home() << ':'
 		<< rhs.shell();
+}
+
+size_t
+legion::entity::buffer_size() const noexcept {
+	return this->_name.size() + 1
+		+ this->_password.size() + 1
+		+ this->_realname.size() + 1
+		+ this->_homedir.size() + 1
+		+ this->_shell.size() + 1;
 }
 
 void

@@ -1,4 +1,5 @@
 #include "hierarchy.hh"
+#include <stdx/iterator.hh>
 
 std::ostream&
 legion::operator<<(std::ostream& out, const entity_pair& rhs) {
@@ -13,7 +14,13 @@ legion::operator<<(std::ostream& out, const entity_pair& rhs) {
 
 void
 legion::Hierarchy::read() {
-	sys::dirtree tree(_root);
+	sys::dirtree tree;
+	try {
+		tree.open(_root);
+	} catch (...) {
+		std::clog << "Skipping bad hierarchy root " << _root << std::endl;
+		return;
+	}
 	while (!tree.eof()) {
 		tree.clear();
 		sys::pathentry entry;
@@ -34,14 +41,23 @@ legion::Hierarchy::read() {
 	}
 	process_links();
 	filter_entities();
+	generate_groups();
+	filter_groups();
 }
 
 std::ostream&
 legion::operator<<(std::ostream& out, const Hierarchy& rhs) {
+	std::cout << "\nUsers:\n";
 	std::copy(
 		rhs._entities.begin(),
 		rhs._entities.end(),
 		std::ostream_iterator<entity_pair>(std::cout, "\n")
+	);
+	std::cout << "\nGroups:\n";
+	std::copy(
+		rhs._groups.begin(),
+		rhs._groups.end(),
+		std::ostream_iterator<group>(std::cout, "\n")
 	);
 	return out;
 }
@@ -78,6 +94,49 @@ legion::Hierarchy::filter_entities() {
 			return !rhs.first.has_id() || rhs.first.id() < _minuid;
 		}
 	);
+}
+
+void
+legion::Hierarchy::generate_groups() {
+	// add groups
+	for (const entity_pair& pair : _entities) {
+		const entity& ent = pair.first;
+		_groups.emplace(ent.name(), ent.password(), ent.gid());
+	}
+	// add group members
+	for (const entity_pair& pair : _entities) {
+		const entity& member = pair.first;
+		for (const std::string& grname : pair.second) {
+			auto result = _groups.find(group(grname));
+			if (result != _groups.end()) {
+				result->push(member.name());
+			}
+		}
+	}
+}
+
+void
+legion::Hierarchy::filter_groups() {
+	// remove empty groups
+	erase_if(
+		_groups,
+		[] (const group& rhs) {
+			return rhs.members().empty();
+		}
+	);
+	// remove duplicate entities
+	for (const group& grp : _groups) {
+		_entities.erase(entity(grp.name().data()));
+	}
+	// remove non-existent groups
+	for (entity_pair& pair : _entities) {
+		erase_if(
+			pair.second,
+			[this] (const std::string& grname) {
+				return _groups.find(group(grname)) == _groups.end();
+			}
+		);
+	}
 }
 
 void
