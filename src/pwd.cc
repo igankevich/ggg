@@ -2,15 +2,13 @@
 #include "hierarchy.hh"
 
 namespace {
-	legion::Hierarchy hierarchy;
+	legion::Hierarchy hierarchy(sys::path(legion::root_directory));
 	legion::Hierarchy::iterator first, last;
 }
 
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, pw) {
 	enum nss_status ret;
-	hierarchy.open(sys::path(legion::root_directory));
 	try {
-		hierarchy.read();
 		first = hierarchy.begin();
 		last = hierarchy.end();
 		ret = NSS_STATUS_SUCCESS;
@@ -36,11 +34,9 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, pw)(
 ) {
 	nss_status ret = NSS_STATUS_NOTFOUND;
 	if (first != last) {
-		*result = *first;
+		first->copy_to(*result);
 		++first;
-		if (first != last) {
-			ret = NSS_STATUS_SUCCESS;
-		}
+		ret = NSS_STATUS_SUCCESS;
 	}
 	*errnop = 0;
 	return ret;
@@ -54,9 +50,9 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, uid)(
 	int* errnop
 ) {
 	nss_status ret;
-	legion::Hierarchy::iterator it = hierarchy.find_by_uid(uid);
+	auto it = hierarchy.find_by_uid(uid);
 	if (it != last) {
-		*result = *it;
+		it->copy_to(*result);
 		ret = NSS_STATUS_SUCCESS;
 		*errnop = 0;
 	} else {
@@ -74,9 +70,9 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, nam)(
 	int* errnop
 ) {
 	nss_status ret;
-	legion::Hierarchy::iterator it = hierarchy.find_by_name(name);
+	auto it = hierarchy.find_by_name(name);
 	if (it != last) {
-		*result = *it;
+		it->copy_to(*result);
 		ret = NSS_STATUS_SUCCESS;
 		*errnop = 0;
 	} else {

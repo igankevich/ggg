@@ -36,13 +36,14 @@ legion::Hierarchy::read() {
 	filter_entities();
 }
 
-void
-legion::Hierarchy::print() {
+std::ostream&
+legion::operator<<(std::ostream& out, const Hierarchy& rhs) {
 	std::copy(
-		_entities.begin(),
-		_entities.end(),
+		rhs._entities.begin(),
+		rhs._entities.end(),
 		std::ostream_iterator<entity_pair>(std::cout, "\n")
 	);
+	return out;
 }
 
 void

@@ -41,22 +41,21 @@ namespace legion {
 		size_t _maxlinks = 100;
 
 	public:
-		typedef stdx::field_iterator<map_type,0> iterator;
+		typedef stdx::field_iterator<map_type::iterator,0> iterator;
+		typedef stdx::field_iterator<map_type::const_iterator,0> const_iterator;
 
 		Hierarchy() = default;
 
 		inline explicit
 		Hierarchy(sys::path root):
 		_root(root)
-		{}
+		{ read(); }
 
 		void
 		open(const sys::path& root) {
 			_root = sys::canonical_path(root);
+			read();
 		}
-
-		void read();
-		void print();
 
 		inline void
 		clear() {
@@ -74,8 +73,18 @@ namespace legion {
 			return _entities.end();
 		}
 
-		iterator
-		find_by_uid(sys::uid_type uid) {
+		const_iterator
+		begin() const {
+			return _entities.begin();
+		}
+
+		const_iterator
+		end() const {
+			return _entities.end();
+		}
+
+		const_iterator
+		find_by_uid(sys::uid_type uid) const {
 			return std::find_if(
 				begin(),
 				end(),
@@ -85,8 +94,8 @@ namespace legion {
 			);
 		}
 
-		iterator
-		find_by_name(const char* name) {
+		const_iterator
+		find_by_name(const char* name) const {
 			return std::find_if(
 				begin(),
 				end(),
@@ -101,7 +110,13 @@ namespace legion {
 			_minuid = rhs;
 		}
 
+		friend std::ostream&
+		operator<<(std::ostream& out, const Hierarchy& rhs);
+
 	private:
+		void
+		read();
+
 		void
 		process_links();
 
@@ -129,6 +144,9 @@ namespace legion {
 		);
 
 	};
+
+	std::ostream&
+	operator<<(std::ostream& out, const Hierarchy& rhs);
 
 }
 

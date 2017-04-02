@@ -6,11 +6,11 @@
 
 namespace stdx {
 
-	template <class Map, size_t N>
-	class field_iterator: public Map::iterator {
+	template <class Base, size_t N>
+	class field_iterator: public Base {
 
 	public:
-		typedef typename Map::iterator base_iterator;
+		typedef Base base_iterator;
 		typedef typename std::tuple_element<
 			N,
 			typename base_iterator::value_type

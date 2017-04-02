@@ -10,9 +10,11 @@ hierarchy_src = [
 ]
 
 shared_library(
-	'nss_' + module_name + '.so.2',
+	'nss_' + module_name,
 	sources: hierarchy_src + ['pwd.cc'],
-	dependencies: [unistdx]
+	dependencies: [unistdx],
+	version: '2',
+	install: true
 )
 
 executable(

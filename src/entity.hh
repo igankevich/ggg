@@ -94,15 +94,28 @@ namespace legion {
 			}
 		}
 
+		inline char*
+		create_and_copy(const char* rhs) {
+			char* ptr;
+			if (rhs == nullptr) {
+				ptr = nullptr;
+			} else {
+				const size_t n = std::strlen(rhs);
+				ptr = new char[n];
+				std::strcpy(ptr, rhs);
+			}
+			return ptr;
+		}
 	}
 
 	class entity: public sys::user {
 
 	public:
 
+		explicit
 		entity(const char* name) {
 			std::memset(this, 0, sizeof(entity));
-			this->pw_name = create_and_copy(name);
+			this->pw_name = bits::create_and_copy(name);
 			init_ids();
 		}
 
@@ -112,13 +125,13 @@ namespace legion {
 		}
 
 		entity(const entity& rhs) {
-			this->pw_name = create_and_copy(rhs.pw_name);
-			this->pw_passwd = create_and_copy(rhs.pw_passwd);
+			this->pw_name = bits::create_and_copy(rhs.pw_name);
+			this->pw_passwd = bits::create_and_copy(rhs.pw_passwd);
 			#ifdef __linux__
-			this->pw_gecos = create_and_copy(rhs.pw_gecos);
+			this->pw_gecos = bits::create_and_copy(rhs.pw_gecos);
 			#endif
-			this->pw_dir = create_and_copy(rhs.pw_dir);
-			this->pw_shell = create_and_copy(rhs.pw_shell);
+			this->pw_dir = bits::create_and_copy(rhs.pw_dir);
+			this->pw_shell = bits::create_and_copy(rhs.pw_shell);
 			this->pw_uid = rhs.pw_uid;
 			this->pw_gid = rhs.pw_gid;
 		}
@@ -143,6 +156,33 @@ namespace legion {
 			#endif
 			delete this->pw_dir;
 			delete this->pw_shell;
+		}
+
+		entity&
+		operator=(const entity& rhs) {
+			this->pw_name = bits::create_and_copy(rhs.pw_name);
+			this->pw_passwd = bits::create_and_copy(rhs.pw_passwd);
+			#ifdef __linux__
+			this->pw_gecos = bits::create_and_copy(rhs.pw_gecos);
+			#endif
+			this->pw_dir = bits::create_and_copy(rhs.pw_dir);
+			this->pw_shell = bits::create_and_copy(rhs.pw_shell);
+			this->pw_uid = rhs.pw_uid;
+			this->pw_gid = rhs.pw_gid;
+			return *this;
+		}
+
+		void
+		copy_to(struct ::passwd& lhs) const {
+			lhs.pw_name = bits::create_and_copy(this->pw_name);
+			lhs.pw_passwd = bits::create_and_copy(this->pw_passwd);
+			#ifdef __linux__
+			lhs.pw_gecos = bits::create_and_copy(this->pw_gecos);
+			#endif
+			lhs.pw_dir = bits::create_and_copy(this->pw_dir);
+			lhs.pw_shell = bits::create_and_copy(this->pw_shell);
+			lhs.pw_uid = this->pw_uid;
+			lhs.pw_gid = this->pw_gid;
 		}
 
 		inline bool
@@ -173,18 +213,6 @@ namespace legion {
 		operator<<(std::ostream& out, const entity& rhs);
 
 	private:
-		char*
-		create_and_copy(const char* rhs) {
-			char* ptr;
-			if (rhs == nullptr) {
-				ptr = nullptr;
-			} else {
-				const size_t n = std::strlen(rhs);
-				ptr = new char[n];
-				std::strcpy(ptr, rhs);
-			}
-			return ptr;
-		}
 
 		char*
 		move_pointer(char** rhs) {
@@ -202,8 +230,8 @@ namespace legion {
 		init_ids() {
 			this->pw_uid = -1;
 			this->pw_gid = -1;
-			this->pw_shell = create_and_copy("/bin/sh");
-			this->pw_dir = create_and_copy("/");
+			this->pw_shell = bits::create_and_copy("/bin/sh");
+			this->pw_dir = bits::create_and_copy("/");
 		}
 
 	};

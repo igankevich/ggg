@@ -51,7 +51,6 @@ TEST_F(HierarchyTest, EmptyRootDirectory) {
 	mkdir %
 	)", root));
 	hr.open(sys::path(root));
-	hr.read();
 	EXPECT_EQ(hr.begin(), hr.end());
 }
 
@@ -59,7 +58,6 @@ TEST_P(HierarchyParamTest, ReadSimple) {
 	const char* root = "h-simple";
 	ASSERT_EQ(0, run_script(GetParam(), root));
 	hr.open(sys::path(root));
-	hr.read();
 	EXPECT_NE(hr.begin(), hr.end());
 	expect_uid_name(7, "halt");
 	expect_uid_name(8, "mail");
