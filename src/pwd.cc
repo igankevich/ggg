@@ -34,9 +34,14 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, pw)(
 ) {
 	nss_status ret = NSS_STATUS_NOTFOUND;
 	if (first != last) {
-		first->copy_to(*result);
-		++first;
-		ret = NSS_STATUS_SUCCESS;
+		if (buflen < first->buffer_size()) {
+			ret = NSS_STATUS_TRYAGAIN;
+			*errnop = ERANGE;
+		} else {
+			first->copy_to(result, buffer);
+			++first;
+			ret = NSS_STATUS_SUCCESS;
+		}
 	}
 	*errnop = 0;
 	return ret;
@@ -52,9 +57,14 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, uid)(
 	nss_status ret;
 	auto it = hierarchy.find_by_uid(uid);
 	if (it != last) {
-		it->copy_to(*result);
-		ret = NSS_STATUS_SUCCESS;
-		*errnop = 0;
+		if (buflen < it->buffer_size()) {
+			ret = NSS_STATUS_TRYAGAIN;
+			*errnop = ERANGE;
+		} else {
+			it->copy_to(result, buffer);
+			ret = NSS_STATUS_SUCCESS;
+			*errnop = 0;
+		}
 	} else {
 		ret = NSS_STATUS_NOTFOUND;
 		*errnop = ENOENT;
@@ -72,9 +82,14 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, nam)(
 	nss_status ret;
 	auto it = hierarchy.find_by_name(name);
 	if (it != last) {
-		it->copy_to(*result);
-		ret = NSS_STATUS_SUCCESS;
-		*errnop = 0;
+		if (buflen < it->buffer_size()) {
+			ret = NSS_STATUS_TRYAGAIN;
+			*errnop = ERANGE;
+		} else {
+			it->copy_to(result, buffer);
+			ret = NSS_STATUS_SUCCESS;
+			*errnop = 0;
+		}
 	} else {
 		ret = NSS_STATUS_NOTFOUND;
 		*errnop = ENOENT;

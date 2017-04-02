@@ -106,6 +106,18 @@ namespace legion {
 			}
 			return ptr;
 		}
+
+		inline size_t
+		buflen(const char* s) {
+			return s ? (std::strlen(s) + 1) : 0;
+		}
+
+		inline char*
+		bufcopy(char** field, char* dest, const char* src) {
+			*field = dest;
+			while ((*dest++ = *src++));
+			return dest;
+		}
 	}
 
 	class entity: public sys::user {
@@ -173,16 +185,25 @@ namespace legion {
 		}
 
 		void
-		copy_to(struct ::passwd& lhs) const {
-			lhs.pw_name = bits::create_and_copy(this->pw_name);
-			lhs.pw_passwd = bits::create_and_copy(this->pw_passwd);
+		copy_to(struct ::passwd* lhs, char* buffer) const {
+			buffer = bits::bufcopy(&lhs->pw_name, buffer, this->pw_name);
+			buffer = bits::bufcopy(&lhs->pw_passwd, buffer, this->pw_passwd);
 			#ifdef __linux__
-			lhs.pw_gecos = bits::create_and_copy(this->pw_gecos);
+			buffer = bits::bufcopy(&lhs->pw_gecos, buffer, this->pw_gecos);
 			#endif
-			lhs.pw_dir = bits::create_and_copy(this->pw_dir);
-			lhs.pw_shell = bits::create_and_copy(this->pw_shell);
-			lhs.pw_uid = this->pw_uid;
-			lhs.pw_gid = this->pw_gid;
+			buffer = bits::bufcopy(&lhs->pw_dir, buffer, this->pw_dir);
+			buffer = bits::bufcopy(&lhs->pw_shell, buffer, this->pw_shell);
+			lhs->pw_uid = this->pw_uid;
+			lhs->pw_gid = this->pw_gid;
+		}
+
+		size_t
+		buffer_size() const noexcept {
+			return bits::buflen(this->pw_name)
+				+ bits::buflen(this->pw_passwd)
+				+ bits::buflen(this->pw_gecos)
+				+ bits::buflen(this->pw_dir)
+				+ bits::buflen(this->pw_shell);
 		}
 
 		inline bool
