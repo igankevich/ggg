@@ -13,6 +13,8 @@
 #include <deque>
 #include <sstream>
 
+#include "field_iterator.hh"
+
 namespace legion {
 
 	template<class Container, class Pred>
@@ -39,6 +41,8 @@ namespace legion {
 		size_t _maxlinks = 100;
 
 	public:
+		typedef stdx::field_iterator<map_type,0> iterator;
+
 		Hierarchy() = default;
 
 		inline explicit
@@ -59,6 +63,39 @@ namespace legion {
 			_entities.clear();
 			_links.clear();
 		}
+
+		iterator
+		begin() {
+			return _entities.begin();
+		}
+
+		iterator
+		end() {
+			return _entities.end();
+		}
+
+		iterator
+		find_by_uid(sys::uid_type uid) {
+			return std::find_if(
+				begin(),
+				end(),
+				[uid] (const entity& ent) {
+					return ent.id() == uid;
+				}
+			);
+		}
+
+		iterator
+		find_by_name(const char* name) {
+			return std::find_if(
+				begin(),
+				end(),
+				[name] (const entity& ent) {
+					return std::strcmp(ent.name(), name);
+				}
+			);
+		}
+
 
 	private:
 		void

@@ -38,7 +38,7 @@ legion::Hierarchy::read() {
 
 void
 legion::Hierarchy::print() {
-	std::move(
+	std::copy(
 		_entities.begin(),
 		_entities.end(),
 		std::ostream_iterator<entity_pair>(std::cout, "\n")
