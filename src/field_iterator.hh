@@ -32,12 +32,12 @@ namespace stdx {
 
 		const_pointer
 		operator->() const noexcept {
-			return std::get<N>(base_iterator::operator->());
+			return &std::get<N>(*base_iterator::operator->());
 		}
 
 		pointer
 		operator->() noexcept {
-			return std::get<N>(base_iterator::operator->());
+			return &std::get<N>(*base_iterator::operator->());
 		}
 
 		const_reference

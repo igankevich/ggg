@@ -91,11 +91,15 @@ namespace legion {
 				begin(),
 				end(),
 				[name] (const entity& ent) {
-					return std::strcmp(ent.name(), name);
+					return std::strcmp(ent.name(), name) == 0;
 				}
 			);
 		}
 
+		void
+		setminuid(sys::uid_type rhs) noexcept {
+			_minuid = rhs;
+		}
 
 	private:
 		void

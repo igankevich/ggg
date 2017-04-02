@@ -29,3 +29,21 @@ test(
 		dependencies: [unistdx, gtest]
 	)
 )
+
+test(
+	'hierarchy-test',
+	executable(
+		'hierarchy-test',
+		sources: ['entity.cc', 'hierarchy.cc', 'hierarchy_test.cc'],
+		dependencies: [unistdx, gtest]
+	)
+)
+
+test(
+	'pwd-test',
+	executable(
+		'pwd-test',
+		sources: ['entity.cc', 'hierarchy.cc', 'pwd.cc', 'pwd_test.cc'],
+		dependencies: [unistdx, gtest]
+	)
+)

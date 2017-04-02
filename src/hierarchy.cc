@@ -106,7 +106,11 @@ legion::Hierarchy::add(
 	const entity& ent,
 	const sys::canonical_path& filepath
 ) {
-	std::string dirs(filepath.to_string(), _root.to_string().size() + 1);
+	const std::string& filestr = filepath.to_string();
+	std::string dirs(
+		filestr,
+		std::min(filestr.size(), _root.to_string().size() + 1)
+	);
 	std::stringstream tmp;
 	tmp << dirs;
 	std::set<std::string>& principals = container[ent];
