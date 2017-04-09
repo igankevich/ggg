@@ -43,21 +43,22 @@ legion::Hierarchy::read() {
 	filter_entities();
 	generate_groups();
 	filter_groups();
+	_isopen = true;
 }
 
 std::ostream&
 legion::operator<<(std::ostream& out, const Hierarchy& rhs) {
-	std::cout << "\nUsers:\n";
+	out << "\nUsers:\n";
 	std::copy(
 		rhs._entities.begin(),
 		rhs._entities.end(),
-		std::ostream_iterator<entity_pair>(std::cout, "\n")
+		std::ostream_iterator<entity_pair>(out, "\n")
 	);
-	std::cout << "\nGroups:\n";
+	out << "\nGroups:\n";
 	std::copy(
 		rhs._groups.begin(),
 		rhs._groups.end(),
-		std::ostream_iterator<group>(std::cout, "\n")
+		std::ostream_iterator<group>(out, "\n")
 	);
 	return out;
 }

@@ -40,6 +40,7 @@ namespace legion {
 		sys::canonical_path _root;
 		sys::uid_type _minuid = 1000;
 		size_t _maxlinks = 100;
+		bool _isopen = false;
 
 	public:
 		typedef stdx::field_iterator<map_type::iterator,0> iterator;
@@ -50,9 +51,8 @@ namespace legion {
 		Hierarchy() = default;
 
 		inline explicit
-		Hierarchy(sys::path root):
-		_root(root)
-		{ read(); }
+		Hierarchy(sys::path root)
+		{ open(root); }
 
 		void
 		open(const sys::path& root) {
@@ -60,10 +60,23 @@ namespace legion {
 			read();
 		}
 
+		bool
+		is_open() const noexcept {
+			return _isopen;
+		}
+
+		void
+		ensure_open(const char* root) {
+			if (!is_open()) {
+				open(sys::path(root));
+			}
+		}
+
 		inline void
 		clear() {
 			_entities.clear();
 			_links.clear();
+			_isopen = false;
 		}
 
 		iterator

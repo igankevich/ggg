@@ -3,6 +3,6 @@
 
 namespace legion {
 
-	Hierarchy hierarchy{sys::path(HIERARCHY_ROOT)};
+	Hierarchy hierarchy{};
 
 }

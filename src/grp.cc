@@ -10,6 +10,7 @@ using legion::hierarchy;
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, gr) {
 	enum nss_status ret;
 	try {
+		hierarchy.open(sys::path(HIERARCHY_ROOT));
 		first = hierarchy.group_begin();
 		last = hierarchy.group_end();
 		ret = NSS_STATUS_SUCCESS;
@@ -56,6 +57,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, gid)(
 	int* errnop
 ) {
 	nss_status ret;
+	hierarchy.ensure_open(HIERARCHY_ROOT);
 	auto it = hierarchy.find_group_by_gid(gid);
 	if (it != last) {
 		if (buflen < it->buffer_size()) {
@@ -81,6 +83,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, nam)(
 	int* errnop
 ) {
 	nss_status ret;
+	hierarchy.ensure_open(HIERARCHY_ROOT);
 	auto it = hierarchy.find_group_by_name(name);
 	if (it != last) {
 		if (buflen < it->buffer_size()) {

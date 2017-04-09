@@ -1,5 +1,6 @@
 #include "pwd.hh"
 #include "hierarchy_instance.hh"
+#include <iostream>
 
 namespace {
 	legion::Hierarchy::iterator first, last;
@@ -10,6 +11,7 @@ using legion::hierarchy;
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, pw) {
 	enum nss_status ret;
 	try {
+		hierarchy.open(sys::path(HIERARCHY_ROOT));
 		first = hierarchy.begin();
 		last = hierarchy.end();
 		ret = NSS_STATUS_SUCCESS;
@@ -56,6 +58,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, uid)(
 	int* errnop
 ) {
 	nss_status ret;
+	hierarchy.ensure_open(HIERARCHY_ROOT);
 	auto it = hierarchy.find_by_uid(uid);
 	if (it != last) {
 		if (buflen < it->buffer_size()) {
@@ -81,6 +84,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, nam)(
 	int* errnop
 ) {
 	nss_status ret;
+	hierarchy.ensure_open(HIERARCHY_ROOT);
 	auto it = hierarchy.find_by_name(name);
 	if (it != last) {
 		if (buflen < it->buffer_size()) {

@@ -63,7 +63,7 @@ test(
 		'LD_PRELOAD=libnss_wrapper.so',
 		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy_test.full_path(),
 		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
-		'NSS_WRAPPER_DEBUGLEVEL=0',
+		'NSS_WRAPPER_DEBUGLEVEL=3',
 		'NSS_WRAPPER_PASSWD=passwd',
 		'NSS_WRAPPER_GROUP=group'
 	]
