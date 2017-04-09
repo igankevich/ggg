@@ -17,6 +17,8 @@
 	NSS_MODULE_FUNCTION(module, get, db, ent_r)
 #define NSS_MODULE_FUNCTION_GETENTBY_R(module, db, by) \
 	NSS_MODULE_FUNCTION(module, get, db, by##_r)
+#define NSS_MODULE_FUNCTION_INITGROUPS(module) \
+	NSS_MODULE_FUNCTION(module, initgroups, _, dyn)
 
 
 #endif // NSS_HH

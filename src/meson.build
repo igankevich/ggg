@@ -7,7 +7,8 @@ configure_file(
 hierarchy_src = [
 	'hierarchy.cc',
 	'entity.cc',
-	'group.cc'
+	'group.cc',
+	'hierarchy_instance.cc'
 ]
 
 libnss_hierarchy = shared_library(
@@ -16,6 +17,14 @@ libnss_hierarchy = shared_library(
 	dependencies: [unistdx],
 	version: '2',
 	install: true
+)
+
+libnss_hierarchy_test = shared_library(
+	'nss_' + module_name + '_test',
+	sources: hierarchy_src + ['pwd.cc', 'grp.cc'],
+	dependencies: [unistdx],
+	version: '2',
+	cpp_args: ['-DHIERARCHY_TEST']
 )
 
 executable(
@@ -52,7 +61,10 @@ test(
 	),
 	env: [
 		'LD_PRELOAD=libnss_wrapper.so',
-		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy.full_path(),
-		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name
+		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy_test.full_path(),
+		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
+		'NSS_WRAPPER_DEBUGLEVEL=0',
+		'NSS_WRAPPER_PASSWD=passwd',
+		'NSS_WRAPPER_GROUP=group'
 	]
 )

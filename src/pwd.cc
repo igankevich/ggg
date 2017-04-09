@@ -1,10 +1,11 @@
 #include "pwd.hh"
-#include "hierarchy.hh"
+#include "hierarchy_instance.hh"
 
 namespace {
-	legion::Hierarchy hierarchy(sys::path(HIERARCHY_ROOT));
 	legion::Hierarchy::iterator first, last;
 }
+
+using legion::hierarchy;
 
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, pw) {
 	enum nss_status ret;

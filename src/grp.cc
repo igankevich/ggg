@@ -1,10 +1,11 @@
 #include "grp.hh"
-#include "hierarchy.hh"
+#include "hierarchy_instance.hh"
 
 namespace {
-	legion::Hierarchy hierarchy(sys::path(HIERARCHY_ROOT));
 	legion::Hierarchy::group_iterator first, last;
 }
+
+using legion::hierarchy;
 
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, gr) {
 	enum nss_status ret;
@@ -97,3 +98,15 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, nam)(
 	return ret;
 }
 
+NSS_MODULE_FUNCTION_INITGROUPS(MODULE_NAME)(
+	const char *user,
+	gid_t group,
+	long int *start,
+	long int *size,
+	gid_t **groupsp,
+	long int limit,
+	int *errnop
+) {
+	// TODO
+	return NSS_STATUS_UNAVAIL;
+}
