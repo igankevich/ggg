@@ -43,6 +43,15 @@ test(
 )
 
 test(
+	'group-test',
+	executable(
+		'group-test',
+		sources: hierarchy_src + ['group_test.cc'],
+		dependencies: [unistdx, gtest]
+	)
+)
+
+test(
 	'hierarchy-test',
 	executable(
 		'hierarchy-test',

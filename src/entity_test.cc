@@ -1,5 +1,7 @@
 #include "entity.hh"
+#include "group.hh"
 #include <gtest/gtest.h>
+#include <vector>
 
 class EntityTest: public ::testing::TestWithParam<const char*> {};
 
@@ -95,3 +97,20 @@ TEST_P(EntityTest, ReadEntryWithMissingFields) {
 	EXPECT_EQ("", ent.shell());
 }
 
+TEST(EntityTest, CopyTo) {
+	legion::entity ent;
+	char fillchar = -1;
+	std::vector<char> buffer(ent.buffer_size() * 2, fillchar);
+	struct ::passwd pw;
+	ent.copy_to(&pw, buffer.data());
+	EXPECT_EQ(fillchar, buffer[ent.buffer_size()]);
+	EXPECT_STREQ(ent.name().data(), pw.pw_name);
+	EXPECT_STREQ(ent.password().data(), pw.pw_passwd);
+	EXPECT_EQ(ent.id(), pw.pw_uid);
+	EXPECT_EQ(ent.gid(), pw.pw_gid);
+	EXPECT_STREQ(ent.shell().data(), pw.pw_shell);
+	EXPECT_STREQ(ent.home().data(), pw.pw_dir);
+	#ifdef __linux__
+	EXPECT_STREQ(ent.real_name().data(), pw.pw_gecos);
+	#endif
+}
