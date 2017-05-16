@@ -60,6 +60,13 @@ test(
 	)
 )
 
+ld_preload = ''
+if get_option('sanitize') == 'address'
+	ld_preload += 'LD_PRELOAD=libasan.so.3 libnss_wrapper.so'
+elif get_option('sanitize') == 'none'
+	ld_preload += 'LD_PRELOAD=libnss_wrapper.so'
+endif
+
 test(
 	'pwd-test',
 	executable(

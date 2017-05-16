@@ -1,0 +1,6 @@
+option(
+	'sanitize',
+	type: 'combo',
+	choices: ['address', 'none'],
+	value: 'none'
+)
