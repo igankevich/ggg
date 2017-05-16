@@ -5,7 +5,7 @@
 TEST(EntityTest, CopyTo) {
 	legion::group ent;
 	char fillchar = -1;
-	std::vector<char> buffer(ent.buffer_size() * 2, fillchar);
+	std::vector<char> buffer((ent.buffer_size() * 2) | alignof(size_t), fillchar);
 	struct ::group gr;
 	ent.copy_to(&gr, buffer.data());
 	EXPECT_EQ(fillchar, buffer[ent.buffer_size()]);
