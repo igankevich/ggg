@@ -69,11 +69,31 @@ test(
 		cpp_args: ['-DHIERARCHY_TEST']
 	),
 	env: [
-		'LD_PRELOAD=libnss_wrapper.so',
+		ld_preload,
 		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy_test.full_path(),
 		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
 		'NSS_WRAPPER_DEBUGLEVEL=3',
 		'NSS_WRAPPER_PASSWD=passwd',
-		'NSS_WRAPPER_GROUP=group'
+		'NSS_WRAPPER_GROUP=group',
+		'HIERARCHY_ROOT=h-pwd'
+	]
+)
+
+test(
+	'grp-test',
+	executable(
+		'grp-test',
+		sources: hierarchy_src + ['grp_test.cc'],
+		dependencies: [unistdx, gtest],
+		cpp_args: ['-DHIERARCHY_TEST']
+	),
+	env: [
+		ld_preload,
+		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy_test.full_path(),
+		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
+		'NSS_WRAPPER_DEBUGLEVEL=3',
+		'NSS_WRAPPER_PASSWD=passwd',
+		'NSS_WRAPPER_GROUP=group',
+		'HIERARCHY_ROOT=h-grp'
 	]
 )
