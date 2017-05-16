@@ -39,5 +39,5 @@ TEST(Grp, GroupList) {
 	int ngroups = 4096 / sizeof(::gid_t);
 	::gid_t groups[ngroups];
 	int ret = ::getgrouplist("testuser", 2000, groups, &ngroups);
-	ASSERT_EQ(0, ret);
+	ASSERT_EQ(1, ret);
 }
