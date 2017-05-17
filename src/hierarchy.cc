@@ -27,6 +27,7 @@ legion::Hierarchy::read() {
 		bool success = false;
 		while (!success) {
 			if (tree >> entry) {
+				std::clog << "entry=" << entry << std::endl;
 				try {
 					process_entry(entry, success);
 				} catch (...) {
@@ -144,19 +145,25 @@ void
 legion::Hierarchy::process_entry(const sys::pathentry& entry, bool& success) {
 	sys::canonical_path filepath(entry.getpath());
 	if (filepath.is_relative_to(_root)) {
-		if (entry.type() == sys::file_type::regular) {
-			std::ifstream in(filepath);
-			if (in.is_open()) {
-				entity ent;
-				while (in >> ent) {
-					add_entity(ent, filepath);
+		switch (sys::get_file_type(entry)) {
+			case sys::file_type::regular: {
+				std::ifstream in(filepath);
+				if (in.is_open()) {
+					entity ent;
+					while (in >> ent) {
+						add_entity(ent, filepath);
+					}
+					add_entity(entity(entry.name()), filepath.dirname());
+					success = true;
 				}
-				add_entity(entity(entry.name()), filepath.dirname());
-				success = true;
+				break;
 			}
-		} else if (entry.type() == sys::file_type::symbolic_link) {
-			entity ent(entry.name());
-			add_link(ent, sys::canonical_path(entry.dirname()));
+			case sys::file_type::symbolic_link: {
+				entity ent(entry.name());
+				add_link(ent, sys::canonical_path(entry.dirname()));
+				break;
+			}
+			default: break;
 		}
 	}
 }
