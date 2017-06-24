@@ -35,17 +35,18 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, gr)(
 	int* errnop
 ) {
 	nss_status ret = NSS_STATUS_NOTFOUND;
+	int err = 0;
 	if (first != last) {
 		if (buflen < first->buffer_size()) {
+			err = ERANGE;
 			ret = NSS_STATUS_TRYAGAIN;
-			*errnop = ERANGE;
 		} else {
 			first->copy_to(result, buffer);
 			++first;
 			ret = NSS_STATUS_SUCCESS;
 		}
 	}
-	*errnop = 0;
+	*errnop = err;
 	return ret;
 }
 
