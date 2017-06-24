@@ -2,6 +2,7 @@
 #include <sstream>
 #include <chrono>
 #include <vector>
+#include <cstring>
 #include "account.hh"
 
 class AccountTest: public ::testing::TestWithParam<const char*> {};
@@ -51,6 +52,7 @@ TEST_P(AccountTest, CopyTo) {
 	char fillchar = -1;
 	std::vector<char> buffer(acc.buffer_size() * 2, fillchar);
 	struct ::spwd spw;
+	std::memset(&spw, 0, sizeof(::spwd));
 	acc.copy_to(&spw, buffer.data());
 	EXPECT_EQ(fillchar, buffer[acc.buffer_size()]);
 	EXPECT_STREQ(acc.login().data(), spw.sp_namp);

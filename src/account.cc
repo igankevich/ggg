@@ -36,6 +36,23 @@ namespace {
 		return duration_cast<ggg::account::duration>(days(d));
 	}
 
+	void
+	set_days(long& lhs, ggg::account::time_point rhs) {
+		typedef ggg::account::time_point tp;
+		typedef ggg::account::duration dur;
+		if (rhs > tp(dur::zero())) {
+			lhs = to_days(rhs);
+		}
+	}
+
+	void
+	set_days(long& lhs, ggg::account::duration rhs) {
+		typedef ggg::account::duration dur;
+		if (rhs > dur::zero()) {
+			lhs = to_days(rhs);
+		}
+	}
+
 }
 
 namespace ggg {
@@ -92,12 +109,12 @@ void
 ggg::account::copy_to(struct ::spwd* lhs, char* buffer) const {
 	buffer = bits::bufcopy(&lhs->sp_namp, buffer, this->_login.data());
 	buffer = bits::bufcopy(&lhs->sp_pwdp, buffer, this->_password.data());
-	lhs->sp_lstchg = to_days(this->_lastchange);
-	lhs->sp_min = to_days(this->_minchange);
-	lhs->sp_max = to_days(this->_maxchange);
-	lhs->sp_warn = to_days(this->_warnchange);
-	lhs->sp_inact = to_days(this->_maxinactive);
-	lhs->sp_expire = to_days(this->_expire);
+	set_days(lhs->sp_lstchg, this->_lastchange);
+	set_days(lhs->sp_min, this->_minchange);
+	set_days(lhs->sp_max, this->_maxchange);
+	set_days(lhs->sp_warn, this->_warnchange);
+	set_days(lhs->sp_inact, this->_maxinactive);
+	set_days(lhs->sp_expire, this->_expire);
 }
 
 std::ostream&
