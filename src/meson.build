@@ -8,12 +8,15 @@ hierarchy_src = [
 	'hierarchy.cc',
 	'entity.cc',
 	'group.cc',
+	'account.cc',
 	'hierarchy_instance.cc'
 ]
 
+nss_src = ['pwd.cc', 'grp.cc', 'shadow.cc']
+
 libnss_hierarchy = shared_library(
 	'nss_' + module_name,
-	sources: hierarchy_src + ['pwd.cc', 'grp.cc'],
+	sources: hierarchy_src + nss_src,
 	dependencies: [unistdx],
 	version: '2',
 	install: true
@@ -21,7 +24,7 @@ libnss_hierarchy = shared_library(
 
 libnss_hierarchy_test = shared_library(
 	'nss_' + module_name + '_test',
-	sources: hierarchy_src + ['pwd.cc', 'grp.cc'],
+	sources: hierarchy_src + nss_src,
 	dependencies: [unistdx],
 	version: '2',
 	cpp_args: ['-DHIERARCHY_TEST']
