@@ -14,7 +14,7 @@
 
 #include "field_iterator.hh"
 
-namespace legion {
+namespace ggg {
 
 	template<class Container, class Pred>
 	inline void

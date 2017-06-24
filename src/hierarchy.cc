@@ -2,7 +2,7 @@
 #include <stdx/iterator.hh>
 
 std::ostream&
-legion::operator<<(std::ostream& out, const entity_pair& rhs) {
+ggg::operator<<(std::ostream& out, const entity_pair& rhs) {
 	out << rhs.first << ':';
 	std::copy(
 		rhs.second.begin(),
@@ -13,7 +13,7 @@ legion::operator<<(std::ostream& out, const entity_pair& rhs) {
 }
 
 void
-legion::Hierarchy::read() {
+ggg::Hierarchy::read() {
 	sys::dirtree tree;
 	try {
 		tree.open(_root);
@@ -48,7 +48,7 @@ legion::Hierarchy::read() {
 }
 
 std::ostream&
-legion::operator<<(std::ostream& out, const Hierarchy& rhs) {
+ggg::operator<<(std::ostream& out, const Hierarchy& rhs) {
 	out << "\nUsers:\n";
 	std::copy(
 		rhs._entities.begin(),
@@ -65,7 +65,7 @@ legion::operator<<(std::ostream& out, const Hierarchy& rhs) {
 }
 
 void
-legion::Hierarchy::process_links() {
+ggg::Hierarchy::process_links() {
 	size_t num_insertions = 1;
 	size_t old_size = 0;
 	for (size_t i=0; i<_maxlinks && num_insertions > 0; ++i) {
@@ -89,7 +89,7 @@ legion::Hierarchy::process_links() {
 }
 
 void
-legion::Hierarchy::filter_entities() {
+ggg::Hierarchy::filter_entities() {
 	erase_if(
 		_entities,
 		[this] (const entity_pair& rhs) {
@@ -99,7 +99,7 @@ legion::Hierarchy::filter_entities() {
 }
 
 void
-legion::Hierarchy::generate_groups() {
+ggg::Hierarchy::generate_groups() {
 	// add groups
 	for (const entity_pair& pair : _entities) {
 		const entity& ent = pair.first;
@@ -118,7 +118,7 @@ legion::Hierarchy::generate_groups() {
 }
 
 void
-legion::Hierarchy::filter_groups() {
+ggg::Hierarchy::filter_groups() {
 	// remove empty groups
 	erase_if(
 		_groups,
@@ -142,7 +142,7 @@ legion::Hierarchy::filter_groups() {
 }
 
 void
-legion::Hierarchy::process_entry(const sys::pathentry& entry, bool& success) {
+ggg::Hierarchy::process_entry(const sys::pathentry& entry, bool& success) {
 	sys::canonical_path filepath(entry.getpath());
 	if (filepath.is_relative_to(_root)) {
 		switch (sys::get_file_type(entry)) {
@@ -169,7 +169,7 @@ legion::Hierarchy::process_entry(const sys::pathentry& entry, bool& success) {
 }
 
 void
-legion::Hierarchy::add(
+ggg::Hierarchy::add(
 	map_type& container,
 	const entity& ent,
 	const sys::canonical_path& filepath

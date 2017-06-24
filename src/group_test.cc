@@ -3,7 +3,7 @@
 #include <vector>
 
 TEST(EntityTest, CopyTo) {
-	legion::group ent;
+	ggg::group ent;
 	char fillchar = -1;
 	std::vector<char> buffer((ent.buffer_size() * 2) | 64, fillchar);
 	struct ::group gr;

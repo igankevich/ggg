@@ -1,12 +1,12 @@
-#ifndef HIERARCHY_INSTANCE_HH
-#define HIERARCHY_INSTANCE_HH
+#ifndef GGG_INSTANCE_HH
+#define GGG_INSTANCE_HH
 
 #include "hierarchy.hh"
 
-namespace legion {
+namespace ggg {
 
 	extern Hierarchy hierarchy [[gnu::visibility("hidden")]];
 
 }
 
-#endif // HIERARCHY_INSTANCE_HH
+#endif // GGG_INSTANCE_HH

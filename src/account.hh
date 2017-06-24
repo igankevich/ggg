@@ -7,7 +7,7 @@
 #include <ostream>
 #include <istream>
 
-namespace legion {
+namespace ggg {
 
 	class account {
 

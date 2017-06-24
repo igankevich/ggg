@@ -8,7 +8,7 @@ class EntityTest: public ::testing::TestWithParam<const char*> {};
 TEST_P(EntityTest, Read) {
 	std::stringstream tmp;
 	tmp << GetParam();
-	legion::entity ent;
+	ggg::entity ent;
 	tmp >> ent;
 	EXPECT_TRUE(tmp.good());
 	EXPECT_EQ("root", ent.name());
@@ -40,7 +40,7 @@ INSTANTIATE_TEST_CASE_P(
 TEST(EntityTest, ReadWrite) {
 	std::stringstream tmp, tmp2;
 	tmp << "root:x:12:34:root:/root:/bin/bash";
-	legion::entity ent, ent2;
+	ggg::entity ent, ent2;
 	tmp >> ent;
 	tmp2 << ent;
 	EXPECT_EQ(tmp2.str(), tmp.str());
@@ -50,7 +50,7 @@ TEST(EntityTest, WriteEmpty) {
 	std::stringstream orig;
 	orig << "::" << sys::uid_type(-1) << ':' << sys::gid_type(-1) << "::/:/bin/sh";
 	std::stringstream tmp;
-	legion::entity ent;
+	ggg::entity ent;
 	tmp << ent;
 	EXPECT_EQ(orig.str(), tmp.str());
 }
@@ -60,7 +60,7 @@ class BareEntityTest: public ::testing::TestWithParam<const char*> {};
 TEST_P(BareEntityTest, Read) {
 	std::stringstream tmp;
 	tmp << GetParam();
-	legion::entity ent;
+	ggg::entity ent;
 	tmp >> ent;
 	EXPECT_TRUE(tmp.good());
 	EXPECT_EQ("root", ent.name());
@@ -86,7 +86,7 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(EntityTest, ReadEntryWithMissingFields) {
 	std::stringstream tmp;
 	tmp << "mygroup:x:2000:2000:mygroup name:/home:\n";
-	legion::entity ent;
+	ggg::entity ent;
 	tmp >> ent;
 	EXPECT_TRUE(tmp.good());
 	EXPECT_EQ("mygroup", ent.name());
@@ -98,7 +98,7 @@ TEST_P(EntityTest, ReadEntryWithMissingFields) {
 }
 
 TEST(EntityTest, CopyTo) {
-	legion::entity ent;
+	ggg::entity ent;
 	char fillchar = -1;
 	std::vector<char> buffer(ent.buffer_size() * 2, fillchar);
 	struct ::passwd pw;

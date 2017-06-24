@@ -27,7 +27,7 @@ libnss_hierarchy_test = shared_library(
 	sources: hierarchy_src + nss_src,
 	dependencies: [unistdx],
 	version: '2',
-	cpp_args: ['-DHIERARCHY_TEST']
+	cpp_args: ['-DGGG_TEST']
 )
 
 executable(
@@ -85,7 +85,7 @@ test(
 		'pwd-test',
 		sources: hierarchy_src + ['pwd_test.cc'],
 		dependencies: [unistdx, gtest],
-		cpp_args: ['-DHIERARCHY_TEST']
+		cpp_args: ['-DGGG_TEST']
 	),
 	env: [
 		ld_preload,
@@ -94,7 +94,7 @@ test(
 		'NSS_WRAPPER_DEBUGLEVEL=3',
 		'NSS_WRAPPER_PASSWD=passwd',
 		'NSS_WRAPPER_GROUP=group',
-		'HIERARCHY_ROOT=h-pwd'
+		'GGG_ROOT=h-pwd'
 	]
 )
 
@@ -104,7 +104,7 @@ test(
 		'grp-test',
 		sources: hierarchy_src + ['grp_test.cc'],
 		dependencies: [unistdx, gtest],
-		cpp_args: ['-DHIERARCHY_TEST']
+		cpp_args: ['-DGGG_TEST']
 	),
 	env: [
 		ld_preload,
@@ -113,6 +113,6 @@ test(
 		'NSS_WRAPPER_DEBUGLEVEL=3',
 		'NSS_WRAPPER_PASSWD=passwd',
 		'NSS_WRAPPER_GROUP=group',
-		'HIERARCHY_ROOT=h-grp'
+		'GGG_ROOT=h-grp'
 	]
 )

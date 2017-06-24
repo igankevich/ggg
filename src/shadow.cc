@@ -15,7 +15,7 @@ namespace {
 		if (accfile.is_open()) {
 			accfile.clear();
 		}
-		accfile.open(sys::path(HIERARCHY_ROOT, "shadow"));
+		accfile.open(sys::path(GGG_ROOT, "shadow"));
 	}
 
 }
@@ -45,7 +45,7 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, sp)(
 ) {
 	enum nss_status ret = NSS_STATUS_NOTFOUND;
 	int err = 0;
-	legion::account acc;
+	ggg::account acc;
 	if (accfile >> acc) {
 		if (buflen < acc.buffer_size()) {
 			err = ERANGE;
@@ -68,11 +68,11 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, sp, nam)(
 ) {
 	enum nss_status ret;
 	ensure_open();
-	std::istream_iterator<legion::account> last;
+	std::istream_iterator<ggg::account> last;
 	auto it = std::find_if(
-		std::istream_iterator<legion::account>(accfile),
+		std::istream_iterator<ggg::account>(accfile),
 		last,
-		[name] (const legion::account& rhs) {
+		[name] (const ggg::account& rhs) {
 			return rhs.login().compare(name) == 0;
 		}
 	);

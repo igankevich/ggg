@@ -14,7 +14,7 @@ namespace {
 }
 
 std::ostream&
-legion::operator<<(std::ostream& out, const group& rhs) {
+ggg::operator<<(std::ostream& out, const group& rhs) {
 	out << rhs.name() << ':'
 		<< rhs.password() << ':'
 		<< rhs.id() << ':';
@@ -27,7 +27,7 @@ legion::operator<<(std::ostream& out, const group& rhs) {
 }
 
 size_t
-legion::group::buffer_size() const noexcept {
+ggg::group::buffer_size() const noexcept {
 	size_t sum = 0;
 	sum += this->_name.size();
 	sum += this->_password.size();
@@ -39,7 +39,7 @@ legion::group::buffer_size() const noexcept {
 }
 
 void
-legion::group::copy_to(struct ::group* lhs, char* buffer) const {
+ggg::group::copy_to(struct ::group* lhs, char* buffer) const {
 	buffer = bits::bufcopy(&lhs->gr_name, buffer, this->_name.data());
 	buffer = bits::bufcopy(&lhs->gr_passwd, buffer, this->_password.data());
 	// copy each group member

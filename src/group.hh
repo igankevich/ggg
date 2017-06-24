@@ -10,7 +10,7 @@ namespace sys {
 	typedef ::gid_t gid_type;
 }
 
-namespace legion {
+namespace ggg {
 
 	class group {
 

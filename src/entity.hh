@@ -6,7 +6,7 @@
 #include <sys/dir.hh>
 #include <sys/users.hh>
 
-namespace legion {
+namespace ggg {
 
 	class entity {
 

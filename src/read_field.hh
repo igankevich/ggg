@@ -1,7 +1,7 @@
 #ifndef READ_FIELD_HH
 #define READ_FIELD_HH
 
-namespace legion {
+namespace ggg {
 
 	namespace bits {
 

@@ -3,11 +3,11 @@
 
 #define MODULE_NAME @module_name@
 
-#if defined(HIERARCHY_TEST)
+#if defined(GGG_TEST)
 #include <cstdlib>
-#define HIERARCHY_ROOT std::getenv("HIERARCHY_ROOT")
+#define GGG_ROOT std::getenv("GGG_ROOT")
 #else
-#define HIERARCHY_ROOT "@root_directory@"
+#define GGG_ROOT "@root_directory@"
 #endif
 
 #endif // CONFIG_HH

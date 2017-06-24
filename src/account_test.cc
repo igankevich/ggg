@@ -7,13 +7,13 @@
 class AccountTest: public ::testing::TestWithParam<const char*> {};
 
 long
-to_days(legion::account::time_point tp) {
+to_days(ggg::account::time_point tp) {
 	using namespace std::chrono;
 	return time_point_cast<hours>(tp).time_since_epoch().count() / 24L;
 }
 
 long
-to_days(legion::account::duration d) {
+to_days(ggg::account::duration d) {
 	using namespace std::chrono;
 	return duration_cast<hours>(d).count() / 24L;
 }
@@ -21,7 +21,7 @@ to_days(legion::account::duration d) {
 TEST_P(AccountTest, Read) {
 	std::stringstream tmp;
 	tmp << GetParam();
-	legion::account acc;
+	ggg::account acc;
 	tmp >> acc;
 	EXPECT_TRUE(tmp.good());
 	EXPECT_EQ("bin", acc.login());
@@ -37,7 +37,7 @@ TEST_P(AccountTest, Read) {
 TEST_P(AccountTest, ReadWrite) {
 	std::stringstream tmp, tmp2;
 	tmp << "bin:*:16605::99999:7:::";
-	legion::account acc;
+	ggg::account acc;
 	tmp >> acc;
 	tmp2 << acc;
 	EXPECT_EQ(tmp2.str(), tmp.str());
@@ -46,7 +46,7 @@ TEST_P(AccountTest, ReadWrite) {
 TEST_P(AccountTest, CopyTo) {
 	std::stringstream tmp;
 	tmp << GetParam();
-	legion::account acc;
+	ggg::account acc;
 	tmp >> acc;
 	char fillchar = -1;
 	std::vector<char> buffer(acc.buffer_size() * 2, fillchar);

@@ -7,41 +7,41 @@
 namespace {
 
 	typedef std::chrono::duration<long,std::ratio<60*60*24,1>> days;
-	typedef std::chrono::time_point<legion::account::clock_type,days>
+	typedef std::chrono::time_point<ggg::account::clock_type,days>
 		time_point_in_days;
 
 	long
-	to_days(legion::account::time_point tp) {
+	to_days(ggg::account::time_point tp) {
 		using namespace std::chrono;
 		return time_point_cast<days>(tp).time_since_epoch().count();
 	}
 
 	long
-	to_days(legion::account::duration d) {
+	to_days(ggg::account::duration d) {
 		using namespace std::chrono;
 		return duration_cast<days>(d).count();
 	}
 
-	legion::account::time_point
+	ggg::account::time_point
 	time_point_from_days(long d) {
 		using namespace std::chrono;
-		return time_point_cast<legion::account::duration>(
+		return time_point_cast<ggg::account::duration>(
 			time_point_in_days(days(d))
 		);
 	}
 
-	legion::account::duration
+	ggg::account::duration
 	duration_from_days(long d) {
 		using namespace std::chrono;
-		return duration_cast<legion::account::duration>(days(d));
+		return duration_cast<ggg::account::duration>(days(d));
 	}
 
 }
 
-namespace legion {
+namespace ggg {
 
 	std::ostream&
-	operator<<(std::ostream& out, const legion::account::time_point& rhs) {
+	operator<<(std::ostream& out, const ggg::account::time_point& rhs) {
 		long d = to_days(rhs);
 		if (d > 0) {
 			out << d;
@@ -50,7 +50,7 @@ namespace legion {
 	}
 
 	std::ostream&
-	operator<<(std::ostream& out, const legion::account::duration& rhs) {
+	operator<<(std::ostream& out, const ggg::account::duration& rhs) {
 		long d = to_days(rhs);
 		if (d > 0) {
 			out << d;
@@ -59,7 +59,7 @@ namespace legion {
 	}
 
 	std::istream&
-	operator>>(std::istream& in, legion::account::time_point& rhs) {
+	operator>>(std::istream& in, ggg::account::time_point& rhs) {
 		long val;
 		if (!(in >> val)) {
 			val = 0L;
@@ -70,7 +70,7 @@ namespace legion {
 	}
 
 	std::istream&
-	operator>>(std::istream& in, legion::account::duration& rhs) {
+	operator>>(std::istream& in, ggg::account::duration& rhs) {
 		long val;
 		if (!(in >> val)) {
 			val = 0L;
@@ -83,13 +83,13 @@ namespace legion {
 }
 
 size_t
-legion::account::buffer_size() const noexcept {
+ggg::account::buffer_size() const noexcept {
 	return this->_login.size() + 1
 		+ this->_password.size() + 1;
 }
 
 void
-legion::account::copy_to(struct ::spwd* lhs, char* buffer) const {
+ggg::account::copy_to(struct ::spwd* lhs, char* buffer) const {
 	buffer = bits::bufcopy(&lhs->sp_namp, buffer, this->_login.data());
 	buffer = bits::bufcopy(&lhs->sp_pwdp, buffer, this->_password.data());
 	lhs->sp_lstchg = to_days(this->_lastchange);
@@ -101,7 +101,7 @@ legion::account::copy_to(struct ::spwd* lhs, char* buffer) const {
 }
 
 std::ostream&
-legion::operator<<(std::ostream& out, const account& rhs) {
+ggg::operator<<(std::ostream& out, const account& rhs) {
 	return out
 		<< rhs._login << ':'
 		<< rhs._password << ':'
@@ -114,7 +114,7 @@ legion::operator<<(std::ostream& out, const account& rhs) {
 }
 
 std::istream&
-legion::operator>>(std::istream& in, account& rhs) {
+ggg::operator>>(std::istream& in, account& rhs) {
 	std::istream::sentry s(in);
 	if (s) {
 		bits::read_all_fields(

@@ -1,7 +1,7 @@
 #ifndef BUFCOPY_HH
 #define BUFCOPY_HH
 
-namespace legion {
+namespace ggg {
 
 	namespace bits {
 

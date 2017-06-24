@@ -6,7 +6,7 @@
 
 void
 init_root(const char* script) {
-	ASSERT_EQ(0, run_script(script, HIERARCHY_ROOT));
+	ASSERT_EQ(0, run_script(script, GGG_ROOT));
 }
 
 class PwdTest: public ::testing::Test {};

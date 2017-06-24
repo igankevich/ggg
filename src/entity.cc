@@ -3,7 +3,7 @@
 #include "bufcopy.hh"
 
 std::istream&
-legion::operator>>(std::istream& in, entity& rhs) {
+ggg::operator>>(std::istream& in, entity& rhs) {
 	std::istream::sentry s(in);
 	if (s) {
 		bits::read_all_fields(
@@ -24,7 +24,7 @@ legion::operator>>(std::istream& in, entity& rhs) {
 }
 
 std::ostream&
-legion::operator<<(std::ostream& out, const entity& rhs) {
+ggg::operator<<(std::ostream& out, const entity& rhs) {
 	return out
 		<< rhs.name() << ':'
 		<< rhs.password() << ':'
@@ -36,7 +36,7 @@ legion::operator<<(std::ostream& out, const entity& rhs) {
 }
 
 size_t
-legion::entity::buffer_size() const noexcept {
+ggg::entity::buffer_size() const noexcept {
 	return this->_name.size() + 1
 		+ this->_password.size() + 1
 		+ this->_realname.size() + 1
@@ -45,7 +45,7 @@ legion::entity::buffer_size() const noexcept {
 }
 
 void
-legion::entity::copy_to(struct ::passwd* lhs, char* buffer) const {
+ggg::entity::copy_to(struct ::passwd* lhs, char* buffer) const {
 	buffer = bits::bufcopy(&lhs->pw_name, buffer, this->_name.data());
 	buffer = bits::bufcopy(&lhs->pw_passwd, buffer, this->_password.data());
 	#ifdef __linux__

@@ -19,7 +19,7 @@ protected:
 		EXPECT_EQ(uid, result->id());
 	}
 
-	legion::Hierarchy hr;
+	ggg::Hierarchy hr;
 };
 
 class HierarchyParamTest:

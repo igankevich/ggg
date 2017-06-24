@@ -1,5 +1,5 @@
 project(
-	'nss-hierarchy',
+	'ggg',
 	'cpp',
 	version: '0.1',
 	meson_version: '>=0.31',
@@ -11,7 +11,7 @@ if not cpp.has_header('nss.h')
 	error('Header nss.h is required to compile the module.')
 endif
 
-module_name = 'hierarchy'
+module_name = 'ggg'
 config = configuration_data()
 config.set('module_name', module_name)
 config.set('root_directory', '/etc/' + module_name)

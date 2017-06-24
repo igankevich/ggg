@@ -1,7 +1,7 @@
 #include "hierarchy_instance.hh"
 #include "config.hh"
 
-namespace legion {
+namespace ggg {
 
 	Hierarchy hierarchy{};
 
