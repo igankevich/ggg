@@ -1,11 +1,14 @@
 #include "account.hh"
 #include "bufcopy.hh"
+#include "read_field.hh"
 
 #include <ratio>
 
 namespace {
 
 	typedef std::chrono::duration<long,std::ratio<60*60*24,1>> days;
+	typedef std::chrono::time_point<legion::account::clock_type,days>
+		time_point_in_days;
 
 	long
 	to_days(legion::account::time_point tp) {
@@ -19,19 +22,63 @@ namespace {
 		return duration_cast<days>(d).count();
 	}
 
-	class if_positive {
-		long _value;
-	public:
-		explicit if_positive(long v): _value(v) {}
-		friend std::ostream&
-		operator<<(std::ostream& out, const if_positive& rhs) {
-			if (rhs._value > 0) {
-				out << rhs._value;
-			}
-			return out;
-		}
-	};
+	legion::account::time_point
+	time_point_from_days(long d) {
+		using namespace std::chrono;
+		return time_point_cast<legion::account::duration>(
+			time_point_in_days(days(d))
+		);
+	}
 
+	legion::account::duration
+	duration_from_days(long d) {
+		using namespace std::chrono;
+		return duration_cast<legion::account::duration>(days(d));
+	}
+
+}
+
+namespace legion {
+
+	std::ostream&
+	operator<<(std::ostream& out, const legion::account::time_point& rhs) {
+		long d = to_days(rhs);
+		if (d > 0) {
+			out << d;
+		}
+		return out;
+	}
+
+	std::ostream&
+	operator<<(std::ostream& out, const legion::account::duration& rhs) {
+		long d = to_days(rhs);
+		if (d > 0) {
+			out << d;
+		}
+		return out;
+	}
+
+	std::istream&
+	operator>>(std::istream& in, legion::account::time_point& rhs) {
+		long val;
+		if (!(in >> val)) {
+			val = 0L;
+			in.clear();
+		}
+		rhs = time_point_from_days(val);
+		return in;
+	}
+
+	std::istream&
+	operator>>(std::istream& in, legion::account::duration& rhs) {
+		long val;
+		if (!(in >> val)) {
+			val = 0L;
+			in.clear();
+		}
+		rhs = duration_from_days(val);
+		return in;
+	}
 
 }
 
@@ -58,10 +105,32 @@ legion::operator<<(std::ostream& out, const account& rhs) {
 	return out
 		<< rhs._login << ':'
 		<< rhs._password << ':'
-		<< if_positive(to_days(rhs._lastchange)) << ':'
-		<< if_positive(to_days(rhs._minchange)) << ':'
-		<< if_positive(to_days(rhs._maxchange)) << ':'
-		<< if_positive(to_days(rhs._warnchange)) << ':'
-		<< if_positive(to_days(rhs._maxinactive)) << ':'
-		<< if_positive(to_days(rhs._expire));
+		<< rhs._lastchange << ':'
+		<< rhs._minchange << ':'
+		<< rhs._maxchange << ':'
+		<< rhs._warnchange << ':'
+		<< rhs._maxinactive << ':'
+		<< rhs._expire << ':' /* ignore sp_flag */;
+}
+
+std::istream&
+legion::operator>>(std::istream& in, account& rhs) {
+	std::istream::sentry s(in);
+	if (s) {
+		bits::read_all_fields(
+			in, ':',
+			rhs._login,
+			rhs._password,
+			rhs._lastchange,
+			rhs._minchange,
+			rhs._maxchange,
+			rhs._warnchange,
+			rhs._maxinactive,
+			rhs._expire
+		);
+		if (in.eof()) {
+			in.clear();
+		}
+	}
+	return in;
 }

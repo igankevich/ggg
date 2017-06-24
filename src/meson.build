@@ -55,6 +55,15 @@ test(
 )
 
 test(
+	'account-test',
+	executable(
+		'account-test',
+		sources: hierarchy_src + ['account_test.cc'],
+		dependencies: [unistdx, gtest]
+	)
+)
+
+test(
 	'hierarchy-test',
 	executable(
 		'hierarchy-test',
