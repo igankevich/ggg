@@ -27,7 +27,6 @@ ggg::Hierarchy::read() {
 		bool success = false;
 		while (!success) {
 			if (tree >> entry) {
-				std::clog << "entry=" << entry << std::endl;
 				try {
 					process_entry(entry, success);
 				} catch (...) {

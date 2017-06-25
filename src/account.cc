@@ -151,3 +151,39 @@ ggg::operator>>(std::istream& in, account& rhs) {
 	}
 	return in;
 }
+
+ggg::account::string
+ggg::account::password_id() const {
+	string result;
+	if (!this->_password.empty() && this->_password.front() == '$') {
+		const size_t first = this->_password.find('$', 1);
+		const size_t pos = 1;
+		const size_t len = first - pos;
+		result = this->_password.substr(pos, len);
+	}
+	return result;
+}
+
+ggg::account::string
+ggg::account::password_salt(bool with_id) const {
+	string result;
+	if (!this->_password.empty() && this->_password.front() == '$') {
+		const size_t first = this->_password.find('$', 1);
+		if (first != string::npos) {
+			const size_t last = this->_password.find('$', first+1);
+			if (last != string::npos) {
+				size_t pos;
+				size_t len;
+				if (with_id) {
+					pos = 0;
+					len = last + 1;
+				} else {
+					pos = first + 1;
+					len = last - pos;
+				}
+				result = this->_password.substr(pos, len);
+			}
+		}
+	}
+	return result;
+}

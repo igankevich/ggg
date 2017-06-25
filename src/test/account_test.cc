@@ -75,3 +75,13 @@ INSTANTIATE_TEST_CASE_P(
 		"bin:*:16605:0:99999:7:0:0:0"
 	)
 );
+
+TEST(AccountTest, GetIdAndSalt) {
+	std::stringstream tmp;
+	tmp << "dummy:$6$hMYBE0GG$8itF7ypR3LKiGDObpuVK.4T2.y6Y0GEVZXbvrguwI933HADWIfG999USIBvPwZto18yv5Fp5o46GG9JvUO9sU.:::::::";
+	ggg::account acc;
+	tmp >> acc;
+	EXPECT_EQ("6", acc.password_id());
+	EXPECT_EQ("hMYBE0GG", acc.password_salt());
+	EXPECT_EQ("$6$hMYBE0GG$", acc.password_prefix());
+}

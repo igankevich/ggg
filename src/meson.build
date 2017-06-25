@@ -29,3 +29,4 @@ libnss_hierarchy = shared_library(
 inc = include_directories('.')
 
 subdir('test')
+subdir('pam')

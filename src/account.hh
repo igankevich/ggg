@@ -12,13 +12,14 @@ namespace ggg {
 	class account {
 
 	public:
+		typedef std::string string;
 		typedef std::chrono::system_clock clock_type;
 		typedef clock_type::time_point time_point;
 		typedef clock_type::duration duration;
 
 	private:
-		std::string _login;
-		std::string _password;
+		string _login;
+		string _password;
 		time_point _lastchange = time_point(duration::zero());
 		duration _minchange = duration::zero();
 		duration _maxchange = duration::zero();
@@ -54,14 +55,27 @@ namespace ggg {
 		friend std::istream&
 		operator>>(std::istream& in, account& rhs);
 
-		inline const std::string
+		inline const string&
 		login() const noexcept {
 			return this->_login;
 		}
 
-		inline const std::string
+		inline const string&
 		password() const noexcept {
 			return this->_password;
+		}
+
+		string
+		password_id() const;
+
+		inline string
+		password_salt() const {
+			return password_salt(false);
+		}
+
+		inline string
+		password_prefix() const {
+			return password_salt(true);
 		}
 
 		inline time_point
@@ -94,6 +108,9 @@ namespace ggg {
 			return this->_expire;
 		}
 
+	private:
+		string
+		password_salt(bool with_id) const;
 	};
 
 	std::ostream&
