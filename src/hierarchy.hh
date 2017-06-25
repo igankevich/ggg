@@ -5,7 +5,6 @@
 #include "group.hh"
 
 #include <algorithm>
-#include <iostream>
 #include <iterator>
 #include <set>
 #include <map>

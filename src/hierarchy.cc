@@ -1,5 +1,6 @@
 #include "hierarchy.hh"
 #include <stdx/iterator.hh>
+#include <iostream>
 
 std::ostream&
 ggg::operator<<(std::ostream& out, const entity_pair& rhs) {
