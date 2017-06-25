@@ -1,5 +1,5 @@
 #include "group.hh"
-#include "bufcopy.hh"
+#include "bits/bufcopy.hh"
 #include <stdx/iterator.hh>
 #include <cstring>
 #include <memory>

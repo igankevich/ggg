@@ -4,15 +4,19 @@ configure_file(
 	configuration: config
 )
 
-hierarchy_src = [
+hierarchy_src = files([
 	'hierarchy.cc',
 	'entity.cc',
 	'group.cc',
 	'account.cc',
 	'hierarchy_instance.cc'
-]
+])
 
-nss_src = ['pwd.cc', 'grp.cc', 'shadow.cc']
+nss_src = files([
+	'pwd.cc',
+	'grp.cc',
+	'shadow.cc'
+])
 
 libnss_hierarchy = shared_library(
 	'nss_' + module_name,
@@ -22,97 +26,6 @@ libnss_hierarchy = shared_library(
 	install: true
 )
 
-libnss_hierarchy_test = shared_library(
-	'nss_' + module_name + '_test',
-	sources: hierarchy_src + nss_src,
-	dependencies: [unistdx],
-	version: '2',
-	cpp_args: ['-DGGG_TEST']
-)
+inc = include_directories('.')
 
-executable(
-	module_name,
-	sources: hierarchy_src + ['hierarchy_main.cc'],
-	dependencies: [unistdx]
-)
-
-test(
-	'entity-test',
-	executable(
-		'entity-test',
-		sources: hierarchy_src + ['entity_test.cc'],
-		dependencies: [unistdx, gtest]
-	)
-)
-
-test(
-	'group-test',
-	executable(
-		'group-test',
-		sources: hierarchy_src + ['group_test.cc'],
-		dependencies: [unistdx, gtest]
-	)
-)
-
-test(
-	'account-test',
-	executable(
-		'account-test',
-		sources: hierarchy_src + ['account_test.cc'],
-		dependencies: [unistdx, gtest]
-	)
-)
-
-test(
-	'hierarchy-test',
-	executable(
-		'hierarchy-test',
-		sources: hierarchy_src + ['hierarchy_test.cc'],
-		dependencies: [unistdx, gtest]
-	)
-)
-
-ld_preload = ''
-if get_option('sanitize') == 'address'
-	ld_preload += 'LD_PRELOAD=libasan.so.3 libnss_wrapper.so'
-elif get_option('sanitize') == 'none'
-	ld_preload += 'LD_PRELOAD=libnss_wrapper.so'
-endif
-
-test(
-	'pwd-test',
-	executable(
-		'pwd-test',
-		sources: hierarchy_src + ['pwd_test.cc'],
-		dependencies: [unistdx, gtest],
-		cpp_args: ['-DGGG_TEST']
-	),
-	env: [
-		ld_preload,
-		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy_test.full_path(),
-		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
-		'NSS_WRAPPER_DEBUGLEVEL=3',
-		'NSS_WRAPPER_PASSWD=passwd',
-		'NSS_WRAPPER_GROUP=group',
-		'GGG_ROOT=h-pwd'
-	]
-)
-
-test(
-	'grp-test',
-	executable(
-		'grp-test',
-		sources: hierarchy_src + ['grp_test.cc'],
-		dependencies: [unistdx, gtest],
-		cpp_args: ['-DGGG_TEST']
-	),
-	env: [
-		ld_preload,
-		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy_test.full_path(),
-		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
-		'NSS_WRAPPER_DEBUGLEVEL=3',
-		'NSS_WRAPPER_PASSWD=passwd',
-		'NSS_WRAPPER_GROUP=group',
-		'GGG_ROOT=h-grp'
-	]
-)
+subdir('test')

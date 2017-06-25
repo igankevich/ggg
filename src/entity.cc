@@ -1,6 +1,6 @@
 #include "entity.hh"
-#include "read_field.hh"
-#include "bufcopy.hh"
+#include "bits/read_field.hh"
+#include "bits/bufcopy.hh"
 
 std::istream&
 ggg::operator>>(std::istream& in, entity& rhs) {
