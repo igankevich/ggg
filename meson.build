@@ -3,7 +3,7 @@ project(
 	'cpp',
 	version: '0.1',
 	meson_version: '>=0.31',
-	default_options: ['cpp_std=c++11']
+	default_options: ['cpp_std=c++14']
 )
 
 cpp = meson.get_compiler('cpp')
@@ -15,6 +15,8 @@ module_name = 'ggg'
 config = configuration_data()
 config.set('module_name', module_name)
 config.set('root_directory', '/etc/' + module_name)
+config.set('shadow_file', '/etc/' + module_name + '/shadow')
+config.set('shadow_file_new', '/etc/' + module_name + '/.shadow.new')
 
 unistdx = dependency('unistdx')
 gtest = dependency('gtest', main: true)

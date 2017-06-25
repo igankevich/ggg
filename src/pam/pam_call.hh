@@ -7,7 +7,7 @@ namespace ggg {
 
 	namespace pam {
 
-		pam_errc
+		inline pam_errc
 		call(int ret) {
 			if (ret != int(pam_errc::success)) {
 				throw std::system_error(ret, pam_category);
@@ -15,12 +15,13 @@ namespace ggg {
 			return pam_errc(ret);
 		}
 
-		void
-		throw_pam_error(pam_errc err) {
-			throw std::system_error(int(err), pam_category);
-		}
-
 	}
+
+	inline void
+	throw_pam_error(pam_errc err) {
+		throw std::system_error(int(err), pam_category);
+	}
+
 
 }
 

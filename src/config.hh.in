@@ -9,5 +9,7 @@
 #else
 #define GGG_ROOT "@root_directory@"
 #endif
+#define GGG_SHADOW "@shadow_file@"
+#define GGG_SHADOW_NEW "@shadow_file_new@"
 
 #endif // CONFIG_HH

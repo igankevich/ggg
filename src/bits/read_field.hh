@@ -17,6 +17,8 @@ namespace ggg {
 		template<class T>
 		char
 		read_field(std::istream& in, T& rhs, char sep) {
+			std::ios::iostate old = in.exceptions();
+			in.exceptions(std::ios::goodbit);
 			in >> rhs;
 			// tolerate empty and erroneous CSV fields
 			if (in.rdstate() & std::ios::failbit) {
@@ -28,6 +30,7 @@ namespace ggg {
 			if (in.rdstate() & (std::ios::eofbit | std::ios::failbit)) {
 				in.clear();
 			}
+			in.exceptions(old);
 			in >> std::ws;
 			char ch = 0;
 			if (in.get(ch) && ch != sep) {
@@ -45,9 +48,13 @@ namespace ggg {
 			return ch;
 		}
 
-		template<>
+		template<class Ch, class Tr, class Alloc>
 		inline char
-		read_field<std::string>(std::istream& in, std::string& rhs, char sep) {
+		read_field(
+			std::istream& in,
+			std::basic_string<Ch,Tr,Alloc>& rhs,
+			char sep
+		) {
 			char ch = 0;
 			std::istream::sentry s(in);
 			rhs.clear();

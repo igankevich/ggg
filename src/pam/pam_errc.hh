@@ -1,6 +1,7 @@
 #ifndef PAM_PAM_ERRC_HH
 #define PAM_PAM_ERRC_HH
 
+#include <security/pam_modules.h>
 #include <system_error>
 
 namespace ggg {
@@ -18,7 +19,7 @@ namespace ggg {
 		authinfo_unavail=PAM_AUTHINFO_UNAVAIL,
 		unknown_user=PAM_USER_UNKNOWN,
 		max_tries=PAM_MAXTRIES,
-		new_authtok_reqd=PAM_NEW_AUTHTOK_REQD,
+		new_password_required=PAM_NEW_AUTHTOK_REQD,
 		account_expired=PAM_ACCT_EXPIRED,
 		session_error=PAM_SESSION_ERR,
 		no_credentials=PAM_CRED_UNAVAIL,
@@ -49,6 +50,7 @@ namespace std {
 
 	inline error_condition
 	make_error_condition(ggg::pam_errc e) noexcept;
+
 }
 
 #endif // PAM_PAM_ERRC_HH

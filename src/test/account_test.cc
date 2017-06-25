@@ -7,6 +7,8 @@
 
 class AccountTest: public ::testing::TestWithParam<const char*> {};
 
+class Account2Test: public ::testing::Test {};
+
 long
 to_days(ggg::account::time_point tp) {
 	using namespace std::chrono;
@@ -76,11 +78,13 @@ INSTANTIATE_TEST_CASE_P(
 	)
 );
 
-TEST(AccountTest, GetIdAndSalt) {
+TEST(Account2, GetIdAndSalt) {
+	std::clog << "__func__=" << __func__ << std::endl;
 	std::stringstream tmp;
 	tmp << "dummy:$6$hMYBE0GG$8itF7ypR3LKiGDObpuVK.4T2.y6Y0GEVZXbvrguwI933HADWIfG999USIBvPwZto18yv5Fp5o46GG9JvUO9sU.:::::::";
 	ggg::account acc;
 	tmp >> acc;
+	std::clog << "acc=" << acc << std::endl;
 	EXPECT_EQ("6", acc.password_id());
 	EXPECT_EQ("hMYBE0GG", acc.password_salt());
 	EXPECT_EQ("$6$hMYBE0GG$", acc.password_prefix());

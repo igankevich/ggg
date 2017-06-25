@@ -2,17 +2,17 @@
 #define ACCOUNT_HH
 
 #include <shadow.h>
-#include <string>
 #include <chrono>
 #include <ostream>
 #include <istream>
+#include "secure_string.hh"
 
 namespace ggg {
 
 	class account {
 
 	public:
-		typedef std::string string;
+		typedef secure_string string;
 		typedef std::chrono::system_clock clock_type;
 		typedef clock_type::time_point time_point;
 		typedef clock_type::duration duration;
@@ -35,12 +35,20 @@ namespace ggg {
 
 		inline void
 		make_expired() noexcept {
-			this->_expire = clock_type::now();
+			this->_expire = clock_type::now() - duration(duration::rep(1));
 		}
 
 		inline bool
-		is_expired() const noexcept {
-			return this->_expire < clock_type::now();
+		has_expired() const noexcept {
+			return this->_expire > time_point(duration::zero())
+				&& this->_expire < clock_type::now();
+		}
+
+		inline bool
+		password_has_expired() const noexcept {
+			return this->_lastchange > time_point(duration::zero())
+				&& this->_maxchange > duration::zero()
+				&& this->_lastchange + this->_maxchange < clock_type::now();
 		}
 
 		size_t
@@ -54,6 +62,16 @@ namespace ggg {
 
 		friend std::istream&
 		operator>>(std::istream& in, account& rhs);
+
+		inline bool
+		operator==(const account& rhs) const noexcept {
+			return this->_login == rhs._login;
+		}
+
+		inline bool
+		operator!=(const account& rhs) const noexcept {
+			return !operator==(rhs);
+		}
 
 		inline const string&
 		login() const noexcept {
@@ -76,6 +94,11 @@ namespace ggg {
 		inline string
 		password_prefix() const {
 			return password_salt(true);
+		}
+
+		inline void
+		set_password(const string& rhs) {
+			this->_password = rhs;
 		}
 
 		inline time_point

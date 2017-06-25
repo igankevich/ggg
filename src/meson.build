@@ -9,7 +9,8 @@ hierarchy_src = files([
 	'entity.cc',
 	'group.cc',
 	'account.cc',
-	'hierarchy_instance.cc'
+	'hierarchy_instance.cc',
+	'shred.cc'
 ])
 
 nss_src = files([

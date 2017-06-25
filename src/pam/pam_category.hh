@@ -15,7 +15,7 @@ namespace ggg {
 			return "pam";
 		}
 
-		std::error_condition
+		inline std::error_condition
 		default_error_condition(int ev) const noexcept override;
 
 		bool
@@ -29,7 +29,9 @@ namespace ggg {
 			return ::pam_strerror(nullptr, ev);
 		}
 
-	} pam_category;
+	};
+
+	extern pam_error_catergory pam_category;
 
 }
 
@@ -44,7 +46,7 @@ namespace std {
 }
 
 namespace ggg {
-	std::error_condition
+	inline std::error_condition
 	pam_error_catergory::default_error_condition(int ev) const noexcept {
 		return std::error_condition(ev, ggg::pam_category);
 	}
