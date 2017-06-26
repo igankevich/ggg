@@ -120,14 +120,14 @@ ggg::account::copy_to(struct ::spwd* lhs, char* buffer) const {
 std::ostream&
 ggg::operator<<(std::ostream& out, const account& rhs) {
 	return out
-		<< rhs._login << ':'
-		<< rhs._password << ':'
-		<< rhs._lastchange << ':'
-		<< rhs._minchange << ':'
-		<< rhs._maxchange << ':'
-		<< rhs._warnchange << ':'
-		<< rhs._maxinactive << ':'
-		<< rhs._expire << ':' /* ignore sp_flag */;
+		<< rhs._login << account::delimiter
+		<< rhs._password << account::delimiter
+		<< rhs._lastchange << account::delimiter
+		<< rhs._minchange << account::delimiter
+		<< rhs._maxchange << account::delimiter
+		<< rhs._warnchange << account::delimiter
+		<< rhs._maxinactive << account::delimiter
+		<< rhs._expire << account::delimiter /* ignore sp_flag */;
 }
 
 std::istream&
@@ -135,7 +135,7 @@ ggg::operator>>(std::istream& in, account& rhs) {
 	std::istream::sentry s(in);
 	if (s) {
 		bits::read_all_fields(
-			in, ':',
+			in, account::delimiter,
 			rhs._login,
 			rhs._password,
 			rhs._lastchange,
@@ -186,4 +186,10 @@ ggg::account::password_salt(bool with_id) const {
 		}
 	}
 	return result;
+}
+
+void
+ggg::account::set_password(const string& rhs) {
+	this->_password = rhs;
+	this->_lastchange = clock_type::now();
 }

@@ -17,6 +17,8 @@ namespace ggg {
 		typedef clock_type::time_point time_point;
 		typedef clock_type::duration duration;
 
+		static constexpr const char delimiter = ':';
+
 	private:
 		string _login;
 		string _password;
@@ -96,10 +98,8 @@ namespace ggg {
 			return password_salt(true);
 		}
 
-		inline void
-		set_password(const string& rhs) {
-			this->_password = rhs;
-		}
+		void
+		set_password(const string& rhs);
 
 		inline time_point
 		last_change() const noexcept {

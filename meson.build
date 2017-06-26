@@ -17,6 +17,7 @@ config.set('module_name', module_name)
 config.set('root_directory', '/etc/' + module_name)
 config.set('shadow_file', '/etc/' + module_name + '/shadow')
 config.set('shadow_file_new', '/etc/' + module_name + '/.shadow.new')
+config.set('salt_length', '16')
 
 unistdx = dependency('unistdx')
 gtest = dependency('gtest', main: true)

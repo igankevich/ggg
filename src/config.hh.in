@@ -11,5 +11,6 @@
 #endif
 #define GGG_SHADOW "@shadow_file@"
 #define GGG_SHADOW_NEW "@shadow_file_new@"
+#define GGG_SALT_LENGTH @salt_length@
 
 #endif // CONFIG_HH

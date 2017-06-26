@@ -1,7 +1,9 @@
 #include <unistd.h>
 #include <crypt.h>
 #include <fstream>
+#include <random>
 #include <memory>
+#include <locale>
 #include <cstdio>
 #include <iterator>
 #include <algorithm>
@@ -14,6 +16,7 @@
 #include "account.hh"
 #include "secure_string.hh"
 #include "pam_handle.hh"
+#include <stdx/random.hh>
 
 using ggg::throw_pam_error;
 using ggg::pam_errc;
@@ -21,6 +24,8 @@ using ggg::pam::call;
 using ggg::pam_category;
 
 namespace {
+
+	static constexpr const char separator = '$';
 
 	ggg::account
 	find_account(const char* user) {
@@ -75,10 +80,6 @@ namespace {
 			);
 			shadow.close();
 			shadow_new.close();
-			int ret = std::rename(GGG_SHADOW_NEW, GGG_SHADOW);
-			if (ret == -1) {
-				throw std::system_error(errno, std::system_category());
-			}
 		} catch (...) {
 			if (!shadow.eof()) {
 				throw std::system_error(
@@ -87,15 +88,19 @@ namespace {
 				);
 			}
 		}
+		int ret = std::rename(GGG_SHADOW_NEW, GGG_SHADOW);
+		if (ret == -1) {
+			throw std::system_error(errno, std::system_category());
+		}
 	}
 
 	ggg::secure_string
-	encrypt(const char* password, const ggg::account& acc) {
+	encrypt(const char* password, const ggg::secure_string& prefix) {
 		ggg::secure_allocator<crypt_data> alloc;
 		std::unique_ptr<crypt_data> pdata(alloc.allocate(1));
 		char* encrypted = ::crypt_r(
 			password,
-			acc.password_prefix().data(),
+			prefix.data(),
 			pdata.get()
 		);
 		if (!encrypted) {
@@ -108,8 +113,39 @@ namespace {
 	}
 
 	void
+	generate_salt(ggg::secure_string& salt) {
+		std::random_device prng;
+		stdx::adapt_engine<std::random_device,char> engine(prng);
+		int i = 0;
+		while (i < GGG_SALT_LENGTH) {
+			const char ch = engine();
+			if (std::isgraph(ch)
+				&& ch != separator
+				&& ch != ggg::account::delimiter)
+			{
+				salt.push_back(ch);
+				++i;
+			}
+		}
+	}
+
+	ggg::secure_string
+	generate_prefix(const ggg::account& acc) {
+		ggg::secure_string prefix;
+		prefix.push_back(separator);
+		prefix.append(acc.password_id());
+		prefix.push_back(separator);
+		generate_salt(prefix);
+		prefix.push_back(separator);
+		return prefix;
+	}
+
+	void
 	check_password(const char* password, const ggg::account& acc) {
-		ggg::secure_string encrypted = encrypt(password, acc);
+		ggg::secure_string encrypted = encrypt(
+			password,
+			acc.password_prefix()
+		);
 		if (acc.password() != encrypted) {
 			throw_pam_error(pam_errc::permission_denied);
 		}
@@ -192,7 +228,10 @@ int pam_sm_chauthtok(
 				check_password(old, acc);
 			}
 			const char* new_password = pamh.get_password(pam_errc::authtok_error);
-			ggg::secure_string encrypted = encrypt(new_password, acc);
+			ggg::secure_string encrypted = encrypt(
+				new_password,
+				generate_prefix(acc)
+			);
 			acc.set_password(encrypted);
 			write_account(acc);
 			ret = pam_errc::success;
