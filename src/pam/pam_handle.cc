@@ -92,9 +92,24 @@ ggg::pam_handle::handle_error(const std::system_error& e, pam_errc def) const {
 }
 
 void
-ggg::pam_handle::parse_args(int argc, const char** argv) const {
+ggg::pam_handle::parse_args(int argc, const char** argv) {
 	for (int i=0; i<argc; ++i) {
-		if (!(std::strcmp(argv[i], "debug") == 0)) {
+		std::string arg(argv[i]);
+		if (arg == "debug") {
+			this->_debug = true;
+		} else if (arg.find("rounds=") == 0) {
+			const int tmp = std::atoi(arg.data() + 7);
+			if (tmp > 0) {
+				this->_nrounds = tmp;
+			} else {
+				pam_syslog(
+					*this,
+					LOG_ERR,
+					"bad module argument \"%s\"",
+					argv[i]
+				);
+			}
+		} else {
 			pam_syslog(
 				*this,
 				LOG_ERR,

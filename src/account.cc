@@ -3,6 +3,7 @@
 #include "bits/read_field.hh"
 
 #include <ratio>
+#include "secure_sstream.hh"
 
 namespace {
 
@@ -145,6 +146,7 @@ ggg::operator>>(std::istream& in, account& rhs) {
 			rhs._maxinactive,
 			rhs._expire
 		);
+		rhs.parse_password();
 		if (in.eof()) {
 			in.clear();
 		}
@@ -152,40 +154,62 @@ ggg::operator>>(std::istream& in, account& rhs) {
 	return in;
 }
 
-ggg::account::string
-ggg::account::password_id() const {
-	string result;
-	if (!this->_password.empty() && this->_password.front() == '$') {
-		const size_t first = this->_password.find('$', 1);
-		const size_t pos = 1;
-		const size_t len = first - pos;
-		result = this->_password.substr(pos, len);
+void
+ggg::account::parse_password() {
+	if (this->_password.empty() || this->_password.front() != separator) {
+		return;
 	}
-	return result;
+	typedef string::traits_type traits_type;
+	const char rounds[] = "rounds=";
+	const ptrdiff_t rounds_size = sizeof(rounds) - 1;
+	const char* first = this->_password.data() + 1;
+	const char* last = this->_password.data() + this->_password.size();
+	const char* prev = first;
+	size_t field_no = 0;
+	while (first != last) {
+		if (*first == separator) {
+			if (field_no == 0) {
+				this->_id.assign(prev, first);
+			} else if (0 == traits_type::compare(
+				rounds,
+				prev,
+				std::min(rounds_size, first-prev)
+			)) {
+				secure_stringstream str(string(prev+rounds_size, first));
+				str >> this->_nrounds;
+			} else {
+				this->_salt.assign(prev, first);
+			}
+			++field_no;
+			prev = first;
+			++prev;
+		}
+		++first;
+	}
 }
 
 ggg::account::string
-ggg::account::password_salt(bool with_id) const {
-	string result;
-	if (!this->_password.empty() && this->_password.front() == '$') {
-		const size_t first = this->_password.find('$', 1);
-		if (first != string::npos) {
-			const size_t last = this->_password.find('$', first+1);
-			if (last != string::npos) {
-				size_t pos;
-				size_t len;
-				if (with_id) {
-					pos = 0;
-					len = last + 1;
-				} else {
-					pos = first + 1;
-					len = last - pos;
-				}
-				result = this->_password.substr(pos, len);
-			}
-		}
+ggg::account::password_prefix() const {
+	return password_prefix(this->_salt, this->_id, this->_nrounds);
+}
+
+ggg::account::string
+ggg::account::password_prefix(
+	const string& new_salt,
+	const string& new_id,
+	unsigned int nrounds
+) const {
+	secure_stringstream s;
+	s.put(separator);
+	s << new_id;
+	s.put(separator);
+	if (nrounds > 0) {
+		s << "rounds=" << nrounds;
+		s.put(separator);
 	}
-	return result;
+	s << new_salt;
+	s.put(separator);
+	return s.str();
 }
 
 void

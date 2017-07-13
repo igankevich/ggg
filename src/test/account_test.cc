@@ -79,7 +79,6 @@ INSTANTIATE_TEST_CASE_P(
 );
 
 TEST(Account2, GetIdAndSalt) {
-	std::clog << "__func__=" << __func__ << std::endl;
 	std::stringstream tmp;
 	tmp << "dummy:$6$hMYBE0GG$8itF7ypR3LKiGDObpuVK.4T2.y6Y0GEVZXbvrguwI933HADWIfG999USIBvPwZto18yv5Fp5o46GG9JvUO9sU.:::::::";
 	ggg::account acc;
@@ -88,4 +87,16 @@ TEST(Account2, GetIdAndSalt) {
 	EXPECT_EQ("6", acc.password_id());
 	EXPECT_EQ("hMYBE0GG", acc.password_salt());
 	EXPECT_EQ("$6$hMYBE0GG$", acc.password_prefix());
+}
+
+TEST(Account2, GetRounds) {
+	std::stringstream tmp;
+	tmp << "dummy:$6$rounds=1000$hMYBE0GG$8itF7ypR3LKiGDObpuVK.4T2.y6Y0GEVZXbvrguwI933HADWIfG999USIBvPwZto18yv5Fp5o46GG9JvUO9sU.:::::::";
+	ggg::account acc;
+	tmp >> acc;
+	std::clog << "acc=" << acc << std::endl;
+	EXPECT_EQ("6", acc.password_id());
+	EXPECT_EQ("hMYBE0GG", acc.password_salt());
+	EXPECT_EQ("$6$rounds=1000$hMYBE0GG$", acc.password_prefix());
+	EXPECT_EQ(1000, acc.num_rounds());
 }

@@ -15,12 +15,29 @@ namespace ggg {
 	class pam_handle {
 
 		::pam_handle_t* _pamh;
+		bool _debug = false;
+		unsigned int _nrounds = 0;
 
 	public:
 		inline explicit
 		pam_handle(::pam_handle_t* pamh):
 		_pamh(pamh)
 		{}
+
+		inline unsigned int
+		num_rounds() const noexcept {
+			return this->_nrounds;
+		}
+
+		inline bool
+		debug() const noexcept {
+			return this->_debug;
+		}
+
+		inline secure_string
+		password_id() const noexcept {
+			return "6";
+		}
 
 		const char*
 		get_user() const;
@@ -41,7 +58,7 @@ namespace ggg {
 		handle_error(const std::system_error& e, pam_errc def) const;
 
 		void
-		parse_args(int argc, const char** argv) const;
+		parse_args(int argc, const char** argv);
 
 		inline operator ::pam_handle_t*() noexcept {
 			return _pamh;

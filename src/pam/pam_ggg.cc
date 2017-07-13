@@ -15,6 +15,7 @@
 #include "hierarchy_instance.hh"
 #include "account.hh"
 #include "secure_string.hh"
+#include "secure_sstream.hh"
 #include "pam_handle.hh"
 #include <stdx/random.hh>
 
@@ -24,8 +25,6 @@ using ggg::pam::call;
 using ggg::pam_category;
 
 namespace {
-
-	static constexpr const char separator = '$';
 
 	ggg::account
 	find_account(const char* user) {
@@ -112,32 +111,23 @@ namespace {
 		return result;
 	}
 
-	void
-	generate_salt(ggg::secure_string& salt) {
+	ggg::secure_string
+	generate_salt() {
+		ggg::secure_string salt;
 		std::random_device prng;
 		stdx::adapt_engine<std::random_device,char> engine(prng);
 		int i = 0;
 		while (i < GGG_SALT_LENGTH) {
 			const char ch = engine();
 			if (std::isgraph(ch)
-				&& ch != separator
+				&& ch != ggg::account::separator
 				&& ch != ggg::account::delimiter)
 			{
 				salt.push_back(ch);
 				++i;
 			}
 		}
-	}
-
-	ggg::secure_string
-	generate_prefix(const ggg::account& acc) {
-		ggg::secure_string prefix;
-		prefix.push_back(separator);
-		prefix.append(acc.password_id());
-		prefix.push_back(separator);
-		generate_salt(prefix);
-		prefix.push_back(separator);
-		return prefix;
+		return salt;
 	}
 
 	void
@@ -230,7 +220,11 @@ int pam_sm_chauthtok(
 			const char* new_password = pamh.get_password(pam_errc::authtok_error);
 			ggg::secure_string encrypted = encrypt(
 				new_password,
-				generate_prefix(acc)
+				acc.password_prefix(
+					generate_salt(),
+					pamh.password_id(),
+					pamh.num_rounds()
+				)
 			);
 			acc.set_password(encrypted);
 			write_account(acc);

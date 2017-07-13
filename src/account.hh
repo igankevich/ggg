@@ -18,9 +18,13 @@ namespace ggg {
 		typedef clock_type::duration duration;
 
 		static constexpr const char delimiter = ':';
+		static constexpr const char separator = '$';
 
 	private:
 		string _login;
+		string _id;
+		string _salt;
+		unsigned int _nrounds = 0;
 		string _password;
 		time_point _lastchange = time_point(duration::zero());
 		duration _minchange = duration::zero();
@@ -85,18 +89,30 @@ namespace ggg {
 			return this->_password;
 		}
 
+		inline const string&
+		password_id() const noexcept {
+			return this->_id;
+		}
+
+		inline unsigned int
+		num_rounds() const noexcept {
+			return this->_nrounds;
+		}
+
+		inline const string&
+		password_salt() const noexcept {
+			return this->_salt;
+		}
+
 		string
-		password_id() const;
+		password_prefix() const;
 
-		inline string
-		password_salt() const {
-			return password_salt(false);
-		}
-
-		inline string
-		password_prefix() const {
-			return password_salt(true);
-		}
+		string
+		password_prefix(
+			const string& new_salt,
+			const string& new_id,
+			unsigned int nrounds
+		) const;
 
 		void
 		set_password(const string& rhs);
@@ -132,8 +148,9 @@ namespace ggg {
 		}
 
 	private:
-		string
-		password_salt(bool with_id) const;
+		void
+		parse_password();
+
 	};
 
 	std::ostream&
