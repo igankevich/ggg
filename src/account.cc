@@ -128,7 +128,8 @@ ggg::operator<<(std::ostream& out, const account& rhs) {
 		<< rhs._maxchange << account::delimiter
 		<< rhs._warnchange << account::delimiter
 		<< rhs._maxinactive << account::delimiter
-		<< rhs._expire << account::delimiter /* ignore sp_flag */;
+		<< rhs._expire << account::delimiter
+		<< rhs._flags;
 }
 
 std::istream&
@@ -144,7 +145,8 @@ ggg::operator>>(std::istream& in, account& rhs) {
 			rhs._maxchange,
 			rhs._warnchange,
 			rhs._maxinactive,
-			rhs._expire
+			rhs._expire,
+			rhs._flags
 		);
 		rhs.parse_password();
 		if (in.eof()) {

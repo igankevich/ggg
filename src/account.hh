@@ -5,7 +5,9 @@
 #include <chrono>
 #include <ostream>
 #include <istream>
+#include <type_traits>
 #include "secure_string.hh"
+#include "account_flags.hh"
 
 namespace ggg {
 
@@ -32,6 +34,7 @@ namespace ggg {
 		duration _warnchange = duration::zero();
 		duration _maxinactive = duration::zero();
 		time_point _expire = time_point(duration::zero());
+		account_flags _flags = account_flags(0);
 
 	public:
 		account() = default;
@@ -117,6 +120,11 @@ namespace ggg {
 		void
 		set_password(const string& rhs);
 
+		inline bool
+		has_password() const noexcept {
+			return !this->_password.empty();
+		}
+
 		inline time_point
 		last_change() const noexcept {
 			return this->_lastchange;
@@ -145,6 +153,26 @@ namespace ggg {
 		inline time_point
 		expire() const noexcept {
 			return this->_expire;
+		}
+
+		inline account_flags
+		flags() const noexcept {
+			return this->_flags;
+		}
+
+		inline void
+		setf(account_flags rhs) noexcept {
+			this->_flags = this->_flags | rhs;
+		}
+
+		inline void
+		unsetf(account_flags rhs) noexcept {
+			this->_flags = this->_flags & (~rhs);
+		}
+
+		inline void
+		clear(account_flags rhs) noexcept {
+			this->_flags = rhs;
 		}
 
 	private:

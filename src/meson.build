@@ -9,6 +9,7 @@ hierarchy_src = files([
 	'entity.cc',
 	'group.cc',
 	'account.cc',
+	'account_flags.cc',
 	'hierarchy_instance.cc',
 	'shred.cc'
 ])
