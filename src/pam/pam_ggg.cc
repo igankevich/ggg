@@ -26,18 +26,39 @@ using ggg::pam_category;
 
 namespace {
 
+	typedef std::chrono::duration<long,std::ratio<60*60*24,1>> days;
+
+	ggg::account::clock_type::rep
+	num_days_since_expired(
+		const ggg::account* acc,
+		ggg::account::time_point now
+	) {
+		using std::chrono::duration_cast;
+		return duration_cast<days>(now - acc->expire()).count();
+	}
+
+	ggg::account::clock_type::rep
+	num_days_since_password_expired(
+		const ggg::account* acc,
+		ggg::account::time_point now
+	) {
+		using std::chrono::duration_cast;
+		const auto tmp = now - acc->last_change() - acc->max_change();
+		return duration_cast<days>(tmp).count();
+	}
+
 	ggg::account
-	find_account(const char* user) {
+	find_account(const char* user, ggg::pam_handle& pamh) {
 		typedef std::istream_iterator<ggg::account> iterator;
 		std::ifstream shadow;
 		iterator it, last;
 		try {
-			shadow.exceptions(std::ios::badbit | std::ios::failbit);
+			shadow.exceptions(std::ios::badbit);
 			shadow.open(GGG_SHADOW);
 			it = std::find_if(
 				std::istream_iterator<ggg::account>(shadow),
 				last,
-				[user] (const ggg::account& rhs) {
+				[user,&pamh] (const ggg::account& rhs) {
 					return rhs.login().compare(user) == 0;
 				}
 			);
@@ -65,9 +86,9 @@ namespace {
 		std::ifstream shadow;
 		std::ofstream shadow_new;
 		try {
-			shadow.exceptions(std::ios::badbit | std::ios::failbit);
+			shadow.exceptions(std::ios::badbit);
 			shadow.open(GGG_SHADOW);
-			shadow_new.exceptions(std::ios::badbit | std::ios::failbit);
+			shadow_new.exceptions(std::ios::badbit);
 			shadow_new.open(GGG_SHADOW_NEW);
 			std::transform(
 				in_iterator(shadow),
@@ -154,10 +175,12 @@ int pam_sm_authenticate(
 	pamh.parse_args(argc, argv);
 	try {
 		const char* user = pamh.get_user();
+		pamh.debug("authenticating user \"%s\"", user);
 		const char* password = pamh.get_password(pam_errc::auth_error);
-		ggg::account acc = find_account(user);
+		ggg::account acc = find_account(user, pamh);
 		check_password(password, acc);
 		pamh.set_account(acc);
+		pamh.debug("successfully authenticated user \"%s\"", user);
 		ret = pam_errc::success;
 	} catch (const std::system_error& e) {
 		ret = pamh.handle_error(e, pam_errc::auth_error);
@@ -179,12 +202,24 @@ int pam_sm_acct_mgmt(
 	pamh.parse_args(argc, argv);
 	try {
 		const ggg::account* acc = pamh.get_account();
-		if (acc->has_expired()) {
+		const char* user = acc->login().c_str();
+		pamh.debug("checking account \"%s\"", user);
+		const ggg::account::time_point now = ggg::account::clock_type::now();
+		if (acc->has_expired(now)) {
+			pamh.debug(
+				"account \"%s\" has expired %ld day(s) ago",
+				user, num_days_since_expired(acc, now)
+			);
 			throw_pam_error(pam_errc::account_expired);
 		}
-		if (acc->password_has_expired()) {
+		if (acc->password_has_expired(now)) {
+			pamh.debug(
+				"password of account \"%s\" has expired %ld day(s) ago",
+				user, num_days_since_password_expired(acc, now)
+			);
 			throw_pam_error(pam_errc::new_password_required);
 		}
+		pamh.debug("account \"%s\" is valid", user);
 		ret = pam_errc::success;
 	} catch (const std::system_error& e) {
 		ret = pamh.handle_error(e, pam_errc::authtok_error);
@@ -209,8 +244,23 @@ int pam_sm_chauthtok(
 	} else if (flags & PAM_UPDATE_AUTHTOK) {
 		try {
 			const char* user = pamh.get_user();
-			ggg::account acc = find_account(user);
-			if ((flags & PAM_CHANGE_EXPIRED_AUTHTOK) && !acc.has_expired()) {
+			pamh.debug("changing password for user \"%s\"", user);
+			ggg::account acc = find_account(user, pamh);
+			const ggg::account::time_point now = ggg::account::clock_type::now();
+			if (acc.has_expired(now)) {
+				pamh.debug(
+					"account \"%s\" has expired %ld day(s) ago",
+					user, num_days_since_expired(&acc, now)
+				);
+				throw_pam_error(pam_errc::account_expired);
+			}
+			if ((flags & PAM_CHANGE_EXPIRED_AUTHTOK) &&
+				!acc.password_has_expired(now))
+			{
+				pamh.debug(
+					"trying to change expired password for user \"%s\","
+					" but the password has not expired yet!", user
+				);
 				throw_pam_error(pam_errc::authtok_error);
 			}
 			if (::getuid() != 0) {
@@ -228,6 +278,7 @@ int pam_sm_chauthtok(
 			);
 			acc.set_password(encrypted);
 			write_account(acc);
+			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = pam_errc::success;
 		} catch (const std::system_error& e) {
 			ret = pamh.handle_error(e, pam_errc::authtok_error);

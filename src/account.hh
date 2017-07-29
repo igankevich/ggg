@@ -48,16 +48,30 @@ namespace ggg {
 		}
 
 		inline bool
+		has_expiration_date() const noexcept {
+			return this->_expire > time_point(duration::zero());
+		}
+
+		inline bool
 		has_expired() const noexcept {
-			return this->_expire > time_point(duration::zero())
-				&& this->_expire < clock_type::now();
+			return this->has_expired(clock_type::now());
+		}
+
+		inline bool
+		has_expired(time_point now) const noexcept {
+			return this->has_expiration_date() && this->_expire < now;
 		}
 
 		inline bool
 		password_has_expired() const noexcept {
+			return this->password_has_expired(clock_type::now());
+		}
+
+		inline bool
+		password_has_expired(time_point now) const noexcept {
 			return this->_lastchange > time_point(duration::zero())
 				&& this->_maxchange > duration::zero()
-				&& this->_lastchange + this->_maxchange < clock_type::now();
+				&& this->_lastchange < now - this->_maxchange;
 		}
 
 		size_t

@@ -57,6 +57,14 @@ namespace ggg {
 		pam_errc
 		handle_error(const std::system_error& e, pam_errc def) const;
 
+		template <class ... Args>
+		inline void
+		debug(const char* msg, Args ... args) {
+			if (this->_debug) {
+				pam_syslog(this->_pamh, LOG_DEBUG, msg, args...);
+			}
+		}
+
 		void
 		parse_args(int argc, const char** argv);
 
@@ -75,7 +83,7 @@ namespace ggg {
 			return reinterpret_cast<const void**>(ptr);
 		}
 
-		void
+		inline void
 		print_error(const std::system_error& e) const {
 			pam_syslog(
 				*this,
