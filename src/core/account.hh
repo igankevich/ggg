@@ -6,7 +6,7 @@
 #include <ostream>
 #include <istream>
 #include <type_traits>
-#include "secure_string.hh"
+#include "sec/secure_string.hh"
 #include "account_flags.hh"
 
 namespace ggg {

@@ -13,9 +13,9 @@
 #include <security/pam_ext.h>
 #include "config.hh"
 #include "hierarchy_instance.hh"
-#include "account.hh"
-#include "secure_string.hh"
-#include "secure_sstream.hh"
+#include "core/account.hh"
+#include "sec/secure_string.hh"
+#include "sec/secure_sstream.hh"
 #include "pam_handle.hh"
 #include <stdx/random.hh>
 

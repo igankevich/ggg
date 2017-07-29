@@ -5,7 +5,7 @@
 #include <security/pam_modules.h>
 #include <security/pam_ext.h>
 #include "pam_call.hh"
-#include "account.hh"
+#include "core/account.hh"
 
 namespace ggg {
 

@@ -3,7 +3,7 @@
 #include "bits/read_field.hh"
 
 #include <ratio>
-#include "secure_sstream.hh"
+#include "sec/secure_sstream.hh"
 
 namespace {
 

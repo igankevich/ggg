@@ -1,4 +1,4 @@
-#include "group.hh"
+#include "core/group.hh"
 #include <gtest/gtest.h>
 #include <vector>
 

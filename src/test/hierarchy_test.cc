@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "hierarchy.hh"
+#include "core/hierarchy.hh"
 #include "string_replace.hh"
 
 class HierarchyTest: public ::testing::Test {

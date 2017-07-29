@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "config.hh"
 #include <pwd.h>
-#include "pw_guard.hh"
+#include "nss/pw_guard.hh"
 #include "string_replace.hh"
 
 void

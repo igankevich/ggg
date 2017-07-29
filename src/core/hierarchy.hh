@@ -11,7 +11,7 @@
 #include <deque>
 #include <sstream>
 
-#include "field_iterator.hh"
+#include "bits/field_iterator.hh"
 
 namespace ggg {
 

@@ -1,5 +1,5 @@
-#include "entity.hh"
-#include "group.hh"
+#include "core/entity.hh"
+#include "core/group.hh"
 #include <gtest/gtest.h>
 #include <vector>
 

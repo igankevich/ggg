@@ -3,7 +3,8 @@ pam_src = files([
 	'pam_handle.cc',
 	'pam_category.cc'
 ])
-libnss_hierarchy = shared_library(
+
+shared_library(
 	'pam_' + module_name,
 	sources: pam_src + hierarchy_src,
 	include_directories: inc,

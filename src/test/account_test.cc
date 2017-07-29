@@ -3,7 +3,7 @@
 #include <chrono>
 #include <vector>
 #include <cstring>
-#include "account.hh"
+#include "core/account.hh"
 
 class AccountTest: public ::testing::TestWithParam<const char*> {};
 

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "config.hh"
 #include <grp.h>
-#include "gr_guard.hh"
+#include "nss/gr_guard.hh"
 #include "string_replace.hh"
 
 void
