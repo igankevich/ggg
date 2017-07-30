@@ -18,6 +18,7 @@
 #include "sec/secure_sstream.hh"
 #include "pam_handle.hh"
 #include <stdx/random.hh>
+#include "control/account_control.hh"
 
 using ggg::throw_pam_error;
 using ggg::pam_errc;
@@ -47,71 +48,15 @@ namespace {
 		return duration_cast<days>(tmp).count();
 	}
 
+	ggg::Account_control all_accounts;
+
 	ggg::account
-	find_account(const char* user, ggg::pam_handle& pamh) {
-		typedef std::istream_iterator<ggg::account> iterator;
-		std::ifstream shadow;
-		iterator it, last;
-		try {
-			shadow.exceptions(std::ios::badbit);
-			shadow.open(GGG_SHADOW);
-			it = std::find_if(
-				std::istream_iterator<ggg::account>(shadow),
-				last,
-				[user,&pamh] (const ggg::account& rhs) {
-					return rhs.login().compare(user) == 0;
-				}
-			);
-			shadow.close();
-		} catch (...) {
-			if (shadow.eof()) {
-				throw_pam_error(ggg::pam_errc::unknown_user);
-			} else {
-				throw std::system_error(
-					std::io_errc::stream,
-					"unable to read accounts from " GGG_SHADOW
-				);
-			}
-		}
-		if (it == last) {
+	find_account(const char* user) {
+		ggg::Account_control::iterator result = all_accounts.find(user);
+		if (result == all_accounts.end()) {
 			throw_pam_error(ggg::pam_errc::unknown_user);
 		}
-		return *it;
-	}
-
-	void
-	write_account(const ggg::account& acc) {
-		typedef std::istream_iterator<ggg::account> in_iterator;
-		typedef std::ostream_iterator<ggg::account> out_iterator;
-		std::ifstream shadow;
-		std::ofstream shadow_new;
-		try {
-			shadow.exceptions(std::ios::badbit);
-			shadow.open(GGG_SHADOW);
-			shadow_new.exceptions(std::ios::badbit);
-			shadow_new.open(GGG_SHADOW_NEW);
-			std::transform(
-				in_iterator(shadow),
-				in_iterator(),
-				out_iterator(shadow_new, "\n"),
-				[&acc] (const ggg::account& rhs) {
-					return rhs.login() == acc.login() ? acc : rhs;
-				}
-			);
-			shadow.close();
-			shadow_new.close();
-		} catch (...) {
-			if (!shadow.eof()) {
-				throw std::system_error(
-					std::io_errc::stream,
-					"unable to write accounts to " GGG_SHADOW
-				);
-			}
-		}
-		int ret = std::rename(GGG_SHADOW_NEW, GGG_SHADOW);
-		if (ret == -1) {
-			throw std::system_error(errno, std::system_category());
-		}
+		return *result;
 	}
 
 	ggg::secure_string
@@ -177,7 +122,7 @@ int pam_sm_authenticate(
 		const char* user = pamh.get_user();
 		pamh.debug("authenticating user \"%s\"", user);
 		const char* password = pamh.get_password(pam_errc::auth_error);
-		ggg::account acc = find_account(user, pamh);
+		ggg::account acc = find_account(user);
 		check_password(password, acc);
 		pamh.set_account(acc);
 		pamh.debug("successfully authenticated user \"%s\"", user);
@@ -245,7 +190,7 @@ int pam_sm_chauthtok(
 		try {
 			const char* user = pamh.get_user();
 			pamh.debug("changing password for user \"%s\"", user);
-			ggg::account acc = find_account(user, pamh);
+			ggg::account acc = find_account(user);
 			const ggg::account::time_point now = ggg::account::clock_type::now();
 			if (acc.has_expired(now)) {
 				pamh.debug(
@@ -277,7 +222,7 @@ int pam_sm_chauthtok(
 				)
 			);
 			acc.set_password(encrypted);
-			write_account(acc);
+			all_accounts.update(acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = pam_errc::success;
 		} catch (const std::system_error& e) {

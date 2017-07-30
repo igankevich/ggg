@@ -12,6 +12,7 @@ inc = include_directories('.')
 
 subdir('core')
 subdir('sec')
+subdir('control')
 subdir('nss')
 subdir('pam')
 subdir('ggg')

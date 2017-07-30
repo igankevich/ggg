@@ -7,10 +7,11 @@
 
 namespace {
 
-	std::array<const char*,3> command_names{{
+	std::array<const char*,4> command_names{{
 		"add",
 		"delete",
-		"help"
+		"help",
+		"version"
 	}};
 
 }
@@ -29,7 +30,7 @@ ggg::command_from_string(const std::string& rhs) {
 		}
 	}
 	if (!success) {
-		throw std::runtime_error("bad command");
+		throw std::invalid_argument("bad command");
 	}
 	return cmd;
 }

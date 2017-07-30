@@ -13,5 +13,6 @@
 #define GGG_SHADOW_NEW "@shadow_file_new@"
 #define GGG_SALT_LENGTH @salt_length@
 #define GGG_EXECUTABLE_NAME "@executable_name@"
+#define GGG_VERSION "@version@"
 
 #endif // CONFIG_HH

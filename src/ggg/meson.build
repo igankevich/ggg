@@ -1,5 +1,5 @@
 ggg_src = files([
-	'ggg.cc',
+	'ggg_main.cc',
 	'command.cc'
 ])
 

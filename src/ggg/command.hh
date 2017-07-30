@@ -9,7 +9,8 @@ namespace ggg {
 	enum struct Command: unsigned int {
 		Add = 0,
 		Delete = 1,
-		Help = 2
+		Help = 2,
+		Version = 3
 	};
 
 	Command
