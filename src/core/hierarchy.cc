@@ -1,6 +1,9 @@
 #include "hierarchy.hh"
 #include <stdx/iterator.hh>
 #include <iostream>
+#include <iterator>
+
+#include "bits/io.hh"
 
 std::ostream&
 ggg::operator<<(std::ostream& out, const entity_pair& rhs) {
@@ -126,10 +129,12 @@ ggg::Hierarchy::filter_groups() {
 			return rhs.members().empty();
 		}
 	);
+	/*
 	// remove duplicate entities
 	for (const group& grp : _groups) {
 		_entities.erase(entity(grp.name().data()));
 	}
+	*/
 	// remove non-existent groups
 	for (entity_pair& pair : _entities) {
 		erase_if(
@@ -151,6 +156,7 @@ ggg::Hierarchy::process_entry(const sys::pathentry& entry, bool& success) {
 				if (in.is_open()) {
 					entity ent;
 					while (in >> ent) {
+						ent.origin(filepath);
 						add_entity(ent, filepath);
 					}
 					add_entity(entity(entry.name()), filepath.dirname());
@@ -160,6 +166,7 @@ ggg::Hierarchy::process_entry(const sys::pathentry& entry, bool& success) {
 			}
 			case sys::file_type::symbolic_link: {
 				entity ent(entry.name());
+				ent.origin(entry.getpath());
 				add_link(ent, sys::canonical_path(entry.dirname()));
 				break;
 			}
@@ -186,4 +193,67 @@ ggg::Hierarchy::add(
 	while (std::getline(tmp, group, sys::path::separator)) {
 		principals.emplace(group);
 	}
+}
+
+void
+ggg::Hierarchy::erase(const char* name) {
+	const_iterator result = this->find_by_name(name);
+	if (result != this->end() && result->has_origin()) {
+		this->erase_regular(*result);
+	}
+	result = this->find_link_by_name(name);
+	if (result != this->_links.end() && result->has_origin()) {
+		this->erase_link(*result);
+	}
+}
+
+void
+ggg::Hierarchy::erase_link(const entity& ent) {
+	if (this->_verbose) {
+		std::clog << "unlinking " << ent.origin() << std::endl;
+	}
+	int ret = ::unlink(ent.origin());
+	if (ret == -1) {
+		throw std::system_error(errno, std::system_category());
+	}
+}
+
+void
+ggg::Hierarchy::erase_regular(const entity& ent) {
+	typedef std::istream_iterator<entity> iterator;
+	typedef std::ostream_iterator<entity> oiterator;
+	std::string new_origin;
+	sys::canonical_path origin(ent.origin());
+	new_origin.append(origin.dirname());
+	new_origin.push_back('.');
+	new_origin.append(origin.basename());
+	new_origin.append(".new");
+	bits::check(origin, R_OK | W_OK);
+	bits::check(new_origin.data(), R_OK | W_OK, false);
+	std::ifstream file;
+	std::ofstream file_new;
+	try {
+		file.exceptions(std::ios::badbit);
+		file.open(origin);
+		file_new.exceptions(std::ios::badbit);
+		file_new.open(new_origin);
+		std::copy_if(
+			iterator(file),
+			iterator(),
+			oiterator(file_new, "\n"),
+			[&ent,this] (const entity& rhs) {
+				bool match = rhs.name() == ent.name();
+				if (match && this->_verbose) {
+					std::clog
+						<< "removing " << rhs.name() << ':' << rhs.id()
+						<< " from " << ent.origin()
+						<< std::endl;
+				}
+				return !match;
+			}
+		);
+	} catch (...) {
+		bits::throw_io_error(file, "unable to remove entity");
+	}
+	ggg::bits::rename(new_origin.data(), origin);
 }

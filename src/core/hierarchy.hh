@@ -40,6 +40,7 @@ namespace ggg {
 		sys::uid_type _minuid = 1000;
 		size_t _maxlinks = 100;
 		bool _isopen = false;
+		bool _verbose = false;
 
 	public:
 		typedef stdx::field_iterator<map_type::iterator,0> iterator;
@@ -120,6 +121,20 @@ namespace ggg {
 			);
 		}
 
+		const_iterator
+		find_link_by_name(const char* name) const {
+			return std::find_if(
+				const_iterator(this->_links.begin()),
+				const_iterator(this->_links.end()),
+				[name] (const entity& ent) {
+					return ent.name() == name;
+				}
+			);
+		}
+
+		void
+		erase(const char* name);
+
 		group_iterator
 		group_begin() {
 			return _groups.begin();
@@ -161,6 +176,16 @@ namespace ggg {
 			_minuid = rhs;
 		}
 
+		inline void
+		verbose(bool rhs) noexcept {
+			this->_verbose = rhs;
+		}
+
+		inline bool
+		verbose() const noexcept {
+			return this->_verbose;
+		}
+
 		friend std::ostream&
 		operator<<(std::ostream& out, const Hierarchy& rhs);
 
@@ -185,12 +210,12 @@ namespace ggg {
 
 		inline void
 		add_entity(const entity& ent, const sys::canonical_path& filepath) {
-			add(_entities, ent, filepath);
+			this->add(this->_entities, ent, filepath);
 		}
 
 		inline void
 		add_link(const entity& ent, const sys::canonical_path& filepath) {
-			add(_links, ent, filepath);
+			this->add(this->_links, ent, filepath);
 		}
 
 		void
@@ -199,6 +224,12 @@ namespace ggg {
 			const entity& ent,
 			const sys::canonical_path& filepath
 		);
+
+		void
+		erase_regular(const entity& ent);
+
+		void
+		erase_link(const entity& ent);
 
 	};
 

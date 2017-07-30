@@ -23,7 +23,10 @@ namespace ggg {
 		Ggg(const char* path, bool verbose):
 		_hierarchy(sys::path(path)),
 		_accounts()
-		{ this->_accounts.verbose(verbose); }
+		{
+			this->_hierarchy.verbose(verbose);
+			this->_accounts.verbose(verbose);
+		}
 
 		inline void
 		open(const sys::path& root) {

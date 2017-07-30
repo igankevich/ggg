@@ -4,6 +4,7 @@
 #include <istream>
 #include <string>
 #include <sys/dir.hh>
+#include <sys/path.hh>
 #include <sys/users.hh>
 
 namespace ggg {
@@ -17,6 +18,7 @@ namespace ggg {
 		std::string _shell = "/bin/sh";
 		sys::uid_type _uid = -1;
 		sys::gid_type _gid = -1;
+		sys::path _origin;
 
 	public:
 
@@ -98,6 +100,21 @@ namespace ggg {
 		const std::string&
 		shell() const noexcept {
 			return _shell;
+		}
+
+		const sys::path&
+		origin() const noexcept {
+			return this->_origin;
+		}
+
+		inline void
+		origin(const sys::path& rhs) {
+			this->_origin = rhs;
+		}
+
+		inline bool
+		has_origin() const noexcept {
+			return !this->_origin.to_string().empty();
 		}
 
 	};
