@@ -18,7 +18,7 @@
 #include "sec/secure_sstream.hh"
 #include "pam_handle.hh"
 #include <stdx/random.hh>
-#include "control/account_control.hh"
+#include "ctl/account_ctl.hh"
 
 using ggg::throw_pam_error;
 using ggg::pam_errc;
@@ -48,11 +48,11 @@ namespace {
 		return duration_cast<days>(tmp).count();
 	}
 
-	ggg::Account_control all_accounts;
+	ggg::account_ctl all_accounts;
 
 	ggg::account
 	find_account(const char* user) {
-		ggg::Account_control::iterator result = all_accounts.find(user);
+		ggg::account_ctl::iterator result = all_accounts.find(user);
 		if (result == all_accounts.end()) {
 			throw_pam_error(ggg::pam_errc::unknown_user);
 		}

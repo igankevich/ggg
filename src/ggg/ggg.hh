@@ -4,14 +4,14 @@
 #include <stdexcept>
 
 #include "core/hierarchy.hh"
-#include "control/account_control.hh"
+#include "ctl/account_ctl.hh"
 
 namespace ggg {
 
 	class Ggg {
 
 		Hierarchy _hierarchy;
-		Account_control _accounts;
+		account_ctl _accounts;
 
 	public:
 		Ggg() = default;

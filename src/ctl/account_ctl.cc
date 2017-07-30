@@ -1,4 +1,4 @@
-#include "account_control.hh"
+#include "account_ctl.hh"
 
 #include <fstream>
 #include <algorithm>
@@ -28,7 +28,7 @@ namespace {
 	inline void
 	check(const char* path, int mode, bool must_exist=true) {
 		if (-1 == ::access(path, mode)) {
-			if (errno == ENOENT && must_exist || errno != ENOENT) {
+			if ((errno == ENOENT && must_exist) || errno != ENOENT) {
 				throw std::system_error(errno, std::system_category());
 			}
 		}
@@ -36,8 +36,8 @@ namespace {
 
 }
 
-ggg::Account_control::iterator
-ggg::Account_control::find(const char* user) const {
+ggg::account_ctl::iterator
+ggg::account_ctl::find(const char* user) const {
 	check(GGG_SHADOW, R_OK);
 	iterator result;
 	std::ifstream shadow;
@@ -58,7 +58,7 @@ ggg::Account_control::find(const char* user) const {
 }
 
 void
-ggg::Account_control::erase(const char* user) {
+ggg::account_ctl::erase(const char* user) {
 	check(GGG_SHADOW, R_OK | W_OK);
 	check(GGG_SHADOW_NEW, R_OK | W_OK, false);
 	std::ifstream shadow;
@@ -90,7 +90,7 @@ ggg::Account_control::erase(const char* user) {
 }
 
 void
-ggg::Account_control::update(const account& acc) {
+ggg::account_ctl::update(const account& acc) {
 	check(GGG_SHADOW, R_OK | W_OK);
 	check(GGG_SHADOW_NEW, R_OK | W_OK);
 	std::ifstream shadow;

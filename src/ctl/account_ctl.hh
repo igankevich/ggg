@@ -8,7 +8,7 @@
 
 namespace ggg {
 
-	class Account_control {
+	class account_ctl {
 
 	public:
 		typedef std::istream_iterator<account> iterator;
