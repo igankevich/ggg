@@ -6,6 +6,8 @@
 #include <sys/bits/check.hh>
 #include <sys/path.hh>
 
+#include "config.hh"
+
 namespace {
 
 	std::ifstream accfile;
@@ -15,7 +17,7 @@ namespace {
 		if (accfile.is_open()) {
 			accfile.clear();
 		}
-		accfile.open(sys::path(GGG_ROOT, "shadow"));
+		accfile.open(GGG_SHADOW);
 	}
 
 }
