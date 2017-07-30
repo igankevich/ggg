@@ -1,6 +1,11 @@
 ggg_src = files([
 	'ggg_main.cc',
-	'command.cc'
+	'command.cc',
+	'remove_entity.cc',
+	'show_version.cc',
+	'show_help.cc',
+	'all_commands.cc',
+	'ggg.cc'
 ])
 
 executable(

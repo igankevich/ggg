@@ -1,26 +1,36 @@
 #ifndef GGG_COMMAND_HH
 #define GGG_COMMAND_HH
 
-#include <istream>
-#include <ostream>
+#include <string>
 
 namespace ggg {
 
-	enum struct Command: unsigned int {
-		Add = 0,
-		Delete = 1,
-		Help = 2,
-		Version = 3
+	class Command {
+
+	private:
+		std::string _prefix;
+
+	public:
+		Command() = default;
+		virtual ~Command() = default;
+		Command(const Command&) = delete;
+		Command(Command&&) = delete;
+		Command& operator=(const Command&) = delete;
+
+		virtual void execute(int argc, char* argv[]) = 0;
+		virtual void print_usage();
+
+		inline void
+		prefix(const std::string& rhs) {
+			this->_prefix = rhs;
+		}
+
+		inline const std::string&
+		prefix() const noexcept {
+			return this->_prefix;
+		}
+
 	};
-
-	Command
-	command_from_string(const std::string& rhs);
-
-	std::ostream&
-	operator<<(std::ostream& out, Command rhs);
-
-	std::istream&
-	operator>>(std::istream& in, Command& rhs);
 
 }
 

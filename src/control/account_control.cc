@@ -3,6 +3,8 @@
 #include <fstream>
 #include <algorithm>
 #include <system_error>
+#include <iostream>
+#include <unistd.h>
 
 #include "config.hh"
 
@@ -23,10 +25,20 @@ namespace {
 		}
 	}
 
+	inline void
+	check(const char* path, int mode, bool must_exist=true) {
+		if (-1 == ::access(path, mode)) {
+			if (errno == ENOENT && must_exist || errno != ENOENT) {
+				throw std::system_error(errno, std::system_category());
+			}
+		}
+	}
+
 }
 
 ggg::Account_control::iterator
 ggg::Account_control::find(const char* user) const {
+	check(GGG_SHADOW, R_OK);
 	iterator result;
 	std::ifstream shadow;
 	try {
@@ -47,6 +59,8 @@ ggg::Account_control::find(const char* user) const {
 
 void
 ggg::Account_control::erase(const char* user) {
+	check(GGG_SHADOW, R_OK | W_OK);
+	check(GGG_SHADOW_NEW, R_OK | W_OK, false);
 	std::ifstream shadow;
 	std::ofstream shadow_new;
 	try {
@@ -59,7 +73,14 @@ ggg::Account_control::erase(const char* user) {
 			iterator(),
 			oiterator(shadow_new, "\n"),
 			[user] (const account& rhs) {
-				return rhs.login() != user;
+				bool match = rhs.login() == user;
+				if (match) {
+					std::clog
+						<< "removing " << user
+						<< " from " << GGG_SHADOW
+						<< std::endl;
+				}
+				return !match;
 			}
 		);
 	} catch (...) {
@@ -70,6 +91,8 @@ ggg::Account_control::erase(const char* user) {
 
 void
 ggg::Account_control::update(const account& acc) {
+	check(GGG_SHADOW, R_OK | W_OK);
+	check(GGG_SHADOW_NEW, R_OK | W_OK);
 	std::ifstream shadow;
 	std::ofstream shadow_new;
 	try {

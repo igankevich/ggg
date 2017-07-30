@@ -14,6 +14,9 @@ namespace ggg {
 		typedef std::istream_iterator<account> iterator;
 		typedef std::ostream_iterator<account> oiterator;
 
+	private:
+		bool _verbose = false;
+
 	public:
 		iterator
 		find(const char* user) const;
@@ -32,6 +35,16 @@ namespace ggg {
 		inline static iterator
 		end() {
 			return iterator();
+		}
+
+		inline void
+		verbose(bool rhs) noexcept {
+			this->_verbose = rhs;
+		}
+
+		inline bool
+		verbose() const noexcept {
+			return this->_verbose;
 		}
 
 	private:

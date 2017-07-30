@@ -20,23 +20,18 @@ namespace ggg {
 		Ggg operator=(const Ggg&) = delete;
 
 		inline explicit
-		Ggg(sys::path root):
-		_hierarchy(root),
+		Ggg(const char* path, bool verbose):
+		_hierarchy(sys::path(path)),
 		_accounts()
-		{}
+		{ this->_accounts.verbose(verbose); }
 
 		inline void
 		open(const sys::path& root) {
 			this->_hierarchy.open(root);
 		}
 
-		inline void
-		erase(const char* user) {
-			if (!user) {
-				throw std::invalid_argument("bad user");
-			}
-			this->_accounts.erase(user);
-		}
+		void
+		erase(const char* user);
 
 	};
 
