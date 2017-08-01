@@ -7,6 +7,7 @@
 #include "show_version.hh"
 #include "expire_entity.hh"
 #include "restore_entity.hh"
+#include "edit_entity.hh"
 
 #define MAKE_COMMAND(name, type) \
 	{name, [] () { return ::ggg::command_ptr(new type); }}
@@ -21,6 +22,7 @@ std::unordered_map<std::string,ggg::command_ctr> ggg::all_commands{
 	MAKE_COMMAND("restore", Restore_entity),
 	MAKE_COMMAND("activate", Restore_entity),
 	MAKE_COMMAND("unlock", Restore_entity),
+	MAKE_COMMAND("edit", Edit_entity),
 	MAKE_COMMAND("version", Show_version),
 	MAKE_COMMAND("-v", Show_version),
 	MAKE_COMMAND("--version", Show_version),

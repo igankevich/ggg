@@ -18,6 +18,7 @@ namespace ggg {
 		typedef std::chrono::system_clock clock_type;
 		typedef clock_type::time_point time_point;
 		typedef clock_type::duration duration;
+		typedef const size_t columns_type[9];
 
 		static constexpr const char delimiter = ':';
 		static constexpr const char separator = '$';
@@ -91,6 +92,9 @@ namespace ggg {
 		friend std::istream&
 		operator>>(std::istream& in, account& rhs);
 
+		void
+		print_aligned(std::ostream& out, columns_type width) const;
+
 		inline bool
 		operator==(const account& rhs) const noexcept {
 			return this->_login == rhs._login;
@@ -99,6 +103,11 @@ namespace ggg {
 		inline bool
 		operator!=(const account& rhs) const noexcept {
 			return !operator==(rhs);
+		}
+
+		inline bool
+		operator<(const account& rhs) const noexcept {
+			return this->_login < rhs._login;
 		}
 
 		inline const string&

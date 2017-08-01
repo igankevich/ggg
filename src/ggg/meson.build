@@ -4,6 +4,7 @@ ggg_src = files([
 	'remove_entity.cc',
 	'expire_entity.cc',
 	'restore_entity.cc',
+	'edit_entity.cc',
 	'show_version.cc',
 	'show_help.cc',
 	'all_commands.cc',

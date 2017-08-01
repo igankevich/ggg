@@ -40,6 +40,19 @@ ggg::account_ctl::find(const char* user) const {
 }
 
 void
+ggg::account_ctl::for_each(process_account func) {
+	bits::check(GGG_SHADOW, R_OK);
+	std::ifstream shadow;
+	try {
+		shadow.exceptions(std::ios::badbit);
+		shadow.open(GGG_SHADOW);
+		std::for_each(iterator(shadow), iterator(), func);
+	} catch (...) {
+		bits::throw_io_error(shadow, "unable to read accounts from " GGG_SHADOW);
+	}
+}
+
+void
 ggg::account_ctl::erase(const char* user) {
 	bits::check(GGG_SHADOW, R_OK | W_OK);
 	bits::check(GGG_SHADOW_NEW, R_OK | W_OK, false);

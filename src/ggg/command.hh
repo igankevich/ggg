@@ -12,7 +12,7 @@ namespace ggg {
 		typedef std::unordered_set<std::string> args_type;
 		typedef args_type::const_iterator args_iterator;
 
-	private:
+	protected:
 		std::string _prefix;
 		args_type _args;
 		bool _verbose = true;
@@ -51,6 +51,11 @@ namespace ggg {
 		inline args_iterator
 		args_end() const noexcept {
 			return this->_args.end();
+		}
+
+		inline const args_type&
+		args() const noexcept {
+			return this->_args;
 		}
 
 	};

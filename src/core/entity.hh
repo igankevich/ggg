@@ -3,6 +3,7 @@
 
 #include <istream>
 #include <string>
+#include <functional>
 #include <sys/dir.hh>
 #include <sys/path.hh>
 #include <sys/users.hh>
@@ -11,6 +12,11 @@ namespace ggg {
 
 	class entity {
 
+	public:
+		typedef const size_t columns_type[7];
+		static constexpr const char delimiter = ':';
+
+	private:
 		std::string _name;
 		std::string _password;
 		std::string _realname;
@@ -66,6 +72,9 @@ namespace ggg {
 
 		friend std::ostream&
 		operator<<(std::ostream& out, const entity& rhs);
+
+		void
+		print_aligned(std::ostream& out, columns_type width) const;
 
 		sys::uid_type
 		id() const noexcept {
@@ -125,6 +134,23 @@ namespace ggg {
 
 	std::ostream&
 	operator<<(std::ostream& out, const entity& rhs);
+
+}
+
+namespace std {
+
+	template<>
+	struct hash<ggg::entity> {
+
+		typedef size_t result_type;
+		typedef ggg::entity argument_type;
+
+		size_t
+		operator()(const ggg::entity& rhs) const noexcept {
+			return std::hash<std::string>()(rhs.name());
+		}
+
+	};
 
 }
 

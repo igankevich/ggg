@@ -15,6 +15,7 @@ namespace ggg {
 		typedef std::istream_iterator<account> iterator;
 		typedef std::ostream_iterator<account> oiterator;
 		typedef std::function<void(account&)> update_account;
+		typedef std::function<void(const account&)> process_account;
 
 	private:
 		bool _verbose = false;
@@ -27,6 +28,9 @@ namespace ggg {
 		exists(const char* user) const {
 			return this->find(user) != end();
 		}
+
+		void
+		for_each(process_account func);
 
 		void
 		erase(const char* user);

@@ -3,6 +3,7 @@
 #include "bits/read_field.hh"
 
 #include <ratio>
+#include <iomanip>
 #include "sec/secure_sstream.hh"
 
 namespace {
@@ -154,6 +155,20 @@ ggg::operator>>(std::istream& in, account& rhs) {
 		}
 	}
 	return in;
+}
+
+void
+ggg::account::print_aligned(std::ostream& out, columns_type width) const {
+	const char d[4] = {' ', delimiter, ' ', 0};
+	out << std::left << std::setw(width[0]) << this->_login << d
+		<< std::left << std::setw(1) << "x" << d
+		<< std::left << std::setw(width[2]) << this->_lastchange << d
+		<< std::left << std::setw(width[3]) << this->_minchange << d
+		<< std::left << std::setw(width[4]) << this->_maxchange << d
+		<< std::left << std::setw(width[5]) << this->_warnchange << d
+		<< std::left << std::setw(width[6]) << this->_maxinactive << d
+		<< std::left << std::setw(width[7]) << this->_expire << d
+		<< std::left << std::setw(width[8]) << this->_flags << '\n';
 }
 
 void
