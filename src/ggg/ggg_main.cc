@@ -28,7 +28,8 @@ int main(int argc, char* argv[]) {
 	int ret = EXIT_FAILURE;
 	try {
 		cmd = parse_command(argc, argv);
-		cmd->execute(argc, argv);
+		cmd->parse_arguments(argc, argv);
+		cmd->execute();
 		ret = EXIT_SUCCESS;
 	} catch (const std::bad_alloc& err) {
 		show_error("memory allocation error");

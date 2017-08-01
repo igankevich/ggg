@@ -1,7 +1,7 @@
 #ifndef GGG_GGG_HH
 #define GGG_GGG_HH
 
-#include <stdexcept>
+#include <string>
 
 #include "core/hierarchy.hh"
 #include "ctl/account_ctl.hh"
@@ -12,6 +12,7 @@ namespace ggg {
 
 		Hierarchy _hierarchy;
 		account_ctl _accounts;
+		bool _verbose = true;
 
 	public:
 		Ggg() = default;
@@ -22,7 +23,8 @@ namespace ggg {
 		inline explicit
 		Ggg(const char* path, bool verbose):
 		_hierarchy(sys::path(path)),
-		_accounts()
+		_accounts(),
+		_verbose(verbose)
 		{
 			this->_hierarchy.verbose(verbose);
 			this->_accounts.verbose(verbose);
@@ -34,7 +36,18 @@ namespace ggg {
 		}
 
 		void
-		erase(const char* user);
+		erase(const std::string& user);
+
+		void
+		expire(const std::string& user);
+
+		void
+		activate(const std::string& user);
+
+		inline bool
+		verbose() const noexcept {
+			return this->_verbose;
+		}
 
 	};
 

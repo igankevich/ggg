@@ -95,3 +95,32 @@ ggg::account_ctl::update(const account& acc) {
 	}
 	rename_shadow();
 }
+
+void
+ggg::account_ctl::update(const char* acc, update_account func) {
+	bits::check(GGG_SHADOW, R_OK | W_OK);
+	bits::check(GGG_SHADOW_NEW, R_OK | W_OK, false);
+	std::ifstream shadow;
+	std::ofstream shadow_new;
+	try {
+		shadow.exceptions(std::ios::badbit);
+		shadow.open(GGG_SHADOW);
+		shadow_new.exceptions(std::ios::badbit);
+		shadow_new.open(GGG_SHADOW_NEW);
+		std::transform(
+			iterator(shadow),
+			iterator(),
+			oiterator(shadow_new, "\n"),
+			[acc,&func] (const account& rhs) {
+				if (rhs.login() == acc) {
+					func(const_cast<account&>(rhs));
+				}
+				return rhs;
+			}
+		);
+	} catch (...) {
+		bits::throw_io_error(shadow, "unable to write accounts to " GGG_SHADOW_NEW);
+	}
+	rename_shadow();
+}
+

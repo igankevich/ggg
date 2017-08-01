@@ -5,6 +5,7 @@
 
 #include <iterator>
 #include <istream>
+#include <functional>
 
 namespace ggg {
 
@@ -13,6 +14,7 @@ namespace ggg {
 	public:
 		typedef std::istream_iterator<account> iterator;
 		typedef std::ostream_iterator<account> oiterator;
+		typedef std::function<void(account&)> update_account;
 
 	private:
 		bool _verbose = false;
@@ -31,6 +33,9 @@ namespace ggg {
 
 		void
 		update(const account& acc);
+
+		void
+		update(const char* acc, update_account func);
 
 		inline static iterator
 		end() {

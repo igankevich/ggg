@@ -4,23 +4,25 @@
 #include <unistd.h>
 
 #include "config.hh"
-#include "all_commands.hh"
 
 void
-ggg::Show_help::execute(int argc, char* argv[])  {
-	bool success = false;
+ggg::Show_help::parse_arguments(int argc, char* argv[])  {
 	if (*this->prefix().data() != '-' && ::optind < argc) {
 		const char* str = argv[::optind];
 		if (str && str[0] != '-') {
 			try {
-				command_ptr ptr = command_from_string(str);
-				ptr->print_usage();
-				success = true;
+				this->_ptr = command_from_string(str);
 			} catch (...) {
 			}
 		}
 	}
-	if (!success) {
+}
+
+void
+ggg::Show_help::execute()  {
+	if (this->_ptr) {
+		this->_ptr->print_usage();
+	} else {
 		std::cout << "usage: " GGG_EXECUTABLE_NAME " [-h] COMMAND\n";
 	}
 }

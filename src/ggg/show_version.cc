@@ -5,6 +5,6 @@
 #include "config.hh"
 
 void
-ggg::Show_version::execute(int argc, char* argv[])  {
+ggg::Show_version::execute()  {
 	std::cout << GGG_VERSION "\n";
 }

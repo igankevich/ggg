@@ -47,6 +47,11 @@ namespace ggg {
 			this->_expire = clock_type::now() - duration(duration::rep(1));
 		}
 
+		inline void
+		make_active() noexcept {
+			this->_expire = time_point(duration::zero());
+		}
+
 		inline bool
 		has_expiration_date() const noexcept {
 			return this->_expire > time_point(duration::zero());

@@ -7,7 +7,7 @@ namespace ggg {
 
 	class Show_version: public Command {
 	public:
-		void execute(int argc, char* argv[]) override;
+		void execute() override;
 	};
 
 }

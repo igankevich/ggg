@@ -7,7 +7,7 @@ namespace ggg {
 
 	class Remove_entity: public Command {
 	public:
-		void execute(int argc, char* argv[]) override;
+		void execute() override;
 		void print_usage() override;
 	};
 

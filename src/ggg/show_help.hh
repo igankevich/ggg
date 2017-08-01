@@ -2,12 +2,18 @@
 #define SHOW_HELP_HH
 
 #include "command.hh"
+#include "all_commands.hh"
 
 namespace ggg {
 
 	class Show_help: public Command {
+
+	private:
+		command_ptr _ptr;
+
 	public:
-		void execute(int argc, char* argv[]) override;
+		void parse_arguments(int argc, char* argv[]) override;
+		void execute() override;
 		void print_usage() override;
 	};
 
