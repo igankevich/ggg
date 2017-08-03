@@ -38,6 +38,7 @@ namespace ggg {
 		std::set<group> _groups;
 		sys::canonical_path _root;
 		sys::uid_type _minuid = 1000;
+		sys::gid_type _mingid = 1000;
 		size_t _maxlinks = 100;
 		bool _isopen = false;
 		bool _verbose = false;
@@ -100,6 +101,16 @@ namespace ggg {
 		}
 
 		const_iterator
+		cbegin() const {
+			return _entities.begin();
+		}
+
+		const_iterator
+		cend() const {
+			return _entities.end();
+		}
+
+		const_iterator
 		find_by_uid(sys::uid_type uid) const {
 			return std::find_if(
 				begin(),
@@ -134,6 +145,9 @@ namespace ggg {
 
 		void
 		erase(const char* name);
+
+		void
+		update(const entity& ent);
 
 		group_iterator
 		group_begin() {
@@ -230,6 +244,9 @@ namespace ggg {
 
 		void
 		erase_link(const entity& ent);
+
+		void
+		update_regular(const entity& ent, sys::path origin);
 
 	};
 

@@ -26,16 +26,18 @@ parse_command(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
 	ggg::command_ptr cmd = nullptr;
 	int ret = EXIT_FAILURE;
+	bool parse_success = false;
 	try {
 		cmd = parse_command(argc, argv);
 		cmd->parse_arguments(argc, argv);
+		parse_success = true;
 		cmd->execute();
 		ret = EXIT_SUCCESS;
 	} catch (const std::bad_alloc& err) {
 		show_error("memory allocation error");
 	} catch (const std::invalid_argument& err) {
 		show_error(err.what());
-		if (cmd) {
+		if (cmd && !parse_success) {
 			cmd->print_usage();
 		}
 	} catch (const std::exception& err) {

@@ -11,7 +11,8 @@ namespace ggg {
 	public:
 		enum struct Type {
 			Account,
-			Entity
+			Entity,
+			Directory
 		};
 
 	private:
@@ -25,6 +26,8 @@ namespace ggg {
 	private:
 		void print_entities(Ggg& g, std::ostream& out);
 		void print_accounts(Ggg& g, std::ostream& out);
+
+		void update_entities(Ggg& g, const std::string& filename);
 	};
 
 }

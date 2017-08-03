@@ -2,6 +2,7 @@
 #include <stdx/iterator.hh>
 #include <iostream>
 #include <iterator>
+#include <pwd.h>
 
 #include "bits/io.hh"
 
@@ -257,3 +258,84 @@ ggg::Hierarchy::erase_regular(const entity& ent) {
 	}
 	ggg::bits::rename(new_origin.data(), origin);
 }
+
+void
+ggg::Hierarchy::update(const entity& ent) {
+	if (!(ent.id() >= this->_minuid)) {
+		throw std::invalid_argument("bad uid");
+	}
+	if (!(ent.gid() >= this->_mingid)) {
+		throw std::invalid_argument("bad gid");
+	}
+	if (!ent.has_valid_name()) {
+		throw std::invalid_argument("bad name");
+	}
+	if (ent.home().empty() || ent.home().front() != sys::path::separator) {
+		throw std::invalid_argument("bad home directory");
+	}
+	if (ent.shell().empty() || ent.shell().front() != sys::path::separator) {
+		throw std::invalid_argument("bad shell");
+	}
+	const_iterator result1 = this->find_by_name(ent.name().data());
+	const_iterator result2 = this->find_by_uid(ent.id());
+	const_iterator last = this->cend();
+	const bool exists1 = result1 != last;
+	const bool exists2 = result2 != last;
+	if (!exists1 && !exists2) {
+		throw std::invalid_argument("bad entity");
+	}
+	if (exists1 && exists2 && *result1 != *result2) {
+		throw std::invalid_argument("conflicting name/uid pair");
+	}
+	const_iterator result = exists1 ? result1 : result2;
+	if (!result->has_origin()) {
+		throw std::invalid_argument("bad origin");
+	}
+	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {
+		if (pw->pw_uid < this->_minuid || pw->pw_gid < this->_mingid) {
+			throw std::invalid_argument("conflicting system user");
+		}
+	}
+	this->update_regular(ent, result->origin());
+}
+
+void
+ggg::Hierarchy::update_regular(const entity& ent, sys::path ent_origin) {
+	typedef std::istream_iterator<entity> iterator;
+	typedef std::ostream_iterator<entity> oiterator;
+	std::string new_origin;
+	sys::canonical_path origin(ent_origin);
+	new_origin.append(origin.dirname());
+	new_origin.push_back('.');
+	new_origin.append(origin.basename());
+	new_origin.append(".new");
+	bits::check(origin, R_OK | W_OK);
+	bits::check(new_origin.data(), R_OK | W_OK, false);
+	std::ifstream file;
+	std::ofstream file_new;
+	try {
+		file.exceptions(std::ios::badbit);
+		file.open(origin);
+		file_new.exceptions(std::ios::badbit);
+		file_new.open(new_origin);
+		std::transform(
+			iterator(file),
+			iterator(),
+			oiterator(file_new, "\n"),
+			[&ent,&ent_origin,this] (const entity& rhs) {
+				bool match = rhs.name() == ent.name();
+				if (match && this->_verbose) {
+					std::clog
+						<< "updating " << rhs.name() << ':' << rhs.id()
+						<< " in " << ent_origin
+						<< std::endl;
+				}
+				return match ? ent : rhs;
+			}
+		);
+	} catch (...) {
+		bits::throw_io_error(file, "unable to update entity");
+	}
+	ggg::bits::rename(new_origin.data(), origin);
+}
+

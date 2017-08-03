@@ -39,3 +39,9 @@ ggg::Ggg::activate(const std::string& user) {
 		}
 	);
 }
+
+void
+ggg::Ggg::update(const entity& ent) {
+	this->_hierarchy.update(ent);
+}
+

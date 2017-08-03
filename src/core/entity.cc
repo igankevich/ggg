@@ -2,6 +2,7 @@
 #include "bits/read_field.hh"
 #include "bits/bufcopy.hh"
 #include <iomanip>
+#include <algorithm>
 
 std::istream&
 ggg::operator>>(std::istream& in, entity& rhs) {
@@ -69,3 +70,37 @@ ggg::entity::copy_to(struct ::passwd* lhs, char* buffer) const {
 	lhs->pw_uid = this->_uid;
 	lhs->pw_gid = this->_gid;
 }
+
+bool
+ggg::entity::has_valid_name() const noexcept {
+	bool ret = !this->_name.empty();
+	if (ret) {
+		ret = std::all_of(
+			this->_name.begin(),
+			this->_name.end(),
+			[] (char ch) {
+				return (ch >= 'a' && ch <= 'z')
+					|| (ch >= 'A' && ch <= 'Z')
+					|| (ch >= '0' && ch <= '9')
+					|| ch == '-' || ch == '.' || ch == '_';
+			}
+		);
+	}
+	// not composed entirely of digits
+	if (ret) {
+		ret = !std::all_of(
+			this->_name.begin(),
+			this->_name.end(),
+			[] (char ch) {
+				return ch >= '0' && ch <= '9';
+			}
+		);
+	}
+	// starts with a character
+	if (ret) {
+		const char ch = this->_name.front();
+		ret = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+	}
+	return ret;
+}
+

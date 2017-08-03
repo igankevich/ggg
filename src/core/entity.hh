@@ -28,7 +28,7 @@ namespace ggg {
 
 	public:
 
-		explicit
+		inline explicit
 		entity(const char* name):
 		_name(name)
 		{}
@@ -76,42 +76,45 @@ namespace ggg {
 		void
 		print_aligned(std::ostream& out, columns_type width) const;
 
-		sys::uid_type
+		inline sys::uid_type
 		id() const noexcept {
 			return _uid;
 		}
 
-		sys::gid_type
+		inline sys::gid_type
 		gid() const noexcept {
 			return _gid;
 		}
 
-		const std::string&
+		inline const std::string&
 		name() const noexcept {
 			return _name;
 		}
 
-		const std::string&
+		bool
+		has_valid_name() const noexcept;
+
+		inline const std::string&
 		password() const noexcept {
 			return _password;
 		}
 
-		const std::string&
+		inline const std::string&
 		real_name() const noexcept {
 			return _realname;
 		}
 
-		const std::string&
+		inline const std::string&
 		home() const noexcept {
 			return _homedir;
 		}
 
-		const std::string&
+		inline const std::string&
 		shell() const noexcept {
 			return _shell;
 		}
 
-		const sys::path&
+		inline const sys::path&
 		origin() const noexcept {
 			return this->_origin;
 		}
