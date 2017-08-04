@@ -95,6 +95,12 @@ namespace ggg {
 		void
 		print_aligned(std::ostream& out, columns_type width) const;
 
+		std::istream&
+		read_formatted(std::istream& in);
+
+		void
+		copy_from(const account& rhs);
+
 		inline bool
 		operator==(const account& rhs) const noexcept {
 			return this->_login == rhs._login;

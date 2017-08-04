@@ -260,7 +260,7 @@ ggg::Hierarchy::erase_regular(const entity& ent) {
 }
 
 void
-ggg::Hierarchy::update(const entity& ent) {
+ggg::Hierarchy::validate_entity(const entity& ent) {
 	if (!(ent.id() >= this->_minuid)) {
 		throw std::invalid_argument("bad uid");
 	}
@@ -276,6 +276,16 @@ ggg::Hierarchy::update(const entity& ent) {
 	if (ent.shell().empty() || ent.shell().front() != sys::path::separator) {
 		throw std::invalid_argument("bad shell");
 	}
+	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {
+		if (pw->pw_uid < this->_minuid || pw->pw_gid < this->_mingid) {
+			throw std::invalid_argument("conflicting system user");
+		}
+	}
+}
+
+void
+ggg::Hierarchy::update(const entity& ent) {
+	this->validate_entity(ent);
 	const_iterator result1 = this->find_by_name(ent.name().data());
 	const_iterator result2 = this->find_by_uid(ent.id());
 	const_iterator last = this->cend();
@@ -290,11 +300,6 @@ ggg::Hierarchy::update(const entity& ent) {
 	const_iterator result = exists1 ? result1 : result2;
 	if (!result->has_origin()) {
 		throw std::invalid_argument("bad origin");
-	}
-	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {
-		if (pw->pw_uid < this->_minuid || pw->pw_gid < this->_mingid) {
-			throw std::invalid_argument("conflicting system user");
-		}
 	}
 	this->update_regular(ent, result->origin());
 }

@@ -22,6 +22,71 @@
 
 namespace {
 
+	template <class T>
+	struct Object_traits;
+
+	template <>
+	struct Object_traits<ggg::entity> {
+
+		static const std::string&
+		name(const ggg::entity& rhs) noexcept {
+			return rhs.name();
+		}
+
+		static bool
+		eq(const ggg::entity& lhs, const ggg::entity& rhs) noexcept {
+			return lhs.id() == rhs.id() || lhs.name() == rhs.name();
+		}
+
+		static std::ostream&
+		print(std::ostream& out, const ggg::entity& rhs) {
+			return out << rhs.name() << ':' << rhs.id();
+		}
+
+		static char
+		delimiter() noexcept {
+			return ggg::entity::delimiter;
+		}
+
+		template <class Container, class Result>
+		static void
+		find(ggg::Ggg& g, const Container& args, Result result) {
+			g.find_entities(args.begin(), args.end(), result);
+		}
+
+	};
+
+	template <>
+	struct Object_traits<ggg::account> {
+
+		static const char*
+		name(const ggg::account& rhs) noexcept {
+			return rhs.login().data();
+		}
+
+		static bool
+		eq(const ggg::account& lhs, const ggg::account& rhs) noexcept {
+			return lhs.login() == rhs.login();
+		}
+
+		static std::ostream&
+		print(std::ostream& out, const ggg::account& rhs) {
+			return out << rhs.login();
+		}
+
+		static char
+		delimiter() noexcept {
+			return ggg::account::delimiter;
+		}
+
+		template <class Container, class Result>
+		static void
+		find(ggg::Ggg& g, const Container& args, Result result) {
+			g.find_accounts(args, result);
+		}
+
+	};
+
 	std::array<std::string,3> all_tmpdirs{"TMPDIR", "TMP", "TEMP"};
 
 	std::string
@@ -123,6 +188,37 @@ namespace {
 
 	};
 
+	template <class T, class Result>
+	void
+	read_objects(const std::string& filename, Result result, const char* msg) {
+		std::ifstream in;
+		try {
+			in.exceptions(std::ios::badbit);
+			in.open(filename);
+			T obj;
+			while (obj.read_formatted(in)) {
+				*result++ = obj;
+			}
+		} catch (...) {
+			ggg::bits::throw_io_error(in, msg);
+		}
+	}
+
+	template <class Container, class BinOp>
+	void
+	check_duplicates(const Container& objs, BinOp op) {
+		const size_t n = objs.size();
+		for (size_t i=0; i<n; ++i) {
+			const auto& lhs = objs[i];
+			for (size_t j=i+1; j<n; ++j) {
+				const auto& rhs = objs[j];
+				if (op(lhs, rhs)) {
+					throw std::invalid_argument("duplicate names/ids");
+				}
+			}
+		}
+	}
+
 }
 
 void
@@ -156,9 +252,9 @@ ggg::Edit_entity::execute()  {
 		case Type::Entity: {
 			while (!this->_args.empty()) {
 				Temporary_file tmp;
-				print_entities(g, tmp.out());
+				print_objects<entity>(g, tmp.out());
 				edit_file(tmp.filename());
-				update_entities(g, tmp.filename());
+				update_objects<ggg::entity>(g, tmp.filename());
 				if (!this->_args.empty()) {
 					std::clog << "press any key to continue..." << std::endl;
 					std::cin.get();
@@ -167,8 +263,16 @@ ggg::Edit_entity::execute()  {
 			break;
 		}
 		case Type::Account: {
-			Temporary_file tmp;
-			print_accounts(g, tmp.out());
+			while (!this->_args.empty()) {
+				Temporary_file tmp;
+				print_objects<account>(g, tmp.out());
+				edit_file(tmp.filename());
+				update_objects<ggg::account>(g, tmp.filename());
+				if (!this->_args.empty()) {
+					std::clog << "press any key to continue..." << std::endl;
+					std::cin.get();
+				}
+			}
 			break;
 		}
 		case Type::Directory:
@@ -177,26 +281,13 @@ ggg::Edit_entity::execute()  {
 	}
 }
 
+template <class T>
 void
-ggg::Edit_entity::print_entities(Ggg& g, std::ostream& out) {
-	std::set<entity> entities;
-	g.find_entities(
-		this->args_begin(),
-		this->args_end(),
-		std::inserter(entities, entities.begin())
-	);
-	align_columns(entities, out, entity::delimiter);
-	out.flush();
-}
-
-void
-ggg::Edit_entity::print_accounts(Ggg& g, std::ostream& out) {
-	std::set<account> accounts;
-	g.find_accounts(
-		this->args(),
-		std::inserter(accounts, accounts.begin())
-	);
-	align_columns(accounts, out, account::delimiter);
+ggg::Edit_entity::print_objects(Ggg& g, std::ostream& out) {
+	typedef Object_traits<T> traits_type;
+	std::set<T> cnt;
+	traits_type::find(g, this->args(), std::inserter(cnt, cnt.begin()));
+	align_columns(cnt, out, traits_type::delimiter());
 	out.flush();
 }
 
@@ -206,39 +297,34 @@ ggg::Edit_entity::print_usage() {
 		<< this->prefix() << " [-qaed] ENTITY...\n";
 }
 
+template <class T>
 void
-ggg::Edit_entity::update_entities(Ggg& g, const std::string& filename) {
-	std::ifstream in;
-	std::vector<entity> ents;
-	try {
-		in.exceptions(std::ios::badbit);
-		in.open(filename);
-		std::copy(
-			std::istream_iterator<entity>(in),
-			std::istream_iterator<entity>(),
-			std::back_inserter(ents)
-		);
-	} catch (...) {
-		bits::throw_io_error(in, "unable to read entities");
-	}
-	const size_t n = ents.size();
-	for (size_t i=0; i<n; ++i) {
-		const entity& lhs = ents[i];
-		for (size_t j=i+1; j<n; ++j) {
-			const entity& rhs = ents[j];
-			if (lhs.id() == rhs.id() || lhs.name() == rhs.name()) {
-				throw std::invalid_argument("duplicate names/ids");
-			}
-		}
-	}
-	for (const entity& ent : ents) {
+ggg::Edit_entity::update_objects(Ggg& g, const std::string& filename) {
+	typedef Object_traits<T> traits_type;
+	std::vector<T> ents;
+	read_objects<T>(
+		filename,
+		std::back_inserter(ents),
+		"unable to read entities"
+	);
+	check_duplicates(ents, traits_type::eq);
+	for (const T& ent : ents) {
 		try {
 			g.update(ent);
-			this->_args.erase(ent.name());
+			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
-			std::cerr << "error updating "
-				<< ent.name() << ':' << ent.id()
-				<< ": " << err.what() << std::endl;
+			std::cerr << "error updating ";
+			traits_type::print(std::cerr, ent);
+			std::cerr << ": " << err.what() << std::endl;
 		}
 	}
 }
+
+template void
+ggg::Edit_entity::print_objects<ggg::entity>(Ggg& g, std::ostream& out);
+template void
+ggg::Edit_entity::print_objects<ggg::account>(Ggg& g, std::ostream& out);
+template void
+ggg::Edit_entity::update_objects<ggg::entity>(Ggg& g, const std::string& filename);
+template void
+ggg::Edit_entity::update_objects<ggg::account>(Ggg& g, const std::string& filename);

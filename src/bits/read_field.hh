@@ -22,7 +22,7 @@ namespace ggg {
 			in >> rhs;
 			// tolerate empty and erroneous CSV fields
 			if (in.rdstate() & std::ios::failbit) {
-				rhs = T();
+				//rhs = T();
 				in.clear();
 				ignore_field tmp;
 				read_field(in, tmp, sep);

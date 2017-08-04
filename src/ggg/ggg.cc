@@ -45,3 +45,17 @@ ggg::Ggg::update(const entity& ent) {
 	this->_hierarchy.update(ent);
 }
 
+void
+ggg::Ggg::update(const account& acc) {
+	// update without touching the password
+	this->_accounts.update(
+		acc.login().data(),
+		[&acc,this] (account& existing) {
+			existing.copy_from(acc);
+			if (this->verbose()) {
+				std::clog << "updating " << existing.login() << std::endl;
+			}
+		}
+	);
+}
+

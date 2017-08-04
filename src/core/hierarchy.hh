@@ -248,6 +248,9 @@ namespace ggg {
 		void
 		update_regular(const entity& ent, sys::path origin);
 
+		void
+		validate_entity(const entity& ent);
+
 	};
 
 	std::ostream&

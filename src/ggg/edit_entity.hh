@@ -24,10 +24,13 @@ namespace ggg {
 		void print_usage() override;
 
 	private:
-		void print_entities(Ggg& g, std::ostream& out);
-		void print_accounts(Ggg& g, std::ostream& out);
 
-		void update_entities(Ggg& g, const std::string& filename);
+		template <class T>
+		void print_objects(Ggg& g, std::ostream& out);
+
+		template <class T>
+		void update_objects(Ggg& g, const std::string& filename);
+
 	};
 
 }

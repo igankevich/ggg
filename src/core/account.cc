@@ -4,7 +4,13 @@
 
 #include <ratio>
 #include <iomanip>
+#include <locale>
+#include <ctime>
 #include "sec/secure_sstream.hh"
+
+
+
+#include <iostream>
 
 namespace {
 
@@ -53,6 +59,61 @@ namespace {
 		if (rhs > dur::zero()) {
 			lhs = to_days(rhs);
 		}
+	}
+
+	template <class T>
+	class formatted_date {
+
+	private:
+		T _date;
+
+	public:
+		explicit
+		formatted_date(T date):
+		_date(date)
+		{}
+
+		friend std::ostream&
+		operator<<(std::ostream& out, const formatted_date& rhs) {
+			typedef std::time_put<char> tput_type;
+			typedef ggg::account::time_point tp;
+			typedef ggg::account::duration dur;
+			if (rhs._date > tp(dur::zero())) {
+				std::time_t t = ggg::account::clock_type::to_time_t(rhs._date);
+				std::tm* tm = std::gmtime(&t);
+				const tput_type& tput = std::use_facet<tput_type>(out.getloc());
+				tput.put(out, out, ' ', tm, 'F');
+			}
+			return out;
+		}
+
+		friend std::istream&
+		operator>>(std::istream& in, formatted_date& rhs) {
+			typedef std::time_get<char> tget_type;
+			const tget_type& tget = std::use_facet<tget_type>(in.getloc());
+			std::ios::iostate state = std::ios::goodbit;
+			std::tm tm{};
+			std::string tmp;
+			in >> tmp;
+			std::istringstream iss(tmp);
+			std::string fmt("%Y-%m-%d");
+			tget.get(iss, tget_type::iter_type(), iss, state, &tm, fmt.data(), fmt.data() + fmt.length());
+			std::time_t t = std::mktime(&tm);
+			rhs._date = ggg::account::clock_type::from_time_t(t) + days(1);
+			return in;
+		}
+	};
+
+	template <class T>
+	formatted_date<T&>
+	make_formatted(T& rhs) {
+		return formatted_date<T&>(rhs);
+	}
+
+	template <class T>
+	formatted_date<const T&>
+	make_formatted(const T& rhs) {
+		return formatted_date<const T&>(rhs);
 	}
 
 }
@@ -161,14 +222,42 @@ void
 ggg::account::print_aligned(std::ostream& out, columns_type width) const {
 	const char d[4] = {' ', delimiter, ' ', 0};
 	out << std::left << std::setw(width[0]) << this->_login << d
-		<< std::left << std::setw(1) << "x" << d
-		<< std::left << std::setw(width[2]) << this->_lastchange << d
 		<< std::left << std::setw(width[3]) << this->_minchange << d
 		<< std::left << std::setw(width[4]) << this->_maxchange << d
 		<< std::left << std::setw(width[5]) << this->_warnchange << d
 		<< std::left << std::setw(width[6]) << this->_maxinactive << d
-		<< std::left << std::setw(width[7]) << this->_expire << d
-		<< std::left << std::setw(width[8]) << this->_flags << '\n';
+		<< std::left << std::setw(width[7]) << make_formatted(this->_expire) << '\n';
+}
+
+std::istream&
+ggg::account::read_formatted(std::istream& in) {
+	std::istream::sentry s(in);
+	if (s) {
+		auto fmt_expire = make_formatted(this->_expire);
+		bits::read_all_fields(
+			in, account::delimiter,
+			this->_login,
+			this->_minchange,
+			this->_maxchange,
+			this->_warnchange,
+			this->_maxinactive,
+			fmt_expire
+		);
+		if (in.eof()) {
+			in.clear();
+		}
+	}
+	return in;
+}
+
+void
+ggg::account::copy_from(const account& rhs) {
+	this->_login = rhs._login;
+	this->_minchange = rhs._minchange;
+	this->_maxchange = rhs._maxchange;
+	this->_warnchange = rhs._warnchange;
+	this->_maxinactive = rhs._maxinactive;
+	this->_expire = rhs._expire;
 }
 
 void

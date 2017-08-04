@@ -76,6 +76,9 @@ namespace ggg {
 		void
 		update(const entity& ent);
 
+		void
+		update(const account& ent);
+
 		inline bool
 		verbose() const noexcept {
 			return this->_verbose;

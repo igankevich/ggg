@@ -41,12 +41,31 @@ void
 ggg::entity::print_aligned(std::ostream& out, columns_type width) const {
 	const char d[4] = {' ', delimiter, ' ', 0};
 	out << std::left << std::setw(width[0]) << this->name() << d
-		<< std::left << std::setw(width[1]) << this->password() << d
 		<< std::right << std::setw(width[2]) << this->id() << d
 		<< std::right << std::setw(width[3]) << this->gid() << d
 		<< std::left << std::setw(width[4]) << this->real_name() << d
 		<< std::left << std::setw(width[5]) << this->home() << d
 		<< std::left << std::setw(width[6]) << this->shell() << '\n';
+}
+
+std::istream&
+ggg::entity::read_formatted(std::istream& in) {
+	std::istream::sentry s(in);
+	if (s) {
+		bits::read_all_fields(
+			in, entity::delimiter,
+			this->_name,
+			this->_uid,
+			this->_gid,
+			this->_realname,
+			this->_homedir,
+			this->_shell
+		);
+		if (in.eof()) {
+			in.clear();
+		}
+	}
+	return in;
 }
 
 size_t

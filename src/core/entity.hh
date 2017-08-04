@@ -76,6 +76,9 @@ namespace ggg {
 		void
 		print_aligned(std::ostream& out, columns_type width) const;
 
+		std::istream&
+		read_formatted(std::istream& in);
+
 		inline sys::uid_type
 		id() const noexcept {
 			return _uid;
