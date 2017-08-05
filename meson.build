@@ -21,6 +21,8 @@ config.set('shadow_file_new', '/etc/' + module_name + '/acc/.shadow.new')
 config.set('salt_length', '16')
 config.set('executable_name', executable_name)
 config.set('version', meson.project_version())
+config.set('file_editor', 'vi')
+config.set('directory_editor', 'vidir')
 
 unistdx = dependency('unistdx')
 gtest = dependency('gtest', main: true)

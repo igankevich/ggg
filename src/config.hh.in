@@ -14,5 +14,7 @@
 #define GGG_SALT_LENGTH @salt_length@
 #define GGG_EXECUTABLE_NAME "@executable_name@"
 #define GGG_VERSION "@version@"
+#define GGG_FILE_EDITOR "@file_editor@"
+#define GGG_DIRECTORY_EDITOR "@directory_editor@"
 
 #endif // CONFIG_HH

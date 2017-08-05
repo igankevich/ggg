@@ -8,6 +8,8 @@ ggg_src = files([
 	'show_version.cc',
 	'show_help.cc',
 	'all_commands.cc',
+	'editor.cc',
+	'tmpfile.cc',
 	'ggg.cc'
 ])
 

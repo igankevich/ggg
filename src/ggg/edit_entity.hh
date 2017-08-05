@@ -31,6 +31,11 @@ namespace ggg {
 		template <class T>
 		void update_objects(Ggg& g, const std::string& filename);
 
+		template <class T>
+		void edit_objects(Ggg& g);
+
+		void edit_directory();
+
 	};
 
 }
