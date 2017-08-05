@@ -65,9 +65,11 @@ namespace {
 	class formatted_date {
 
 	private:
-		T _date;
+		T _date = nullptr;
 
 	public:
+		formatted_date() = default;
+
 		explicit
 		formatted_date(T date):
 		_date(date)
@@ -75,11 +77,14 @@ namespace {
 
 		friend std::ostream&
 		operator<<(std::ostream& out, const formatted_date& rhs) {
+			if (!rhs._date) {
+				return out;
+			}
 			typedef std::time_put<char> tput_type;
 			typedef ggg::account::time_point tp;
 			typedef ggg::account::duration dur;
-			if (rhs._date > tp(dur::zero())) {
-				std::time_t t = ggg::account::clock_type::to_time_t(rhs._date);
+			if (*rhs._date > tp(dur::zero())) {
+				std::time_t t = ggg::account::clock_type::to_time_t(*rhs._date);
 				std::tm* tm = std::gmtime(&t);
 				const tput_type& tput = std::use_facet<tput_type>(out.getloc());
 				tput.put(out, out, ' ', tm, 'F');
@@ -89,6 +94,9 @@ namespace {
 
 		friend std::istream&
 		operator>>(std::istream& in, formatted_date& rhs) {
+			if (!rhs._date) {
+				return in;
+			}
 			typedef std::time_get<char> tget_type;
 			const tget_type& tget = std::use_facet<tget_type>(in.getloc());
 			std::ios::iostate state = std::ios::goodbit;
@@ -99,21 +107,21 @@ namespace {
 			std::string fmt("%Y-%m-%d");
 			tget.get(iss, tget_type::iter_type(), iss, state, &tm, fmt.data(), fmt.data() + fmt.length());
 			std::time_t t = std::mktime(&tm);
-			rhs._date = ggg::account::clock_type::from_time_t(t) + days(1);
+			*rhs._date = ggg::account::clock_type::from_time_t(t) + days(1);
 			return in;
 		}
 	};
 
 	template <class T>
-	formatted_date<T&>
-	make_formatted(T& rhs) {
-		return formatted_date<T&>(rhs);
+	formatted_date<T*>
+	make_formatted(T* rhs) {
+		return formatted_date<T*>(rhs);
 	}
 
 	template <class T>
-	formatted_date<const T&>
-	make_formatted(const T& rhs) {
-		return formatted_date<const T&>(rhs);
+	formatted_date<const T*>
+	make_formatted(const T* rhs) {
+		return formatted_date<const T*>(rhs);
 	}
 
 }
@@ -198,6 +206,7 @@ std::istream&
 ggg::operator>>(std::istream& in, account& rhs) {
 	std::istream::sentry s(in);
 	if (s) {
+		rhs.clear();
 		bits::read_all_fields(
 			in, account::delimiter,
 			rhs._login,
@@ -219,21 +228,21 @@ ggg::operator>>(std::istream& in, account& rhs) {
 }
 
 void
-ggg::account::print_aligned(std::ostream& out, columns_type width) const {
+ggg::account::write_human(std::ostream& out, columns_type width) const {
 	const char d[4] = {' ', delimiter, ' ', 0};
 	out << std::left << std::setw(width[0]) << this->_login << d
 		<< std::left << std::setw(width[3]) << this->_minchange << d
 		<< std::left << std::setw(width[4]) << this->_maxchange << d
 		<< std::left << std::setw(width[5]) << this->_warnchange << d
 		<< std::left << std::setw(width[6]) << this->_maxinactive << d
-		<< std::left << std::setw(width[7]) << make_formatted(this->_expire) << '\n';
+		<< std::left << std::setw(width[7]) << make_formatted(&this->_expire) << '\n';
 }
 
 std::istream&
-ggg::account::read_formatted(std::istream& in) {
+ggg::account::read_human(std::istream& in) {
 	std::istream::sentry s(in);
 	if (s) {
-		auto fmt_expire = make_formatted(this->_expire);
+		auto fmt_expire = make_formatted(&this->_expire);
 		bits::read_all_fields(
 			in, account::delimiter,
 			this->_login,
@@ -323,3 +332,20 @@ ggg::account::set_password(const string& rhs) {
 	this->_password = rhs;
 	this->_lastchange = clock_type::now();
 }
+
+void
+ggg::account::clear() {
+	this->_login.clear();
+	this->_id.clear();
+	this->_salt.clear();
+	this->_nrounds = 0;
+	this->_password.clear();
+	this->_lastchange = time_point(duration::zero());
+	this->_minchange = duration::zero();
+	this->_maxchange = duration::zero();
+	this->_warnchange = duration::zero();
+	this->_maxinactive = duration::zero();
+	this->_expire = time_point(duration::zero());
+	this->_flags = account_flags(0);
+}
+

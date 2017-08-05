@@ -41,7 +41,7 @@ namespace ggg {
 
 		template <class Container, class Result>
 		inline static void
-		find(ggg::Ggg& g, const Container& args, Result result) {
+		find(ggg::GGG& g, const Container& args, Result result) {
 			g.find_entities(args.begin(), args.end(), result);
 		}
 
@@ -72,7 +72,7 @@ namespace ggg {
 
 		template <class Container, class Result>
 		inline static void
-		find(ggg::Ggg& g, const Container& args, Result result) {
+		find(ggg::GGG& g, const Container& args, Result result) {
 			g.find_accounts(args, result);
 		}
 
@@ -86,7 +86,7 @@ namespace ggg {
 			in.exceptions(std::ios::badbit);
 			in.open(filename);
 			T obj;
-			while (obj.read_formatted(in)) {
+			while (obj.read_human(in)) {
 				*result++ = obj;
 			}
 		} catch (...) {

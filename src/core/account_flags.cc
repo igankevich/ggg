@@ -18,7 +18,8 @@ ggg::operator>>(std::istream& in, account_flags& rhs) {
 	typedef std::underlying_type<account_flags>::type tp;
 	static_assert(!std::numeric_limits<tp>::is_signed);
 	std::bitset<std::numeric_limits<tp>::digits> bits;
-	in >> bits;
-	rhs = account_flags(static_cast<tp>(bits.to_ulong()));
+	if (in >> bits) {
+		rhs = account_flags(static_cast<tp>(bits.to_ulong()));
+	}
 	return in;
 }

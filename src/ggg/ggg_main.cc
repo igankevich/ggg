@@ -4,6 +4,7 @@
 
 #include "config.hh"
 #include "all_commands.hh"
+#include "quiet_error.hh"
 
 void
 show_error(const char* what) {
@@ -33,6 +34,8 @@ int main(int argc, char* argv[]) {
 		parse_success = true;
 		cmd->execute();
 		ret = EXIT_SUCCESS;
+	} catch (const ggg::quiet_error& err) {
+		// info has been already printed
 	} catch (const std::bad_alloc& err) {
 		show_error("memory allocation error");
 	} catch (const std::invalid_argument& err) {

@@ -24,6 +24,26 @@ TEST_P(EntityTest, Read) {
 	EXPECT_EQ("/bin/bash", ent.shell());
 }
 
+TEST_P(EntityTest, Clear) {
+	std::stringstream tmp;
+	tmp << GetParam();
+	ggg::entity ent;
+	tmp >> ent;
+	ent.clear();
+	EXPECT_TRUE(tmp.good());
+	EXPECT_EQ("", ent.name());
+	EXPECT_EQ("", ent.password());
+	EXPECT_EQ(sys::uid_type(-1), ent.id());
+	EXPECT_EQ(sys::gid_type(-1), ent.gid());
+	#ifdef __linux__
+	EXPECT_EQ("", ent.real_name());
+	#else
+	EXPECT_EQ("", ent.real_name());
+	#endif
+	EXPECT_EQ("", ent.home());
+	EXPECT_EQ("", ent.shell());
+}
+
 INSTANTIATE_TEST_CASE_P(
 	ReadWithWhiteSpace,
 	EntityTest,
@@ -48,7 +68,7 @@ TEST(EntityTest, ReadWrite) {
 
 TEST(EntityTest, WriteEmpty) {
 	std::stringstream orig;
-	orig << "::" << sys::uid_type(-1) << ':' << sys::gid_type(-1) << "::/:/bin/sh";
+	orig << "::" << sys::uid_type(-1) << ':' << sys::gid_type(-1) << ":::";
 	std::stringstream tmp;
 	ggg::entity ent;
 	tmp << ent;
@@ -68,8 +88,8 @@ TEST_P(BareEntityTest, Read) {
 	EXPECT_EQ(sys::uid_type(-1), ent.id());
 	EXPECT_EQ(sys::gid_type(-1), ent.gid());
 	EXPECT_EQ("", ent.real_name());
-	EXPECT_EQ("/", ent.home());
-	EXPECT_EQ("/bin/sh", ent.shell());
+	EXPECT_EQ("", ent.home());
+	EXPECT_EQ("", ent.shell());
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -83,7 +103,7 @@ INSTANTIATE_TEST_CASE_P(
 	)
 );
 
-TEST_P(EntityTest, ReadEntryWithMissingFields) {
+TEST(EntityTest, ReadEntryWithMissingFields) {
 	std::stringstream tmp;
 	tmp << "mygroup:x:2000:2000:mygroup name:/home:\n";
 	ggg::entity ent;

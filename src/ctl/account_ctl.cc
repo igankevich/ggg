@@ -137,3 +137,17 @@ ggg::account_ctl::update(const char* acc, update_account func) {
 	rename_shadow();
 }
 
+ggg::account
+ggg::account_ctl::generate(const char* user) {
+	return account(user);
+}
+
+void
+ggg::account_ctl::add(const account& acc) {
+	if (this->verbose()) {
+		std::clog << "appending " << acc.login()
+			<< " to " << GGG_SHADOW << std::endl;
+	}
+	bits::append(acc, GGG_SHADOW, "unable to add account");
+}
+

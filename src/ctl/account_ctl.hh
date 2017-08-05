@@ -41,6 +41,12 @@ namespace ggg {
 		void
 		update(const char* acc, update_account func);
 
+		account
+		generate(const char* user);
+
+		void
+		add(const account& acc);
+
 		inline static iterator
 		end() {
 			return iterator();

@@ -80,6 +80,11 @@ namespace ggg {
 			_isopen = false;
 		}
 
+		inline const sys::canonical_path&
+		root() const noexcept {
+			return this->_root;
+		}
+
 		iterator
 		begin() {
 			return _entities.begin();
@@ -148,6 +153,12 @@ namespace ggg {
 
 		void
 		update(const entity& ent);
+
+		void
+		add(const entity& ent, const std::string& filename);
+
+		entity
+		generate(const char* name);
 
 		group_iterator
 		group_begin() {
@@ -250,6 +261,11 @@ namespace ggg {
 
 		void
 		validate_entity(const entity& ent);
+
+		sys::uid_type next_uid() const;
+
+		void
+		append_entity(const entity& ent, const std::string& filename);
 
 	};
 

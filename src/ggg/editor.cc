@@ -1,6 +1,7 @@
 #include "editor.hh"
 
 #include <cstdlib>
+#include <stdexcept>
 #include <sys/pipe.hh>
 #include <sys/dir.hh>
 #include <sys/fildesbuf.hh>
@@ -25,6 +26,14 @@ ggg::edit_file(std::string path) {
 		return sys::this_process::execute_command(editor, path);
 	});
 	return child.wait();
+}
+
+void
+ggg::edit_file_or_throw(std::string path) {
+	sys::proc_status status = ::ggg::edit_file(path);
+	if (!(status.exited() && status.exit_code() == 0)) {
+		throw std::runtime_error("bad exit code from editor");
+	}
 }
 
 sys::proc_status

@@ -38,6 +38,11 @@ namespace ggg {
 		account_flags _flags = account_flags(0);
 
 	public:
+		inline explicit
+		account(const char* login):
+		_login(login)
+		{}
+
 		account() = default;
 		account(const account&) = default;
 		account(account&&) = default;
@@ -93,10 +98,10 @@ namespace ggg {
 		operator>>(std::istream& in, account& rhs);
 
 		void
-		print_aligned(std::ostream& out, columns_type width) const;
+		write_human(std::ostream& out, columns_type width) const;
 
 		std::istream&
-		read_formatted(std::istream& in);
+		read_human(std::istream& in);
 
 		void
 		copy_from(const account& rhs);
@@ -208,6 +213,8 @@ namespace ggg {
 		clear(account_flags rhs) noexcept {
 			this->_flags = rhs;
 		}
+
+		void clear();
 
 	private:
 		void

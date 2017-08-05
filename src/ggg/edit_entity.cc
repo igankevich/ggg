@@ -22,18 +22,6 @@
 #include "align_columns.hh"
 #include "object_traits.hh"
 
-namespace {
-
-	void
-	edit_file_internal(std::string path) {
-		sys::proc_status status = ::ggg::edit_file(path);
-		if (!(status.exited() && status.exit_code() == 0)) {
-			throw std::runtime_error("bad exit code from editor");
-		}
-	}
-
-}
-
 void
 ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
 	int opt;
@@ -45,19 +33,25 @@ ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
 			case 'd': this->_type = Type::Directory; break;
 		}
 	}
-	if (this->_type == Type::Directory && ::optind < argc) {
-		throw std::invalid_argument(
-			"arguments are not allowed when editing directory"
-		);
-	}
 	for (int i=::optind; i<argc; ++i) {
 		this->_args.emplace(argv[i]);
+	}
+	if (this->_type == Type::Directory) {
+		if (!this->_args.empty()) {
+			throw std::invalid_argument(
+				"arguments are not allowed when editing directory"
+			);
+		}
+	} else {
+		if (this->_args.empty()) {
+			throw std::invalid_argument("please, specify entity names");
+		}
 	}
 }
 
 void
 ggg::Edit_entity::execute()  {
-	Ggg g(GGG_ROOT, this->verbose());
+	GGG g(GGG_ROOT, this->verbose());
 	switch (this->_type) {
 		case Type::Entity: this->edit_objects<entity>(g); break;
 		case Type::Account: this->edit_objects<account>(g); break;
@@ -67,11 +61,11 @@ ggg::Edit_entity::execute()  {
 
 template <class T>
 void
-ggg::Edit_entity::edit_objects(Ggg& g) {
+ggg::Edit_entity::edit_objects(GGG& g) {
 	while (!this->_args.empty()) {
 		sys::tmpfile tmp;
 		this->print_objects<T>(g, tmp.out());
-		edit_file_internal(tmp.filename());
+		edit_file_or_throw(tmp.filename());
 		this->update_objects<T>(g, tmp.filename());
 		if (!this->_args.empty()) {
 			std::clog << "press any key to continue..." << std::endl;
@@ -82,10 +76,13 @@ ggg::Edit_entity::edit_objects(Ggg& g) {
 
 template <class T>
 void
-ggg::Edit_entity::print_objects(Ggg& g, std::ostream& out) {
+ggg::Edit_entity::print_objects(GGG& g, std::ostream& out) {
 	typedef Object_traits<T> traits_type;
 	std::set<T> cnt;
 	traits_type::find(g, this->args(), std::inserter(cnt, cnt.begin()));
+	if (cnt.empty()) {
+		throw std::runtime_error("not found");
+	}
 	align_columns(cnt, out, traits_type::delimiter());
 	out.flush();
 }
@@ -103,7 +100,7 @@ ggg::Edit_entity::print_usage() {
 
 template <class T>
 void
-ggg::Edit_entity::update_objects(Ggg& g, const std::string& filename) {
+ggg::Edit_entity::update_objects(GGG& g, const std::string& filename) {
 	typedef Object_traits<T> traits_type;
 	std::vector<T> ents;
 	read_objects<T>(
@@ -140,14 +137,14 @@ ggg::Edit_entity::edit_directory() {
 }
 
 template void
-ggg::Edit_entity::print_objects<ggg::entity>(Ggg& g, std::ostream& out);
+ggg::Edit_entity::print_objects<ggg::entity>(GGG& g, std::ostream& out);
 template void
-ggg::Edit_entity::print_objects<ggg::account>(Ggg& g, std::ostream& out);
+ggg::Edit_entity::print_objects<ggg::account>(GGG& g, std::ostream& out);
 template void
-ggg::Edit_entity::update_objects<ggg::entity>(Ggg& g, const std::string& filename);
+ggg::Edit_entity::update_objects<ggg::entity>(GGG& g, const std::string& filename);
 template void
-ggg::Edit_entity::update_objects<ggg::account>(Ggg& g, const std::string& filename);
+ggg::Edit_entity::update_objects<ggg::account>(GGG& g, const std::string& filename);
 template void
-ggg::Edit_entity::edit_objects<ggg::entity>(Ggg& g);
+ggg::Edit_entity::edit_objects<ggg::entity>(GGG& g);
 template void
-ggg::Edit_entity::edit_objects<ggg::account>(Ggg& g);
+ggg::Edit_entity::edit_objects<ggg::account>(GGG& g);

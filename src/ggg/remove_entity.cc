@@ -11,7 +11,7 @@
 
 void
 ggg::Remove_entity::execute()  {
-	Ggg g(GGG_ROOT, this->verbose());
+	GGG g(GGG_ROOT, this->verbose());
 	std::for_each(
 		this->args_begin(),
 		this->args_end(),

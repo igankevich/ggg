@@ -26,13 +26,13 @@ namespace ggg {
 	private:
 
 		template <class T>
-		void print_objects(Ggg& g, std::ostream& out);
+		void print_objects(GGG& g, std::ostream& out);
 
 		template <class T>
-		void update_objects(Ggg& g, const std::string& filename);
+		void update_objects(GGG& g, const std::string& filename);
 
 		template <class T>
-		void edit_objects(Ggg& g);
+		void edit_objects(GGG& g);
 
 		void edit_directory();
 

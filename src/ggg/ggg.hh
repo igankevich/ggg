@@ -9,20 +9,20 @@
 
 namespace ggg {
 
-	class Ggg {
+	class GGG {
 
 		Hierarchy _hierarchy;
 		account_ctl _accounts;
 		bool _verbose = true;
 
 	public:
-		Ggg() = default;
-		Ggg(const Ggg&) = delete;
-		Ggg(Ggg&&) = delete;
-		Ggg operator=(const Ggg&) = delete;
+		GGG() = default;
+		GGG(const GGG&) = delete;
+		GGG(GGG&&) = delete;
+		GGG operator=(const GGG&) = delete;
 
 		inline explicit
-		Ggg(const char* path, bool verbose):
+		GGG(const char* path, bool verbose):
 		_hierarchy(sys::path(path)),
 		_accounts(),
 		_verbose(verbose)
@@ -73,16 +73,34 @@ namespace ggg {
 			);
 		}
 
+		bool
+		contains(const std::string& name);
+
+		entity
+		generate(const std::string& name);
+
 		void
 		update(const entity& ent);
 
 		void
 		update(const account& ent);
 
+		void
+		add(const entity& ent, const std::string& filename);
+
 		inline bool
 		verbose() const noexcept {
 			return this->_verbose;
 		}
+
+
+	private:
+
+		std::string
+		to_relative_path(const std::string& filename);
+
+		void
+		mkdirs(std::string relative_path);
 
 	};
 

@@ -14,6 +14,9 @@ namespace ggg {
 	sys::proc_status
 	edit_file(std::string path);
 
+	void
+	edit_file_or_throw(std::string path);
+
 	sys::proc_status
 	edit_directory(sys::path root);
 

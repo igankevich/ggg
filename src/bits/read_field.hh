@@ -1,6 +1,10 @@
 #ifndef READ_FIELD_HH
 #define READ_FIELD_HH
 
+#include <ostream>
+#include <istream>
+#include <iostream>
+
 namespace ggg {
 
 	namespace bits {
@@ -22,7 +26,7 @@ namespace ggg {
 			in >> rhs;
 			// tolerate empty and erroneous CSV fields
 			if (in.rdstate() & std::ios::failbit) {
-				//rhs = T();
+				rhs = T();
 				in.clear();
 				ignore_field tmp;
 				read_field(in, tmp, sep);
@@ -76,8 +80,14 @@ namespace ggg {
 		template<class T, class ... Args>
 		inline void
 		read_all_fields(std::istream& in, char sep, T& first, Args& ... args) {
-			char lastchar = read_field(in, first, sep);
-			if (lastchar == sep) {
+			// tolerate empty fields at the end of the line
+			char ch = 0;
+			while (in.get(ch) && std::isspace(ch) && ch != sep && ch != '\n');
+			if (ch != sep && ch != '\n') {
+				in.putback(ch);
+				ch = read_field(in, first, sep);
+			}
+			if (ch == sep) {
 				read_all_fields(in, sep, args...);
 			}
 		}

@@ -2,6 +2,7 @@
 #include <stdx/iterator.hh>
 #include <iostream>
 #include <iterator>
+#include <stdexcept>
 #include <pwd.h>
 
 #include "bits/io.hh"
@@ -344,3 +345,56 @@ ggg::Hierarchy::update_regular(const entity& ent, sys::path ent_origin) {
 	ggg::bits::rename(new_origin.data(), origin);
 }
 
+ggg::entity
+ggg::Hierarchy::generate(const char* name) {
+	sys::uid_type id = this->next_uid();
+	entity ent(name, id, id);
+	return ent;
+}
+
+sys::uid_type
+ggg::Hierarchy::next_uid() const {
+	sys::uid_type uid;
+	const_iterator result = std::max_element(
+		this->begin(),
+		this->end(),
+		[] (const entity& lhs, const entity& rhs) {
+			return lhs.id() < rhs.id();
+		}
+	);
+	if (result == this->end()) {
+		uid = this->_minuid;
+	} else {
+		uid = result->id();
+	}
+	if (uid == std::numeric_limits<sys::uid_type>::max()) {
+		throw std::overflow_error("bad uid");
+	}
+	return uid + 1;
+}
+
+void
+ggg::Hierarchy::add(const entity& ent, const std::string& filename) {
+	this->validate_entity(ent);
+	const_iterator result1 = this->find_by_name(ent.name().data());
+	const_iterator result2 = this->find_by_uid(ent.id());
+	const_iterator last = this->cend();
+	const bool exists1 = result1 != last;
+	const bool exists2 = result2 != last;
+	if (exists1 || exists2) {
+		throw std::invalid_argument("entity with the same name/uid already exists");
+	}
+	this->append_entity(ent, filename);
+}
+
+void
+ggg::Hierarchy::append_entity(const entity& ent, const std::string& filename) {
+	sys::path dest(this->_root, filename);
+	if (this->verbose()) {
+		std::clog
+			<< "appending " << ent.name() << ':' << ent.id()
+			<< " to " << dest
+			<< std::endl;
+	}
+	bits::append(ent, dest, "unable to add entity");
+}

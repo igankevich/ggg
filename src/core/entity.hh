@@ -20,8 +20,8 @@ namespace ggg {
 		std::string _name;
 		std::string _password;
 		std::string _realname;
-		std::string _homedir = "/";
-		std::string _shell = "/bin/sh";
+		std::string _homedir;
+		std::string _shell;
 		sys::uid_type _uid = -1;
 		sys::gid_type _gid = -1;
 		sys::path _origin;
@@ -32,6 +32,15 @@ namespace ggg {
 		entity(const char* name):
 		_name(name)
 		{}
+
+		inline explicit
+		entity(const char* name, sys::uid_type uid, sys::gid_type gid):
+		_name(name),
+		_homedir("/home/"),
+		_shell("/bin/sh"),
+		_uid(uid),
+		_gid(gid)
+		{ this->_homedir.append(_name); }
 
 		entity() = default;
 		entity(const entity& rhs) = default;
@@ -74,10 +83,10 @@ namespace ggg {
 		operator<<(std::ostream& out, const entity& rhs);
 
 		void
-		print_aligned(std::ostream& out, columns_type width) const;
+		write_human(std::ostream& out, columns_type width) const;
 
 		std::istream&
-		read_formatted(std::istream& in);
+		read_human(std::istream& in);
 
 		inline sys::uid_type
 		id() const noexcept {
@@ -132,6 +141,7 @@ namespace ggg {
 			return !this->_origin.to_string().empty();
 		}
 
+		void clear();
 	};
 
 

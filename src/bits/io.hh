@@ -2,7 +2,9 @@
 #define BITS_THROW_IO_ERROR_HH
 
 #include <istream>
+#include <ostream>
 #include <system_error>
+#include <fstream>
 #include <unistd.h>
 
 namespace ggg {
@@ -14,6 +16,11 @@ namespace ggg {
 			if (!in.eof()) {
 				throw std::system_error(std::io_errc::stream, msg);
 			}
+		}
+
+		inline void
+		throw_io_error(std::ostream& out, const char* msg) {
+			throw std::system_error(std::io_errc::stream, msg);
 		}
 
 		inline void
@@ -30,6 +37,19 @@ namespace ggg {
 			int ret = std::rename(old, new_name);
 			if (ret == -1) {
 				throw std::system_error(errno, std::system_category());
+			}
+		}
+
+		template <class T>
+		void
+		append(const T& ent, const char* dest, const char* msg) {
+			std::ofstream out;
+			try {
+				out.exceptions(std::ios::badbit);
+				out.open(dest, std::ios::out | std::ios::app);
+				out << ent << '\n';
+			} catch (...) {
+				throw_io_error(out, msg);
 			}
 		}
 

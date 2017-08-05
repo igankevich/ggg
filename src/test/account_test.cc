@@ -108,3 +108,38 @@ TEST(Account2, ExpireActive) {
 	acc.make_active();
 	EXPECT_FALSE(acc.has_expired());
 }
+
+TEST(Account2, ReadDefaultConstructed) {
+	ggg::account acc0;
+	std::stringstream tmp;
+	tmp << acc0;
+	ggg::account acc;
+	tmp >> acc;
+	EXPECT_TRUE(tmp.good());
+	EXPECT_EQ("", acc.login());
+	EXPECT_EQ("", acc.password());
+	EXPECT_EQ(0L, to_days(acc.last_change()));
+	EXPECT_EQ(0L, to_days(acc.min_change()));
+	EXPECT_EQ(0L, to_days(acc.max_change()));
+	EXPECT_EQ(0L, to_days(acc.warn_change()));
+	EXPECT_EQ(0L, to_days(acc.max_inactive()));
+	EXPECT_EQ(0L, to_days(acc.expire()));
+}
+
+TEST_P(AccountTest, Clear) {
+	std::stringstream tmp;
+	tmp << GetParam();
+	ggg::account acc;
+	tmp >> acc;
+	acc.clear();
+	EXPECT_TRUE(tmp.good());
+	EXPECT_EQ("", acc.login());
+	EXPECT_EQ("", acc.password());
+	EXPECT_EQ(0L, to_days(acc.last_change()));
+	EXPECT_EQ(0L, to_days(acc.min_change()));
+	EXPECT_EQ(0L, to_days(acc.max_change()));
+	EXPECT_EQ(0L, to_days(acc.warn_change()));
+	EXPECT_EQ(0L, to_days(acc.max_inactive()));
+	EXPECT_EQ(0L, to_days(acc.expire()));
+}
+

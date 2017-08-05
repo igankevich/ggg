@@ -38,7 +38,7 @@ ggg::operator<<(std::ostream& out, const entity& rhs) {
 }
 
 void
-ggg::entity::print_aligned(std::ostream& out, columns_type width) const {
+ggg::entity::write_human(std::ostream& out, columns_type width) const {
 	const char d[4] = {' ', delimiter, ' ', 0};
 	out << std::left << std::setw(width[0]) << this->name() << d
 		<< std::right << std::setw(width[2]) << this->id() << d
@@ -49,7 +49,7 @@ ggg::entity::print_aligned(std::ostream& out, columns_type width) const {
 }
 
 std::istream&
-ggg::entity::read_formatted(std::istream& in) {
+ggg::entity::read_human(std::istream& in) {
 	std::istream::sentry s(in);
 	if (s) {
 		bits::read_all_fields(
@@ -123,3 +123,14 @@ ggg::entity::has_valid_name() const noexcept {
 	return ret;
 }
 
+void
+ggg::entity::clear() {
+	this->_name.clear();
+	this->_password.clear();
+	this->_realname.clear();
+	this->_homedir.clear();
+	this->_shell.clear();
+	this->_uid = -1;
+	this->_gid = -1;
+	this->_origin = sys::path();
+}
