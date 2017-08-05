@@ -31,3 +31,4 @@ pam = cpp.find_library('pam')
 libcrypt = cpp.find_library('crypt')
 
 subdir('src')
+subdir('po')
