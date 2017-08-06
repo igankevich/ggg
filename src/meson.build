@@ -9,6 +9,7 @@ hierarchy_src = files([
 ])
 
 inc = include_directories('.')
+pam_inc = include_directories('pam')
 
 subdir('core')
 subdir('sec')

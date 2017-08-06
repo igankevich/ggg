@@ -214,6 +214,11 @@ namespace ggg {
 			this->_flags = rhs;
 		}
 
+		inline bool
+		is_recruiter() const noexcept {
+			return this->_flags & account_flags::recruiter;
+		}
+
 		void clear();
 
 	private:

@@ -1,5 +1,6 @@
 #include "pam_handle.hh"
 #include <cstring>
+#include <sstream>
 
 namespace {
 	const char* key_account = "ggg_account";
@@ -75,6 +76,19 @@ ggg::pam_handle::set_account(const ggg::account& acc) {
 	}
 }
 
+ggg::conversation_ptr
+ggg::pam_handle::get_conversation() const {
+	conversation* ptr = nullptr;
+	int ret = ::pam_get_item(*this, PAM_CONV, (const void**)&ptr);
+	if (ret != PAM_SUCCESS) {
+		throw_pam_error(pam_errc(ret));
+	}
+	if (!ptr && !ptr->conv) {
+		throw_pam_error(pam_errc::conversation_error);
+	}
+	return conversation_ptr(ptr);
+}
+
 ggg::pam_errc
 ggg::pam_handle::handle_error(const std::system_error& e, pam_errc def) const {
 	pam_errc ret;
@@ -97,6 +111,8 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
 		std::string arg(argv[i]);
 		if (arg == "debug") {
 			this->_debug = true;
+		} else if (arg == "allowreg") {
+			this->_allowregister = true;
 		} else if (arg.find("rounds=") == 0) {
 			const int tmp = std::atoi(arg.data() + 7);
 			if (tmp > 0) {
@@ -117,6 +133,27 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
 				argv[i]
 			);
 		}
+	}
+}
+
+void
+ggg::pam_handle::register_new_user(const account& recruiter) {
+	conversation_ptr conv = this->get_conversation();
+	messages m;
+	m.emplace_back(PAM_TEXT_INFO, "hello");
+	m.emplace_back(PAM_PROMPT_ECHO_ON, "Login: ");
+	m.emplace_back(PAM_PROMPT_ECHO_OFF, "Password: ");
+	{
+		std::stringstream msg;
+		msg << m;
+		this->debug("messages=%s", msg.str().data());
+	}
+	responses r(m.size());
+	conv->converse(m, r);
+	{
+		std::stringstream msg;
+		msg << r;
+		this->debug("responses=%s", msg.str().data());
 	}
 }
 

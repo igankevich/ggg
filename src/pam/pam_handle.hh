@@ -6,6 +6,7 @@
 #include <security/pam_ext.h>
 #include "pam_call.hh"
 #include "core/account.hh"
+#include "conversation.hh"
 
 namespace ggg {
 
@@ -16,6 +17,7 @@ namespace ggg {
 
 		::pam_handle_t* _pamh;
 		bool _debug = false;
+		bool _allowregister = false;
 		unsigned int _nrounds = 0;
 
 	public:
@@ -32,6 +34,11 @@ namespace ggg {
 		inline bool
 		debug() const noexcept {
 			return this->_debug;
+		}
+
+		inline bool
+		allows_registration() const noexcept {
+			return this->_allowregister;
 		}
 
 		inline secure_string
@@ -54,6 +61,9 @@ namespace ggg {
 		void
 		set_account(const ggg::account& acc);
 
+		conversation_ptr
+		get_conversation() const;
+
 		pam_errc
 		handle_error(const std::system_error& e, pam_errc def) const;
 
@@ -67,6 +77,9 @@ namespace ggg {
 
 		void
 		parse_args(int argc, const char** argv);
+
+		void
+		register_new_user(const account& recruiter);
 
 		inline operator ::pam_handle_t*() noexcept {
 			return _pamh;

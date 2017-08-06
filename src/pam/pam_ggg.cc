@@ -165,6 +165,10 @@ int pam_sm_acct_mgmt(
 			throw_pam_error(pam_errc::new_password_required);
 		}
 		pamh.debug("account \"%s\" is valid", user);
+		if (acc->is_recruiter() && pamh.allows_registration()) {
+			pamh.debug("registering new user");
+			pamh.register_new_user(*acc);
+		}
 		ret = pam_errc::success;
 	} catch (const std::system_error& e) {
 		ret = pamh.handle_error(e, pam_errc::authtok_error);

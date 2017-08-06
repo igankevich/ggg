@@ -93,3 +93,23 @@ test(
 		'GGG_ROOT=h-grp'
 	]
 )
+
+test(
+	'conversation-test',
+	executable(
+		'conversation-test',
+		sources: pam_src + hierarchy_src + ['conversation_test.cc'],
+		include_directories: [inc, pam_inc],
+		dependencies: [unistdx, gtest, libcrypt, pam]
+	)
+)
+test(
+	'form-field-test',
+	executable(
+		'form-field-test',
+		sources: hierarchy_src + ['form_field_test.cc'],
+		include_directories: inc,
+		dependencies: [unistdx, gtest]
+	)
+)
+

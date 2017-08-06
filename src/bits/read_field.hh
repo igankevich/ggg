@@ -63,8 +63,17 @@ namespace ggg {
 			std::istream::sentry s(in);
 			rhs.clear();
 			if (s) {
-				while (in.get(ch) and ch != sep and ch != '\n') {
-					rhs.push_back(ch);
+				char prev = 0;
+				while (in.get(ch) and
+					(ch != sep || (ch == sep && prev == '\\')) and
+					ch != '\n')
+				{
+					if (ch == sep && prev == '\\') {
+						rhs.back() = sep;
+					} else {
+						rhs.push_back(ch);
+					}
+					prev = ch;
 				}
 				while (!rhs.empty() && std::isspace(rhs.back())) {
 					rhs.pop_back();
