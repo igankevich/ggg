@@ -1,9 +1,62 @@
 #include "pam_handle.hh"
+
 #include <cstring>
+#include <iterator>
+#include <fstream>
+#include <algorithm>
+#include <vector>
 #include <sstream>
 
+#include "core/form_field.hh"
+#include "config.hh"
+
 namespace {
+
 	const char* key_account = "ggg_account";
+
+	int
+	get_prompt(const ggg::form_field& rhs) {
+		return rhs.type() == ggg::field_type::password
+			? PAM_PROMPT_ECHO_OFF
+			: PAM_PROMPT_ECHO_ON;
+	}
+
+	template <class Result>
+	void
+	read_form_fields(const ggg::account& recruiter, Result result) {
+		using ggg::form_field;
+		std::string path;
+		path.append(GGG_REG_ROOT);
+		path.push_back('/');
+		path.append(recruiter.login().data());
+		std::ifstream in(path);
+		if (in.is_open()) {
+			std::copy(
+				std::istream_iterator<form_field>(in),
+				std::istream_iterator<form_field>(),
+				result
+			);
+		}
+	}
+
+	template <class Iterator>
+	void
+	init_messages(Iterator first, Iterator last, ggg::messages& m, bool nocolon) {
+		std::for_each(
+			first,
+			last,
+			[&m,nocolon] (const ggg::form_field& rhs) {
+				if (!rhs.is_constant()) {
+					std::string n = rhs.name();
+					if (!nocolon) {
+						n.append(": ");
+					}
+					m.emplace_back(get_prompt(rhs), n);
+				}
+			}
+		);
+	}
+
 }
 
 void
@@ -111,8 +164,10 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
 		std::string arg(argv[i]);
 		if (arg == "debug") {
 			this->_debug = true;
-		} else if (arg == "allowreg") {
+		} else if (arg == "register") {
 			this->_allowregister = true;
+		} else if (arg == "nocolon") {
+			this->_nocolon = true;
 		} else if (arg.find("rounds=") == 0) {
 			const int tmp = std::atoi(arg.data() + 7);
 			if (tmp > 0) {
@@ -138,17 +193,13 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
 
 void
 ggg::pam_handle::register_new_user(const account& recruiter) {
-	conversation_ptr conv = this->get_conversation();
+	std::vector<form_field> all_fields;
+	read_form_fields(recruiter, std::back_inserter(all_fields));
+	std::sort(all_fields.begin(), all_fields.end());
 	messages m;
-	m.emplace_back(PAM_TEXT_INFO, "hello");
-	m.emplace_back(PAM_PROMPT_ECHO_ON, "Login: ");
-	m.emplace_back(PAM_PROMPT_ECHO_OFF, "Password: ");
-	{
-		std::stringstream msg;
-		msg << m;
-		this->debug("messages=%s", msg.str().data());
-	}
+	init_messages(all_fields.begin(), all_fields.end(), m, this->_nocolon);
 	responses r(m.size());
+	conversation_ptr conv = this->get_conversation();
 	conv->converse(m, r);
 	{
 		std::stringstream msg;

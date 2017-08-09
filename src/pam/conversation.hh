@@ -4,6 +4,7 @@
 #include <security/pam_appl.h>
 #include <vector>
 #include <ostream>
+#include <string>
 
 namespace ggg {
 
@@ -25,16 +26,30 @@ namespace ggg {
 
 	};
 
+	static_assert(
+		sizeof(response) == sizeof(::pam_response),
+		"bad response size"
+	);
+
+	static_assert(
+		alignof(response) == alignof(::pam_response),
+		"bad response align"
+	);
+
 	std::ostream&
 	operator<<(std::ostream& out, const response& rhs);
 
 	class message: public ::pam_message {
 
+	private:
+		std::string _text;
+
 	public:
 		inline
-		message(int style, const char* text) noexcept:
-		::pam_message{style, text}
-		{}
+		message(int style, const std::string& text) noexcept:
+		::pam_message{style, nullptr},
+		_text(text)
+		{ this->msg = this->_text.data(); }
 
 		inline const char*
 		text() const noexcept {
@@ -78,7 +93,7 @@ namespace ggg {
 		}
 
 		inline void
-		emplace_back(int style, const char* msg) {
+		emplace_back(int style, const std::string& msg) {
 			this->_msgs.push_back(new message(style, msg));
 		}
 

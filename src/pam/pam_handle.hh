@@ -18,6 +18,7 @@ namespace ggg {
 		::pam_handle_t* _pamh;
 		bool _debug = false;
 		bool _allowregister = false;
+		bool _nocolon = false;
 		unsigned int _nrounds = 0;
 
 	public:

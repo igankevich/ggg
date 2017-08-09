@@ -8,6 +8,21 @@
 
 namespace ggg {
 
+	enum struct field_type: int {
+		text,
+		password,
+		constant
+	};
+
+	std::istream&
+	operator>>(std::istream& in, field_type& rhs);
+
+	std::ostream&
+	operator<<(std::ostream& out, field_type rhs);
+
+	field_type
+	to_field_type(const std::string& s);
+
 	class form_field {
 
 	public:
@@ -21,9 +36,14 @@ namespace ggg {
 		std::string _regex;
 		std::string _target;
 		std::string _value;
-		bool _isconstant = false;
+		field_type _type = field_type::text;
 
 	public:
+		form_field() = default;
+		form_field(const form_field&) = default;
+		form_field(form_field&&) = default;
+		form_field& operator=(const form_field&) = default;
+		~form_field() = default;
 
 		inline id_type
 		id() const noexcept {
@@ -52,7 +72,12 @@ namespace ggg {
 
 		inline bool
 		is_constant() const noexcept {
-			return this->_isconstant;
+			return this->_type == field_type::constant;
+		}
+
+		inline field_type
+		type() const noexcept {
+			return this->_type;
 		}
 
 		void clear();

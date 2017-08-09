@@ -166,7 +166,7 @@ int pam_sm_acct_mgmt(
 		}
 		pamh.debug("account \"%s\" is valid", user);
 		if (acc->is_recruiter() && pamh.allows_registration()) {
-			pamh.debug("registering new user");
+			pamh.debug("registering new user via \"%s\"", user);
 			pamh.register_new_user(*acc);
 		}
 		ret = pam_errc::success;
