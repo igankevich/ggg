@@ -5,7 +5,7 @@
 #include <vector>
 #include <stdexcept>
 
-#include <sys/file.hh>
+#include <unistdx/fs/file_stat>
 
 #include "config.hh"
 
@@ -60,7 +60,7 @@ sys::get_temporary_file_name_template(sys::path dir) {
 	basename.append(GGG_EXECUTABLE_NAME);
 	basename.push_back('.');
 	basename.append("XXXXXX");
-	return sys::path(dir, basename).to_string();
+	return sys::path(dir, basename);
 }
 
 sys::tmpfile::tmpfile():

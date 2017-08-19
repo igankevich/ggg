@@ -1,5 +1,6 @@
 #include "hierarchy.hh"
-#include <stdx/iterator.hh>
+#include <unistdx/it/intersperse_iterator>
+#include <unistdx/fs/idirtree>
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
@@ -13,14 +14,14 @@ ggg::operator<<(std::ostream& out, const entity_pair& rhs) {
 	std::copy(
 		rhs.second.begin(),
 		rhs.second.end(),
-		stdx::intersperse_iterator<std::string>(out, ",")
+		sys::intersperse_iterator<std::string>(out, ",")
 	);
 	return out;
 }
 
 void
 ggg::Hierarchy::read() {
-	sys::dirtree tree;
+	sys::idirtree tree;
 	try {
 		tree.open(_root);
 	} catch (...) {
@@ -183,16 +184,15 @@ ggg::Hierarchy::add(
 	const entity& ent,
 	const sys::canonical_path& filepath
 ) {
-	const std::string& filestr = filepath.to_string();
 	std::string dirs(
-		filestr,
-		std::min(filestr.size(), _root.to_string().size() + 1)
+		filepath,
+		std::min(filepath.size(), _root.size() + 1)
 	);
 	std::stringstream tmp;
 	tmp << dirs;
 	std::set<std::string>& principals = container[ent];
 	std::string group;
-	while (std::getline(tmp, group, sys::path::separator)) {
+	while (std::getline(tmp, group, sys::file_separator)) {
 		principals.emplace(group);
 	}
 }
@@ -271,10 +271,10 @@ ggg::Hierarchy::validate_entity(const entity& ent) {
 	if (!ent.has_valid_name()) {
 		throw std::invalid_argument("bad name");
 	}
-	if (ent.home().empty() || ent.home().front() != sys::path::separator) {
+	if (ent.home().empty() || ent.home().front() != sys::file_separator) {
 		throw std::invalid_argument("bad home directory");
 	}
-	if (ent.shell().empty() || ent.shell().front() != sys::path::separator) {
+	if (ent.shell().empty() || ent.shell().front() != sys::file_separator) {
 		throw std::invalid_argument("bad shell");
 	}
 	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {

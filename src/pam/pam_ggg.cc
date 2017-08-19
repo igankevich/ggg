@@ -17,7 +17,7 @@
 #include "sec/secure_string.hh"
 #include "sec/secure_sstream.hh"
 #include "pam_handle.hh"
-#include <stdx/random.hh>
+#include <unistdx/base/adapt_engine>
 #include "ctl/account_ctl.hh"
 
 using ggg::throw_pam_error;
@@ -81,7 +81,7 @@ namespace {
 	generate_salt() {
 		ggg::secure_string salt;
 		std::random_device prng;
-		stdx::adapt_engine<std::random_device,char> engine(prng);
+		sys::adapt_engine<std::random_device,char> engine(prng);
 		int i = 0;
 		while (i < GGG_SALT_LENGTH) {
 			const char ch = engine();

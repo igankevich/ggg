@@ -1,8 +1,8 @@
 #ifndef GGG_TMPFILE_HH
 #define GGG_TMPFILE_HH
 
-#include <sys/fildesbuf.hh>
-#include <sys/path.hh>
+#include <unistdx/io/fdstream>
+#include <unistdx/fs/path>
 #include <string>
 
 namespace sys {

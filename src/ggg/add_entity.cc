@@ -102,7 +102,7 @@ ggg::Add_entity::get_filename(const entity& ent) const {
 			filename = ent.name();
 		} else {
 			filename.append(this->_path);
-			filename.push_back(sys::path::separator);
+			filename.push_back(sys::file_separator);
 			filename.append(ent.name());
 		}
 	} else {

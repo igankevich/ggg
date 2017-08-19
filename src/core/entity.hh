@@ -4,9 +4,8 @@
 #include <istream>
 #include <string>
 #include <functional>
-#include <sys/dir.hh>
-#include <sys/path.hh>
-#include <sys/users.hh>
+#include <unistdx/fs/path>
+#include <unistdx/util/user>
 
 namespace ggg {
 
@@ -138,7 +137,7 @@ namespace ggg {
 
 		inline bool
 		has_origin() const noexcept {
-			return !this->_origin.to_string().empty();
+			return !this->_origin.empty();
 		}
 
 		void clear();

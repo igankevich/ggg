@@ -2,7 +2,7 @@
 
 #include "pam_errc.hh"
 #include "pam_call.hh"
-#include <stdx/iterator.hh>
+#include <unistdx/it/intersperse_iterator>
 #include <algorithm>
 
 void
@@ -56,7 +56,7 @@ ggg::operator<<(std::ostream& out, const responses& rhs) {
 		std::copy(
 			rhs.begin(),
 			rhs.end(),
-			stdx::intersperse_iterator<response,char>(out, ',')
+			sys::intersperse_iterator<response,char>(out, ',')
 		);
 	}
 	return out;

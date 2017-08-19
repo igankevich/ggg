@@ -10,6 +10,8 @@
 #include <map>
 #include <deque>
 #include <sstream>
+#include <unistdx/fs/canonical_path>
+#include <unistdx/fs/pathentry>
 
 #include "bits/field_iterator.hh"
 

@@ -3,8 +3,7 @@
 #include <fstream>
 #include <algorithm>
 #include <iterator>
-#include <sys/bits/check.hh>
-#include <sys/path.hh>
+#include <unistdx/fs/path>
 
 #include "config.hh"
 

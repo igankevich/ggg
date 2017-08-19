@@ -22,14 +22,14 @@ INSTANTIATE_TEST_CASE_P(
 	ReadWithWhiteSpace,
 	FormFieldTest,
 	::testing::Values(
-		"123:Login:ggg_login:[a-z0-9]+",
-		" 123 : Login : ggg_login : [a-z0-9]+ "
+		"text:123:Login:ggg_login:[a-z0-9]+",
+		" text : 123 : Login : ggg_login : [a-z0-9]+ "
 	)
 );
 
 TEST(FormFieldTest, ReadEscapedChars) {
 	std::stringstream tmp;
-	tmp << "123:Login:ggg_login:[a-z0-9\\:]+";
+	tmp << "text:123:Login:ggg_login:[a-z0-9\\:]+";
 	ggg::form_field ff;
 	tmp >> ff;
 	EXPECT_TRUE(tmp.good());
@@ -47,7 +47,7 @@ TEST(FormFieldTest, ReadConstant) {
 	ggg::form_field ff;
 	tmp >> ff;
 	EXPECT_TRUE(tmp.good());
-	EXPECT_EQ(0, ff.id());
+	EXPECT_NE(0, ff.id());
 	EXPECT_EQ("", ff.name());
 	EXPECT_EQ("", ff.regex());
 	EXPECT_EQ("ggg_login", ff.target());

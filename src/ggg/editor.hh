@@ -2,9 +2,8 @@
 #define GGG_EDITOR_HH
 
 #include <string>
-#include <stdx/debug.hh>
-#include <sys/process.hh>
-#include <sys/path.hh>
+#include <unistdx/ipc/proc_status>
+#include <unistdx/fs/path>
 
 namespace ggg {
 

@@ -10,10 +10,8 @@
 #include <vector>
 #include <cstdlib>
 
-#include <stdx/debug.hh>
-#include <sys/file.hh>
-#include <sys/path.hh>
-#include <sys/fildesbuf.hh>
+#include <unistdx/fs/path>
+#include <unistdx/io/fdstream>
 
 #include "config.hh"
 #include "ggg.hh"

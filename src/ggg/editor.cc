@@ -2,9 +2,11 @@
 
 #include <cstdlib>
 #include <stdexcept>
-#include <sys/pipe.hh>
-#include <sys/dir.hh>
-#include <sys/fildesbuf.hh>
+#include <unistdx/io/pipe>
+#include <unistdx/io/fdstream>
+#include <unistdx/ipc/process>
+#include <unistdx/ipc/execute>
+#include <unistdx/fs/idirtree>
 
 #include "config.hh"
 
@@ -50,10 +52,10 @@ ggg::edit_directory(sys::path root) {
 	pipe.in().close();
 	{
 		sys::ofdstream out(std::move(pipe.out()));
-		sys::dirtree tree(root);
+		sys::idirtree tree(root);
 		std::copy(
-			sys::dirtree_iterator<sys::pathentry>(tree),
-			sys::dirtree_iterator<sys::pathentry>(),
+			sys::idirtree_iterator<sys::pathentry>(tree),
+			sys::idirtree_iterator<sys::pathentry>(),
 			std::ostream_iterator<sys::pathentry>(out, "\n")
 		);
 		out.flush();

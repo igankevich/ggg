@@ -1,6 +1,6 @@
 #include "group.hh"
 #include "bits/bufcopy.hh"
-#include <stdx/iterator.hh>
+#include <unistdx/it/intersperse_iterator>
 #include <cstring>
 #include <memory>
 
@@ -21,7 +21,7 @@ ggg::operator<<(std::ostream& out, const group& rhs) {
 	std::copy(
 		rhs._members.begin(),
 		rhs._members.end(),
-		stdx::intersperse_iterator<std::string>(out, ",")
+		sys::intersperse_iterator<std::string>(out, ",")
 	);
 	return out;
 }

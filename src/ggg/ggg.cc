@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <system_error>
-#include <sys/file.hh>
 #include <unistd.h>
 
 #include "config.hh"
@@ -91,8 +90,8 @@ ggg::GGG::to_relative_path(const std::string& filename) {
 				"file path must be relative to hierarchy root"
 			);
 		}
-		const size_t n = this->_hierarchy.root().to_string().size();
-		relative_path = realpath.to_string().substr(0, n+1);
+		const size_t n = this->_hierarchy.root().size();
+		relative_path = realpath.substr(0, n+1);
 	} else {
 		relative_path = filename;
 	}
