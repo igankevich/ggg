@@ -11,6 +11,7 @@
 #include "editor.hh"
 #include "object_traits.hh"
 #include "config.hh"
+#include "native.hh"
 
 void
 ggg::Add_entity::parse_arguments(int argc, char* argv[]) {
@@ -43,7 +44,7 @@ ggg::Add_entity::execute()  {
 	for (const std::string& ent : this->args()) {
 		if (g.contains(ent)) {
 			success = false;
-			std::cerr << "error: entity " << ent << " already exists" << std::endl;
+			native_message(std::cerr, "error: entity _ already exists\n", ent);
 		}
 	}
 	if (!success) {
@@ -87,7 +88,7 @@ ggg::Add_entity::add_entities(GGG& g, const std::string& filename) {
 			g.add(ent, fname);
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
-			std::cerr << "error adding ";
+			std::cerr << gettext("error adding") << ' ';
 			traits_type::print(std::cerr, ent);
 			std::cerr << ": " << err.what() << std::endl;
 		}

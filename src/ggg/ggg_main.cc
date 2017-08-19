@@ -5,6 +5,7 @@
 #include "config.hh"
 #include "all_commands.hh"
 #include "quiet_error.hh"
+#include "native.hh"
 
 void
 show_error(const char* what) {
@@ -25,6 +26,7 @@ parse_command(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
+	ggg::init_locale();
 	ggg::command_ptr cmd = nullptr;
 	int ret = EXIT_FAILURE;
 	bool parse_success = false;

@@ -17,5 +17,6 @@
 #define GGG_VERSION "@version@"
 #define GGG_FILE_EDITOR "@file_editor@"
 #define GGG_DIRECTORY_EDITOR "@directory_editor@"
+#define GGG_CATALOG "@catalog@"
 
 #endif // CONFIG_HH

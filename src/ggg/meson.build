@@ -12,6 +12,7 @@ ggg_src = files([
 	'editor.cc',
 	'align_columns.cc',
 	'tmpfile.cc',
+	'native.cc',
 	'ggg.cc'
 ])
 
