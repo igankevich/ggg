@@ -1,4 +1,4 @@
-ggg_src = files([
+ggg_src = [
 	'ggg_main.cc',
 	'command.cc',
 	'remove_entity.cc',
@@ -13,8 +13,10 @@ ggg_src = files([
 	'align_columns.cc',
 	'tmpfile.cc',
 	'native.cc',
-	'ggg.cc'
-])
+	'ggg.cc',
+	version,
+	build_date
+]
 
 executable(
 	executable_name,
