@@ -7,7 +7,7 @@ configure_file(
 build_date = vcs_tag(
 	input: 'build_date.hh.in',
 	output: 'build_date.hh',
-	command: ['date', '-Is'],
+	command: ['git', 'log', '-1', '--format=%cd', '--date=iso-strict'],
 	fallback: 'unknown date'
 )
 
