@@ -6,8 +6,17 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
+#include <regex>
+#include <locale>
+#include <codecvt>
+#include <tuple>
+#include <unordered_map>
+#include <fstream>
 
 #include "core/form_field.hh"
+#include "hierarchy_instance.hh"
+#include "ctl/account_ctl.hh"
+#include "core/entity.hh"
 #include "config.hh"
 
 namespace {
@@ -46,7 +55,7 @@ namespace {
 			first,
 			last,
 			[&m,nocolon] (const ggg::form_field& rhs) {
-				if (!rhs.is_constant()) {
+				if (rhs.is_input()) {
 					std::string n = rhs.name();
 					if (!nocolon) {
 						n.append(": ");
@@ -55,6 +64,126 @@ namespace {
 				}
 			}
 		);
+	}
+
+	template <class It1, class It2>
+	bool
+	validate_responses(It1 first, It1 last, It2 first2) {
+		std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
+		return std::equal(
+			first, last, first2,
+			[&cv] (const ggg::form_field& ff, const ggg::response& resp) {
+				bool valid = true;
+				if (ff.is_input()) {
+					std::wregex expr(cv.from_bytes(ff.regex()));
+					std::wstring field_value = cv.from_bytes(resp.text());
+					valid = std::regex_match(field_value, expr);
+				}
+				return valid;
+			}
+		);
+	}
+
+	typedef std::unordered_map<ggg::form_field,const char*> field_values;
+
+	std::string
+	interpolate(std::string orig, const field_values& values, char prefix='$') {
+		enum state_type {
+			parsing_string,
+			parsing_open_bracket,
+			parsing_number,
+			parsing_close_bracket
+		};
+		std::string result;
+		std::stringstream str;
+		state_type st = parsing_string;
+		const char* first = orig.data();
+		const char* last = orig.data() + orig.size();
+		const char* start;
+		while (first != last) {
+			const char ch = *first;
+			if (st == parsing_string) {
+				if (ch == prefix) {
+					st = parsing_open_bracket;
+					start = first;
+					str.clear();
+					str.str("");
+				} else {
+					result.push_back(ch);
+				}
+			} else if (st == parsing_open_bracket) {
+				if (ch == '{') {
+					st = parsing_number;
+				} else if (ch >= '0' && ch <= '9') {
+					str.put(ch);
+					st = parsing_number;
+				} else {
+					result.append(start, first+1);
+					st = parsing_string;
+				}
+			} else if (st == parsing_number) {
+				if (ch >= '0' && ch <= '9') {
+					str.put(ch);
+				} else {
+					st = parsing_close_bracket;
+				}
+			} else if (st == parsing_close_bracket) {
+				if (ch == prefix) {
+					st = parsing_open_bracket;
+					start = first;
+					str.clear();
+					str.str("");
+				} else if (ch != '}') {
+					result.push_back(ch);
+					st = parsing_string;
+				} else {
+					st = parsing_string;
+				}
+			}
+			if ((st == parsing_number && first == last-1) ||
+				st == parsing_close_bracket)
+			{
+				bool success = false;
+				ggg::form_field::id_type id = 0;
+				str >> id;
+				if (!str.fail()) {
+					auto it = values.find(ggg::form_field(id));
+					if (it != values.end()) {
+						result.append(it->second);
+						success = true;
+					}
+				}
+				if (!success) {
+					result.append(start, first+1);
+				} else {
+					if (st == parsing_close_bracket) {
+						result.push_back(ch);
+					}
+				}
+			}
+			++first;
+		}
+		return result;
+	}
+
+	template <class It1, class It2>
+	ggg::entity
+	make_entity(It1 first, It1 last, It2 first2) {
+		field_values values;
+		ggg::entity ent;
+		while (first != last) {
+			if (first->type() == ggg::field_type::set) {
+				if (first->target().find("entity.") == 0) {
+					std::string value = interpolate(first->regex(), values);
+					ent.set(*first, value.data());
+				}
+			} else {
+				values.emplace(*first, first2->text());
+			}
+			++first;
+			++first2;
+		}
+		return ent;
 	}
 
 }
@@ -198,13 +327,34 @@ ggg::pam_handle::register_new_user(const account& recruiter) {
 	std::sort(all_fields.begin(), all_fields.end());
 	messages m;
 	init_messages(all_fields.begin(), all_fields.end(), m, this->_nocolon);
-	responses r(m.size());
 	conversation_ptr conv = this->get_conversation();
-	conv->converse(m, r);
-	{
+	ggg::entity ent;
+	bool valid;
+	do {
+		responses r(m.size());
+		conv->converse(m, r);
+		valid = validate_responses(
+			all_fields.begin(),
+			all_fields.end(),
+			r.begin()
+		);
+		if (valid) {
+			ent = make_entity(
+				all_fields.begin(),
+				all_fields.end(),
+				r.begin()
+			);
+		}
 		std::stringstream msg;
-		msg << r;
-		this->debug("responses=%s", msg.str().data());
-	}
+		msg << "fields=";
+		std::copy(
+			all_fields.begin(),
+			all_fields.end(),
+			std::ostream_iterator<form_field>(msg, ",")
+		);
+		msg << "responses=" << r << ",ent=" << ent << ",valid=" << valid;
+		this->debug("%s", msg.str().data());
+	} while (!valid);
+	conv->prompt("press any key...");
 }
 

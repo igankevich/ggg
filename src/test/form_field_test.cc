@@ -41,6 +41,10 @@ TEST(FormFieldTest, ReadEscapedChars) {
 	EXPECT_FALSE(ff.is_constant());
 }
 
+TEST(FormFieldTest, Regex) {
+
+}
+
 TEST(FormFieldTest, ReadConstant) {
 	std::stringstream tmp;
 	tmp << "const:ggg_login:qqq";

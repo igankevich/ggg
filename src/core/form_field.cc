@@ -21,12 +21,25 @@ ggg::operator>>(std::istream& in, form_field& rhs) {
 					rhs._target,
 					rhs._value
 				);
+			} else if (rhs.type() == field_type::set) {
+				rhs._id = std::numeric_limits<form_field::id_type>::max();
+				bits::read_all_fields(
+					in, form_field::delimiter,
+					rhs._target,
+					rhs._regex
+				);
+			} else if (rhs.type() == field_type::set_secure) {
+				rhs._id = std::numeric_limits<form_field::id_type>::max();
+				bits::read_all_fields(
+					in, form_field::delimiter,
+					rhs._target,
+					rhs._regex
+				);
 			} else {
 				bits::read_all_fields(
 					in, form_field::delimiter,
 					rhs._id,
 					rhs._name,
-					rhs._target,
 					rhs._regex
 				);
 			}
@@ -78,6 +91,10 @@ ggg::to_field_type(const std::string& s) {
 		t = field_type::text;
 	} else if (s == "password") {
 		t = field_type::password;
+	} else if (s == "set") {
+		t = field_type::set;
+	} else if (s == "set_secure") {
+		t = field_type::set_secure;
 	} else {
 		throw std::invalid_argument("bad field type");
 	}
@@ -99,6 +116,8 @@ ggg::operator<<(std::ostream& out, field_type rhs) {
 		case field_type::text: s = "text"; break;
 		case field_type::password: s = "password"; break;
 		case field_type::constant: s = "const"; break;
+		case field_type::set: s = "set"; break;
+		case field_type::set_secure: s = "set_secure"; break;
 		default: s = "unknown"; break;
 	}
 	out << s;

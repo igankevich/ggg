@@ -12,7 +12,6 @@
 #include <security/pam_modules.h>
 #include <security/pam_ext.h>
 #include "config.hh"
-#include "hierarchy_instance.hh"
 #include "core/account.hh"
 #include "sec/secure_string.hh"
 #include "sec/secure_sstream.hh"

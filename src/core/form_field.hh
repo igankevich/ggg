@@ -11,7 +11,9 @@ namespace ggg {
 	enum struct field_type: int {
 		text,
 		password,
-		constant
+		constant,
+		set,
+		set_secure,
 	};
 
 	std::istream&
@@ -45,6 +47,11 @@ namespace ggg {
 		form_field& operator=(const form_field&) = default;
 		~form_field() = default;
 
+		inline explicit
+		form_field(id_type id):
+		_id(id)
+		{}
+
 		inline id_type
 		id() const noexcept {
 			return this->_id;
@@ -73,6 +80,12 @@ namespace ggg {
 		inline bool
 		is_constant() const noexcept {
 			return this->_type == field_type::constant;
+		}
+
+		inline bool
+		is_input() const noexcept {
+			return this->_type == field_type::text ||
+				this->_type == field_type::password;
 		}
 
 		inline field_type

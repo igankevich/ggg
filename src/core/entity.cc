@@ -3,6 +3,7 @@
 #include "bits/bufcopy.hh"
 #include <iomanip>
 #include <algorithm>
+#include <sstream>
 
 std::istream&
 ggg::operator>>(std::istream& in, entity& rhs) {
@@ -132,5 +133,37 @@ ggg::entity::clear() {
 	this->_shell.clear();
 	this->_uid = -1;
 	this->_gid = -1;
-	this->_origin = sys::path();
+	this->_origin.clear();
+}
+
+void
+ggg::entity::set(const form_field& field, const char* value) {
+	const std::string& t = field.target();
+	if (t == "entity.name") {
+		this->_name = value;
+	} else if (t == "entity.password") {
+		this->_password = value;
+	} else if (t == "entity.realname") {
+		this->_realname = value;
+	} else if (t == "entity.homedir") {
+		this->_homedir = value;
+	} else if (t == "entity.shell") {
+		this->_shell = value;
+	} else if (t == "entity.uid") {
+		std::stringstream str(value);
+		str >> this->_uid;
+		if (str.fail()) {
+			throw std::invalid_argument("bad uid");
+		}
+	} else if (t == "entity.gid") {
+		std::stringstream str(value);
+		str >> this->_gid;
+		if (str.fail()) {
+			throw std::invalid_argument("bad gid");
+		}
+	} else if (t == "entity.origin") {
+		this->_origin = value;
+	} else {
+		throw std::invalid_argument("bad field target");
+	}
 }

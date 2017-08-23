@@ -7,7 +7,11 @@
 #include <unistdx/fs/path>
 #include <unistdx/util/user>
 
+#include "form_field.hh"
+
 namespace ggg {
+
+	class form_field;
 
 	class entity {
 
@@ -80,6 +84,9 @@ namespace ggg {
 
 		friend std::ostream&
 		operator<<(std::ostream& out, const entity& rhs);
+
+		void
+		set(const form_field& field, const char* value);
 
 		void
 		write_human(std::ostream& out, columns_type width) const;
