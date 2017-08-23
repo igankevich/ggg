@@ -6,8 +6,19 @@
 namespace ggg {
 
 	class Show_version: public Command {
+
+	private:
+		enum struct Field {
+			Revision,
+			Version,
+			Date
+		};
+		Field _field = Field::Version;
+
 	public:
+		void parse_arguments(int argc, char* argv[]) override;
 		void execute() override;
+		void print_usage() override;
 	};
 
 }
