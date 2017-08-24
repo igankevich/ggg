@@ -65,6 +65,21 @@ namespace ggg {
 		}
 
 		inline bool
+		has_gid() const noexcept {
+			return this->_gid != sys::gid_type(-1);
+		}
+
+		inline void
+		set_uid(sys::uid_type rhs) noexcept {
+			this->_uid = rhs;
+		}
+
+		inline void
+		set_gid(sys::gid_type rhs) noexcept {
+			this->_gid = rhs;
+		}
+
+		inline bool
 		operator==(const entity& rhs) const noexcept {
 			return name() == rhs.name();
 		}

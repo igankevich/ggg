@@ -13,7 +13,6 @@ ggg_src = [
 	'align_columns.cc',
 	'tmpfile.cc',
 	'native.cc',
-	'ggg.cc',
 	version,
 	build_date
 ]

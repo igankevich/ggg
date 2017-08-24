@@ -277,11 +277,6 @@ ggg::Hierarchy::validate_entity(const entity& ent) {
 	if (ent.shell().empty() || ent.shell().front() != sys::file_separator) {
 		throw std::invalid_argument("bad shell");
 	}
-	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {
-		if (pw->pw_uid < this->_minuid || pw->pw_gid < this->_mingid) {
-			throw std::invalid_argument("conflicting system user");
-		}
-	}
 }
 
 void
@@ -301,6 +296,11 @@ ggg::Hierarchy::update(const entity& ent) {
 	const_iterator result = exists1 ? result1 : result2;
 	if (!result->has_origin()) {
 		throw std::invalid_argument("bad origin");
+	}
+	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {
+		if (pw->pw_uid < this->_minuid || pw->pw_gid < this->_mingid) {
+			throw std::invalid_argument("conflicting system user");
+		}
 	}
 	this->update_regular(ent, result->origin());
 }
@@ -348,6 +348,7 @@ ggg::Hierarchy::update_regular(const entity& ent, sys::path ent_origin) {
 ggg::entity
 ggg::Hierarchy::generate(const char* name) {
 	sys::uid_type id = this->next_uid();
+	std::clog << "id=" << id << std::endl;
 	entity ent(name, id, id);
 	return ent;
 }
@@ -367,6 +368,9 @@ ggg::Hierarchy::next_uid() const {
 	} else {
 		uid = result->id();
 	}
+	if (uid < this->_minuid) {
+		uid = this->_minuid;
+	}
 	if (uid == std::numeric_limits<sys::uid_type>::max()) {
 		throw std::overflow_error("bad uid");
 	}
@@ -375,6 +379,9 @@ ggg::Hierarchy::next_uid() const {
 
 void
 ggg::Hierarchy::add(const entity& ent, const std::string& filename) {
+	if (filename.empty()) {
+		throw std::invalid_argument("empty filename");
+	}
 	this->validate_entity(ent);
 	const_iterator result1 = this->find_by_name(ent.name().data());
 	const_iterator result2 = this->find_by_uid(ent.id());
@@ -383,6 +390,9 @@ ggg::Hierarchy::add(const entity& ent, const std::string& filename) {
 	const bool exists2 = result2 != last;
 	if (exists1 || exists2) {
 		throw std::invalid_argument("entity with the same name/uid already exists");
+	}
+	if (::getpwnam(ent.name().data())) {
+		throw std::invalid_argument("conflicting system user");
 	}
 	this->append_entity(ent, filename);
 }

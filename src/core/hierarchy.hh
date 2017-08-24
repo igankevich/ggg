@@ -162,6 +162,8 @@ namespace ggg {
 		entity
 		generate(const char* name);
 
+		sys::uid_type next_uid() const;
+
 		group_iterator
 		group_begin() {
 			return _groups.begin();
@@ -263,8 +265,6 @@ namespace ggg {
 
 		void
 		validate_entity(const entity& ent);
-
-		sys::uid_type next_uid() const;
 
 		void
 		append_entity(const entity& ent, const std::string& filename);

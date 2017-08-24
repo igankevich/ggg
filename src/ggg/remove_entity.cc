@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #include "config.hh"
-#include "ggg.hh"
+#include "ctl/ggg.hh"
 
 void
 ggg::Remove_entity::execute()  {

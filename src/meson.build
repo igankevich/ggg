@@ -22,6 +22,9 @@ hierarchy_src = files([
 	'hierarchy_instance.cc'
 ])
 
+forms_src = files([
+])
+
 inc = include_directories('.')
 pam_inc = include_directories('pam')
 

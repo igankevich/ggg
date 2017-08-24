@@ -14,7 +14,7 @@
 #include <unistdx/io/fdstream>
 
 #include "config.hh"
-#include "ggg.hh"
+#include "ctl/ggg.hh"
 #include "editor.hh"
 #include "tmpfile.hh"
 #include "align_columns.hh"

@@ -79,6 +79,11 @@ namespace ggg {
 		entity
 		generate(const std::string& name);
 
+		inline sys::uid_type
+		next_uid() const {
+			return this->_hierarchy.next_uid();
+		}
+
 		void
 		update(const entity& ent);
 

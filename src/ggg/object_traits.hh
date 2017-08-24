@@ -9,7 +9,7 @@
 #include "bits/io.hh"
 #include "core/entity.hh"
 #include "core/account.hh"
-#include "ggg.hh"
+#include "ctl/ggg.hh"
 
 namespace ggg {
 

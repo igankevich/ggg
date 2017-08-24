@@ -107,9 +107,9 @@ test(
 	'form-field-test',
 	executable(
 		'form-field-test',
-		sources: hierarchy_src + ['form_field_test.cc'],
+		sources: pam_src + ['form_field_test.cc'],
 		include_directories: inc,
-		dependencies: [unistdx, gtest]
+		dependencies: [unistdx, gtest, pam, libcrypt]
 	)
 )
 

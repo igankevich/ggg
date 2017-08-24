@@ -5,7 +5,7 @@
 #include <string>
 
 #include "config.hh"
-#include "ggg.hh"
+#include "ctl/ggg.hh"
 
 void
 ggg::Expire_entity::execute()  {

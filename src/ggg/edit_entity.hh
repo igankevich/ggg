@@ -2,7 +2,7 @@
 #define GGG_EDIT_ENTITY_HH
 
 #include "command.hh"
-#include "ggg.hh"
+#include "ctl/ggg.hh"
 
 namespace ggg {
 

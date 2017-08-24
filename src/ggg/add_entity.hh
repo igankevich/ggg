@@ -5,7 +5,7 @@
 #include <string>
 
 #include "command.hh"
-#include "ggg.hh"
+#include "ctl/ggg.hh"
 
 namespace ggg {
 
