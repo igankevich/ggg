@@ -46,9 +46,14 @@ ggg::native(const char* text) {
 
 void
 ggg::init_locale() {
+	/*
 	std::locale loc("");
 	std::cerr.imbue(loc);
 	std::clog.imbue(loc);
 	std::cout.imbue(loc);
+	std::wcerr.imbue(loc);
+	std::wclog.imbue(loc);
+	std::wcout.imbue(loc);
+	*/
 }
 
