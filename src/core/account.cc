@@ -8,10 +8,6 @@
 #include <ctime>
 #include "sec/secure_sstream.hh"
 
-
-
-#include <iostream>
-
 namespace {
 
 	typedef std::chrono::duration<long,std::ratio<60*60*24,1>> days;
@@ -168,6 +164,16 @@ namespace ggg {
 		return in;
 	}
 
+	template <class T>
+	void
+	read_field(T& field, const char* value, const char* err) {
+		std::stringstream str(value);
+		str >> field;
+		if (str.fail()) {
+			throw std::invalid_argument(err);
+		}
+	}
+
 }
 
 size_t
@@ -313,7 +319,7 @@ ggg::account::password_prefix(
 	const string& new_salt,
 	const string& new_id,
 	unsigned int nrounds
-) const {
+) {
 	secure_stringstream s;
 	s.put(separator);
 	s << new_id;
@@ -349,3 +355,26 @@ ggg::account::clear() {
 	this->_flags = account_flags(0);
 }
 
+void
+ggg::account::set(const form_field& field, const char* value) {
+	const std::string& t = field.target();
+	if (t == "account.login") {
+		this->_login = value;
+	} else if (t == "account.lastchange") {
+		read_field(this->_lastchange, value, "bad lastchange");
+	} else if (t == "account.minchange") {
+		read_field(this->_minchange, value, "bad minchange");
+	} else if (t == "account.maxchange") {
+		read_field(this->_maxchange, value, "bad maxchange");
+	} else if (t == "account.warnchange") {
+		read_field(this->_warnchange, value, "bad warnchange");
+	} else if (t == "account.maxinactive") {
+		read_field(this->_maxinactive, value, "bad maxinactive");
+	} else if (t == "account.expire") {
+		read_field(this->_expire, value, "bad expire");
+	} else if (t == "account.flags") {
+		read_field(this->_flags, value, "bad flags");
+	} else {
+		throw std::invalid_argument("bad field target");
+	}
+}

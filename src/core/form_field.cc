@@ -53,6 +53,7 @@ ggg::operator>>(std::istream& in, form_field& rhs) {
 
 std::ostream&
 ggg::operator<<(std::ostream& out, const form_field& rhs) {
+	out << rhs._type << form_field::delimiter;
 	if (!rhs.is_constant()) {
 		out << rhs._id << form_field::delimiter;
 	}
@@ -69,6 +70,7 @@ ggg::form_field::clear() {
 	this->_regex.clear();
 	this->_target.clear();
 	this->_value.clear();
+	this->_secvalue.clear();
 	this->_type = field_type::text;
 }
 

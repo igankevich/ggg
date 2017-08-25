@@ -148,6 +148,9 @@ ggg::account_ctl::add(const account& acc) {
 		std::clog << "appending " << acc.login()
 			<< " to " << GGG_SHADOW << std::endl;
 	}
+	if (acc.login().empty()) {
+		throw std::invalid_argument("bad login");
+	}
 	bits::append(acc, GGG_SHADOW, "unable to add account");
 }
 

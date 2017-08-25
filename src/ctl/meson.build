@@ -5,4 +5,5 @@ hierarchy_src += files([
 
 forms_src += files([
 	'form.cc',
+	'password.cc',
 ])

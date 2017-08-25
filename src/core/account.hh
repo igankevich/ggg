@@ -8,6 +8,7 @@
 #include <type_traits>
 #include "sec/secure_string.hh"
 #include "account_flags.hh"
+#include "form_field.hh"
 
 namespace ggg {
 
@@ -149,12 +150,12 @@ namespace ggg {
 		string
 		password_prefix() const;
 
-		string
+		static string
 		password_prefix(
 			const string& new_salt,
 			const string& new_id,
 			unsigned int nrounds
-		) const;
+		);
 
 		void
 		set_password(const string& rhs);
@@ -220,6 +221,9 @@ namespace ggg {
 		}
 
 		void clear();
+
+		void
+		set(const form_field& field, const char* value);
 
 	private:
 		void

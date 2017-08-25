@@ -35,7 +35,7 @@ ggg::Hierarchy::read() {
 		while (!success) {
 			if (tree >> entry) {
 				try {
-					process_entry(entry, success);
+					this->process_entry(entry, success);
 				} catch (...) {
 					std::clog << "Skipping bad file " << entry << std::endl;
 				}
@@ -125,13 +125,22 @@ ggg::Hierarchy::generate_groups() {
 
 void
 ggg::Hierarchy::filter_groups() {
+	/*
+	// add entities to the groups with the same names
+	for (const group& rhs : this->_groups) {
+		const_iterator result = this->find_by_name(rhs.name().data());
+		if (result != this->_entities.end()) {
+			rhs.push(result->name());
+		}
+	}
 	// remove empty groups
 	erase_if(
-		_groups,
+		this->_groups,
 		[] (const group& rhs) {
 			return rhs.members().empty();
 		}
 	);
+	*/
 	/*
 	// remove duplicate entities
 	for (const group& grp : _groups) {
@@ -190,10 +199,15 @@ ggg::Hierarchy::add(
 	);
 	std::stringstream tmp;
 	tmp << dirs;
-	std::set<std::string>& principals = container[ent];
+	auto result = container.find(ent);
+	if (result != container.end()) {
+		const_cast<entity&>(result->first).merge(ent);
+	} else {
+		result = container.emplace(ent, std::set<std::string>()).first;
+	}
 	std::string group;
 	while (std::getline(tmp, group, sys::file_separator)) {
-		principals.emplace(group);
+		result->second.emplace(group);
 	}
 }
 

@@ -5,6 +5,7 @@
 #include <ostream>
 #include <istream>
 #include <functional>
+#include <sec/secure_string.hh>
 
 namespace ggg {
 
@@ -38,6 +39,7 @@ namespace ggg {
 		std::string _regex;
 		std::string _target;
 		std::string _value;
+		secure_string _secvalue;
 		field_type _type = field_type::text;
 
 	public:
@@ -75,6 +77,11 @@ namespace ggg {
 		inline const std::string&
 		value() const noexcept {
 			return this->_value;
+		}
+
+		inline const secure_string&
+		secure_value() const noexcept {
+			return this->_secvalue;
 		}
 
 		inline bool

@@ -1,5 +1,4 @@
 #include <unistd.h>
-#include <crypt.h>
 #include <fstream>
 #include <random>
 #include <memory>
@@ -14,10 +13,9 @@
 #include "config.hh"
 #include "core/account.hh"
 #include "sec/secure_string.hh"
-#include "sec/secure_sstream.hh"
 #include "pam_handle.hh"
-#include <unistdx/base/adapt_engine>
 #include "ctl/account_ctl.hh"
+#include "ctl/password.hh"
 
 using ggg::throw_pam_error;
 using ggg::pam_errc;
@@ -58,46 +56,9 @@ namespace {
 		return *result;
 	}
 
-	ggg::secure_string
-	encrypt(const char* password, const ggg::secure_string& prefix) {
-		ggg::secure_allocator<crypt_data> alloc;
-		std::unique_ptr<crypt_data> pdata(alloc.allocate(1));
-		char* encrypted = ::crypt_r(
-			password,
-			prefix.data(),
-			pdata.get()
-		);
-		if (!encrypted) {
-			throw std::system_error(errno, std::system_category());
-		}
-		ggg::secure_string result(encrypted);
-		size_t n = ggg::account::string::traits_type::length(encrypted);
-		ggg::shred(encrypted, n);
-		return result;
-	}
-
-	ggg::secure_string
-	generate_salt() {
-		ggg::secure_string salt;
-		std::random_device prng;
-		sys::adapt_engine<std::random_device,char> engine(prng);
-		int i = 0;
-		while (i < GGG_SALT_LENGTH) {
-			const char ch = engine();
-			if (std::isgraph(ch)
-				&& ch != ggg::account::separator
-				&& ch != ggg::account::delimiter)
-			{
-				salt.push_back(ch);
-				++i;
-			}
-		}
-		return salt;
-	}
-
 	void
 	check_password(const char* password, const ggg::account& acc) {
-		ggg::secure_string encrypted = encrypt(
+		ggg::secure_string encrypted = ggg::encrypt(
 			password,
 			acc.password_prefix()
 		);
@@ -216,10 +177,10 @@ int pam_sm_chauthtok(
 				check_password(old, acc);
 			}
 			const char* new_password = pamh.get_password(pam_errc::authtok_error);
-			ggg::secure_string encrypted = encrypt(
+			ggg::secure_string encrypted = ggg::encrypt(
 				new_password,
-				acc.password_prefix(
-					generate_salt(),
+				ggg::account::password_prefix(
+					ggg::generate_salt(),
 					pamh.password_id(),
 					pamh.num_rounds()
 				)

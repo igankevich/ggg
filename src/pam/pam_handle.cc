@@ -164,8 +164,9 @@ ggg::pam_handle::register_new_user(const account& recruiter) {
 	bool success;
 	do {
 		try {
-			entity ent = f.input_entity(this);
-			this->get_conversation()->prompt("press another key...");
+			entity ent;
+			account acc;
+			std::tie(ent, acc) = f.input_entity(this);
 			GGG g(GGG_ROOT, this->debug());
 			bool has_uid = ent.has_id();
 			bool has_gid = ent.has_gid();
@@ -178,12 +179,14 @@ ggg::pam_handle::register_new_user(const account& recruiter) {
 					ent.set_gid(id);
 				}
 			}
-			g.add(ent, ent.origin());
+			g.add(ent, ent.origin(), acc);
 			success = true;
 		} catch (const std::exception& err) {
 			this->get_conversation()->error(err.what());
 			success = false;
 		}
 	} while (!success);
+	this->get_conversation()->info("success!");
+	this->get_conversation()->prompt("press any key to continue...");
 }
 

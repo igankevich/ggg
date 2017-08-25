@@ -6,6 +6,7 @@
 #include <core/entity.hh>
 #include <pam/pam_handle.hh>
 #include <vector>
+#include <tuple>
 #include <unordered_map>
 
 namespace ggg {
@@ -49,7 +50,7 @@ namespace ggg {
 		void
 		read_fields(const account& recruiter);
 
-		entity
+		std::tuple<entity,account>
 		input_entity(ggg::pam_handle* pamh);
 
 	private:
@@ -57,8 +58,8 @@ namespace ggg {
 		bool
 		validate(const responses& r);
 
-		entity
-		make_entity(const responses& r);
+		std::tuple<entity,account>
+		make_entity_and_account(const responses& r, pam_handle* pamh);
 
 	};
 

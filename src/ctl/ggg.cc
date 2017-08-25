@@ -74,9 +74,18 @@ ggg::GGG::generate(const std::string& name) {
 
 void
 ggg::GGG::add(const entity& ent, const std::string& filename) {
+	this->add(ent, filename, this->_accounts.generate(ent.name().data()));
+}
+
+void
+ggg::GGG::add(
+	const entity& ent,
+	const std::string& filename,
+	const account& acc
+) {
 	this->mkdirs(this->to_relative_path(filename));
 	this->_hierarchy.add(ent, filename);
-	this->_accounts.add(this->_accounts.generate(ent.name().data()));
+	this->_accounts.add(acc);
 }
 
 std::string

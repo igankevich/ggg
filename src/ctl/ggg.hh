@@ -93,6 +93,13 @@ namespace ggg {
 		void
 		add(const entity& ent, const std::string& filename);
 
+		void
+		add(
+			const entity& ent,
+			const std::string& filename,
+			const account& acc
+		);
+
 		inline bool
 		verbose() const noexcept {
 			return this->_verbose;

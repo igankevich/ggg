@@ -5,6 +5,17 @@
 #include <algorithm>
 #include <sstream>
 
+namespace {
+
+	inline void
+	merge_str(std::string& lhs, const std::string& rhs) {
+		if (lhs.empty() && !rhs.empty()) {
+			lhs = rhs;
+		}
+	}
+
+}
+
 std::istream&
 ggg::operator>>(std::istream& in, entity& rhs) {
 	std::istream::sentry s(in);
@@ -141,8 +152,6 @@ ggg::entity::set(const form_field& field, const char* value) {
 	const std::string& t = field.target();
 	if (t == "entity.name") {
 		this->_name = value;
-	} else if (t == "entity.password") {
-		this->_password = value;
 	} else if (t == "entity.realname") {
 		this->_realname = value;
 	} else if (t == "entity.homedir") {
@@ -165,5 +174,23 @@ ggg::entity::set(const form_field& field, const char* value) {
 		this->_origin = value;
 	} else {
 		throw std::invalid_argument("bad field target");
+	}
+}
+
+void
+ggg::entity::merge(const entity& rhs) {
+	if (this->_name != rhs._name) {
+		return;
+	}
+	merge_str(this->_password, rhs._password);
+	merge_str(this->_realname, rhs._realname);
+	merge_str(this->_homedir, rhs._homedir);
+	merge_str(this->_shell, rhs._shell);
+	merge_str(this->_origin, rhs._origin);
+	if (!this->has_id() && rhs.has_id()) {
+		this->_uid = rhs._uid;
+	}
+	if (!this->has_gid() && rhs.has_gid()) {
+		this->_gid = rhs._gid;
 	}
 }

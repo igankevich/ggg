@@ -9,8 +9,9 @@
 #include <sstream>
 #include <string>
 
-#include "config.hh"
+#include <config.hh>
 #include <pam/conversation.hh>
+#include <ctl/password.hh>
 
 namespace {
 
@@ -57,19 +58,20 @@ ggg::form::read_fields(const account& recruiter) {
 	}
 }
 
-ggg::entity
+std::tuple<ggg::entity,ggg::account>
 ggg::form::input_entity(ggg::pam_handle* pamh) {
 	messages m;
 	init_messages(this->all_fields, m, this->is_console());
 	conversation_ptr conv = pamh->get_conversation();
 	entity ent;
+	account acc;
 	bool valid;
 	do {
 		responses r(m.size());
 		conv->converse(m, r);
 		valid = this->validate(r);
 		if (valid) {
-			ent = make_entity(r);
+			std::tie(ent, acc) = make_entity_and_account(r, pamh);
 		}
 		std::stringstream msg;
 		msg << "fields=";
@@ -78,11 +80,12 @@ ggg::form::input_entity(ggg::pam_handle* pamh) {
 			this->all_fields.end(),
 			std::ostream_iterator<form_field>(msg, ",")
 		);
-		msg << "responses=" << r << ",ent=" << ent << ",valid=" << valid;
+		msg << "ent=" << ent
+			<< ",acc=" << acc
+			<< ",valid=" << valid;
 		pamh->debug("%s", msg.str().data());
 	} while (!valid);
-	conv->prompt("press any key...");
-	return ent;
+	return std::make_tuple(ent, acc);
 }
 
 bool
@@ -102,18 +105,48 @@ ggg::form::validate(const responses& r) {
 	);
 }
 
-ggg::entity
-ggg::form::make_entity(const responses& r) {
+std::tuple<ggg::entity,ggg::account>
+ggg::form::make_entity_and_account(const responses& r, ggg::pam_handle* pamh) {
 	field_values values;
 	entity ent;
+	account acc;
 	auto first = this->all_fields.begin();
 	auto last = this->all_fields.end();
 	auto first2 = r.begin();
 	while (first != last) {
 		if (first->type() == field_type::set) {
-			if (first->target().find("entity.") == 0) {
+			bool is_entity_field = first->target().find("entity.") == 0;
+			bool is_account_field = first->target().find("account.") == 0;
+			if (is_entity_field || is_account_field) {
 				std::string value = interpolate(first->regex(), values);
-				ent.set(*first, value.data());
+				if (is_account_field) {
+					acc.set(*first, value.data());
+				} else {
+					ent.set(*first, value.data());
+				}
+			}
+		} else if (first->type() == field_type::set_secure) {
+			if (first->target() == "account.password") {
+				form_field::id_type id = 0;
+				std::stringstream str(first->regex());
+				char ch = str.get();
+				if (ch != '$') {
+					str.putback(ch);
+				}
+				str >> id;
+				auto it = values.find(form_field(id));
+				if (it != values.end()) {
+					const char* new_password = it->second;
+					ggg::secure_string encrypted = ggg::encrypt(
+						new_password,
+						ggg::account::password_prefix(
+							ggg::generate_salt(),
+							pamh->password_id(),
+							pamh->num_rounds()
+						)
+					);
+					acc.set_password(encrypted);
+				}
 			}
 		} else {
 			values.emplace(*first, first2->text());
@@ -121,7 +154,7 @@ ggg::form::make_entity(const responses& r) {
 		++first;
 		++first2;
 	}
-	return ent;
+	return std::make_tuple(ent, acc);
 }
 
 std::string

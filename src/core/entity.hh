@@ -163,6 +163,9 @@ namespace ggg {
 		}
 
 		void clear();
+
+		void
+		merge(const entity& rhs);
 	};
 
 
