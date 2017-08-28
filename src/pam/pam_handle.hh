@@ -15,13 +15,16 @@ namespace ggg {
 
 	class pam_handle {
 
-		::pam_handle_t* _pamh;
+		::pam_handle_t* _pamh = nullptr;
 		bool _debug = false;
 		bool _allowregister = false;
 		bool _nocolon = false;
 		unsigned int _nrounds = 0;
 
 	public:
+
+		pam_handle() = default;
+
 		inline explicit
 		pam_handle(::pam_handle_t* pamh):
 		_pamh(pamh)
@@ -83,11 +86,15 @@ namespace ggg {
 		register_new_user(const account& recruiter);
 
 		inline operator ::pam_handle_t*() noexcept {
-			return _pamh;
+			return this->_pamh;
 		}
 
 		inline operator ::pam_handle_t*() const noexcept {
-			return _pamh;
+			return this->_pamh;
+		}
+
+		inline operator ::pam_handle_t**() noexcept {
+			return &this->_pamh;
 		}
 
 	private:

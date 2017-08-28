@@ -191,6 +191,20 @@ namespace ggg {
 	class conversation: public ::pam_conv {
 
 	public:
+		typedef int (*conv_type)(
+			int,
+			const struct pam_message**,
+			struct pam_response**,
+			void*
+		);
+
+	public:
+
+		inline explicit
+		conversation(conv_type cnv) {
+			this->conv = cnv;
+			this->appdata_ptr = nullptr;
+		}
 
 		inline responses
 		info(const char* text) {

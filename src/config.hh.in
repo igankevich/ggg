@@ -18,5 +18,6 @@
 #define GGG_FILE_EDITOR "@file_editor@"
 #define GGG_DIRECTORY_EDITOR "@directory_editor@"
 #define GGG_CATALOG "@catalog@"
+#define GGG_REGFORM_UI_PATH "@regform_ui_path@"
 
 #endif // CONFIG_HH

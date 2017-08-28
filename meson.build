@@ -11,6 +11,16 @@ if not cpp.has_header('nss.h')
 	error('Header nss.h is required to compile the module.')
 endif
 
+if get_option('buildtype') == 'release'
+	add_global_arguments('-DNDEBUG', language: 'cpp')
+endif
+
+datadir = join_paths(
+	get_option('prefix'),
+	get_option('datadir'),
+	meson.project_name()
+)
+
 module_name = 'ggg'
 executable_name = 'ggg'
 config = configuration_data()
@@ -25,6 +35,7 @@ config.set('version', meson.project_version())
 config.set('file_editor', 'vi')
 config.set('directory_editor', 'vidir')
 config.set('catalog', 'ggg')
+config.set('regform_ui_path', join_paths(datadir, 'regform.ui'))
 
 unistdx = dependency('unistdx')
 gtest = dependency('gtest', main: true)
@@ -34,3 +45,4 @@ libcrypt = cpp.find_library('crypt')
 
 subdir('src')
 subdir('po')
+subdir('data')

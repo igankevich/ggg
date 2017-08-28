@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<interface>
+  <object id="window" class="GtkWindow">
+    <property name="visible">True</property>
+    <property name="title">Registration</property>
+    <property name="border-width">4</property>
+    <property name="window-position">center</property>
+    <child>
+      <object id="grid" class="GtkGrid">
+        <property name="visible">True</property>

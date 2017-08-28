@@ -4,3 +4,10 @@ option(
 	choices: ['address', 'none'],
 	value: 'none'
 )
+
+option(
+	'gui',
+	type: 'boolean',
+	value: true,
+	description: 'build registration form GUI'
+)

@@ -52,16 +52,16 @@ ggg::form::read_fields(const account& recruiter) {
 		std::copy(
 			std::istream_iterator<form_field>(in),
 			std::istream_iterator<form_field>(),
-			std::back_inserter(this->all_fields)
+			std::back_inserter(this->_fields)
 		);
-		std::sort(this->all_fields.begin(), this->all_fields.end());
+		std::sort(this->_fields.begin(), this->_fields.end());
 	}
 }
 
 std::tuple<ggg::entity,ggg::account>
 ggg::form::input_entity(ggg::pam_handle* pamh) {
 	messages m;
-	init_messages(this->all_fields, m, this->is_console());
+	init_messages(this->_fields, m, this->is_console());
 	conversation_ptr conv = pamh->get_conversation();
 	entity ent;
 	account acc;
@@ -76,8 +76,8 @@ ggg::form::input_entity(ggg::pam_handle* pamh) {
 		std::stringstream msg;
 		msg << "fields=";
 		std::copy(
-			this->all_fields.begin(),
-			this->all_fields.end(),
+			this->_fields.begin(),
+			this->_fields.end(),
 			std::ostream_iterator<form_field>(msg, ",")
 		);
 		msg << "ent=" << ent
@@ -92,7 +92,7 @@ bool
 ggg::form::validate(const responses& r) {
 	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
 	return std::equal(
-		this->all_fields.begin(), this->all_fields.end(), r.begin(),
+		this->_fields.begin(), this->_fields.end(), r.begin(),
 		[&cv] (const form_field& ff, const response& resp) {
 			bool valid = true;
 			if (ff.is_input()) {
@@ -110,8 +110,8 @@ ggg::form::make_entity_and_account(const responses& r, ggg::pam_handle* pamh) {
 	field_values values;
 	entity ent;
 	account acc;
-	auto first = this->all_fields.begin();
-	auto last = this->all_fields.end();
+	auto first = this->_fields.begin();
+	auto last = this->_fields.end();
 	auto first2 = r.begin();
 	while (first != last) {
 		if (first->type() == field_type::set) {

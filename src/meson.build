@@ -34,4 +34,7 @@ subdir('ctl')
 subdir('nss')
 subdir('pam')
 subdir('ggg')
+if get_option('gui')
+	subdir('regform')
+endif
 subdir('test')

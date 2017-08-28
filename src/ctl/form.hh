@@ -22,7 +22,7 @@ namespace ggg {
 		typedef std::vector<form_field> container_type;
 
 	private:
-		container_type all_fields;
+		container_type _fields;
 		form_type _type = form_type::console;
 
 	public:
@@ -45,6 +45,11 @@ namespace ggg {
 		inline bool
 		is_console() const noexcept {
 			return this->_type == form_type::console;
+		}
+
+		inline const container_type&
+		fields() const noexcept {
+			return this->_fields;
 		}
 
 		void
