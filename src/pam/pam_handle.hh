@@ -6,6 +6,7 @@
 #include <security/pam_ext.h>
 #include "pam_call.hh"
 #include "core/account.hh"
+#include "core/form_type.hh"
 #include "conversation.hh"
 
 namespace ggg {
@@ -18,7 +19,7 @@ namespace ggg {
 		::pam_handle_t* _pamh = nullptr;
 		bool _debug = false;
 		bool _allowregister = false;
-		bool _nocolon = false;
+		form_type _type = form_type::console;
 		unsigned int _nrounds = 0;
 
 	public:

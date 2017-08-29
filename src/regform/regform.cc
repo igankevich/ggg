@@ -6,11 +6,13 @@
 #include <gtk/gtk.h>
 
 #include <algorithm>
+#include <codecvt>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <locale>
+#include <regex>
 #include <sstream>
 
 #include <config.hh>
@@ -24,13 +26,15 @@
 enum struct Conversation_state {
 	Authenticating,
 	Changing_password,
-	Validating
+	Validating,
+	Finished
 };
 
 Conversation_state state = Conversation_state::Authenticating;
 ggg::account recruiter;
 ggg::form::container_type fields;
 ggg::field_values values;
+std::vector<std::string> all_values;
 GtkBuilder* builder = nullptr;
 
 std::string
@@ -56,15 +60,11 @@ get_widget(std::string name) {
 }
 
 bool
-regex_match(const char* string, const char* expr) {
-	GRegexMatchFlags no_flags = static_cast<GRegexMatchFlags>(0);
-	GMatchInfo* match_info;
-	GRegex* regex = g_regex_new(expr, (GRegexCompileFlags)0, no_flags, NULL);
-	g_regex_match(regex, string, no_flags, &match_info);
-	bool result = (g_match_info_matches(match_info));
-	g_match_info_free(match_info);
-	g_regex_unref(regex);
-	return result;
+regex_match(const char* string, const std::string& expr) {
+	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
+	std::wregex reg(cv.from_bytes(expr));
+	std::wstring value(cv.from_bytes(string));
+	return std::regex_match(value, reg);
 }
 
 void
@@ -75,7 +75,9 @@ register_button_clicked(GtkWidget* widget, gpointer) {
 void
 read_entry(const ggg::form_field& ff) {
 	GtkEntry* entry = get_widget<GtkEntry>(field_id(ff));
-	values[ff] = gtk_entry_get_text(entry);
+	const char* text = gtk_entry_get_text(entry);
+	values[ff] = text;
+	all_values.emplace_back(text);
 }
 
 bool
@@ -112,6 +114,7 @@ validate_login() {
 
 void
 read_all_entries() {
+	all_values.clear();
 	const size_t nfields = fields.size();
 	for (size_t i=0; i<nfields; ++i) {
 		if (fields[i].is_input()) {
@@ -160,7 +163,7 @@ read_file(const char* filename) {
 }
 
 std::string
-to_gtk_builder_string(const struct pam_message** msgs, int n) {
+to_gtk_builder_string(const struct pam_message** msgs, size_t n) {
 	if (fields.size() < n) {
 		throw std::invalid_argument("bad no. of fields");
 	}
@@ -169,7 +172,7 @@ to_gtk_builder_string(const struct pam_message** msgs, int n) {
 	std::string error = read_file(GGG_REGFORM_UI_PATH ".error");
 	std::stringstream xml;
 	xml << std::ifstream(GGG_REGFORM_UI_PATH ".head").rdbuf();
-	for (int i=0; i<n; ++i) {
+	for (size_t i=0; i<n; ++i) {
 		const struct pam_message* m = msgs[i];
 		ggg::format_message(
 			xml,
@@ -207,7 +210,7 @@ int converse(
 		}
 	} else if (state == Conversation_state::Changing_password) {
 		// TODO
-	} else {
+	} else if (state == Conversation_state::Validating) {
 		for (int i=0; i<num_msg; ++i) {
 			std::clog << "msg[i]->msg=" << msg[i]->msg << std::endl;
 		}
@@ -220,8 +223,20 @@ int converse(
 			const ggg::form_field& ff = fields[i];
 			connect_signal(field_id(ff), "changed", entry_changed);
 		}
-		connect_signal("register", "clicked", register_button_clicked);
+		connect_signal("register", "clicked", gtk_main_quit);
 		gtk_main();
+		if (size_t(num_msg) != all_values.size()) {
+			throw std::invalid_argument("wrong number of fields");
+		}
+		struct pam_response* r = allocate<struct pam_response>(num_msg);
+		for (int i=0; i<num_msg; ++i) {
+			r[i].resp = strdup(all_values[i].data());
+			r[i].resp_retcode = 0;
+		}
+		*resp = r;
+		state = Conversation_state::Finished;
+	} else {
+		// TODO
 	}
 	return int(ret);
 }
@@ -234,13 +249,13 @@ main(int argc, char* argv[]) {
 	}
 
 	const char* username = argv[1];
-	ggg::account_ctl accounts;
-	auto result = accounts.find(username);
-	if (result == accounts.end()) {
-		throw std::invalid_argument("account not found");
-	}
-	recruiter = *result;
 	{
+		ggg::account_ctl accounts;
+		auto result = accounts.find(username);
+		if (result == accounts.end()) {
+			throw std::invalid_argument("account not found");
+		}
+		recruiter = *result;
 		ggg::form f(recruiter);
 		fields = f.fields();
 	}

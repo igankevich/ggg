@@ -2,6 +2,7 @@
 #define CTL_FORM_HH
 
 #include <core/form_field.hh>
+#include <core/form_type.hh>
 #include <core/account.hh>
 #include <core/entity.hh>
 #include <pam/pam_handle.hh>
@@ -10,11 +11,6 @@
 #include <unordered_map>
 
 namespace ggg {
-
-	enum struct form_type {
-		console,
-		graphical
-	};
 
 	class form {
 

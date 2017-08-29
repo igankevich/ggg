@@ -8,4 +8,5 @@ hierarchy_src += files([
 
 forms_src += files([
 	'form_field.cc',
+	'form_type.cc',
 ])

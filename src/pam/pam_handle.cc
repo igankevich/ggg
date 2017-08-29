@@ -132,8 +132,8 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
 			this->_debug = true;
 		} else if (arg == "register") {
 			this->_allowregister = true;
-		} else if (arg == "nocolon") {
-			this->_nocolon = true;
+		} else if (arg.find("type=") == 0) {
+			this->_type = from_string(arg.data() + 5);
 		} else if (arg.find("rounds=") == 0) {
 			const int tmp = std::atoi(arg.data() + 7);
 			if (tmp > 0) {
@@ -160,7 +160,7 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
 void
 ggg::pam_handle::register_new_user(const account& recruiter) {
 	form f(recruiter);
-	f.set_type(this->_nocolon ? form_type::graphical : form_type::console);
+	f.set_type(this->_type);
 	bool success;
 	do {
 		try {
@@ -186,7 +186,9 @@ ggg::pam_handle::register_new_user(const account& recruiter) {
 			success = false;
 		}
 	} while (!success);
-	this->get_conversation()->info("success!");
-	this->get_conversation()->prompt("press any key to continue...");
+	if (this->_type == form_type::console) {
+		this->get_conversation()->info("success!");
+		this->get_conversation()->prompt("press any key to continue...");
+	}
 }
 
