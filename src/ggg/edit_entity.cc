@@ -19,6 +19,7 @@
 #include "tmpfile.hh"
 #include "align_columns.hh"
 #include "object_traits.hh"
+#include "core/lock.hh"
 
 void
 ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
@@ -49,7 +50,9 @@ ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Edit_entity::execute()  {
+	file_lock lock;
 	GGG g(GGG_ENT_ROOT, this->verbose());
+	lock.unlock();
 	switch (this->_type) {
 		case Type::Entity: this->edit_objects<entity>(g); break;
 		case Type::Account: this->edit_objects<account>(g); break;
@@ -75,6 +78,7 @@ ggg::Edit_entity::edit_objects(GGG& g) {
 template <class T>
 void
 ggg::Edit_entity::print_objects(GGG& g, std::ostream& out) {
+	file_lock lock;
 	typedef Object_traits<T> traits_type;
 	std::set<T> cnt;
 	traits_type::find(g, this->args(), std::inserter(cnt, cnt.begin()));
@@ -99,6 +103,7 @@ ggg::Edit_entity::print_usage() {
 template <class T>
 void
 ggg::Edit_entity::update_objects(GGG& g, const std::string& filename) {
+	file_lock lock(true);
 	typedef Object_traits<T> traits_type;
 	std::vector<T> ents;
 	read_objects<T>(

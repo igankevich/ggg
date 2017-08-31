@@ -169,7 +169,9 @@ ggg::pam_handle::register_new_user(const account& recruiter) {
 			entity ent;
 			account acc;
 			std::tie(ent, acc) = f.input_entity(this);
+			file_lock lock;
 			GGG g(GGG_ENT_ROOT, this->debug());
+			lock.unlock();
 			bool has_uid = ent.has_id();
 			bool has_gid = ent.has_gid();
 			if (!has_uid || !has_gid) {

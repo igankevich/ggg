@@ -12,6 +12,7 @@
 #include "object_traits.hh"
 #include "config.hh"
 #include "core/native.hh"
+#include "core/lock.hh"
 
 void
 ggg::Add_entity::parse_arguments(int argc, char* argv[]) {
@@ -39,7 +40,9 @@ ggg::Add_entity::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Add_entity::execute()  {
+	file_lock lock;
 	GGG g(GGG_ENT_ROOT, this->verbose());
+	lock.unlock();
 	bool success = true;
 	for (const std::string& ent : this->args()) {
 		if (g.contains(ent)) {
@@ -64,6 +67,7 @@ ggg::Add_entity::execute()  {
 
 void
 ggg::Add_entity::generate_entities(GGG& g, std::ostream& out) {
+	file_lock lock;
 	std::vector<entity> cnt;
 	for (const std::string& name : this->args()) {
 		cnt.emplace_back(g.generate(name));
@@ -74,6 +78,7 @@ ggg::Add_entity::generate_entities(GGG& g, std::ostream& out) {
 
 void
 ggg::Add_entity::add_entities(GGG& g, const std::string& filename) {
+	file_lock lock(true);
 	typedef Object_traits<entity> traits_type;
 	std::vector<entity> ents;
 	read_objects<entity>(

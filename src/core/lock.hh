@@ -11,13 +11,20 @@ namespace ggg {
 	class file_lock {
 
 	private:
-		file_mutex_type _mtx;
 		bool _write = false;
 
 	public:
 
-		file_lock(bool write=false);
-		~file_lock();
+		inline explicit
+		file_lock(bool write=false):
+		_write(write)
+		{ this->lock(); }
+
+		inline
+		~file_lock() { this->unlock(); }
+
+		void lock();
+		void unlock();
 
 		file_lock(file_lock&&) = delete;
 		file_lock(const file_lock&) = delete;
