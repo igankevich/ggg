@@ -39,7 +39,7 @@ ggg::Add_entity::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Add_entity::execute()  {
-	GGG g(GGG_ROOT, this->verbose());
+	GGG g(GGG_ENT_ROOT, this->verbose());
 	bool success = true;
 	for (const std::string& ent : this->args()) {
 		if (g.contains(ent)) {

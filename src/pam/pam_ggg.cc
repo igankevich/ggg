@@ -17,6 +17,8 @@
 #include "ctl/account_ctl.hh"
 #include "ctl/password.hh"
 
+#include <core/lock.hh>
+
 using ggg::throw_pam_error;
 using ggg::pam_errc;
 using ggg::pam::call;
@@ -49,11 +51,18 @@ namespace {
 
 	ggg::account
 	find_account(const char* user) {
+		ggg::file_lock lock;
 		ggg::account_ctl::iterator result = all_accounts.find(user);
 		if (result == all_accounts.end()) {
 			throw_pam_error(ggg::pam_errc::unknown_user);
 		}
 		return *result;
+	}
+
+	void
+	update_account(const ggg::account acc) {
+		ggg::file_lock lock;
+		all_accounts.update(acc);
 	}
 
 	void
@@ -186,7 +195,7 @@ int pam_sm_chauthtok(
 				)
 			);
 			acc.set_password(encrypted);
-			all_accounts.update(acc);
+			update_account(acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = pam_errc::success;
 		} catch (const std::system_error& e) {

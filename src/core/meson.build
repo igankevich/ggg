@@ -4,7 +4,8 @@ hierarchy_src += files([
 	'group.cc',
 	'account.cc',
 	'account_flags.cc',
-	'native.cc'
+	'native.cc',
+	'lock.cc',
 ])
 
 forms_src += files([

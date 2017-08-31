@@ -70,7 +70,7 @@ test(
 		'NSS_WRAPPER_DEBUGLEVEL=3',
 		'NSS_WRAPPER_PASSWD=passwd',
 		'NSS_WRAPPER_GROUP=group',
-		'GGG_ROOT=h-pwd'
+		'GGG_ENT_ROOT=h-pwd'
 	]
 )
 
@@ -90,7 +90,7 @@ test(
 		'NSS_WRAPPER_DEBUGLEVEL=3',
 		'NSS_WRAPPER_PASSWD=passwd',
 		'NSS_WRAPPER_GROUP=group',
-		'GGG_ROOT=h-grp'
+		'GGG_ENT_ROOT=h-grp'
 	]
 )
 

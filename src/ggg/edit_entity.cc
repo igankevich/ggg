@@ -49,7 +49,7 @@ ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Edit_entity::execute()  {
-	GGG g(GGG_ROOT, this->verbose());
+	GGG g(GGG_ENT_ROOT, this->verbose());
 	switch (this->_type) {
 		case Type::Entity: this->edit_objects<entity>(g); break;
 		case Type::Account: this->edit_objects<account>(g); break;
@@ -124,7 +124,7 @@ ggg::Edit_entity::edit_directory() {
 	sys::proc_status status;
 	bool success;
 	do {
-		status = ::ggg::edit_directory(sys::path(GGG_ROOT));
+		status = ::ggg::edit_directory(sys::path(GGG_ENT_ROOT));
 		success = status.exited() && status.exit_code() == 0;
 		if (!success) {
 			std::cerr << "bad exit code from editor" << std::endl;

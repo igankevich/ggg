@@ -18,7 +18,8 @@
 #include "ctl/form.hh"
 #include "core/entity.hh"
 #include "core/native.hh"
-#include "config.hh"
+#include <core/lock.hh>
+#include <config.hh>
 
 namespace {
 
@@ -168,7 +169,7 @@ ggg::pam_handle::register_new_user(const account& recruiter) {
 			entity ent;
 			account acc;
 			std::tie(ent, acc) = f.input_entity(this);
-			GGG g(GGG_ROOT, this->debug());
+			GGG g(GGG_ENT_ROOT, this->debug());
 			bool has_uid = ent.has_id();
 			bool has_gid = ent.has_gid();
 			if (!has_uid || !has_gid) {
@@ -180,7 +181,10 @@ ggg::pam_handle::register_new_user(const account& recruiter) {
 					ent.set_gid(id);
 				}
 			}
-			g.add(ent, ent.origin(), acc);
+			{
+				file_lock lock(true);
+				g.add(ent, ent.origin(), acc);
+			}
 			success = true;
 		} catch (const std::system_error& err) {
 			success = false;

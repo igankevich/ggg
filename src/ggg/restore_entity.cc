@@ -9,7 +9,7 @@
 
 void
 ggg::Restore_entity::execute()  {
-	GGG g(GGG_ROOT, this->verbose());
+	GGG g(GGG_ENT_ROOT, this->verbose());
 	std::for_each(
 		this->args_begin(),
 		this->args_end(),

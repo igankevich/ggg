@@ -48,6 +48,7 @@ ggg::form::read_fields(const account& recruiter) {
 	path.push_back('/');
 	path.append(recruiter.login().data());
 	std::ifstream in(path);
+	in.imbue(std::locale::classic());
 	if (in.is_open()) {
 		std::copy(
 			std::istream_iterator<form_field>(in),

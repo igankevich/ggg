@@ -6,7 +6,7 @@
 
 void
 init_root(const char* script) {
-	ASSERT_EQ(0, run_script(script, GGG_ROOT));
+	ASSERT_EQ(0, run_script(script, GGG_ENT_ROOT));
 }
 
 class GrpTest: public ::testing::Test {};
