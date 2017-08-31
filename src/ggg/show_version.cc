@@ -4,8 +4,9 @@
 #include <unistd.h>
 
 #include "config.hh"
-#include "version.hh"
-#include "build_date.hh"
+
+#define GGG_REVISION GGG_VERSION
+#define GGG_BUILD_DATE GGG_VERSION
 
 void
 ggg::Show_version::parse_arguments(int argc, char* argv[])  {

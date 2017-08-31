@@ -18,5 +18,6 @@ executable(
 	executable_name,
 	sources: ggg_src + hierarchy_src,
 	include_directories: inc,
-	dependencies: [unistdx,libcrypt]
+	dependencies: [unistdx,libcrypt],
+	install: true
 )
