@@ -60,8 +60,8 @@ GtkWidget* passwordEntry = nullptr;
 std::vector<GtkWidget*> all_entries;
 std::vector<GtkWidget*> all_error_labels;
 std::thread pam_thread;
-std::mutex pam_mutex;
-std::condition_variable pam_cv;
+std::recursive_mutex pam_mutex;
+std::condition_variable_any pam_cv;
 const char* username = nullptr;
 bool all_valid = false;
 
@@ -244,7 +244,6 @@ show_message_box(gpointer data) {
 	);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	std::unique_lock<std::mutex> lock(pam_mutex);
 	pam_cv.notify_one();
 	return FALSE;
 }
@@ -314,7 +313,7 @@ int converse(
 	} else if (state == Conversation_state::Validating) {
 		auto pair = std::make_pair(msg, num_msg);
 		gdk_threads_add_idle(show_registration_form, &pair);
-		std::unique_lock<std::mutex> lock(pam_mutex);
+		std::unique_lock<std::recursive_mutex> lock(pam_mutex);
 		pam_cv.wait(lock);
 		if (state == Conversation_state::Quit) {
 			*resp = nullptr;
@@ -338,7 +337,7 @@ int converse(
 					msg[0]->msg_style == PAM_TEXT_INFO))
 		{
 			gdk_threads_add_idle(show_message_box, const_cast<struct pam_message*>(msg[0]));
-			std::unique_lock<std::mutex> lock(pam_mutex);
+			std::unique_lock<std::recursive_mutex> lock(pam_mutex);
 			pam_cv.wait(lock);
 			if (msg[0]->msg_style == PAM_TEXT_INFO) {
 				state = Conversation_state::Finished;
@@ -501,7 +500,6 @@ activate_register_form(
 
 void
 terminate_conversation() {
-	std::unique_lock<std::mutex> lock(pam_mutex);
 	state = Conversation_state::Quit;
 	window = nullptr;
 	pam_cv.notify_one();
