@@ -110,6 +110,7 @@ namespace ggg {
 			pam_syslog(
 				*this,
 				e.code().value() == PAM_PERM_DENIED ? LOG_NOTICE : LOG_ERR,
+				"%s",
 				e.code().message().data()
 			);
 		}

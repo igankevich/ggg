@@ -118,7 +118,7 @@ ggg::pam_handle::handle_error(const std::system_error& e, pam_errc def) const {
 		print_error(e);
 	} else if (e.code().category() == std::iostream_category()) {
 		ret = def;
-		pam_syslog(*this, LOG_CRIT, e.what());
+		pam_syslog(*this, LOG_CRIT, "%s", e.what());
 	} else {
 		ret = def;
 		print_error(e);
