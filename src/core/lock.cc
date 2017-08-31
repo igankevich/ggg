@@ -19,11 +19,19 @@ ggg::file_lock::~file_lock() {
 	sys::file_stat st(GGG_GIT_ROOT);
 	if (this->_write && st.exists() && st.is_directory()) {
 		sys::process p([] () {
+			if (-1 == ::chdir(GGG_ROOT)) {
+				return 1;
+			}
+			char host[4096] = {0};
+			::gethostname(host, sizeof(host));
+			std::stringstream line;
+			line << "git add --all && git -c user.name=ggg -c user.email=ggg@";
+			line << host << " commit -m 'updated'";
 			using namespace sys::this_process;
 			return execute(
 				"/bin/sh",
 				"-c",
-				"git add --all && git -c user.name=ggg -c user.email=ggg@ggg commit -m 'updated'"
+				line.str()
 			);
 		});
 		sys::proc_status status = p.wait();

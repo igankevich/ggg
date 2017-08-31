@@ -3,12 +3,14 @@
 
 #define MODULE_NAME @module_name@
 
+#define GGG_ROOT "@root_directory@"
 #if defined(GGG_TEST)
 #include <cstdlib>
-#define GGG_ROOT "@root_directory@"
 #define GGG_ENT_ROOT std::getenv("GGG_ENT_ROOT")
+#define GGG_LOCK_FILE "test.lock"
 #else
 #define GGG_ENT_ROOT "@ent_root_directory@"
+#define GGG_LOCK_FILE "@lock_file@"
 #endif
 #define GGG_REG_ROOT "@reg_root_directory@"
 #define GGG_GIT_ROOT "@git_root_directory@"
@@ -20,6 +22,5 @@
 #define GGG_FILE_EDITOR "@file_editor@"
 #define GGG_DIRECTORY_EDITOR "@directory_editor@"
 #define GGG_CATALOG "@catalog@"
-#define GGG_LOCK_FILE "@lock_file@"
 
 #endif // CONFIG_HH
