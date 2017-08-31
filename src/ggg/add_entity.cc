@@ -11,7 +11,7 @@
 #include "editor.hh"
 #include "object_traits.hh"
 #include "config.hh"
-#include "native.hh"
+#include "core/native.hh"
 
 void
 ggg::Add_entity::parse_arguments(int argc, char* argv[]) {

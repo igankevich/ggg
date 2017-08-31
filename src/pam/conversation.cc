@@ -4,6 +4,7 @@
 #include "pam_call.hh"
 #include <unistdx/it/intersperse_iterator>
 #include <algorithm>
+#include <iostream>
 
 void
 ggg::conversation::converse(const messages& m, responses& r) {

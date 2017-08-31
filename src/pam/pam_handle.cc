@@ -17,6 +17,7 @@
 #include "ctl/ggg.hh"
 #include "ctl/form.hh"
 #include "core/entity.hh"
+#include "core/native.hh"
 #include "config.hh"
 
 namespace {
@@ -161,7 +162,7 @@ void
 ggg::pam_handle::register_new_user(const account& recruiter) {
 	form f(recruiter);
 	f.set_type(this->_type);
-	bool success;
+	bool success, stopped = false;
 	do {
 		try {
 			entity ent;
@@ -181,13 +182,22 @@ ggg::pam_handle::register_new_user(const account& recruiter) {
 			}
 			g.add(ent, ent.origin(), acc);
 			success = true;
-		} catch (const std::exception& err) {
-			this->get_conversation()->error(err.what());
+		} catch (const std::system_error& err) {
 			success = false;
+			if (pam_errc(err.code().value()) == pam_errc::conversation_error) {
+				stopped = true;
+			} else {
+				this->get_conversation()->error(err.what());
+			}
+		} catch (const std::exception& err) {
+			success = false;
+			this->get_conversation()->error(err.what());
 		}
-	} while (!success);
+	} while (!success && !stopped);
+	if (success) {
+		this->get_conversation()->info(native("Registered successfully!").data());
+	}
 	if (this->_type == form_type::console) {
-		this->get_conversation()->info("success!");
 		this->get_conversation()->prompt("press any key to continue...");
 	}
 }

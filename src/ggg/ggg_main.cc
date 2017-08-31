@@ -5,7 +5,7 @@
 #include "config.hh"
 #include "all_commands.hh"
 #include "quiet_error.hh"
-#include "native.hh"
+#include "core/native.hh"
 
 void
 show_error(const char* what) {

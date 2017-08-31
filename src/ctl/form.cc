@@ -69,6 +69,12 @@ ggg::form::input_entity(ggg::pam_handle* pamh) {
 	do {
 		responses r(m.size());
 		conv->converse(m, r);
+		if (!r.ok()) {
+			throw std::invalid_argument("null response");
+		}
+		if (r.size() != m.size()) {
+			throw std::invalid_argument("bad response");
+		}
 		valid = this->validate(r);
 		if (valid) {
 			std::tie(ent, acc) = make_entity_and_account(r, pamh);

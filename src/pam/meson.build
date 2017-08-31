@@ -5,11 +5,20 @@ pam_src = files([
 	'conversation.cc',
 ]) + hierarchy_src + forms_src
 
-shared_library(
+pam_ggg = shared_library(
 	'pam_' + module_name,
 	sources: pam_src + hierarchy_src,
 	include_directories: inc,
-	dependencies: [pam,unistdx,libcrypt]
+	dependencies: [pam,unistdx,libcrypt],
 )
 
-
+meson.add_install_script(
+	join_paths(meson.source_root(), 'scripts', 'install-pam-ggg'),
+	join_paths(meson.current_build_dir(), pam_ggg.full_path()),
+	join_paths(
+		get_option('prefix'),
+		get_option('libdir'),
+		'security',
+		'pam_' + module_name + '.so'
+	)
+)

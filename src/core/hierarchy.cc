@@ -1,8 +1,10 @@
 #include "hierarchy.hh"
+
 #include <unistdx/it/intersperse_iterator>
 #include <unistdx/fs/idirtree>
 #include <iostream>
 #include <iterator>
+#include <locale>
 #include <stdexcept>
 #include <pwd.h>
 
@@ -165,6 +167,7 @@ ggg::Hierarchy::process_entry(const sys::pathentry& entry, bool& success) {
 		switch (sys::get_file_type(entry)) {
 			case sys::file_type::regular: {
 				std::ifstream in(filepath);
+				in.imbue(std::locale::classic());
 				if (in.is_open()) {
 					entity ent;
 					while (in >> ent) {
@@ -198,6 +201,7 @@ ggg::Hierarchy::add(
 		std::min(filepath.size(), _root.size() + 1)
 	);
 	std::stringstream tmp;
+	tmp.imbue(std::locale::classic());
 	tmp << dirs;
 	auto result = container.find(ent);
 	if (result != container.end()) {
@@ -250,8 +254,10 @@ ggg::Hierarchy::erase_regular(const entity& ent) {
 	std::ofstream file_new;
 	try {
 		file.exceptions(std::ios::badbit);
+		file.imbue(std::locale::classic());
 		file.open(origin);
 		file_new.exceptions(std::ios::badbit);
+		file_new.imbue(std::locale::classic());
 		file_new.open(new_origin);
 		std::copy_if(
 			iterator(file),
@@ -335,8 +341,10 @@ ggg::Hierarchy::update_regular(const entity& ent, sys::path ent_origin) {
 	std::ofstream file_new;
 	try {
 		file.exceptions(std::ios::badbit);
+		file.imbue(std::locale::classic());
 		file.open(origin);
 		file_new.exceptions(std::ios::badbit);
+		file_new.imbue(std::locale::classic());
 		file_new.open(new_origin);
 		std::transform(
 			iterator(file),

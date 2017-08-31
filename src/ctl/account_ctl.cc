@@ -1,9 +1,10 @@
 #include "account_ctl.hh"
 
-#include <fstream>
 #include <algorithm>
-#include <system_error>
+#include <fstream>
 #include <iostream>
+#include <locale>
+#include <system_error>
 #include <unistd.h>
 
 #include "config.hh"
@@ -24,6 +25,7 @@ ggg::account_ctl::find(const char* user) const {
 	iterator result;
 	std::ifstream shadow;
 	try {
+		shadow.imbue(std::locale::classic());
 		shadow.exceptions(std::ios::badbit);
 		shadow.open(GGG_SHADOW);
 		result = std::find_if(
@@ -45,6 +47,7 @@ ggg::account_ctl::for_each(process_account func) {
 	std::ifstream shadow;
 	try {
 		shadow.exceptions(std::ios::badbit);
+		shadow.imbue(std::locale::classic());
 		shadow.open(GGG_SHADOW);
 		std::for_each(iterator(shadow), iterator(), func);
 	} catch (...) {
@@ -60,8 +63,10 @@ ggg::account_ctl::erase(const char* user) {
 	std::ofstream shadow_new;
 	try {
 		shadow.exceptions(std::ios::badbit);
+		shadow.imbue(std::locale::classic());
 		shadow.open(GGG_SHADOW);
 		shadow_new.exceptions(std::ios::badbit);
+		shadow_new.imbue(std::locale::classic());
 		shadow_new.open(GGG_SHADOW_NEW);
 		std::copy_if(
 			iterator(shadow),
@@ -92,8 +97,10 @@ ggg::account_ctl::update(const account& acc) {
 	std::ofstream shadow_new;
 	try {
 		shadow.exceptions(std::ios::badbit);
+		shadow.imbue(std::locale::classic());
 		shadow.open(GGG_SHADOW);
 		shadow_new.exceptions(std::ios::badbit);
+		shadow_new.imbue(std::locale::classic());
 		shadow_new.open(GGG_SHADOW_NEW);
 		std::transform(
 			iterator(shadow),
@@ -117,8 +124,10 @@ ggg::account_ctl::update(const char* acc, update_account func) {
 	std::ofstream shadow_new;
 	try {
 		shadow.exceptions(std::ios::badbit);
+		shadow.imbue(std::locale::classic());
 		shadow.open(GGG_SHADOW);
 		shadow_new.exceptions(std::ios::badbit);
+		shadow_new.imbue(std::locale::classic());
 		shadow_new.open(GGG_SHADOW_NEW);
 		std::transform(
 			iterator(shadow),

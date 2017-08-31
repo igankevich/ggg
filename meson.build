@@ -23,26 +23,26 @@ datadir = join_paths(
 
 module_name = 'ggg'
 executable_name = 'ggg'
+etc = '/' + get_option('sysconfdir')
 config = configuration_data()
 config.set('module_name', module_name)
-config.set('root_directory', '/etc/' + module_name + '/ent')
-config.set('shadow_file', '/etc/' + module_name + '/acc/shadow')
-config.set('shadow_file_new', '/etc/' + module_name + '/acc/.shadow.new')
-config.set('reg_root_directory', '/etc/' + module_name + '/reg')
+config.set('root_directory', join_paths(etc, module_name, 'ent'))
+config.set('shadow_file', join_paths(etc, module_name, 'acc', 'shadow'))
+config.set('shadow_file_new', join_paths(etc, module_name, 'acc', '.shadow.new'))
+config.set('reg_root_directory', join_paths(etc, module_name, 'reg'))
 config.set('salt_length', '16')
 config.set('executable_name', executable_name)
 config.set('version', meson.project_version())
 config.set('file_editor', 'vi')
 config.set('directory_editor', 'vidir')
 config.set('catalog', 'ggg')
-config.set('regform_ui_path', join_paths(datadir, 'regform.ui'))
 
 unistdx = dependency('unistdx')
 gtest = dependency('gtest', main: true)
 nss_wrapper = dependency('nss_wrapper')
+threads = dependency('threads')
 pam = cpp.find_library('pam')
 libcrypt = cpp.find_library('crypt')
 
 subdir('src')
 subdir('po')
-subdir('data')
