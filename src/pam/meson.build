@@ -15,10 +15,6 @@ pam_ggg = shared_library(
 meson.add_install_script(
 	join_paths(meson.source_root(), 'scripts', 'install-pam-ggg'),
 	join_paths(meson.current_build_dir(), pam_ggg.full_path()),
-	join_paths(
-		get_option('prefix'),
-		get_option('libdir'),
-		'security',
-		'pam_' + module_name + '.so'
-	)
+	join_paths(get_option('libdir'), 'security'),
+	'pam_' + module_name + '.so'
 )

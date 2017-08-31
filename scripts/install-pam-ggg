@@ -1,3 +1,7 @@
 #!/bin/sh
 
-install -m755 -v "$1" "$2"
+subdir="$2"
+filename="$3"
+dir="$MESON_INSTALL_DESTDIR_PREFIX/$subdir"
+mkdir -p "$dir"
+install -m755 -v "$1" "$dir/$filename"
