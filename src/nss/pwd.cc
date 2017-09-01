@@ -2,18 +2,29 @@
 #include "hierarchy_instance.hh"
 #include <iostream>
 
-namespace {
-	ggg::Hierarchy::iterator first, last;
-}
-
 using ggg::hierarchy;
+
+namespace {
+
+	ggg::Hierarchy::iterator first, last;
+	volatile bool initialised = false;
+
+	void
+	init(bool force=false) {
+		if (!initialised) {
+			hierarchy.open(sys::path(GGG_ENT_ROOT));
+			first = hierarchy.begin();
+			last = hierarchy.end();
+			initialised = true;
+		}
+	}
+
+}
 
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, pw) {
 	enum nss_status ret;
 	try {
-		hierarchy.open(sys::path(GGG_ENT_ROOT));
-		first = hierarchy.begin();
-		last = hierarchy.end();
+		init();
 		ret = NSS_STATUS_SUCCESS;
 	} catch (...) {
 		ret = NSS_STATUS_UNAVAIL;
@@ -26,6 +37,7 @@ NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, pw) {
 	hierarchy.clear();
 	first = hierarchy.begin();
 	last = hierarchy.end();
+	initialised = false;
 	return NSS_STATUS_SUCCESS;
 }
 
@@ -59,20 +71,25 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, uid)(
 	int* errnop
 ) {
 	nss_status ret;
-	hierarchy.ensure_open(GGG_ENT_ROOT);
-	auto it = hierarchy.find_by_uid(uid);
-	if (it != last) {
-		if (buflen < it->buffer_size()) {
-			ret = NSS_STATUS_TRYAGAIN;
-			*errnop = ERANGE;
+	try {
+		ggg::Hierarchy h(sys::path(GGG_ENT_ROOT));
+		auto it = h.find_by_uid(uid);
+		if (it != h.end()) {
+			if (buflen < it->buffer_size()) {
+				ret = NSS_STATUS_TRYAGAIN;
+				*errnop = ERANGE;
+			} else {
+				it->copy_to(result, buffer);
+				ret = NSS_STATUS_SUCCESS;
+				*errnop = 0;
+			}
 		} else {
-			it->copy_to(result, buffer);
-			ret = NSS_STATUS_SUCCESS;
-			*errnop = 0;
+			ret = NSS_STATUS_NOTFOUND;
+			*errnop = ENOENT;
 		}
-	} else {
-		ret = NSS_STATUS_NOTFOUND;
-		*errnop = ENOENT;
+	} catch (...) {
+		ret = NSS_STATUS_UNAVAIL;
+		errno = ENOENT;
 	}
 	return ret;
 }
@@ -85,20 +102,25 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, nam)(
 	int* errnop
 ) {
 	nss_status ret;
-	hierarchy.ensure_open(GGG_ENT_ROOT);
-	auto it = hierarchy.find_by_name(name);
-	if (it != last) {
-		if (buflen < it->buffer_size()) {
-			ret = NSS_STATUS_TRYAGAIN;
-			*errnop = ERANGE;
+	try {
+		ggg::Hierarchy h(sys::path(GGG_ENT_ROOT));
+		auto it = h.find_by_name(name);
+		if (it != h.end()) {
+			if (buflen < it->buffer_size()) {
+				ret = NSS_STATUS_TRYAGAIN;
+				*errnop = ERANGE;
+			} else {
+				it->copy_to(result, buffer);
+				ret = NSS_STATUS_SUCCESS;
+				*errnop = 0;
+			}
 		} else {
-			it->copy_to(result, buffer);
-			ret = NSS_STATUS_SUCCESS;
-			*errnop = 0;
+			ret = NSS_STATUS_NOTFOUND;
+			*errnop = ENOENT;
 		}
-	} else {
-		ret = NSS_STATUS_NOTFOUND;
-		*errnop = ENOENT;
+	} catch (...) {
+		ret = NSS_STATUS_UNAVAIL;
+		errno = ENOENT;
 	}
 	return ret;
 }
