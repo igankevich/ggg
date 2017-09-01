@@ -431,7 +431,11 @@ fork_exec(const char* username) {
 	UNISTDX_CHECK(::initgroups(username, pw->pw_gid));
 	UNISTDX_CHECK(::setregid(pw->pw_gid, pw->pw_gid));
 	UNISTDX_CHECK(::setreuid(pw->pw_uid, pw->pw_uid));
-	sys::this_process::execute(pw->pw_shell, "-l", "-c", cmd);
+	const char* argv[] = {
+		pw->pw_shell, "-c", cmd, 0
+	};
+	::execve(argv[0], const_cast<char *const *>(argv), environ);
+//	sys::this_process::execute(pw->pw_shell, "-c", cmd);
 	std::exit(1);
 }
 
