@@ -399,6 +399,7 @@ do_pam(const char* username, ConverseFunc func) {
 		}
 	}
 	ggg::pam::call(::pam_acct_mgmt(pamh, 0));
+	ggg::pam::call(::pam_open_session(pamh, 0));
 	ggg::pam::call(::pam_end(pamh, 0));
 	if (window) {
 		gdk_threads_add_idle(quit_application, nullptr);
