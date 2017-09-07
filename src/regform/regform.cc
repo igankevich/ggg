@@ -428,6 +428,7 @@ fork_exec(const char* username) {
 	::setenv("HOME", pw->pw_dir, TRUE);
 	::setenv("SHELL", pw->pw_shell, TRUE);
 	::setenv("PWD", pwd, TRUE);
+	// TODO change to setgroups???
 	UNISTDX_CHECK(::initgroups(username, pw->pw_gid));
 	UNISTDX_CHECK(::setregid(pw->pw_gid, pw->pw_gid));
 	UNISTDX_CHECK(::setreuid(pw->pw_uid, pw->pw_uid));
