@@ -41,8 +41,8 @@ ggg::edit_file_or_throw(std::string path) {
 sys::proc_status
 ggg::edit_directory(sys::path root) {
 	sys::pipe pipe;
-	pipe.in().unsetf(sys::fildes::non_blocking);
-	pipe.out().unsetf(sys::fildes::non_blocking);
+	pipe.in().unsetf(sys::open_flag::non_blocking);
+	pipe.out().unsetf(sys::open_flag::non_blocking);
 	sys::process child([&pipe] () {
 		pipe.in().remap(STDIN_FILENO);
 		pipe.out().close();

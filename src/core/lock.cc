@@ -29,11 +29,7 @@ ggg::file_lock::unlock() {
 			line << "git add --all && git -c user.name=ggg -c user.email=ggg@";
 			line << host << " commit -m 'updated'";
 			using namespace sys::this_process;
-			return execute(
-				"/bin/sh",
-				"-c",
-				line.str()
-			);
+			return exec("/bin/sh", "-c", line.str());
 		});
 		sys::proc_status status = p.wait();
 		if (status.exited() && status.exit_code() != 0) {

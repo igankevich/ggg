@@ -5,7 +5,7 @@
 
 namespace ggg {
 
-	typedef sys::file_mutex<sys::write_lock> file_mutex_type;
+	typedef sys::file_mutex file_mutex_type;
 	extern file_mutex_type ggg_mutex;
 
 	class file_lock {
