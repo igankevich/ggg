@@ -32,6 +32,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, nam)(
 	int* errnop
 );
 
+/*
 NSS_MODULE_FUNCTION_INITGROUPS(MODULE_NAME)(
 	const char *user,
 	gid_t group,
@@ -41,6 +42,7 @@ NSS_MODULE_FUNCTION_INITGROUPS(MODULE_NAME)(
 	long int limit,
 	int *errnop
 );
+*/
 
 #endif // GRP_HH
 
