@@ -97,6 +97,11 @@ ggg::pam_handle::set_account(const ggg::account& acc) {
 	}
 }
 
+void
+ggg::pam_handle::set_item(int key, const void* value) {
+	pam::call(::pam_set_item(*this, key, value));
+}
+
 ggg::conversation_ptr
 ggg::pam_handle::get_conversation() const {
 	conversation* ptr = nullptr;

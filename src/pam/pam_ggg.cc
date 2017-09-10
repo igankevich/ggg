@@ -1,21 +1,27 @@
-#include <unistd.h>
-#include <fstream>
-#include <random>
-#include <memory>
-#include <locale>
-#include <cstdio>
-#include <iterator>
 #include <algorithm>
+#include <cstdio>
+#include <fstream>
+#include <iterator>
+#include <locale>
+#include <memory>
+#include <random>
 #include <stdexcept>
-#include <syslog.h>
-#include <security/pam_modules.h>
+
+#include <grp.h>
 #include <security/pam_ext.h>
+#include <security/pam_modules.h>
+#include <sys/types.h>
+#include <syslog.h>
+#include <unistd.h>
+
+#include <unistdx/base/check>
+
 #include "config.hh"
 #include "core/account.hh"
-#include "sec/secure_string.hh"
-#include "pam_handle.hh"
 #include "ctl/account_ctl.hh"
 #include "ctl/password.hh"
+#include "pam_handle.hh"
+#include "sec/secure_string.hh"
 
 #include <core/lock.hh>
 
@@ -161,6 +167,7 @@ int pam_sm_chauthtok(
 		ret = pam_errc::success;
 	} else if (flags & PAM_UPDATE_AUTHTOK) {
 		try {
+			pamh.set_password_type("GGG");
 			const char* user = pamh.get_user();
 			pamh.debug("changing password for user \"%s\"", user);
 			ggg::account acc = find_account(user);

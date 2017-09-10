@@ -66,6 +66,14 @@ namespace ggg {
 		void
 		set_account(const ggg::account& acc);
 
+		inline void
+		set_password_type(const void* word) {
+			this->set_item(PAM_AUTHTOK_TYPE, word);
+		}
+
+		void
+		set_item(int key, const void* value);
+
 		conversation_ptr
 		get_conversation() const;
 
