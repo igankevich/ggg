@@ -11,7 +11,7 @@ namespace {
 	void
 	init() {
 		if (!initialised) {
-			hierarchy.open(sys::path(GGG_ENT_ROOT));
+			hierarchy.open(GGG_ENT_ROOT);
 			first = hierarchy.group_begin();
 			last = hierarchy.group_end();
 			initialised = true;
@@ -72,7 +72,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, gid)(
 ) {
 	nss_status ret;
 	try {
-		ggg::Hierarchy h(sys::path(GGG_ENT_ROOT));
+		ggg::Hierarchy h(GGG_ENT_ROOT);
 		auto it = h.find_group_by_gid(gid);
 		if (it != h.group_end()) {
 			if (buflen < it->buffer_size()) {
@@ -103,7 +103,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, nam)(
 ) {
 	nss_status ret;
 	try {
-		ggg::Hierarchy h(sys::path(GGG_ENT_ROOT));
+		ggg::Hierarchy h(GGG_ENT_ROOT);
 		auto it = h.find_group_by_name(name);
 		if (it != h.group_end()) {
 			if (buflen < it->buffer_size()) {

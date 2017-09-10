@@ -14,10 +14,14 @@ namespace ggg {
 
 	class group {
 
+	public:
+		typedef std::unordered_set<std::string> container_type;
+
+	private:
 		std::string _name;
 		std::string _password;
 		sys::gid_type _gid;
-		mutable std::unordered_set<std::string> _members;
+		mutable container_type _members;
 
 	public:
 		explicit

@@ -35,7 +35,7 @@ TEST_F(HierarchyTest, DefaultState) {
 
 TEST_F(HierarchyTest, NonExistentRootDirectory) {
 	try {
-		hr.open(sys::path("non-existent-directory"));
+		hr.open("non-existent-directory");
 	} catch (std::system_error& err) {
 		EXPECT_EQ(
 			std::errc::no_such_file_or_directory,
@@ -50,14 +50,14 @@ TEST_F(HierarchyTest, EmptyRootDirectory) {
 	rm -rf %
 	mkdir %
 	)", root));
-	hr.open(sys::path(root));
+	hr.open(root);
 	EXPECT_EQ(hr.begin(), hr.end());
 }
 
 TEST_P(HierarchyParamTest, ReadSimple) {
 	const char* root = "h-simple";
 	ASSERT_EQ(0, run_script(GetParam(), root));
-	hr.open(sys::path(root));
+	hr.open(root);
 	EXPECT_NE(hr.begin(), hr.end());
 	expect_uid_name(7, "halt");
 	expect_uid_name(8, "mail");

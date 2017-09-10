@@ -23,7 +23,7 @@ namespace ggg {
 
 		inline explicit
 		GGG(const char* path, bool verbose):
-		_hierarchy(sys::path(path)),
+		_hierarchy(path),
 		_accounts(),
 		_verbose(verbose)
 		{

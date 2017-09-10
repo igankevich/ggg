@@ -54,13 +54,13 @@ namespace ggg {
 		Hierarchy() = default;
 
 		inline explicit
-		Hierarchy(sys::path root)
-		{ open(root); }
+		Hierarchy(const char* root)
+		{ this->open(root); }
 
 		void
-		open(const sys::path& root) {
-			_root = sys::canonical_path(root);
-			read();
+		open(const char* root) {
+			this->_root = sys::canonical_path(root);
+			this->read();
 		}
 
 		bool
@@ -71,7 +71,7 @@ namespace ggg {
 		void
 		ensure_open(const char* root) {
 			if (!is_open()) {
-				open(sys::path(root));
+				this->open(root);
 			}
 		}
 
@@ -148,6 +148,17 @@ namespace ggg {
 					return ent.name() == name;
 				}
 			);
+		}
+
+		group::container_type
+		find_supplementary_groups(const std::string& name) const {
+			group::container_type result;
+			for (const group& g : this->_groups) {
+				if (g.members().find(name) != g.members().end()) {
+					result.emplace(g.name());
+				}
+			}
+			return result;
 		}
 
 		void
