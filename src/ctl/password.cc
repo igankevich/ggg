@@ -4,13 +4,16 @@
 #include <core/account.hh>
 #include <crypt.h>
 #include <random>
-#include <unistdx/base/adapt_engine>
+
+namespace {
+	typedef std::independent_bits_engine<std::random_device, 8, unsigned char>
+		engine_type;
+}
 
 ggg::secure_string
 ggg::generate_salt() {
 	secure_string salt;
-	std::random_device prng;
-	sys::adapt_engine<std::random_device,char> engine(prng);
+	engine_type engine;
 	int i = 0;
 	while (i < GGG_SALT_LENGTH) {
 		const char ch = engine();
