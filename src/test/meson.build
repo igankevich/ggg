@@ -38,7 +38,7 @@ test(
 	)
 )
 
-if etc.startswith('/')
+if not etc.startswith('/')
 
 	ld_preload = ''
 	if get_option('sanitize') == 'address'
