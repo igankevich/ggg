@@ -38,48 +38,52 @@ test(
 	)
 )
 
-ld_preload = ''
-if get_option('sanitize') == 'address'
-	ld_preload += 'LD_PRELOAD=libasan.so.3 libnss_wrapper.so'
-elif get_option('sanitize') == 'none'
-	ld_preload += 'LD_PRELOAD=libnss_wrapper.so'
-endif
+if etc.startswith('/')
 
-test(
-	'pwd-test',
-	executable(
+	ld_preload = ''
+	if get_option('sanitize') == 'address'
+		ld_preload += 'LD_PRELOAD=libasan.so.3 libnss_wrapper.so'
+	elif get_option('sanitize') == 'none'
+		ld_preload += 'LD_PRELOAD=libnss_wrapper.so'
+	endif
+	
+	test(
 		'pwd-test',
-		sources: ['pwd_test.cc'],
-		include_directories: inc,
-		dependencies: [unistdx, gtest, ggg_core],
-	),
-	env: [
-		ld_preload,
-		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy.full_path(),
-		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
-		'NSS_WRAPPER_DEBUGLEVEL=3',
-		'NSS_WRAPPER_PASSWD=passwd',
-		'NSS_WRAPPER_GROUP=group',
-	]
-)
-
-test(
-	'grp-test',
-	executable(
+		executable(
+			'pwd-test',
+			sources: ['pwd_test.cc'],
+			include_directories: inc,
+			dependencies: [unistdx, gtest, ggg_core],
+		),
+		env: [
+			ld_preload,
+			'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy.full_path(),
+			'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
+			'NSS_WRAPPER_DEBUGLEVEL=3',
+			'NSS_WRAPPER_PASSWD=passwd',
+			'NSS_WRAPPER_GROUP=group',
+		]
+	)
+	
+	test(
 		'grp-test',
-		sources: ['grp_test.cc'],
-		include_directories: inc,
-		dependencies: [unistdx, gtest, ggg_core],
-	),
-	env: [
-		ld_preload,
-		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy.full_path(),
-		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
-		'NSS_WRAPPER_DEBUGLEVEL=3',
-		'NSS_WRAPPER_PASSWD=passwd',
-		'NSS_WRAPPER_GROUP=group',
-	]
-)
+		executable(
+			'grp-test',
+			sources: ['grp_test.cc'],
+			include_directories: inc,
+			dependencies: [unistdx, gtest, ggg_core],
+		),
+		env: [
+			ld_preload,
+			'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy.full_path(),
+			'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
+			'NSS_WRAPPER_DEBUGLEVEL=3',
+			'NSS_WRAPPER_PASSWD=passwd',
+			'NSS_WRAPPER_GROUP=group',
+		]
+	)
+
+endif
 
 test(
 	'conversation-test',
