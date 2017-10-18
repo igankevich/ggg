@@ -27,8 +27,10 @@
 #include <core/native.hh>
 #include <ctl/form.hh>
 #include <ctl/account_ctl.hh>
+#include <ctl/password.hh>
 
 #include <unistdx/base/check>
+#include <unistdx/base/log_message>
 
 enum struct Conversation_state {
 	Authenticating,
@@ -124,6 +126,40 @@ validate_login() {
 	return valid;
 }
 
+bool
+validate_password() {
+	auto result = std::find_if(
+		fields.begin(),
+		fields.end(),
+		[&] (const ggg::form_field& rhs) {
+			return rhs.type() == ggg::field_type::set_secure &&
+				rhs.target() == "account.password";
+		}
+	);
+	bool valid = true;
+	const char* errorText = "";
+	if (result != fields.end()) {
+		const ggg::form_field& ff = *result;
+		ggg::form_field::id_type id = 0;
+		std::stringstream str(ff.regex());
+		char ch = str.get();
+		if (ch != '$') {
+			str.putback(ch);
+		}
+		str >> id;
+		auto it = values.find(ggg::form_field(id));
+		if (it != values.end()) {
+			const char* new_password = it->second;
+			ggg::password_match match;
+			if (match.find(new_password)) {
+				std::clog << "bad password: " << match << std::endl;
+			}
+		}
+		errorText = (valid) ? "" : "Weak password";
+	}
+	gtk_label_set_text(GTK_LABEL(loginErrorLabel), errorText);
+	return valid;
+}
 void
 read_all_entries() {
 	all_values.clear();
@@ -157,6 +193,7 @@ entry_changed(GtkWidget*, gpointer) {
 	bool valid = true;
 	valid &= validate_all_entries();
 	valid &= validate_login();
+	valid &= validate_password();
 	all_valid = valid;
 	gtk_widget_set_sensitive(registerButton, valid);
 }
@@ -497,8 +534,12 @@ activate_register_form(
 ) {
 	if (page_num == 1 && !pam_thread.joinable()) {
 		pam_thread = std::thread([&] () {
-			load_form(username);
-			do_pam(username, converse);
+			try {
+				load_form(username);
+				do_pam(username, converse);
+			} catch (const std::exception& err) {
+				sys::log_message("error", "failed to init registration form: _", err.what());
+			}
 		});
 	}
 }
