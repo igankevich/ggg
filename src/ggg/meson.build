@@ -16,8 +16,8 @@ ggg_src = files([
 
 executable(
 	executable_name,
-	sources: ggg_src + hierarchy_src,
+	sources: ggg_src,
 	include_directories: inc,
-	dependencies: [unistdx,libcrypt],
+	dependencies: [unistdx,libcrypt,ggg_core],
 	install: true
 )

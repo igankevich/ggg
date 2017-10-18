@@ -21,7 +21,7 @@ TEST(Pwd, Empty) {
 	rm -f passwd group
 	touch passwd group
 	rm -rf %
-	mkdir %
+	mkdir -p %
 	)");
 	pw_guard g;
 	struct ::passwd* ent = ::getpwent();
@@ -33,7 +33,7 @@ TEST(Pwd, SingleEntry) {
 	rm -f passwd group
 	touch passwd group
 	rm -rf %
-	mkdir %
+	mkdir -p %
 	echo 'testuser:x:2000:2000:halt:/sbin:/sbin/halt' > %/file
 	)");
 	pw_guard g;
@@ -47,7 +47,7 @@ TEST(Pwd, GetByName) {
 	rm -f passwd group
 	touch passwd group
 	rm -rf %
-	mkdir %
+	mkdir -p %
 	echo 'testuser:x:2000:2000:halt:/sbin:/sbin/halt' >> %/file
 	echo 'user2:x:2001:2001:halt:/sbin:/sbin/halt' >> %/file
 	echo 'user3:x:2002:2002:halt:/sbin:/sbin/halt' >> %/file
@@ -73,7 +73,7 @@ TEST(Pwd, GetByUid) {
 	rm -f passwd group
 	touch passwd group
 	rm -rf %
-	mkdir %
+	mkdir -p %
 	echo 'testuser:x:2000:2000:halt:/sbin:/sbin/halt' >> %/file
 	echo 'user2:x:2001:2001:halt:/sbin:/sbin/halt' >> %/file
 	echo 'user3:x:2002:2002:halt:/sbin:/sbin/halt' >> %/file

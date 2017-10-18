@@ -7,9 +7,9 @@ pam_src = files([
 
 pam_ggg = shared_library(
 	'pam_' + module_name,
-	sources: pam_src + hierarchy_src,
+	sources: pam_src,
 	include_directories: inc,
-	dependencies: [pam,unistdx,libcrypt],
+	dependencies: [pam,unistdx,ggg_core,libcrypt],
 )
 
 meson.add_install_script(

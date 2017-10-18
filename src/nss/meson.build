@@ -6,9 +6,9 @@ nss_src = files([
 
 libnss_hierarchy = shared_library(
 	'nss_' + module_name,
-	sources: hierarchy_src + nss_src,
+	sources: nss_src,
 	include_directories: inc,
-	dependencies: [unistdx],
+	dependencies: [unistdx,ggg_core],
 	version: '2',
 	install: true
 )

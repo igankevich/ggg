@@ -21,7 +21,7 @@ TEST(Grp, Empty) {
 	rm -f passwd group
 	touch passwd group
 	rm -rf %
-	mkdir %
+	mkdir -p %
 	)");
 	gr_guard g;
 	struct ::group* ent = ::getgrent();
@@ -33,7 +33,7 @@ TEST(Grp, GroupList) {
 	rm -f passwd group
 	touch passwd group
 	rm -rf %
-	mkdir %
+	mkdir -p %
 	echo 'testuser:x:2000:2000:halt:/sbin:/sbin/halt' > %/file
 	)");
 	int ngroups = 4096 / sizeof(::gid_t);

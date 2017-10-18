@@ -27,7 +27,7 @@ datadir = join_paths(
 
 module_name = 'ggg'
 executable_name = 'ggg'
-etc = '/' + get_option('sysconfdir')
+etc = get_option('sysconfdir')
 config = configuration_data()
 config.set('module_name', module_name)
 config.set('root_directory', join_paths(etc, module_name))
@@ -53,3 +53,19 @@ libcrypt = cpp.find_library('crypt')
 
 subdir('src')
 subdir('po')
+
+# archive {{{
+archive_name = meson.project_name() + '-' + meson.project_version()
+run_target(
+	'archive',
+	command: [
+		'git',
+		'archive',
+		'-o',
+		join_paths(meson.build_root(), archive_name + '.tar.xz'),
+		'--prefix',
+		archive_name + '/',
+		'HEAD'
+	]
+)
+# }}}

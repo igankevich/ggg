@@ -5,7 +5,7 @@
 
 namespace ggg {
 
-	extern Hierarchy hierarchy [[gnu::visibility("hidden")]];
+	extern Hierarchy hierarchy;
 
 }
 

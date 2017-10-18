@@ -48,7 +48,7 @@ TEST_F(HierarchyTest, EmptyRootDirectory) {
 	const char* root = "h-empty";
 	ASSERT_EQ(0, run_script(R"(
 	rm -rf %
-	mkdir %
+	mkdir -p %
 	)", root));
 	hr.open(root);
 	EXPECT_EQ(hr.begin(), hr.end());
@@ -71,7 +71,7 @@ INSTANTIATE_TEST_CASE_P(
 	::testing::Values(
 	R"(
 	rm -rf %
-	mkdir %
+	mkdir -p %
 	echo 'halt:x:7:0:halt:/sbin:/sbin/halt' >> %/file
 	echo 'mail:x:8:12:mail:/var/spool/mail:/sbin/nologin' >> %/file
 	echo 'operator:x:11:0:operator:/root:/sbin/nologin' >> %/file
@@ -79,8 +79,8 @@ INSTANTIATE_TEST_CASE_P(
 	)",
 	R"(
 	rm -rf %
-	mkdir %
-	mkdir %/dir1
+	mkdir -p %
+	mkdir -p %/dir1
 	echo 'halt:x:7:0:halt:/sbin:/sbin/halt' >> %/dir1/file
 	echo 'mail:x:8:12:mail:/var/spool/mail:/sbin/nologin' >> %/dir1/file
 	echo 'operator:x:11:0:operator:/root:/sbin/nologin' >> %/dir1/file
@@ -88,7 +88,7 @@ INSTANTIATE_TEST_CASE_P(
 	)",
 	R"(
 	rm -rf %
-	mkdir %
+	mkdir -p %
 	echo 'halt:x:7:0:halt:/sbin:/sbin/halt' >> %/file1
 	echo 'mail:x:8:12:mail:/var/spool/mail:/sbin/nologin' >> %/file2
 	echo 'operator:x:11:0:operator:/root:/sbin/nologin' >> %/file3
@@ -96,8 +96,8 @@ INSTANTIATE_TEST_CASE_P(
 	)",
 	R"(
 	rm -rf %
-	mkdir %
-	mkdir %/dir1 %/dir2
+	mkdir -p %
+	mkdir -p %/dir1 %/dir2
 	echo 'halt:x:7:0:halt:/sbin:/sbin/halt' >> %/dir1/file1
 	echo 'mail:x:8:12:mail:/var/spool/mail:/sbin/nologin' >> %/dir1/file2
 	echo 'operator:x:11:0:operator:/root:/sbin/nologin' >> %/dir2/file3

@@ -1,19 +1,10 @@
-libnss_hierarchy_test = shared_library(
-	'nss_' + module_name + '_test',
-	sources: hierarchy_src + nss_src,
-	include_directories: inc,
-	dependencies: [unistdx],
-	version: '2',
-	cpp_args: ['-DGGG_TEST']
-)
-
 test(
 	'entity-test',
 	executable(
 		'entity-test',
-		sources: hierarchy_src + ['entity_test.cc'],
+		sources: ['entity_test.cc'],
 		include_directories: inc,
-		dependencies: [unistdx, gtest]
+		dependencies: [unistdx, gtest, ggg_core]
 	)
 )
 
@@ -21,9 +12,9 @@ test(
 	'group-test',
 	executable(
 		'group-test',
-		sources: hierarchy_src + ['group_test.cc'],
+		sources: ['group_test.cc'],
 		include_directories: inc,
-		dependencies: [unistdx, gtest]
+		dependencies: [unistdx, gtest, ggg_core]
 	)
 )
 
@@ -31,9 +22,9 @@ test(
 	'account-test',
 	executable(
 		'account-test',
-		sources: hierarchy_src + ['account_test.cc'],
+		sources: ['account_test.cc'],
 		include_directories: inc,
-		dependencies: [unistdx, gtest]
+		dependencies: [unistdx, gtest, ggg_core]
 	)
 )
 
@@ -41,9 +32,9 @@ test(
 	'hierarchy-test',
 	executable(
 		'hierarchy-test',
-		sources: hierarchy_src + ['hierarchy_test.cc'],
+		sources: ['hierarchy_test.cc'],
 		include_directories: inc,
-		dependencies: [unistdx, gtest]
+		dependencies: [unistdx, gtest, ggg_core]
 	)
 )
 
@@ -58,19 +49,17 @@ test(
 	'pwd-test',
 	executable(
 		'pwd-test',
-		sources: hierarchy_src + ['pwd_test.cc'],
+		sources: ['pwd_test.cc'],
 		include_directories: inc,
-		dependencies: [unistdx, gtest],
-		cpp_args: ['-DGGG_TEST']
+		dependencies: [unistdx, gtest, ggg_core],
 	),
 	env: [
 		ld_preload,
-		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy_test.full_path(),
+		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy.full_path(),
 		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
 		'NSS_WRAPPER_DEBUGLEVEL=3',
 		'NSS_WRAPPER_PASSWD=passwd',
 		'NSS_WRAPPER_GROUP=group',
-		'GGG_ENT_ROOT=h-pwd'
 	]
 )
 
@@ -78,19 +67,17 @@ test(
 	'grp-test',
 	executable(
 		'grp-test',
-		sources: hierarchy_src + ['grp_test.cc'],
+		sources: ['grp_test.cc'],
 		include_directories: inc,
-		dependencies: [unistdx, gtest],
-		cpp_args: ['-DGGG_TEST']
+		dependencies: [unistdx, gtest, ggg_core],
 	),
 	env: [
 		ld_preload,
-		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy_test.full_path(),
+		'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy.full_path(),
 		'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
 		'NSS_WRAPPER_DEBUGLEVEL=3',
 		'NSS_WRAPPER_PASSWD=passwd',
 		'NSS_WRAPPER_GROUP=group',
-		'GGG_ENT_ROOT=h-grp'
 	]
 )
 
@@ -98,17 +85,19 @@ test(
 	'conversation-test',
 	executable(
 		'conversation-test',
-		sources: pam_src + hierarchy_src + ['conversation_test.cc'],
+		sources: ['conversation_test.cc'],
 		include_directories: [inc, pam_inc],
-		dependencies: [unistdx, gtest, libcrypt, pam]
+		link_with: pam_ggg,
+		dependencies: [unistdx, gtest, libcrypt, pam, ggg_core]
 	)
 )
 test(
 	'form-field-test',
 	executable(
 		'form-field-test',
-		sources: pam_src + ['form_field_test.cc'],
+		sources: ['form_field_test.cc'],
 		include_directories: inc,
+		link_with: pam_ggg,
 		dependencies: [unistdx, gtest, pam, libcrypt]
 	)
 )
