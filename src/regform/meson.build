@@ -4,7 +4,7 @@ executable(
 	'ggg-regform',
 	sources: pam_src + ['regform.cc'],
 	include_directories: [inc],
-	dependencies: [pam, gtk3, libcrypt, threads, unistdx, ggg_core],
+	dependencies: [pam, gtk3, libcrypt, threads, unistdx, ggg_core, zxcvbn],
 	install: true
 )
 

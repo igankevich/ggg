@@ -48,6 +48,7 @@ unistdx = dependency('unistdx')
 gtest = dependency('gtest', main: true)
 nss_wrapper = dependency('nss_wrapper')
 threads = dependency('threads')
+zxcvbn = dependency('zxcvbn')
 pam = cpp.find_library('pam')
 libcrypt = cpp.find_library('crypt')
 
