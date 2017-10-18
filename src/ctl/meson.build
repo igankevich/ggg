@@ -9,7 +9,7 @@ forms_src += files([
 ])
 
 ggg_core_lib = shared_library(
-	'ggg-core',
+	'ggg_core',
 	sources: hierarchy_src,
 	include_directories: inc,
 	dependencies: [unistdx],
