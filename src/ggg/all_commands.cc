@@ -4,14 +4,15 @@
 #include <functional>
 #include <unordered_map>
 
+#include "add_entity.hh"
+#include "edit_entity.hh"
+#include "expire_entity.hh"
 #include "remove_entity.hh"
+#include "reset_password.hh"
+#include "restore_entity.hh"
+#include "show_duplicates.hh"
 #include "show_help.hh"
 #include "show_version.hh"
-#include "expire_entity.hh"
-#include "restore_entity.hh"
-#include "edit_entity.hh"
-#include "add_entity.hh"
-#include "reset_password.hh"
 
 #define MAKE_COMMAND(name, type) \
 	{name, [](){ return ::ggg::command_ptr(new ::ggg::type); }}
@@ -31,6 +32,7 @@ namespace {
 		MAKE_COMMAND("activate", Restore_entity),
 		MAKE_COMMAND("unlock", Restore_entity),
 		MAKE_COMMAND("reset", Reset_password),
+		MAKE_COMMAND("duplicates", Show_duplicates),
 		MAKE_COMMAND("edit", Edit_entity),
 		MAKE_COMMAND("modify", Edit_entity),
 		MAKE_COMMAND("change", Edit_entity),

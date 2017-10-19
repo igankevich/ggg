@@ -10,6 +10,7 @@ ggg_src = files([
 	'remove_entity.cc',
 	'reset_password.cc',
 	'restore_entity.cc',
+	'show_duplicates.cc',
 	'show_help.cc',
 	'show_version.cc',
 	'tmpfile.cc',

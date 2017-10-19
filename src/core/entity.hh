@@ -1,9 +1,10 @@
 #ifndef ENTITY_HH
 #define ENTITY_HH
 
+#include <functional>
 #include <istream>
 #include <string>
-#include <functional>
+
 #include <unistdx/fs/path>
 #include <unistdx/util/user>
 
@@ -44,6 +45,17 @@ namespace ggg {
 		_uid(uid),
 		_gid(gid)
 		{ this->_homedir.append(_name); }
+
+		inline explicit
+		entity(const ::passwd& rhs):
+		_name(rhs.pw_name),
+		_password(rhs.pw_passwd),
+		_realname(rhs.pw_gecos),
+		_homedir(rhs.pw_dir),
+		_shell(rhs.pw_shell),
+		_uid(rhs.pw_uid),
+		_gid(rhs.pw_gid)
+		{}
 
 		entity() = default;
 		entity(const entity& rhs) = default;
