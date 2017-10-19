@@ -21,6 +21,8 @@ namespace ggg {
 		bool _allowregister = false;
 		form_type _type = form_type::console;
 		unsigned int _nrounds = 0;
+		/// Minimal password entropy (as computed by zxcvbn library).
+		double _minentropy = 30.0;
 
 	public:
 

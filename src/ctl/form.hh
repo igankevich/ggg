@@ -1,14 +1,14 @@
 #ifndef CTL_FORM_HH
 #define CTL_FORM_HH
 
-#include <core/form_field.hh>
-#include <core/form_type.hh>
 #include <core/account.hh>
 #include <core/entity.hh>
+#include <core/form_field.hh>
+#include <core/form_type.hh>
 #include <pam/pam_handle.hh>
-#include <vector>
 #include <tuple>
 #include <unordered_map>
+#include <vector>
 
 namespace ggg {
 
@@ -20,16 +20,22 @@ namespace ggg {
 	private:
 		container_type _fields;
 		form_type _type = form_type::console;
+		double _minentropy = 0.0;
 
 	public:
 
 		form() = default;
+
 		form(const form&) = default;
+
 		form(form&&) = default;
-		form& operator=(const form&) = default;
+
+		form&
+		operator=(const form&) = default;
 
 		inline explicit
-		form(const account& recruiter) {
+		form(const account& recruiter, double minentropy):
+		_minentropy(minentropy) {
 			this->read_fields(recruiter);
 		}
 

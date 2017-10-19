@@ -408,7 +408,7 @@ load_form(const char* username) {
 		throw std::invalid_argument("account not found");
 	}
 	recruiter = *result;
-	ggg::form f(recruiter);
+	ggg::form f(recruiter, 0.0);
 	fields = f.fields();
 }
 

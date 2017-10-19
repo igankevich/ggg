@@ -10,30 +10,31 @@
 #include <string>
 
 #include <config.hh>
-#include <pam/conversation.hh>
 #include <ctl/password.hh>
+#include <pam/conversation.hh>
 
 namespace {
 
 	inline int
 	get_prompt(const ggg::form_field& rhs) {
 		return rhs.type() == ggg::field_type::password
-			? PAM_PROMPT_ECHO_OFF
-			: PAM_PROMPT_ECHO_ON;
+		       ? PAM_PROMPT_ECHO_OFF
+			   : PAM_PROMPT_ECHO_ON;
 	}
 
 	template <class Container>
 	void
 	init_messages(const Container& cnt, ggg::messages& m, bool add_colon) {
 		std::for_each(
-			cnt.begin(), cnt.end(),
+			cnt.begin(),
+			cnt.end(),
 			[&m,add_colon] (const ggg::form_field& rhs) {
-				if (rhs.is_input()) {
-					std::string n = rhs.name();
-					if (add_colon) {
-						n.append(": ");
+			    if (rhs.is_input()) {
+			        std::string n = rhs.name();
+			        if (add_colon) {
+			            n.append(": ");
 					}
-					m.emplace_back(get_prompt(rhs), n);
+			        m.emplace_back(get_prompt(rhs), n);
 				}
 			}
 		);
@@ -88,8 +89,8 @@ ggg::form::input_entity(ggg::pam_handle* pamh) {
 			std::ostream_iterator<form_field>(msg, ",")
 		);
 		msg << "ent=" << ent
-			<< ",acc=" << acc
-			<< ",valid=" << valid;
+		    << ",acc=" << acc
+		    << ",valid=" << valid;
 		pamh->debug("%s", msg.str().data());
 	} while (!valid);
 	return std::make_tuple(ent, acc);
@@ -99,15 +100,17 @@ bool
 ggg::form::validate(const responses& r) {
 	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
 	return std::equal(
-		this->_fields.begin(), this->_fields.end(), r.begin(),
+		this->_fields.begin(),
+		this->_fields.end(),
+		r.begin(),
 		[&cv] (const form_field& ff, const response& resp) {
-			bool valid = true;
-			if (ff.is_input()) {
-				std::wregex expr(cv.from_bytes(ff.regex()));
-				std::wstring field_value = cv.from_bytes(resp.text());
-				valid = std::regex_match(field_value, expr);
+		    bool valid = true;
+		    if (ff.is_input()) {
+		        std::wregex expr(cv.from_bytes(ff.regex()));
+		        std::wstring field_value = cv.from_bytes(resp.text());
+		        valid = std::regex_match(field_value, expr);
 			}
-			return valid;
+		    return valid;
 		}
 	);
 }
@@ -144,6 +147,12 @@ ggg::form::make_entity_and_account(const responses& r, ggg::pam_handle* pamh) {
 				auto it = values.find(form_field(id));
 				if (it != values.end()) {
 					const char* new_password = it->second;
+					// validate password strength
+					ggg::password_match match;
+					if (match.find(new_password) &&
+					    match.entropy() < this->_minentropy) {
+						throw std::invalid_argument("weak password");
+					}
 					ggg::secure_string encrypted = ggg::encrypt(
 						new_password,
 						ggg::account::password_prefix(
@@ -151,7 +160,7 @@ ggg::form::make_entity_and_account(const responses& r, ggg::pam_handle* pamh) {
 							pamh->password_id(),
 							pamh->num_rounds()
 						)
-					);
+					                               );
 					acc.set_password(encrypted);
 				}
 			}
@@ -219,8 +228,7 @@ ggg::interpolate(std::string orig, const field_values& values, char prefix) {
 			}
 		}
 		if ((st == parsing_number && first == last-1) ||
-			st == parsing_close_bracket)
-		{
+		    st == parsing_close_bracket) {
 			bool success = false;
 			form_field::id_type id = 0;
 			str >> id;
@@ -243,4 +251,3 @@ ggg::interpolate(std::string orig, const field_values& values, char prefix) {
 	}
 	return result;
 }
-

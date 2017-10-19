@@ -65,6 +65,11 @@ namespace ggg {
 			return !this->operator bool();
 		}
 
+		inline double
+		entropy() const noexcept {
+			return this->_entropy;
+		}
+
 		friend std::ostream&
 		operator<<(std::ostream& out, const password_match& rhs);
 
