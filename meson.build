@@ -15,10 +15,6 @@ if get_option('buildtype') == 'release'
 	add_global_arguments('-DNDEBUG', language: 'cpp')
 endif
 
-if cpp.has_argument('-Werror=format-security')
-	add_global_arguments('-Werror=format-security', language: 'cpp')
-endif
-
 datadir = join_paths(
 	get_option('prefix'),
 	get_option('datadir'),
