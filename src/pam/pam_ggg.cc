@@ -185,6 +185,7 @@ int pam_sm_chauthtok(
 					"trying to change expired password for user \"%s\","
 					" but the password has not expired yet!", user
 				);
+				pamh.info("Password has expired.");
 				throw_pam_error(pam_errc::authtok_error);
 			}
 			if (::getuid() != 0) {
@@ -207,7 +208,6 @@ int pam_sm_chauthtok(
 				)
 			);
 			acc.set_password(encrypted);
-			acc.set_max_change(ggg::account::duration::zero());
 			update_account(acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = pam_errc::success;

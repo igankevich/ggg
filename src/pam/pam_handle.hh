@@ -102,6 +102,12 @@ namespace ggg {
 			pam_error(this->_pamh, msg, args...);
 		}
 
+		template <class ... Args>
+		inline void
+		info(const char* msg, Args ... args) {
+			pam_info(this->_pamh, msg, args...);
+		}
+
 		void
 		parse_args(int argc, const char** argv);
 
