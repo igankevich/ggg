@@ -337,6 +337,7 @@ void
 ggg::account::set_password(const string& rhs) {
 	this->_password = rhs;
 	this->_lastchange = clock_type::now();
+	this->unsetf(account_flags::password_has_expired);
 }
 
 void

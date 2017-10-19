@@ -81,14 +81,15 @@ namespace ggg {
 
 		inline bool
 		password_has_expired(time_point now) const noexcept {
-			return this->_lastchange > time_point(duration::zero())
+			return (this->_lastchange > time_point(duration::zero())
 				&& this->_maxchange > duration::zero()
-				&& this->_lastchange < now - this->_maxchange;
+				&& this->_lastchange < now - this->_maxchange)
+				|| (this->_flags & account_flags::password_has_expired);
 		}
 
 		inline void
 		reset_password() noexcept {
-			this->_maxchange = duration::zero() + duration(1);
+			this->setf(account_flags::password_has_expired);
 		}
 
 		size_t

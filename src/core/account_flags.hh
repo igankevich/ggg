@@ -7,7 +7,8 @@
 namespace ggg {
 
 	enum account_flags: unsigned char {
-		recruiter = 1
+		recruiter = 1,
+		password_has_expired = 2
 	};
 
 	#define BINARY_OP(op) \
