@@ -207,6 +207,7 @@ int pam_sm_chauthtok(
 				)
 			);
 			acc.set_password(encrypted);
+			acc.set_max_change(ggg::account::duration::zero());
 			update_account(acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = pam_errc::success;

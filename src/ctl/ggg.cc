@@ -42,6 +42,21 @@ ggg::GGG::activate(const std::string& user) {
 	);
 }
 
+void
+ggg::GGG::reset(const std::string& user) {
+	this->_accounts.update(
+		user.data(),
+		[&] (account& rhs) {
+			if (!rhs.password_has_expired()) {
+				if (this->verbose()) {
+					std::clog << "deactivating " << rhs.login() << std::endl;
+				}
+				rhs.reset_password();
+			}
+		}
+	);
+}
+
 bool
 ggg::GGG::contains(const std::string& name) {
 	return this->_hierarchy.find_by_name(name.data()) != this->_hierarchy.end()

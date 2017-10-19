@@ -43,6 +43,9 @@ namespace ggg {
 		expire(const std::string& user);
 
 		void
+		reset(const std::string& user);
+
+		void
 		activate(const std::string& user);
 
 		template <class Iterator, class Result>

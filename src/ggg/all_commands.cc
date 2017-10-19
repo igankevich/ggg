@@ -11,6 +11,7 @@
 #include "restore_entity.hh"
 #include "edit_entity.hh"
 #include "add_entity.hh"
+#include "reset_password.hh"
 
 #define MAKE_COMMAND(name, type) \
 	{name, [](){ return ::ggg::command_ptr(new ::ggg::type); }}
@@ -29,6 +30,7 @@ namespace {
 		MAKE_COMMAND("restore", Restore_entity),
 		MAKE_COMMAND("activate", Restore_entity),
 		MAKE_COMMAND("unlock", Restore_entity),
+		MAKE_COMMAND("reset", Reset_password),
 		MAKE_COMMAND("edit", Edit_entity),
 		MAKE_COMMAND("modify", Edit_entity),
 		MAKE_COMMAND("change", Edit_entity),

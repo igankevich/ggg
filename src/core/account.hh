@@ -86,6 +86,11 @@ namespace ggg {
 				&& this->_lastchange < now - this->_maxchange;
 		}
 
+		inline void
+		reset_password() noexcept {
+			this->_maxchange = duration::zero() + duration(1);
+		}
+
 		size_t
 		buffer_size() const noexcept;
 
@@ -218,6 +223,11 @@ namespace ggg {
 		inline bool
 		is_recruiter() const noexcept {
 			return this->_flags & account_flags::recruiter;
+		}
+
+		inline void
+		set_max_change(duration rhs) noexcept {
+			this->_maxchange = rhs;
 		}
 
 		void clear();
