@@ -4,6 +4,8 @@
 
 #include <ostream>
 #include <random>
+#include <sstream>
+#include <stdexcept>
 
 #include <config.hh>
 #include <core/account.hh>
@@ -84,5 +86,18 @@ ggg::operator<<(std::ostream& out, const password_match& rhs) {
 		next = next->Next;
 	}
 	return out;
+}
+
+void
+ggg::validate_password(const char* new_password, double min_entropy) {
+	ggg::password_match match;
+	if (match.find(new_password) &&
+		match.entropy() < min_entropy) {
+		std::stringstream msg;
+		msg << "Weak password. Password strength is "
+			<< int(match.entropy() / min_entropy * 100.0)
+			<< "/100.";
+		throw std::invalid_argument(msg.str());
+	}
 }
 

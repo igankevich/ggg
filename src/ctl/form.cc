@@ -147,12 +147,7 @@ ggg::form::make_entity_and_account(const responses& r, ggg::pam_handle* pamh) {
 				auto it = values.find(form_field(id));
 				if (it != values.end()) {
 					const char* new_password = it->second;
-					// validate password strength
-					ggg::password_match match;
-					if (match.find(new_password) &&
-					    match.entropy() < this->_minentropy) {
-						throw std::invalid_argument("weak password");
-					}
+					ggg::validate_password(new_password, this->_minentropy);
 					ggg::secure_string encrypted = ggg::encrypt(
 						new_password,
 						ggg::account::password_prefix(

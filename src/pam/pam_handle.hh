@@ -4,6 +4,7 @@
 #include <syslog.h>
 #include <security/pam_modules.h>
 #include <security/pam_ext.h>
+
 #include "pam_call.hh"
 #include "core/account.hh"
 #include "core/form_type.hh"
@@ -48,6 +49,11 @@ namespace ggg {
 			return this->_allowregister;
 		}
 
+		inline double
+		min_entropy() const noexcept {
+			return this->_minentropy;
+		}
+
 		inline secure_string
 		password_id() const noexcept {
 			return "6";
@@ -88,6 +94,12 @@ namespace ggg {
 			if (this->_debug) {
 				pam_syslog(this->_pamh, LOG_DEBUG, msg, args...);
 			}
+		}
+
+		template <class ... Args>
+		inline void
+		error(const char* msg, Args ... args) {
+			pam_error(this->_pamh, msg, args...);
 		}
 
 		void

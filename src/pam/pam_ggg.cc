@@ -16,14 +16,13 @@
 
 #include <unistdx/base/check>
 
-#include "config.hh"
-#include "core/account.hh"
-#include "ctl/account_ctl.hh"
-#include "ctl/password.hh"
 #include "pam_handle.hh"
-#include "sec/secure_string.hh"
-
+#include <config.hh>
+#include <core/account.hh>
 #include <core/lock.hh>
+#include <ctl/account_ctl.hh>
+#include <ctl/password.hh>
+#include <sec/secure_string.hh>
 
 using ggg::throw_pam_error;
 using ggg::pam_errc;
@@ -193,6 +192,12 @@ int pam_sm_chauthtok(
 				check_password(old, acc);
 			}
 			const char* new_password = pamh.get_password(pam_errc::authtok_error);
+			try {
+				ggg::validate_password(new_password, pamh.min_entropy());
+			} catch (const std::exception& err) {
+				pamh.error("%s", err.what());
+				throw_pam_error(pam_errc::authtok_error);
+			}
 			ggg::secure_string encrypted = ggg::encrypt(
 				new_password,
 				ggg::account::password_prefix(
