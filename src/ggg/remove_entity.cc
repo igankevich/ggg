@@ -6,11 +6,13 @@
 #include <tuple>
 #include <unistd.h>
 
-#include "config.hh"
-#include "ctl/ggg.hh"
+#include <config.hh>
+#include <ctl/ggg.hh>
+#include <core/lock.hh>
 
 void
 ggg::Remove_entity::execute()  {
+	file_lock lock;
 	GGG g(GGG_ENT_ROOT, this->verbose());
 	std::for_each(
 		this->args_begin(),
