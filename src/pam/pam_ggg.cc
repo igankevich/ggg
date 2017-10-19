@@ -176,6 +176,7 @@ int pam_sm_chauthtok(
 					"account \"%s\" has expired %ld day(s) ago",
 					user, num_days_since_expired(&acc, now)
 				);
+				pamh.info("Password has expired.");
 				throw_pam_error(pam_errc::account_expired);
 			}
 			if ((flags & PAM_CHANGE_EXPIRED_AUTHTOK) &&
@@ -185,7 +186,6 @@ int pam_sm_chauthtok(
 					"trying to change expired password for user \"%s\","
 					" but the password has not expired yet!", user
 				);
-				pamh.info("Password has expired.");
 				throw_pam_error(pam_errc::authtok_error);
 			}
 			if (::getuid() != 0) {
