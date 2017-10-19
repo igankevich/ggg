@@ -132,6 +132,7 @@ int pam_sm_acct_mgmt(
 			throw_pam_error(pam_errc::account_expired);
 		}
 		if (acc->password_has_expired(now)) {
+			pamh.info("Password has expired.");
 			pamh.debug(
 				"password of account \"%s\" has expired %ld day(s) ago",
 				user, num_days_since_password_expired(acc, now)
@@ -176,7 +177,6 @@ int pam_sm_chauthtok(
 					"account \"%s\" has expired %ld day(s) ago",
 					user, num_days_since_expired(&acc, now)
 				);
-				pamh.info("Password has expired.");
 				throw_pam_error(pam_errc::account_expired);
 			}
 			if ((flags & PAM_CHANGE_EXPIRED_AUTHTOK) &&
