@@ -7,6 +7,7 @@ ggg_src = files([
 	'editor.cc',
 	'expire_entity.cc',
 	'ggg_main.cc',
+	'heal.cc',
 	'remove_entity.cc',
 	'reset_password.cc',
 	'restore_entity.cc',
