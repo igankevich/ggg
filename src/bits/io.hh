@@ -25,7 +25,7 @@ namespace ggg {
 
 		inline void
 		check(const char* path, int mode, bool must_exist=true) {
-			if (-1 == ::access(path, mode)) {
+			if (-1 == ::eaccess(path, mode)) {
 				if ((errno == ENOENT && must_exist) || errno != ENOENT) {
 					throw std::system_error(errno, std::system_category());
 				}
