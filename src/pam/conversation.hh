@@ -180,6 +180,11 @@ namespace ggg {
 			return reinterpret_cast<::pam_response**>(&this->_resp);
 		}
 
+		inline const response&
+		operator[](size_t i) const noexcept {
+			return this->_resp[i];
+		}
+
 		friend std::ostream&
 		operator<<(std::ostream& out, const responses& rhs);
 

@@ -15,7 +15,6 @@
 #include <unistd.h>
 
 #include <unistdx/base/check>
-#include <unistdx/util/backtrace>
 
 #include "pam_handle.hh"
 #include <config.hh>
@@ -213,9 +212,6 @@ int pam_sm_chauthtok(
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = pam_errc::success;
 		} catch (const std::system_error& e) {
-			if (pamh.debug()) {
-				sys::backtrace(2);
-			}
 			ret = pamh.handle_error(e, pam_errc::authtok_error);
 		} catch (const std::bad_alloc& e) {
 			ret = pam_errc::authtok_error;

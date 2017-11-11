@@ -77,10 +77,31 @@ ggg::form::input_entity(ggg::pam_handle* pamh) {
 		if (r.size() != m.size()) {
 			throw std::invalid_argument("bad response");
 		}
-		valid = this->validate(r);
+		std::vector<bool> status = this->validate(r);
+		valid = std::find(status.begin(), status.end(), false) == status.end();
 		if (valid) {
 			std::tie(ent, acc) = make_entity_and_account(r, pamh);
+		} else {
+			std::stringstream msg;
+			msg << "Invalid fields: ";
+			bool comma = false;
+			const size_t n = status.size();
+			for (size_t i=0; i<n; ++i) {
+				const form_field& ff = this->_fields[i];
+				if (!status[i]) {
+					if (comma) {
+						msg << ", ";
+					} else {
+						comma = true;
+					}
+					msg << ff.name();
+				}
+			}
+			std::string s = msg.str();
+			conv->error(s.data());
+			pamh->debug("%s", s.data());
 		}
+		/*
 		std::stringstream msg;
 		msg << "fields=";
 		std::copy(
@@ -92,27 +113,28 @@ ggg::form::input_entity(ggg::pam_handle* pamh) {
 		    << ",acc=" << acc
 		    << ",valid=" << valid;
 		pamh->debug("%s", msg.str().data());
+		*/
 	} while (!valid);
 	return std::make_tuple(ent, acc);
 }
 
-bool
+std::vector<bool>
 ggg::form::validate(const responses& r) {
+	std::vector<bool> status(r.size());
 	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
-	return std::equal(
-		this->_fields.begin(),
-		this->_fields.end(),
-		r.begin(),
-		[&cv] (const form_field& ff, const response& resp) {
-		    bool valid = true;
-		    if (ff.is_input()) {
-		        std::wregex expr(cv.from_bytes(ff.regex()));
-		        std::wstring field_value = cv.from_bytes(resp.text());
-		        valid = std::regex_match(field_value, expr);
-			}
-		    return valid;
+	const size_t n = r.size();
+	for (size_t i=0; i<n; ++i) {
+		const response& resp = r[i];
+		const form_field& ff = this->_fields[i];
+		bool valid = true;
+		if (ff.is_input()) {
+		    std::wregex expr(cv.from_bytes(ff.regex()));
+		    std::wstring field_value = cv.from_bytes(resp.text());
+		    valid = std::regex_match(field_value, expr);
 		}
-	);
+		status[i] = valid;
+	}
+	return status;
 }
 
 std::tuple<ggg::entity,ggg::account>

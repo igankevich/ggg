@@ -62,7 +62,7 @@ namespace ggg {
 
 	private:
 
-		bool
+		std::vector<bool>
 		validate(const responses& r);
 
 		std::tuple<entity,account>
