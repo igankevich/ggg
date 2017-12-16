@@ -80,6 +80,7 @@ ggg::Heal::execute() {
 	make_directory(GGG_ROOT, "reg");
 	make_directory(GGG_ROOT, "acc");
 	change_permissions(GGG_ROOT, 0755);
+	change_permissions(GGG_LOCK_FILE, 0644);
 	sys::idirtree tree(sys::path(GGG_ROOT));
 	std::for_each(
 		sys::idirtree_iterator<sys::pathentry>(tree),
