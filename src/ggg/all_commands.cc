@@ -12,6 +12,7 @@
 #include "reset_password.hh"
 #include "restore_entity.hh"
 #include "show_duplicates.hh"
+#include "show_entity.hh"
 #include "show_help.hh"
 #include "show_version.hh"
 
@@ -43,6 +44,8 @@ namespace {
 		MAKE_COMMAND("version", Show_version),
 		MAKE_COMMAND("heal", Heal),
 		MAKE_COMMAND("init", Heal),
+		MAKE_COMMAND("show", Show_entity),
+		MAKE_COMMAND("info", Show_entity),
 		MAKE_COMMAND("-v", Show_version),
 		MAKE_COMMAND("--version", Show_version),
 		MAKE_COMMAND("help", Show_help),
