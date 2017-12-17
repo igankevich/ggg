@@ -7,6 +7,7 @@
 #include "add_entity.hh"
 #include "edit_entity.hh"
 #include "expire_entity.hh"
+#include "find_entities.hh"
 #include "heal.hh"
 #include "remove_entity.hh"
 #include "reset_password.hh"
@@ -49,6 +50,7 @@ namespace {
 		MAKE_COMMAND("info", Show_entity),
 		MAKE_COMMAND("members", Show_members),
 		MAKE_COMMAND("team", Show_members),
+		MAKE_COMMAND("find", Find_entities),
 		MAKE_COMMAND("-v", Show_version),
 		MAKE_COMMAND("--version", Show_version),
 		MAKE_COMMAND("help", Show_help),
