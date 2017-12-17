@@ -14,6 +14,7 @@
 #include "show_duplicates.hh"
 #include "show_entity.hh"
 #include "show_help.hh"
+#include "show_members.hh"
 #include "show_version.hh"
 
 #define MAKE_COMMAND(name, type) \
@@ -46,6 +47,8 @@ namespace {
 		MAKE_COMMAND("init", Heal),
 		MAKE_COMMAND("show", Show_entity),
 		MAKE_COMMAND("info", Show_entity),
+		MAKE_COMMAND("members", Show_members),
+		MAKE_COMMAND("team", Show_members),
 		MAKE_COMMAND("-v", Show_version),
 		MAKE_COMMAND("--version", Show_version),
 		MAKE_COMMAND("help", Show_help),

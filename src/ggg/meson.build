@@ -14,6 +14,7 @@ ggg_src = files([
 	'show_duplicates.cc',
 	'show_entity.cc',
 	'show_help.cc',
+	'show_members.cc',
 	'show_version.cc',
 	'tmpfile.cc',
 ])
