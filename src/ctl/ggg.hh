@@ -108,6 +108,10 @@ namespace ggg {
 			return this->_verbose;
 		}
 
+		inline const Hierarchy&
+		hierarchy() const noexcept {
+			return this->_hierarchy;
+		}
 
 	private:
 

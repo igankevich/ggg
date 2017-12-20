@@ -1,17 +1,29 @@
 #include "lock.hh"
 
+#include <sstream>
+
 #include <config.hh>
 #include <unistdx/base/log_message>
 #include <unistdx/fs/file_stat>
 #include <unistdx/ipc/execute>
 #include <unistdx/ipc/process>
 
-ggg::file_mutex_type ggg::ggg_mutex(GGG_LOCK_FILE, 0600);
+ggg::file_lock::file_lock(bool write):
+_mutex(
+	GGG_LOCK_FILE,
+	write ? sys::open_flag::read_write : sys::open_flag::read_only,
+	0644
+),
+_write(write)
+{ this->lock(); }
 
 void
 ggg::file_lock::lock() {
 //	sys::log_message("lck", "locking " GGG_LOCK_FILE);
-	ggg_mutex.lock();
+	sys::file_lock_type tp = this->_write
+		? sys::file_lock_type::write_lock
+		: sys::file_lock_type::read_lock;
+	this->_mutex.lock(tp);
 }
 
 void
@@ -36,7 +48,7 @@ ggg::file_lock::unlock() {
 			sys::log_message("lck", "git status=_", status);
 		}
 	}
-	ggg_mutex.unlock();
+	this->_mutex.unlock();
 }
 
 

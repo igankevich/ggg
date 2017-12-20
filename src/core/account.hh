@@ -12,6 +12,12 @@
 
 namespace ggg {
 
+	namespace chrono {
+
+		typedef std::chrono::duration<long,std::ratio<60*60*24,1>> days;
+
+	}
+
 	class account {
 
 	public:
@@ -176,9 +182,19 @@ namespace ggg {
 			return this->_lastchange;
 		}
 
+		inline bool
+		has_last_change() const noexcept {
+			return this->_lastchange > time_point(duration::zero());
+		}
+
 		inline duration
 		min_change() const noexcept {
 			return this->_minchange;
+		}
+
+		inline bool
+		has_min_change() const noexcept {
+			return this->_minchange > duration::zero();
 		}
 
 		inline duration
@@ -186,14 +202,29 @@ namespace ggg {
 			return this->_maxchange;
 		}
 
+		inline bool
+		has_max_change() const noexcept {
+			return this->_maxchange > duration::zero();
+		}
+
 		inline duration
 		warn_change() const noexcept {
 			return this->_warnchange;
 		}
 
+		inline bool
+		has_warn_change() const noexcept {
+			return this->_warnchange > duration::zero();
+		}
+
 		inline duration
 		max_inactive() const noexcept {
 			return this->_maxinactive;
+		}
+
+		inline bool
+		has_max_inactive() const noexcept {
+			return this->_maxinactive > duration::zero();
 		}
 
 		inline time_point

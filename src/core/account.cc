@@ -10,7 +10,7 @@
 
 namespace {
 
-	typedef std::chrono::duration<long,std::ratio<60*60*24,1>> days;
+	typedef ggg::chrono::days days;
 	typedef std::chrono::time_point<ggg::account::clock_type,days>
 		time_point_in_days;
 

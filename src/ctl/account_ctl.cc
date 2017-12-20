@@ -7,6 +7,9 @@
 #include <system_error>
 #include <unistd.h>
 
+#include <unistdx/base/check>
+#include <unistdx/fs/file_mode>
+
 #include "config.hh"
 #include "bits/io.hh"
 
@@ -15,6 +18,11 @@ namespace {
 	inline void
 	rename_shadow() {
 		ggg::bits::rename(GGG_SHADOW_NEW, GGG_SHADOW);
+	}
+
+	void
+	change_permissions(const char* filename, sys::file_mode m) {
+		UNISTDX_CHECK(::chmod(filename, m));
 	}
 
 }
@@ -68,6 +76,7 @@ ggg::account_ctl::erase(const char* user) {
 		shadow_new.exceptions(std::ios::badbit);
 		shadow_new.imbue(std::locale::classic());
 		shadow_new.open(GGG_SHADOW_NEW);
+		change_permissions(GGG_SHADOW_NEW, 0000);
 		std::copy_if(
 			iterator(shadow),
 			iterator(),
@@ -102,6 +111,7 @@ ggg::account_ctl::update(const account& acc) {
 		shadow_new.exceptions(std::ios::badbit);
 		shadow_new.imbue(std::locale::classic());
 		shadow_new.open(GGG_SHADOW_NEW);
+		change_permissions(GGG_SHADOW_NEW, 0000);
 		std::transform(
 			iterator(shadow),
 			iterator(),
@@ -129,6 +139,7 @@ ggg::account_ctl::update(const char* acc, update_account func) {
 		shadow_new.exceptions(std::ios::badbit);
 		shadow_new.imbue(std::locale::classic());
 		shadow_new.open(GGG_SHADOW_NEW);
+		change_permissions(GGG_SHADOW_NEW, 0000);
 		std::transform(
 			iterator(shadow),
 			iterator(),

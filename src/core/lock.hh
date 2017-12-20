@@ -6,19 +6,17 @@
 namespace ggg {
 
 	typedef sys::file_mutex file_mutex_type;
-	extern file_mutex_type ggg_mutex;
 
 	class file_lock {
 
 	private:
+		file_mutex_type _mutex;
 		bool _write = false;
 
 	public:
 
-		inline explicit
-		file_lock(bool write=false):
-		_write(write)
-		{ this->lock(); }
+		explicit
+		file_lock(bool write=false);
 
 		inline
 		~file_lock() { this->unlock(); }
