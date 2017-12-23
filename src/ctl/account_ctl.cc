@@ -50,7 +50,7 @@ ggg::account_ctl::find(const char* user) const {
 }
 
 void
-ggg::account_ctl::for_each(process_account func) {
+ggg::account_ctl::for_each(process_account func) const {
 	bits::check(GGG_SHADOW, R_OK);
 	std::ifstream shadow;
 	try {

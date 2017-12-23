@@ -14,6 +14,7 @@
 #include "restore_entity.hh"
 #include "show_duplicates.hh"
 #include "show_entity.hh"
+#include "show_expired.hh"
 #include "show_groups.hh"
 #include "show_help.hh"
 #include "show_members.hh"
@@ -53,6 +54,8 @@ namespace {
 		MAKE_COMMAND("team", Show_members),
 		MAKE_COMMAND("find", Find_entities),
 		MAKE_COMMAND("groups", Show_groups),
+		MAKE_COMMAND("expired", Show_expired),
+		MAKE_COMMAND("locked", Show_expired),
 		MAKE_COMMAND("-v", Show_version),
 		MAKE_COMMAND("--version", Show_version),
 		MAKE_COMMAND("help", Show_help),

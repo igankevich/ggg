@@ -113,6 +113,11 @@ namespace ggg {
 			return this->_hierarchy;
 		}
 
+		inline const account_ctl&
+		accounts() const noexcept {
+			return this->_accounts;
+		}
+
 	private:
 
 		std::string

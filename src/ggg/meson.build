@@ -14,6 +14,7 @@ ggg_src = files([
 	'restore_entity.cc',
 	'show_duplicates.cc',
 	'show_entity.cc',
+	'show_expired.cc',
 	'show_groups.cc',
 	'show_help.cc',
 	'show_members.cc',

@@ -30,7 +30,7 @@ namespace ggg {
 		}
 
 		void
-		for_each(process_account func);
+		for_each(process_account func) const;
 
 		void
 		erase(const char* user);
