@@ -8,7 +8,7 @@ namespace ggg {
 	class Show_members: public Command {
 
 	private:
-		bool _recursive = false;
+		bool _long = false;
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;

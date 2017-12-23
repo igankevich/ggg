@@ -1,6 +1,8 @@
 #include "show_members.hh"
 
+#include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <set>
 #include <string>
 
@@ -13,7 +15,16 @@
 
 void
 ggg::Show_members::parse_arguments(int argc, char* argv[]) {
-	Command::parse_arguments(argc, argv);
+	int opt;
+	while ((opt = getopt(argc, argv, "ql")) != -1) {
+		switch (opt) {
+			case 'q': this->_verbose = false; break;
+			case 'l': this->_long = true; break;
+		}
+	}
+	for (int i=::optind; i<argc; ++i) {
+		this->_args.emplace(argv[i]);
+	}
 	if (this->_args.empty()) {
 		throw std::invalid_argument("please, specify entity names");
 	}
@@ -41,12 +52,23 @@ ggg::Show_members::execute() {
 			}
 		}
 	}
-	align_columns(result, std::cout, traits_type::delimiter());
+	if (this->_long) {
+		align_columns(result, std::cout, traits_type::delimiter());
+	} else {
+		std::transform(
+			result.begin(),
+			result.end(),
+			std::ostream_iterator<std::string>(std::cout, "\n"),
+			[] (const entity& ent) {
+				return ent.name();
+			}
+		);
+	}
 }
 
 void
 ggg::Show_members::print_usage() {
 	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-	          << this->prefix() << " COMMAND" << '\n';
+	          << this->prefix() << " [-l] ENTITY..." << '\n';
 }
 
