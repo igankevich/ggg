@@ -24,6 +24,7 @@ ggg::Find_entities::execute() {
 	file_lock lock;
 	GGG g(GGG_ENT_ROOT, this->verbose());
 	std::locale::global(std::locale(""));
+	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
 	const Hierarchy& h = g.hierarchy();
 	std::set<entity> result;
 	if (this->_args.empty()) {
@@ -33,7 +34,6 @@ ggg::Find_entities::execute() {
 			std::inserter(result, result.begin())
 		);
 	} else {
-		std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
 		for (const std::string& a : this->args()) {
 			using namespace std::regex_constants;
 			std::regex expr(a, ECMAScript | optimize | icase);
@@ -51,7 +51,11 @@ ggg::Find_entities::execute() {
 			);
 		}
 	}
-	align_columns(result, std::cout, traits_type::delimiter());
+	std::set<wentity> wresult;
+	for (const entity& ent : result) {
+		wresult.insert(wentity(ent, cv));
+	}
+	align_columns(wresult, std::wcout, wentity::delimiter);
 }
 
 void

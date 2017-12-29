@@ -120,10 +120,10 @@ TEST(EntityTest, ReadEntryWithMissingFields) {
 TEST(EntityTest, CopyTo) {
 	ggg::entity ent;
 	char fillchar = -1;
-	std::vector<char> buffer(ent.buffer_size() * 2, fillchar);
+	std::vector<char> buffer(buffer_size(ent) * 2, fillchar);
 	struct ::passwd pw;
-	ent.copy_to(&pw, buffer.data());
-	EXPECT_EQ(fillchar, buffer[ent.buffer_size()]);
+	copy_to(ent, &pw, buffer.data());
+	EXPECT_EQ(fillchar, buffer[buffer_size(ent)]);
 	EXPECT_STREQ(ent.name().data(), pw.pw_name);
 	EXPECT_STREQ(ent.password().data(), pw.pw_passwd);
 	EXPECT_EQ(ent.id(), pw.pw_uid);

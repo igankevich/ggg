@@ -1,8 +1,10 @@
 #ifndef ENTITY_HH
 #define ENTITY_HH
 
+#include <codecvt>
 #include <functional>
 #include <istream>
+#include <locale>
 #include <string>
 
 #include <unistdx/fs/path>
@@ -14,40 +16,53 @@ namespace ggg {
 
 	class form_field;
 
-	class entity {
+	template <class Ch>
+	class basic_entity {
+
+	public:
+		typedef Ch char_type;
+		typedef std::char_traits<Ch> traits_type;
+		typedef std::basic_string<Ch, traits_type> string_type;
+		typedef sys::basic_path<Ch,traits_type> path_type;
+		typedef std::codecvt_utf8<Ch> ccvt_type;
+		typedef std::wstring_convert<ccvt_type, Ch> wcvt_type;
+
+	private:
+		typedef std::basic_ostream<Ch, traits_type> ostream_type;
 
 	public:
 		typedef const size_t columns_type[7];
-		static constexpr const char delimiter = ':';
+		static constexpr const char_type delimiter = ':';
 
 	private:
-		std::string _name;
-		std::string _password;
-		std::string _realname;
-		std::string _homedir;
-		std::string _shell;
+		string_type _name;
+		string_type _password;
+		string_type _realname;
+		string_type _homedir;
+		string_type _shell;
 		sys::uid_type _uid = -1;
 		sys::gid_type _gid = -1;
-		sys::path _origin;
+		path_type _origin;
 
 	public:
 
 		inline explicit
-		entity(const char* name):
+		basic_entity(const char_type* name):
 		_name(name)
 		{}
 
 		inline explicit
-		entity(const char* name, sys::uid_type uid, sys::gid_type gid):
+		basic_entity(const char_type* name, sys::uid_type uid, sys::gid_type gid):
 		_name(name),
-		_homedir("/home/"),
-		_shell("/bin/sh"),
+		_homedir(),
+		_shell(),
 		_uid(uid),
 		_gid(gid)
 		{ this->_homedir.append(_name); }
 
+		/*
 		inline explicit
-		entity(const ::passwd& rhs):
+		basic_entity(const ::passwd& rhs):
 		_name(rhs.pw_name),
 		_password(rhs.pw_passwd),
 		_realname(rhs.pw_gecos),
@@ -56,20 +71,29 @@ namespace ggg {
 		_uid(rhs.pw_uid),
 		_gid(rhs.pw_gid)
 		{}
+		*/
 
-		entity() = default;
-		entity(const entity& rhs) = default;
-		entity(entity&& rhs) = default;
-		~entity() = default;
+		basic_entity(const basic_entity<char>& rhs, wcvt_type& cv);
 
-		entity&
-		operator=(const entity& rhs) = default;
+		basic_entity() = default;
+		basic_entity(const basic_entity& rhs) = default;
+		basic_entity(basic_entity&& rhs) = default;
+		~basic_entity() = default;
 
-		void
-		copy_to(struct ::passwd* lhs, char* buffer) const;
+		basic_entity&
+		operator=(const basic_entity& rhs) = default;
 
-		size_t
-		buffer_size() const noexcept;
+		template <class X>
+		friend void
+		copy_to(const basic_entity<X>& ent, struct ::passwd* lhs, char* buffer);
+
+		template <class X>
+		friend size_t
+		buffer_size(const basic_entity<X>& ent) noexcept;
+
+		template <class X>
+		friend void
+		assign(basic_entity<X>& lhs, const struct ::passwd& rhs);
 
 		inline bool
 		has_id() const noexcept {
@@ -92,80 +116,82 @@ namespace ggg {
 		}
 
 		inline bool
-		operator==(const entity& rhs) const noexcept {
+		operator==(const basic_entity& rhs) const noexcept {
 			return name() == rhs.name();
 		}
 
 		inline bool
-		operator!=(const entity& rhs) const noexcept {
+		operator!=(const basic_entity& rhs) const noexcept {
 			return !operator==(rhs);
 		}
 
 		inline bool
-		operator<(const entity& rhs) const noexcept {
+		operator<(const basic_entity& rhs) const noexcept {
 			return name() < rhs.name();
 		}
 
-		friend std::istream&
-		operator>>(std::istream& in, entity& rhs);
+		template <class X>
+		friend std::basic_istream<X>&
+		operator>>(std::basic_istream<X>& in, basic_entity<X>& rhs);
 
-		friend std::ostream&
-		operator<<(std::ostream& out, const entity& rhs);
+		template <class X>
+		friend std::basic_ostream<X>&
+		operator<<(std::basic_ostream<X>& out, const basic_entity<X>& rhs);
 
 		void
-		set(const form_field& field, const char* value);
+		set(const form_field& field, const char_type* value);
 
 		void
-		write_human(std::ostream& out, columns_type width) const;
+		write_human(ostream_type& out, columns_type width) const;
 
-		std::istream&
-		read_human(std::istream& in);
+		std::basic_istream<Ch>&
+		read_human(std::basic_istream<Ch>& in);
 
 		inline sys::uid_type
 		id() const noexcept {
-			return _uid;
+			return this->_uid;
 		}
 
 		inline sys::gid_type
 		gid() const noexcept {
-			return _gid;
+			return this->_gid;
 		}
 
-		inline const std::string&
+		inline const string_type&
 		name() const noexcept {
-			return _name;
+			return this->_name;
 		}
 
 		bool
 		has_valid_name() const noexcept;
 
-		inline const std::string&
+		inline const string_type&
 		password() const noexcept {
-			return _password;
+			return this->_password;
 		}
 
-		inline const std::string&
+		inline const string_type&
 		real_name() const noexcept {
-			return _realname;
+			return this->_realname;
 		}
 
-		inline const std::string&
+		inline const string_type&
 		home() const noexcept {
-			return _homedir;
+			return this->_homedir;
 		}
 
-		inline const std::string&
+		inline const string_type&
 		shell() const noexcept {
-			return _shell;
+			return this->_shell;
 		}
 
-		inline const sys::path&
+		inline const path_type&
 		origin() const noexcept {
 			return this->_origin;
 		}
 
 		inline void
-		origin(const sys::path& rhs) {
+		origin(const path_type& rhs) {
 			this->_origin = rhs;
 		}
 
@@ -177,29 +203,45 @@ namespace ggg {
 		void clear();
 
 		void
-		merge(const entity& rhs);
+		merge(const basic_entity& rhs);
 	};
 
+	template <class Ch>
+	void
+	copy_to(const basic_entity<Ch>& ent, struct ::passwd* lhs, char* buffer);
 
-	std::istream&
-	operator>>(std::istream& in, entity& rhs);
+	template <class Ch>
+	size_t
+	buffer_size(const basic_entity<Ch>& ent) noexcept;
 
-	std::ostream&
-	operator<<(std::ostream& out, const entity& rhs);
+	template <class Ch>
+	void
+	assign(basic_entity<Ch>& lhs, const struct ::passwd& rhs);
+
+	template <class Ch>
+	std::basic_istream<Ch>&
+	operator>>(std::basic_istream<Ch>& in, basic_entity<Ch>& rhs);
+
+	template <class Ch>
+	std::basic_ostream<Ch>&
+	operator<<(std::basic_ostream<Ch>& out, const basic_entity<Ch>& rhs);
+
+	typedef basic_entity<char> entity;
+	typedef basic_entity<wchar_t> wentity;
 
 }
 
 namespace std {
 
-	template<>
-	struct hash<ggg::entity> {
+	template<class Ch>
+	struct hash<ggg::basic_entity<Ch>> {
 
 		typedef size_t result_type;
-		typedef ggg::entity argument_type;
+		typedef ggg::basic_entity<Ch> argument_type;
 
 		size_t
-		operator()(const ggg::entity& rhs) const noexcept {
-			return std::hash<std::string>()(rhs.name());
+		operator()(const argument_type& rhs) const noexcept {
+			return std::hash<std::basic_string<Ch>>()(rhs.name());
 		}
 
 	};

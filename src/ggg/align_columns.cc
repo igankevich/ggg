@@ -1,11 +1,15 @@
 #include "align_columns.hh"
 
+#include <codecvt>
+#include <locale>
+
+template <class Ch>
 std::vector<size_t>
-ggg::align_columns(std::istream& str, char delimiter) {
+ggg::align_columns(std::basic_istream<Ch>& str, Ch delimiter) {
 	// calculate column widths
 	std::vector<size_t> width;
-	std::string line;
-	while (std::getline(str, line, '\n')) {
+	std::basic_string<Ch> line;
+	while (std::getline(str, line, Ch('\n'))) {
 		size_t i0 = 0;
 		size_t column_no = 0;
 		const size_t line_size = line.size();
@@ -28,3 +32,8 @@ ggg::align_columns(std::istream& str, char delimiter) {
 	return width;
 }
 
+template std::vector<size_t>
+ggg::align_columns(std::basic_istream<char>& str, char delim);
+
+template std::vector<size_t>
+ggg::align_columns(std::basic_istream<wchar_t>& str, wchar_t delim);

@@ -11,16 +11,17 @@ namespace ggg {
 
 		struct ignore_field {
 
-			inline friend std::ostream&
-			operator<<(std::ostream& out, const ignore_field&) {
+			template <class Ch>
+			inline friend std::basic_ostream<Ch>&
+			operator<<(std::basic_ostream<Ch>& out, const ignore_field&) {
 				return out;
 			}
 
 		};
 
-		template<class T>
+		template<class Ch, class T>
 		char
-		read_field(std::istream& in, T& rhs, char sep) {
+		read_field(std::basic_istream<Ch>& in, T& rhs, Ch sep) {
 			std::ios::iostate old = in.exceptions();
 			in.exceptions(std::ios::goodbit);
 			in >> rhs;
@@ -36,34 +37,33 @@ namespace ggg {
 			}
 			in.exceptions(old);
 			in >> std::ws;
-			char ch = 0;
+			Ch ch = 0;
 			if (in.get(ch) && ch != sep) {
 				in.putback(ch);
 			}
 			return ch;
 		}
 
-
-		template<>
-		inline char
-		read_field<ignore_field>(std::istream& in, ignore_field&, char sep) {
-			char ch = 0;
+		template<class Ch>
+		inline Ch
+		read_field(std::basic_istream<Ch>& in, ignore_field&, Ch sep) {
+			Ch ch = 0;
 			while (in.get(ch) and ch != sep and ch != '\n');
 			return ch;
 		}
 
-		template<class Ch, class Tr, class Alloc>
-		inline char
+		template<class Ch>
+		inline Ch
 		read_field(
-			std::istream& in,
-			std::basic_string<Ch,Tr,Alloc>& rhs,
-			char sep
+			std::basic_istream<Ch>& in,
+			std::basic_string<Ch>& rhs,
+			Ch sep
 		) {
-			char ch = 0;
-			std::istream::sentry s(in);
+			Ch ch = 0;
+			typename std::basic_istream<Ch>::sentry s(in);
 			rhs.clear();
 			if (s) {
-				char prev = 0;
+				Ch prev = 0;
 				while (in.get(ch) and
 					(ch != sep || (ch == sep && prev == '\\')) and
 					ch != '\n')
@@ -82,15 +82,20 @@ namespace ggg {
 			return ch;
 		}
 
-
+		template <class Ch>
 		inline void
-		read_all_fields(std::istream&, char) {}
+		read_all_fields(std::basic_istream<Ch>&, Ch) {}
 
-		template<class T, class ... Args>
+		template<class Ch, class T, class ... Args>
 		inline void
-		read_all_fields(std::istream& in, char sep, T& first, Args& ... args) {
+		read_all_fields(
+			std::basic_istream<Ch>& in,
+			Ch sep,
+			T& first,
+			Args& ... args
+		) {
 			// tolerate empty fields at the end of the line
-			char ch = 0;
+			Ch ch = 0;
 			while (in.get(ch) && std::isspace(ch) && ch != sep && ch != '\n');
 			if (ch != sep && ch != '\n') {
 				in.putback(ch);

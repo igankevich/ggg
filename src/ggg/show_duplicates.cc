@@ -37,8 +37,10 @@ ggg::Show_duplicates::execute() {
 		sys::user_iterator(users),
 		sys::user_iterator(),
 		[&set1,&set2] (const sys::user& rhs) {
-		    set1.emplace(rhs);
-		    set2.emplace(rhs);
+			entity tmp;
+			assign(tmp, rhs);
+		    set1.insert(tmp);
+		    set2.insert(tmp);
 		}
 	);
 	std::set<entity> duplicates;
