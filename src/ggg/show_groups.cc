@@ -43,7 +43,13 @@ ggg::Show_groups::execute() {
 			}
 		}
 	}
-	align_columns(result, std::cout, traits_type::delimiter());
+	std::locale::global(std::locale(""));
+	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
+	std::set<wentity> wresult;
+	for (const entity& ent : result) {
+		wresult.emplace(ent, cv);
+	}
+	align_columns(wresult, std::wcout, wentity::delimiter);
 }
 
 void

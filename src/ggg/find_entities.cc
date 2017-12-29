@@ -53,7 +53,7 @@ ggg::Find_entities::execute() {
 	}
 	std::set<wentity> wresult;
 	for (const entity& ent : result) {
-		wresult.insert(wentity(ent, cv));
+		wresult.emplace(ent, cv);
 	}
 	align_columns(wresult, std::wcout, wentity::delimiter);
 }

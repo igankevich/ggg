@@ -1,8 +1,10 @@
 #include "show_members.hh"
 
 #include <algorithm>
+#include <codecvt>
 #include <iostream>
 #include <iterator>
+#include <locale>
 #include <set>
 #include <string>
 
@@ -53,7 +55,13 @@ ggg::Show_members::execute() {
 		}
 	}
 	if (this->_long) {
-		align_columns(result, std::cout, traits_type::delimiter());
+		std::locale::global(std::locale(""));
+		std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
+		std::set<wentity> wresult;
+		for (const entity& ent : result) {
+			wresult.emplace(ent, cv);
+		}
+		align_columns(wresult, std::wcout, wentity::delimiter);
 	} else {
 		std::transform(
 			result.begin(),
