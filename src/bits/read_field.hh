@@ -20,7 +20,11 @@ namespace ggg {
 		};
 
 		template<class Ch, class T>
-		char
+		Ch
+		read_field(std::basic_istream<Ch>& in, T& rhs, Ch sep);
+
+		template<class Ch, class T>
+		Ch
 		read_field(std::basic_istream<Ch>& in, T& rhs, Ch sep) {
 			std::ios::iostate old = in.exceptions();
 			in.exceptions(std::ios::goodbit);
@@ -52,11 +56,11 @@ namespace ggg {
 			return ch;
 		}
 
-		template<class Ch>
+		template<class Ch, class Tr, class Alloc>
 		inline Ch
 		read_field(
 			std::basic_istream<Ch>& in,
-			std::basic_string<Ch>& rhs,
+			std::basic_string<Ch,Tr,Alloc>& rhs,
 			Ch sep
 		) {
 			Ch ch = 0;
