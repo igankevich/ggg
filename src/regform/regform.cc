@@ -452,7 +452,7 @@ fork_exec(const char* username) {
 	const char* pwd = pw->pw_dir;
 	if (-1 == ::chdir(pwd)) {
 		pwd = "/";
-		::chdir(pwd);
+		UNISTDX_CHECK(::chdir(pwd));
 	}
 	const char* cmd = std::getenv("DESKTOP_SESSION");
 	if (!cmd) {
