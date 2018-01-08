@@ -15,51 +15,41 @@
 
 void
 ggg::Find_entities::parse_arguments(int argc, char* argv[]) {
-	Command::parse_arguments(argc, argv);
+	Show_base::parse_arguments(argc, argv);
 }
 
 void
 ggg::Find_entities::execute() {
-	typedef Object_traits<entity> traits_type;
 	file_lock lock;
-	GGG g(GGG_ENT_ROOT, this->verbose());
-	std::locale::global(std::locale(""));
-	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
-	const Hierarchy& h = g.hierarchy();
-	std::set<entity> result;
+	WGGG g(GGG_ENT_ROOT, this->verbose());
+	const auto& h = g.hierarchy();
 	if (this->_args.empty()) {
 		std::copy(
 			h.begin(),
 			h.end(),
-			std::inserter(result, result.begin())
+			std::inserter(this->_result, this->_result.begin())
 		);
 	} else {
+		wentity::wcvt_type cv;
 		for (const std::string& a : this->args()) {
 			using namespace std::regex_constants;
-			std::regex expr(a, ECMAScript | optimize | icase);
 			std::wregex wexpr(cv.from_bytes(a), ECMAScript | optimize | icase);
-			std::for_each(
+			std::copy_if(
 				h.begin(),
 				h.end(),
-				[&] (const entity& ent) {
-					std::wstring realname(cv.from_bytes(ent.real_name()));
-				    if (std::regex_match(ent.name(), expr) ||
-				        std::regex_match(realname, wexpr)) {
-				        result.insert(ent);
-					}
+				std::inserter(this->_result, this->_result.begin()),
+				[&] (const wentity& ent) {
+				    return std::regex_search(ent.name(), wexpr) ||
+				           std::regex_search(ent.real_name(), wexpr);
 				}
 			);
 		}
 	}
-	std::set<wentity> wresult;
-	for (const entity& ent : result) {
-		wresult.emplace(ent, cv);
-	}
-	align_columns(wresult, std::wcout, wentity::delimiter);
+	Show_base::execute();
 }
 
 void
 ggg::Find_entities::print_usage() {
 	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-	          << this->prefix() << " COMMAND" << '\n';
+	          << this->prefix() << " REGEX..." << '\n';
 }

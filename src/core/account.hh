@@ -21,6 +21,7 @@ namespace ggg {
 	class account {
 
 	public:
+		typedef char char_type;
 		typedef secure_string string;
 		typedef std::chrono::system_clock clock_type;
 		typedef clock_type::time_point time_point;
@@ -110,8 +111,19 @@ namespace ggg {
 		friend std::istream&
 		operator>>(std::istream& in, account& rhs);
 
+		static void
+		write_header(
+			std::ostream& out,
+			columns_type width,
+			char_type delim=delimiter
+		);
+
 		void
-		write_human(std::ostream& out, columns_type width) const;
+		write_human(
+			std::ostream& out,
+			columns_type width,
+			char_type delim=delimiter
+		) const;
 
 		std::istream&
 		read_human(std::istream& in);

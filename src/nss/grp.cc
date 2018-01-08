@@ -50,11 +50,11 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, gr)(
 	nss_status ret = NSS_STATUS_NOTFOUND;
 	int err = 0;
 	if (first != last) {
-		if (buflen < first->buffer_size()) {
+		if (buflen < ggg::buffer_size(*first)) {
 			err = ERANGE;
 			ret = NSS_STATUS_TRYAGAIN;
 		} else {
-			first->copy_to(result, buffer);
+			ggg::copy_to(*first, result, buffer);
 			++first;
 			ret = NSS_STATUS_SUCCESS;
 		}
@@ -75,11 +75,11 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, gid)(
 		ggg::Hierarchy h(GGG_ENT_ROOT);
 		auto it = h.find_group_by_gid(gid);
 		if (it != h.group_end()) {
-			if (buflen < it->buffer_size()) {
+			if (buflen < ggg::buffer_size(*it)) {
 				ret = NSS_STATUS_TRYAGAIN;
 				*errnop = ERANGE;
 			} else {
-				it->copy_to(result, buffer);
+				ggg::copy_to(*it, result, buffer);
 				ret = NSS_STATUS_SUCCESS;
 				*errnop = 0;
 			}
@@ -106,11 +106,11 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, nam)(
 		ggg::Hierarchy h(GGG_ENT_ROOT);
 		auto it = h.find_group_by_name(name);
 		if (it != h.group_end()) {
-			if (buflen < it->buffer_size()) {
+			if (buflen < ggg::buffer_size(*it)) {
 				ret = NSS_STATUS_TRYAGAIN;
 				*errnop = ERANGE;
 			} else {
-				it->copy_to(result, buffer);
+				ggg::copy_to(*it, result, buffer);
 				ret = NSS_STATUS_SUCCESS;
 				*errnop = 0;
 			}

@@ -1,16 +1,15 @@
 #ifndef GGG_SHOW_GROUPS_HH
 #define GGG_SHOW_GROUPS_HH
 
-#include "command.hh"
+#include "show_base.hh"
 
 namespace ggg {
 
-	class Show_groups: public Command {
+	class Show_groups: public Show_base {
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;
 		void execute() override;
-		void print_usage() override;
 	};
 
 }

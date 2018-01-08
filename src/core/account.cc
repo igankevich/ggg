@@ -234,8 +234,31 @@ ggg::operator>>(std::istream& in, account& rhs) {
 }
 
 void
-ggg::account::write_human(std::ostream& out, columns_type width) const {
-	const char d[4] = {' ', delimiter, ' ', 0};
+ggg::account::write_header(
+	std::ostream& out,
+	columns_type width,
+	char_type delim
+) {
+	if (width) {
+		const char_type d[4] = {' ', delim, ' ', 0};
+		out << std::left << std::setw(width[0]) << "LOGIN" << d
+			<< std::left << std::setw(width[3]) << "MINCHANGE" << d
+			<< std::left << std::setw(width[4]) << "MAXCHANGE" << d
+			<< std::left << std::setw(width[5]) << "WARNCHANGE" << d
+			<< std::left << std::setw(width[6]) << "MAXINACTIVE" << d
+			<< std::left << std::setw(width[7]) << "EXPIRE" << '\n';
+	} else {
+		out << "LOGIN:unused:MINCHANGE:MAXCHANGE:WARNCHANGE:MAXINACTIVE:EXPIRE\n";
+	}
+}
+
+void
+ggg::account::write_human(
+	std::ostream& out,
+	columns_type width,
+	char_type delim
+) const {
+	const char_type d[4] = {' ', delim, ' ', 0};
 	out << std::left << std::setw(width[0]) << this->_login << d
 		<< std::left << std::setw(width[3]) << this->_minchange << d
 		<< std::left << std::setw(width[4]) << this->_maxchange << d

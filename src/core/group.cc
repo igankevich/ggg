@@ -1,8 +1,10 @@
 #include "group.hh"
+
 #include "bits/bufcopy.hh"
-#include <unistdx/it/intersperse_iterator>
+
 #include <cstring>
 #include <memory>
+#include <unistdx/it/intersperse_iterator>
 
 namespace {
 	union pointer {
@@ -13,40 +15,46 @@ namespace {
 	static_assert(sizeof(pointer) == alignof(pointer), "bad pointer size");
 }
 
-std::ostream&
-ggg::operator<<(std::ostream& out, const group& rhs) {
+template <class Ch>
+std::basic_ostream<Ch>&
+ggg::operator<<(std::basic_ostream<Ch>& out, const basic_group<Ch>& rhs) {
+	typedef typename basic_group<Ch>::string_type string_type;
 	out << rhs.name() << ':'
-		<< rhs.password() << ':'
-		<< rhs.id() << ':';
+	    << rhs.password() << ':'
+	    << rhs.id() << ':';
 	std::copy(
 		rhs._members.begin(),
 		rhs._members.end(),
-		sys::intersperse_iterator<std::string>(out, ",")
+		sys::intersperse_iterator<string_type,Ch,Ch>(out, Ch(','))
 	);
 	return out;
 }
 
+template <class Ch>
 size_t
-ggg::group::buffer_size() const noexcept {
+ggg
+::buffer_size(const basic_group<Ch>& gr) noexcept {
 	size_t sum = 0;
-	sum += this->_name.size();
-	sum += this->_password.size();
-	for (const std::string& member : this->_members) {
+	sum += gr.name().size();
+	sum += gr.password().size();
+	for (const std::string& member : gr.members()) {
 		sum += member.size() + 1 + sizeof(pointer);
 	}
 	sum += alignof(pointer) - 1;
 	return sum;
 }
 
+template <class Ch>
 void
-ggg::group::copy_to(struct ::group* lhs, char* buffer) const {
-	buffer = bits::bufcopy(&lhs->gr_name, buffer, this->_name.data());
-	buffer = bits::bufcopy(&lhs->gr_passwd, buffer, this->_password.data());
-	// copy each group member
-	const size_t nmem = _members.size() + 1;
+ggg
+::copy_to(const basic_group<Ch>& gr, struct ::group* lhs, char* buffer) {
+	buffer = bits::bufcopy(&lhs->gr_name, buffer, gr.name().data());
+	buffer = bits::bufcopy(&lhs->gr_passwd, buffer, gr.password().data());
+	// copy each basic_group<Ch> member
+	const size_t nmem = gr.members().size() + 1;
 	std::unique_ptr<pointer[]> mem(new pointer[nmem]);
 	size_t i = 0;
-	for (const std::string& member : _members) {
+	for (const std::string& member : gr.members()) {
 		buffer = bits::bufcopy(&mem[i].ptr, buffer, member.data());
 		++i;
 	}
@@ -55,10 +63,28 @@ ggg::group::copy_to(struct ::group* lhs, char* buffer) const {
 	const size_t remainder = size_t(buffer) % alignof(pointer);
 	const size_t offset = remainder == 0 ? 0 : (alignof(pointer) - remainder);
 	buffer += offset;
-	// store address of the first group member in the gr_mem field
+	// store address of the first basic_group<Ch> member in the gr_mem field
 	lhs->gr_mem = reinterpret_cast<char**>(buffer);
-	// copy pointers to group members as well
+	// copy pointers to basic_group<Ch> members as well
 	std::memcpy(buffer, mem.get(), sizeof(pointer) * nmem);
 	buffer += sizeof(pointer) * nmem;
-	lhs->gr_gid = this->_gid;
+	lhs->gr_gid = gr.id();
 }
+
+template class ggg::basic_group<char>;
+template class ggg::basic_group<wchar_t>;
+
+template std::basic_ostream<char>&
+ggg::operator<<(std::basic_ostream<char>& out, const basic_group<char>& rhs);
+
+template std::basic_ostream<wchar_t>&
+ggg::operator<<(
+	std::basic_ostream<wchar_t>& out,
+	const basic_group<wchar_t>& rhs
+);
+
+template size_t
+ggg::buffer_size(const basic_group<char>&);
+
+template void
+ggg::copy_to(const basic_group<char>&, struct ::group*, char*);

@@ -1,11 +1,11 @@
 #ifndef GGG_FIND_ENTITIES_HH
 #define GGG_FIND_ENTITIES_HH
 
-#include "command.hh"
+#include "show_base.hh"
 
 namespace ggg {
 
-	class Find_entities: public Command {
+	class Find_entities: public Show_base {
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;

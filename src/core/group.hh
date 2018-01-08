@@ -1,10 +1,10 @@
 #ifndef GROUP_HH
 #define GROUP_HH
 
-#include <string>
-#include <unordered_set>
-#include <unistd.h>
 #include <grp.h>
+#include <string>
+#include <unistd.h>
+#include <unordered_set>
 
 namespace sys {
 	typedef ::gid_t gid_type;
@@ -12,22 +12,25 @@ namespace sys {
 
 namespace ggg {
 
-	class group {
+	template <class Ch>
+	class basic_group {
 
 	public:
-		typedef std::unordered_set<std::string> container_type;
+		typedef Ch char_type;
+		typedef std::basic_string<Ch> string_type;
+		typedef std::unordered_set<string_type> container_type;
 
 	private:
-		std::string _name;
-		std::string _password;
+		string_type _name;
+		string_type _password;
 		sys::gid_type _gid;
 		mutable container_type _members;
 
 	public:
 		explicit
-		group(
-			const std::string& name,
-			const std::string& password,
+		basic_group(
+			const string_type& name,
+			const string_type& password,
 			sys::gid_type gid
 		):
 		_name(name),
@@ -36,23 +39,20 @@ namespace ggg {
 		{}
 
 		explicit
-		group(const std::string& name):
+		basic_group(const string_type& name):
 		_name(name)
 		{}
 
-		group() = default;
-		group(const group& rhs) = default;
-		group(group&& rhs) = default;
-		~group() = default;
+		basic_group() = default;
 
-		group&
-		operator=(const group& rhs) = default;
+		basic_group(const basic_group& rhs) = default;
 
-		void
-		copy_to(struct ::group* lhs, char* buffer) const;
+		basic_group(basic_group&& rhs) = default;
 
-		size_t
-		buffer_size() const noexcept;
+		~basic_group() = default;
+
+		basic_group&
+		operator=(const basic_group& rhs) = default;
 
 		inline bool
 		has_id() const noexcept {
@@ -60,61 +60,75 @@ namespace ggg {
 		}
 
 		inline bool
-		operator==(const group& rhs) const noexcept {
+		operator==(const basic_group& rhs) const noexcept {
 			return name() == rhs.name();
 		}
 
 		inline bool
-		operator!=(const group& rhs) const noexcept {
+		operator!=(const basic_group& rhs) const noexcept {
 			return !operator==(rhs);
 		}
 
 		inline bool
-		operator<(const group& rhs) const noexcept {
+		operator<(const basic_group& rhs) const noexcept {
 			return name() < rhs.name();
 		}
 
-		friend std::ostream&
-		operator<<(std::ostream& out, const group& rhs);
+		template <class X>
+		friend std::basic_ostream<X>&
+		operator<<(std::basic_ostream<X>& out, const basic_group<X>& rhs);
 
-		sys::gid_type
+		inline sys::gid_type
 		id() const noexcept {
-			return _gid;
+			return this->_gid;
 		}
 
-		const std::string&
+		inline const string_type&
 		name() const noexcept {
-			return _name;
+			return this->_name;
 		}
 
-		const std::string&
+		inline const string_type&
 		password() const noexcept {
-			return _password;
+			return this->_password;
 		}
 
-		const std::unordered_set<std::string>&
+		inline const std::unordered_set<string_type>&
 		members() const noexcept {
-			return _members;
+			return this->_members;
 		}
 
 		inline void
-		push(const std::string& member) const {
-			_members.emplace(member);
+		push(const string_type& member) const {
+			this->_members.emplace(member);
 		}
 
 		inline void
-		erase(const std::string& member) const {
-			_members.erase(member);
+		erase(const string_type& member) const {
+			this->_members.erase(member);
 		}
 
 		inline void
 		clear() const {
-			_members.clear();
+			this->_members.clear();
 		}
+
 	};
 
-	std::ostream&
-	operator<<(std::ostream& out, const group& rhs);
+	template <class Ch>
+	void
+	copy_to(const basic_group<Ch>& gr, struct ::group* lhs, char* buffer);
+
+	template <class Ch>
+	size_t
+	buffer_size(const basic_group<Ch>& gr) noexcept;
+
+	template <class Ch>
+	std::basic_ostream<Ch>&
+	operator<<(std::basic_ostream<Ch>& out, const basic_group<Ch>& rhs);
+
+	typedef basic_group<char> group;
+	typedef basic_group<wchar_t> wgroup;
 
 }
 

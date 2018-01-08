@@ -25,7 +25,7 @@ namespace ggg {
 		}
 
 		inline static bool
-		eq(const ggg::entity& lhs, const ggg::entity& rhs) noexcept {
+		eq(const ggg::entity& lhs, const ggg::entity& rhs) {
 			return lhs.id() == rhs.id() || lhs.name() == rhs.name();
 		}
 
@@ -56,7 +56,7 @@ namespace ggg {
 		}
 
 		inline static bool
-		eq(const ggg::account& lhs, const ggg::account& rhs) noexcept {
+		eq(const ggg::account& lhs, const ggg::account& rhs) {
 			return lhs.login() == rhs.login();
 		}
 
@@ -84,7 +84,8 @@ namespace ggg {
 		std::ifstream in;
 		try {
 			in.exceptions(std::ios::badbit);
-			in.open(filename);
+			in.imbue(std::locale::classic());
+			in.open(filename, std::ios_base::in);
 			T obj;
 			while (obj.read_human(in)) {
 				*result++ = obj;

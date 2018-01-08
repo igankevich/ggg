@@ -6,21 +6,24 @@
 
 namespace ggg {
 
+	/// Set default system locale, but retain classic
+	/// locale for output and error streams.
 	void
 	init_locale();
 
 	std::string
 	native(const char* text);
 
-	inline std::ostream&
-	format_message(std::ostream& out, char, const char* s) {
+	template <class Ch>
+	std::basic_ostream<Ch>&
+	format_message(std::basic_ostream<Ch>& out, char, const char* s) {
 		return out << s;
 	}
 
-	template<class T, class ... Args>
-	std::ostream&
+	template<class Ch, class T, class ... Args>
+	std::basic_ostream<Ch>&
 	format_message(
-		std::ostream& out,
+		std::basic_ostream<Ch>& out,
 		char ch,
 		const char* s,
 		const T& value,
@@ -33,27 +36,25 @@ namespace ggg {
 		return format_message(out, ch, ++s, args ...);
 	}
 
-	template<class T, class ... Args>
-	std::ostream&
+	template<class Ch, class ... Args>
+	std::basic_ostream<Ch>&
 	format_message(
-		std::ostream& out,
+		std::basic_ostream<Ch>& out,
 		const char* s,
-		const T& value,
 		const Args& ... args
 	) {
 		return format_message(out, '_', s, args ...);
 	}
 
-	template<class T, class ... Args>
-	std::ostream&
+	template<class Ch, class ... Args>
+	std::basic_ostream<Ch>&
 	native_message(
-		std::ostream& out,
+		std::basic_ostream<Ch>& out,
 		const char* s,
-		const T& value,
 		const Args& ... args
 	) {
 		std::string str = native(s);
-		return format_message(out, str.data(), value, args...);
+		return format_message(out, str.data(), args...);
 	}
 
 }

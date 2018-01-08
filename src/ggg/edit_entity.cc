@@ -65,6 +65,7 @@ void
 ggg::Edit_entity::edit_objects(GGG& g) {
 	while (!this->_args.empty()) {
 		sys::tmpfile tmp;
+		tmp.out().imbue(std::locale::classic());
 		this->print_objects<T>(g, tmp.out());
 		edit_file_or_throw(tmp.filename());
 		this->update_objects<T>(g, tmp.filename());

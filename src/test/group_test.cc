@@ -5,10 +5,10 @@
 TEST(EntityTest, CopyTo) {
 	ggg::group ent;
 	char fillchar = -1;
-	std::vector<char> buffer((ent.buffer_size() * 2) | 64, fillchar);
+	std::vector<char> buffer((ggg::buffer_size(ent) * 2) | 64, fillchar);
 	struct ::group gr;
-	ent.copy_to(&gr, buffer.data());
-	EXPECT_EQ(fillchar, buffer[ent.buffer_size()]);
+	ggg::copy_to(ent, &gr, buffer.data());
+	EXPECT_EQ(fillchar, buffer[ggg::buffer_size(ent)]);
 	EXPECT_STREQ(ent.name().data(), gr.gr_name);
 	EXPECT_EQ(ent.id(), gr.gr_gid);
 	EXPECT_STREQ(ent.password().data(), gr.gr_passwd);

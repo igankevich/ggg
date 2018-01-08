@@ -1,33 +1,97 @@
 #include "hierarchy.hh"
 
-#include <unistdx/it/intersperse_iterator>
-#include <unistdx/fs/idirtree>
+#include <pwd.h>
+
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <locale>
 #include <stdexcept>
-#include <pwd.h>
+
+#include <unistdx/fs/idirtree>
+#include <unistdx/it/intersperse_iterator>
 
 #include "bits/io.hh"
+#include "bits/to_bytes.hh"
 
-std::ostream&
-ggg::operator<<(std::ostream& out, const entity_pair& rhs) {
+namespace {
+
+	template <class Ch>
+	struct log_traits;
+
+	template <>
+	struct log_traits<char> {
+		inline static std::ostream&
+		log() noexcept {
+			return std::clog;
+		}
+	};
+
+	template <>
+	struct log_traits<wchar_t> {
+		inline static std::wostream&
+		log() noexcept {
+			return std::wclog;
+		}
+	};
+
+	template <class Ch>
+	struct delimiter_traits;
+
+	template <>
+	struct delimiter_traits<char> {
+
+		inline static const char*
+		newline() noexcept {
+			return "\n";
+		}
+
+		inline static const char*
+		new_suffix() noexcept {
+			return ".new";
+		}
+
+	};
+
+	template <>
+	struct delimiter_traits<wchar_t> {
+
+		inline static const wchar_t*
+		newline() noexcept {
+			return L"\n";
+		}
+
+		inline static const wchar_t*
+		new_suffix() noexcept {
+			return L".new";
+		}
+
+	};
+
+}
+
+template <class Ch>
+std::basic_ostream<Ch>&
+ggg::operator<<(std::basic_ostream<Ch>& out, const entity_pair<Ch>& rhs) {
 	out << rhs.first << ':';
 	std::copy(
 		rhs.second.begin(),
 		rhs.second.end(),
-		sys::intersperse_iterator<std::string>(out, ",")
+		sys::intersperse_iterator<std::basic_string<Ch>,Ch,Ch>(out, Ch(','))
 	);
 	return out;
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::read() {
+ggg::basic_hierarchy<Ch>
+::read() {
+	bits::wcvt_type cv;
 	sys::idirtree tree;
 	try {
-		tree.open(_root);
+		tree.open(sys::path(bits::to_bytes<char>(cv, this->_root)));
 	} catch (...) {
-		std::clog << "Skipping bad hierarchy root " << _root << std::endl;
+		log_traits<Ch>::log() << "Skipping bad hierarchy root " << _root << std::endl;
 		return;
 	}
 	while (!tree.eof()) {
@@ -37,7 +101,7 @@ ggg::Hierarchy::read() {
 		while (!success) {
 			if (tree >> entry) {
 				try {
-					this->process_entry(entry, success);
+					this->process_entry(entry, cv, success);
 				} catch (...) {
 					std::clog << "Skipping bad file " << entry << std::endl;
 				}
@@ -55,37 +119,42 @@ ggg::Hierarchy::read() {
 	_isopen = true;
 }
 
-std::ostream&
-ggg::operator<<(std::ostream& out, const Hierarchy& rhs) {
+template <class Ch>
+std::basic_ostream<Ch>&
+ggg::operator<<(std::basic_ostream<Ch>& out, const basic_hierarchy<Ch>& rhs) {
+	typedef typename basic_hierarchy<Ch>::entity_pair_type entity_pair_type;
+	typedef typename basic_hierarchy<Ch>::group_type group_type;
 	out << "\nUsers:\n";
 	std::copy(
 		rhs._entities.begin(),
 		rhs._entities.end(),
-		std::ostream_iterator<entity_pair>(out, "\n")
+		std::ostream_iterator<entity_pair_type,Ch>(out, "\n")
 	);
 	out << "\nGroups:\n";
 	std::copy(
 		rhs._groups.begin(),
 		rhs._groups.end(),
-		std::ostream_iterator<group>(out, "\n")
+		std::ostream_iterator<group_type,Ch>(out, "\n")
 	);
 	return out;
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::process_links() {
+ggg::basic_hierarchy<Ch>
+::process_links() {
 	size_t num_insertions = 1;
 	size_t old_size = 0;
 	for (size_t i=0; i<_maxlinks && num_insertions > 0; ++i) {
 		num_insertions = 0;
-		for (const entity_pair& pair : _links) {
-			const entity& link = pair.first;
-			std::set<std::string>& s = _entities[link];
+		for (const entity_pair_type& pair : _links) {
+			const entity_type& link = pair.first;
+			entity_set_type& s = _entities[link];
 			old_size = s.size();
 			s.insert(pair.second.begin(), pair.second.end());
 			num_insertions += s.size() - old_size;
-			for (entity_pair& pair2 : _entities) {
-				std::set<std::string>& s2 = pair2.second;
+			for (entity_pair_type& pair2 : _entities) {
+				entity_set_type& s2 = pair2.second;
 				if (s2.count(link.name())) {
 					old_size = s2.size();
 					s2.insert(pair.second.begin(), pair.second.end());
@@ -96,28 +165,32 @@ ggg::Hierarchy::process_links() {
 	}
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::filter_entities() {
+ggg::basic_hierarchy<Ch>
+::filter_entities() {
 	erase_if(
 		_entities,
-		[this] (const entity_pair& rhs) {
-			return !rhs.first.has_id() || rhs.first.id() < _minuid;
+		[this] (const entity_pair_type& rhs) {
+		    return !rhs.first.has_id() || rhs.first.id() < _minuid;
 		}
 	);
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::generate_groups() {
+ggg::basic_hierarchy<Ch>
+::generate_groups() {
 	// add groups
-	for (const entity_pair& pair : _entities) {
-		const entity& ent = pair.first;
+	for (const entity_pair_type& pair : _entities) {
+		const entity_type& ent = pair.first;
 		_groups.emplace(ent.name(), ent.password(), ent.gid());
 	}
 	// add group members
-	for (const entity_pair& pair : _entities) {
-		const entity& member = pair.first;
-		for (const std::string& grname : pair.second) {
-			auto result = _groups.find(group(grname));
+	for (const entity_pair_type& pair : _entities) {
+		const entity_type& member = pair.first;
+		for (const string_type& grname : pair.second) {
+			auto result = _groups.find(group_type(grname));
 			if (result != _groups.end()) {
 				result->push(member.name());
 			}
@@ -125,98 +198,115 @@ ggg::Hierarchy::generate_groups() {
 	}
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::filter_groups() {
+ggg::basic_hierarchy<Ch>
+::filter_groups() {
 	/*
-	// add entities to the groups with the same names
-	for (const group& rhs : this->_groups) {
-		const_iterator result = this->find_by_name(rhs.name().data());
-		if (result != this->_entities.end()) {
-			rhs.push(result->name());
-		}
-	}
-	// remove empty groups
-	erase_if(
-		this->_groups,
-		[] (const group& rhs) {
-			return rhs.members().empty();
-		}
-	);
-	*/
+	   // add entities to the groups with the same names
+	   for (const group_type& rhs : this->_groups) {
+	    const_iterator result = this->find_by_name(rhs.name().data());
+	    if (result != this->_entities.end()) {
+	        rhs.push(result->name());
+	    }
+	   }
+	   // remove empty groups
+	   erase_if(
+	    this->_groups,
+	    [] (const group_type& rhs) {
+	        return rhs.members().empty();
+	    }
+	   );
+	 */
 	/*
-	// remove duplicate entities
-	for (const group& grp : _groups) {
-		_entities.erase(entity(grp.name().data()));
-	}
-	*/
+	   // remove duplicate entities
+	   for (const group_type& grp : _groups) {
+	    _entities.erase(entity_type(grp.name().data()));
+	   }
+	 */
 	// remove non-existent groups
-	for (entity_pair& pair : _entities) {
+	for (entity_pair_type& pair : this->_entities) {
 		erase_if(
 			pair.second,
-			[this] (const std::string& grname) {
-				return _groups.find(group(grname)) == _groups.end();
+			[this] (const string_type& grname) {
+			    return this->_groups.find(group_type(grname)) == this->_groups.end();
 			}
 		);
 	}
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::process_entry(const sys::pathentry& entry, bool& success) {
-	sys::canonical_path filepath(entry.getpath());
+ggg::basic_hierarchy<Ch>
+::process_entry(
+	const sys::pathentry& entry,
+	entity::wcvt_type& cv,
+	bool& success
+) {
+	canonical_path_type filepath(entry.getpath());
 	if (filepath.is_relative_to(_root)) {
 		switch (sys::get_file_type(entry)) {
-			case sys::file_type::regular: {
-				std::ifstream in(filepath);
-				in.imbue(std::locale::classic());
-				if (in.is_open()) {
-					entity ent;
-					while (in >> ent) {
-						ent.origin(filepath);
-						add_entity(ent, filepath);
-					}
-					add_entity(entity(entry.name()), filepath.dirname());
-					success = true;
+		case sys::file_type::regular: {
+			std::basic_ifstream<Ch> in(
+				bits::to_bytes<char>(cv, filepath),
+				std::ios_base::in | std::ios_base::binary
+			);
+			if (in.is_open()) {
+				entity_type ent;
+				while (in >> ent) {
+					ent.origin(filepath);
+					add_entity(ent, filepath, cv);
 				}
-				break;
+				entity byte_ent(entry.name());
+				add_entity(entity_type(byte_ent, cv), filepath.dirname(), cv);
+				success = true;
 			}
-			case sys::file_type::symbolic_link: {
-				entity ent(entry.name());
-				ent.origin(entry.getpath());
-				add_link(ent, sys::canonical_path(entry.dirname()));
-				break;
-			}
-			default: break;
+			break;
+		}
+		case sys::file_type::symbolic_link: {
+			entity byte_ent(entry.name());
+			byte_ent.origin(entry.getpath());
+			entity_type ent(byte_ent, cv);
+			add_link(ent, canonical_path_type(entry.dirname()), cv);
+			break;
+		}
+		default: break;
 		}
 	}
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::add(
+ggg::basic_hierarchy<Ch>
+::add(
 	map_type& container,
-	const entity& ent,
-	const sys::canonical_path& filepath
+	const entity_type& ent,
+	const canonical_path_type& filepath,
+	entity::wcvt_type& cv
 ) {
 	std::string dirs(
 		filepath,
-		std::min(filepath.size(), _root.size() + 1)
+		std::min(filepath.size(), this->_root.size() + 1)
 	);
 	std::stringstream tmp;
 	tmp.imbue(std::locale::classic());
 	tmp << dirs;
 	auto result = container.find(ent);
 	if (result != container.end()) {
-		const_cast<entity&>(result->first).merge(ent);
+		const_cast<entity_type&>(result->first).merge(ent);
 	} else {
-		result = container.emplace(ent, std::set<std::string>()).first;
+		result = container.emplace(ent, entity_set_type()).first;
 	}
 	std::string group;
 	while (std::getline(tmp, group, sys::file_separator)) {
-		result->second.emplace(group);
+		result->second.emplace(bits::to_bytes<Ch>(cv, group));
 	}
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::erase(const char* name) {
+ggg::basic_hierarchy<Ch>
+::erase(const char_type* name) {
 	const_iterator result = this->find_by_name(name);
 	if (result != this->end() && result->has_origin()) {
 		this->erase_regular(*result);
@@ -227,10 +317,12 @@ ggg::Hierarchy::erase(const char* name) {
 	}
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::erase_link(const entity& ent) {
+ggg::basic_hierarchy<Ch>
+::erase_link(const entity_type& ent) {
 	if (this->_verbose) {
-		std::clog << "unlinking " << ent.origin() << std::endl;
+		log_traits<Ch>::log() << "unlinking " << ent.origin() << std::endl;
 	}
 	int ret = ::unlink(ent.origin());
 	if (ret == -1) {
@@ -238,50 +330,53 @@ ggg::Hierarchy::erase_link(const entity& ent) {
 	}
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::erase_regular(const entity& ent) {
-	typedef std::istream_iterator<entity> iterator;
-	typedef std::ostream_iterator<entity> oiterator;
+ggg::basic_hierarchy<Ch>
+::erase_regular(const entity_type& ent) {
+	typedef std::istream_iterator<entity_type,Ch> iterator;
+	typedef std::ostream_iterator<entity_type,Ch> oiterator;
 	std::string new_origin;
-	sys::canonical_path origin(ent.origin());
-	new_origin.append(origin.dirname());
-	new_origin.push_back('.');
-	new_origin.append(origin.basename());
+	canonical_path_type origin(ent.origin());
+	new_origin.append(origin);
 	new_origin.append(".new");
+	bits::wcvt_type cv;
 	bits::check(origin, R_OK | W_OK);
-	bits::check(new_origin.data(), R_OK | W_OK, false);
-	std::ifstream file;
-	std::ofstream file_new;
+	bits::check(new_origin, R_OK | W_OK, false);
+	std::basic_ifstream<Ch> file;
+	std::basic_ofstream<Ch> file_new;
 	try {
 		file.exceptions(std::ios::badbit);
 		file.imbue(std::locale::classic());
-		file.open(origin);
+		file.open(origin, std::ios_base::in | std::ios_base::binary);
 		file_new.exceptions(std::ios::badbit);
 		file_new.imbue(std::locale::classic());
-		file_new.open(new_origin);
+		file_new.open(new_origin, std::ios_base::out | std::ios_base::binary);
 		std::copy_if(
 			iterator(file),
 			iterator(),
-			oiterator(file_new, "\n"),
-			[&ent,this] (const entity& rhs) {
-				bool match = rhs.name() == ent.name();
-				if (match && this->_verbose) {
-					std::clog
-						<< "removing " << rhs.name() << ':' << rhs.id()
-						<< " from " << ent.origin()
-						<< std::endl;
+			oiterator(file_new, delimiter_traits<Ch>::newline()),
+			[&ent,this] (const entity_type& rhs) {
+			    bool match = rhs.name() == ent.name();
+			    if (match && this->_verbose) {
+			        log_traits<Ch>::log()
+			        << "removing " << rhs.name() << ':' << rhs.id()
+			        << " from " << ent.origin()
+			        << std::endl;
 				}
-				return !match;
+			    return !match;
 			}
 		);
 	} catch (...) {
 		bits::throw_io_error(file, "unable to remove entity");
 	}
-	ggg::bits::rename(new_origin.data(), origin);
+	ggg::bits::rename(new_origin, origin);
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::validate_entity(const entity& ent) {
+ggg::basic_hierarchy<Ch>
+::validate_entity(const entity_type& ent) {
 	if (!(ent.id() >= this->_minuid)) {
 		throw std::invalid_argument("bad uid");
 	}
@@ -299,8 +394,10 @@ ggg::Hierarchy::validate_entity(const entity& ent) {
 	}
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::update(const entity& ent) {
+ggg::basic_hierarchy<Ch>
+::update(const entity_type& ent) {
 	this->validate_entity(ent);
 	const_iterator result1 = this->find_by_name(ent.name().data());
 	const_iterator result2 = this->find_by_uid(ent.id());
@@ -317,7 +414,9 @@ ggg::Hierarchy::update(const entity& ent) {
 	if (!result->has_origin()) {
 		throw std::invalid_argument("bad origin");
 	}
-	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {
+	typename entity_type::wcvt_type cv;
+	entity byte_ent(ent, cv);
+	if (struct ::passwd* pw = ::getpwnam(byte_ent.name().data())) {
 		if (pw->pw_uid < this->_minuid || pw->pw_gid < this->_mingid) {
 			throw std::invalid_argument("conflicting system user");
 		}
@@ -325,66 +424,72 @@ ggg::Hierarchy::update(const entity& ent) {
 	this->update_regular(ent, result->origin());
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::update_regular(const entity& ent, sys::path ent_origin) {
-	typedef std::istream_iterator<entity> iterator;
-	typedef std::ostream_iterator<entity> oiterator;
+ggg::basic_hierarchy<Ch>
+::update_regular(
+	const entity_type& ent,
+	path_type ent_origin
+) {
+	typedef std::istream_iterator<entity_type,Ch> iterator;
+	typedef std::ostream_iterator<entity_type,Ch> oiterator;
 	std::string new_origin;
-	sys::canonical_path origin(ent_origin);
-	new_origin.append(origin.dirname());
-	new_origin.push_back('.');
-	new_origin.append(origin.basename());
+	canonical_path_type origin(ent_origin);
+	new_origin.append(origin);
 	new_origin.append(".new");
 	bits::check(origin, R_OK | W_OK);
 	bits::check(new_origin.data(), R_OK | W_OK, false);
-	std::ifstream file;
-	std::ofstream file_new;
+	std::basic_ifstream<Ch> file;
+	std::basic_ofstream<Ch> file_new;
 	try {
 		file.exceptions(std::ios::badbit);
 		file.imbue(std::locale::classic());
-		file.open(origin);
+		file.open(origin, std::ios_base::in | std::ios_base::binary);
 		file_new.exceptions(std::ios::badbit);
 		file_new.imbue(std::locale::classic());
-		file_new.open(new_origin);
+		file_new.open(new_origin, std::ios_base::out | std::ios_base::binary);
 		std::transform(
 			iterator(file),
 			iterator(),
-			oiterator(file_new, "\n"),
-			[&ent,&ent_origin,this] (const entity& rhs) {
-				bool match = rhs.name() == ent.name();
-				if (match && this->_verbose) {
-					std::clog
-						<< "updating " << rhs.name() << ':' << rhs.id()
-						<< " in " << ent_origin
-						<< std::endl;
+			oiterator(file_new, delimiter_traits<Ch>::newline()),
+			[&ent,&ent_origin,this] (const entity_type& rhs) {
+			    bool match = rhs.name() == ent.name();
+			    if (match && this->_verbose) {
+			        log_traits<Ch>::log()
+			        << "updating " << rhs.name() << ':' << rhs.id()
+			        << " in " << ent_origin
+			        << std::endl;
 				}
-				return match ? ent : rhs;
+			    return match ? ent : rhs;
 			}
 		);
 	} catch (...) {
 		bits::throw_io_error(file, "unable to update entity");
 	}
-	ggg::bits::rename(new_origin.data(), origin);
+	ggg::bits::rename(new_origin, origin);
 }
 
-ggg::entity
-ggg::Hierarchy::generate(const char* name) {
+template <class Ch>
+ggg::basic_entity<Ch>
+ggg::basic_hierarchy<Ch>
+::generate(const char_type* name) {
 	sys::uid_type id = this->next_uid();
-	std::clog << "id=" << id << std::endl;
-	entity ent(name, id, id);
+	entity_type ent(name, id, id);
 	return ent;
 }
 
+template <class Ch>
 sys::uid_type
-ggg::Hierarchy::next_uid() const {
+ggg::basic_hierarchy<Ch>
+::next_uid() const {
 	sys::uid_type uid;
 	const_iterator result = std::max_element(
 		this->begin(),
 		this->end(),
-		[] (const entity& lhs, const entity& rhs) {
-			return lhs.id() < rhs.id();
+		[] (const entity_type& lhs, const entity_type& rhs) {
+		    return lhs.id() < rhs.id();
 		}
-	);
+	                        );
 	if (result == this->end()) {
 		uid = this->_minuid;
 	} else {
@@ -399,8 +504,13 @@ ggg::Hierarchy::next_uid() const {
 	return uid + 1;
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::add(const entity& ent, const std::string& filename) {
+ggg::basic_hierarchy<Ch>
+::add(
+	const entity_type& ent,
+	const std::string& filename
+) {
 	if (filename.empty()) {
 		throw std::invalid_argument("empty filename");
 	}
@@ -411,22 +521,43 @@ ggg::Hierarchy::add(const entity& ent, const std::string& filename) {
 	const bool exists1 = result1 != last;
 	const bool exists2 = result2 != last;
 	if (exists1 || exists2) {
-		throw std::invalid_argument("entity with the same name/uid already exists");
+		throw std::invalid_argument(
+				  "entity with the same name/uid already exists"
+		);
 	}
-	if (::getpwnam(ent.name().data())) {
+	typename entity_type::wcvt_type cv;
+	entity byte_ent(ent, cv);
+	if (::getpwnam(byte_ent.name().data())) {
 		throw std::invalid_argument("conflicting system user");
 	}
 	this->append_entity(ent, filename);
 }
 
+template <class Ch>
 void
-ggg::Hierarchy::append_entity(const entity& ent, const std::string& filename) {
+ggg::basic_hierarchy<Ch>
+::append_entity(
+	const entity_type& ent,
+	const std::string& filename
+) {
 	sys::path dest(this->_root, filename);
 	if (this->verbose()) {
-		std::clog
-			<< "appending " << ent.name() << ':' << ent.id()
-			<< " to " << dest
-			<< std::endl;
+		log_traits<Ch>::log()
+		    << "appending " << ent.name() << ':' << ent.id()
+		    << " to " << dest
+		    << std::endl;
 	}
 	bits::append(ent, dest, "unable to add entity");
 }
+
+template class ggg::basic_hierarchy<char>;
+template class ggg::basic_hierarchy<wchar_t>;
+
+template std::basic_ostream<char>&
+ggg::operator<<(
+	std::basic_ostream<char>& out,
+	const basic_hierarchy<char>& rhs
+);
+
+template std::basic_ostream<char>&
+ggg::operator<<(std::basic_ostream<char>& out, const entity_pair<char>& rhs);

@@ -23,9 +23,9 @@ namespace ggg {
 		typedef Ch char_type;
 		typedef std::char_traits<Ch> traits_type;
 		typedef std::basic_string<Ch, traits_type> string_type;
-		typedef sys::basic_path<Ch,traits_type> path_type;
-		typedef std::codecvt_utf8<Ch> ccvt_type;
-		typedef std::wstring_convert<ccvt_type, Ch> wcvt_type;
+		typedef sys::path path_type;
+		typedef std::codecvt_utf8<wchar_t> ccvt_type;
+		typedef std::wstring_convert<ccvt_type, wchar_t> wcvt_type;
 
 	private:
 		typedef std::basic_ostream<Ch, traits_type> ostream_type;
@@ -60,19 +60,7 @@ namespace ggg {
 		_gid(gid)
 		{ this->_homedir.append(_name); }
 
-		/*
-		inline explicit
-		basic_entity(const ::passwd& rhs):
-		_name(rhs.pw_name),
-		_password(rhs.pw_passwd),
-		_realname(rhs.pw_gecos),
-		_homedir(rhs.pw_dir),
-		_shell(rhs.pw_shell),
-		_uid(rhs.pw_uid),
-		_gid(rhs.pw_gid)
-		{}
-		*/
-
+		basic_entity(const basic_entity<wchar_t>& rhs, wcvt_type& cv);
 		basic_entity(const basic_entity<char>& rhs, wcvt_type& cv);
 
 		basic_entity() = default;
@@ -141,8 +129,19 @@ namespace ggg {
 		void
 		set(const form_field& field, const char_type* value);
 
+		static void
+		write_header(
+			ostream_type& out,
+			columns_type width,
+			char_type delim=delimiter
+		);
+
 		void
-		write_human(ostream_type& out, columns_type width) const;
+		write_human(
+			ostream_type& out,
+			columns_type width,
+			char_type delim=delimiter
+		) const;
 
 		std::basic_istream<Ch>&
 		read_human(std::basic_istream<Ch>& in);
@@ -180,9 +179,19 @@ namespace ggg {
 			return this->_homedir;
 		}
 
+		inline void
+		home(const string_type& rhs) {
+			this->_homedir = rhs;
+		}
+
 		inline const string_type&
 		shell() const noexcept {
 			return this->_shell;
+		}
+
+		inline void
+		shell(const string_type& rhs) {
+			this->_shell = rhs;
 		}
 
 		inline const path_type&

@@ -6,6 +6,7 @@
 
 #include <config.hh>
 #include <core/lock.hh>
+#include <core/native.hh>
 #include <ctl/ggg.hh>
 
 #include "align_columns.hh"
@@ -13,7 +14,7 @@
 
 void
 ggg::Show_groups::parse_arguments(int argc, char* argv[]) {
-	Command::parse_arguments(argc, argv);
+	Show_base::parse_arguments(argc, argv);
 	if (this->_args.empty()) {
 		throw std::invalid_argument("please, specify entity names");
 	}
@@ -21,40 +22,28 @@ ggg::Show_groups::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Show_groups::execute() {
-	typedef Object_traits<entity> traits_type;
 	file_lock lock;
-	GGG g(GGG_ENT_ROOT, this->verbose());
-	const Hierarchy& h = g.hierarchy();
-	std::set<entity> result;
+	WGGG g(GGG_ENT_ROOT, this->verbose());
+	const auto& h = g.hierarchy();
+	wentity::wcvt_type cv;
 	for (const std::string& a : this->args()) {
-		auto it0 = h.find_by_name(a.data());
+		std::wstring wa = cv.from_bytes(a);
+		auto it0 = h.find_by_name(wa.data());
 		if (it0 == h.end()) {
-			std::cerr << "Unable to find " << a << std::endl;
+			native_message(std::wcerr, "Unable to find _.\n", wa);
 		} else {
-			const entity& ent = *it0;
+			const wentity& ent = *it0;
 			auto groups = h.find_supplementary_groups(ent.name());
-			for (const std::string& g : groups) {
+			for (const std::wstring& g : groups) {
 				auto it1 = h.find_by_name(g.data());
 				if (it1 == h.end()) {
-					std::cerr << "Unable to find " << g << std::endl;
+					native_message(std::wcerr, "Unable to find _.\n", g);
 				} else {
-					result.insert(*it1);
+					this->_result.insert(*it1);
 				}
 			}
 		}
 	}
-	std::locale::global(std::locale(""));
-	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
-	std::set<wentity> wresult;
-	for (const entity& ent : result) {
-		wresult.emplace(ent, cv);
-	}
-	align_columns(wresult, std::wcout, wentity::delimiter);
-}
-
-void
-ggg::Show_groups::print_usage() {
-	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-	          << this->prefix() << " ENTITY" << '\n';
+	Show_base::execute();
 }
 

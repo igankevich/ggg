@@ -25,7 +25,7 @@ ggg::align_columns(std::basic_istream<Ch>& str, Ch delimiter) {
 					}
 				}
 				++column_no;
-				i0 = i;
+				i0 = i+1;
 			}
 		}
 	}

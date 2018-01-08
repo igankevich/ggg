@@ -1,8 +1,11 @@
 #include "entity.hh"
-#include "bits/read_field.hh"
+
 #include "bits/bufcopy.hh"
-#include <iomanip>
+#include "bits/read_field.hh"
+#include "bits/to_bytes.hh"
+
 #include <algorithm>
+#include <iomanip>
 #include <sstream>
 
 namespace {
@@ -18,15 +21,29 @@ namespace {
 }
 
 template <class Ch>
-ggg::basic_entity<Ch>::basic_entity(const basic_entity<char>& rhs, wcvt_type& cv):
-_name(cv.from_bytes(rhs.name())),
-_password(cv.from_bytes(rhs.password())),
-_realname(cv.from_bytes(rhs.real_name())),
-_homedir(cv.from_bytes(rhs.home())),
-_shell(cv.from_bytes(rhs.shell())),
+ggg::basic_entity<Ch>
+::basic_entity(const basic_entity<wchar_t>& rhs, wcvt_type& cv):
+_name(bits::to_bytes<Ch>(cv, rhs.name())),
+_password(bits::to_bytes<Ch>(cv, rhs.password())),
+_realname(bits::to_bytes<Ch>(cv, rhs.real_name())),
+_homedir(bits::to_bytes<Ch>(cv, rhs.home())),
+_shell(bits::to_bytes<Ch>(cv, rhs.shell())),
 _uid(rhs.id()),
 _gid(rhs.gid()),
-_origin(cv.from_bytes(rhs.origin()))
+_origin(rhs.origin())
+{}
+
+template <class Ch>
+ggg::basic_entity<Ch>
+::basic_entity(const basic_entity<char>& rhs, wcvt_type& cv):
+_name(bits::to_bytes<Ch>(cv, rhs.name())),
+_password(bits::to_bytes<Ch>(cv, rhs.password())),
+_realname(bits::to_bytes<Ch>(cv, rhs.real_name())),
+_homedir(bits::to_bytes<Ch>(cv, rhs.home())),
+_shell(bits::to_bytes<Ch>(cv, rhs.shell())),
+_uid(rhs.id()),
+_gid(rhs.gid()),
+_origin(rhs.origin())
 {}
 
 template <class Ch>
@@ -35,7 +52,8 @@ ggg::operator>>(std::basic_istream<Ch>& in, basic_entity<Ch>& rhs) {
 	typename std::basic_istream<Ch>::sentry s(in);
 	if (s) {
 		bits::read_all_fields(
-			in, basic_entity<Ch>::delimiter,
+			in,
+			basic_entity<Ch>::delimiter,
 			rhs._name,
 			rhs._password,
 			rhs._uid,
@@ -55,37 +73,64 @@ template <class Ch>
 std::basic_ostream<Ch>&
 ggg::operator<<(std::basic_ostream<Ch>& out, const basic_entity<Ch>& rhs) {
 	return out
-		<< rhs.name() << basic_entity<Ch>::delimiter
-		<< rhs.password() << basic_entity<Ch>::delimiter
-		<< rhs.id() << basic_entity<Ch>::delimiter
-		<< rhs.gid() << basic_entity<Ch>::delimiter
-		<< rhs.real_name() << basic_entity<Ch>::delimiter
-		<< rhs.home() << basic_entity<Ch>::delimiter
-		<< rhs.shell();
+	       << rhs.name() << basic_entity<Ch>::delimiter
+	       << rhs.password() << basic_entity<Ch>::delimiter
+	       << rhs.id() << basic_entity<Ch>::delimiter
+	       << rhs.gid() << basic_entity<Ch>::delimiter
+	       << rhs.real_name() << basic_entity<Ch>::delimiter
+	       << rhs.home() << basic_entity<Ch>::delimiter
+	       << rhs.shell();
 }
 
 template <class Ch>
 void
-ggg::basic_entity<Ch>::write_human(ostream_type& out, columns_type width) const {
-	const char d[4] = {' ', delimiter, ' ', 0};
+ggg::basic_entity<Ch>
+::write_header(ostream_type& out, columns_type width, char_type delim) {
+	if (width) {
+		const char_type d[4] = {
+			' ',
+			delim,
+			delim == ' ' ? char_type(0) : ' ',
+			0
+		};
+		out << std::left << std::setw(width[0]) << L"USERNAME" << d
+			<< std::right << std::setw(width[2]) << L"ID" << d
+			<< std::left << std::setw(width[4]) << L"REALNAME" << d
+			<< std::left << std::setw(width[5]) << L"HOME" << d
+			<< std::left << std::setw(width[6]) << L"SHELL" << '\n';
+	} else {
+		out << L"USERNAME:unused:ID:unused:REALNAME:HOME:SHELL\n";
+	}
+}
+
+template <class Ch>
+void
+ggg::basic_entity<Ch>
+::write_human(ostream_type& out, columns_type width, char_type delim) const {
+	const char_type d[4] = {
+		' ',
+		delim,
+		delim == ' ' ? char_type(0) : ' ',
+		0
+	};
 	out << std::left << std::setw(width[0]) << this->name() << d
-		<< std::right << std::setw(width[2]) << this->id() << d
-		<< std::right << std::setw(width[3]) << this->gid() << d
-		<< std::left << std::setw(width[4]) << this->real_name() << d
-		<< std::left << std::setw(width[5]) << this->home() << d
-		<< std::left << std::setw(width[6]) << this->shell() << '\n';
+	    << std::right << std::setw(width[2]) << this->id() << d
+	    << std::left << std::setw(width[4]) << this->real_name() << d
+	    << std::left << std::setw(width[5]) << this->home() << d
+	    << std::left << std::setw(width[6]) << this->shell() << '\n';
 }
 
 template <class Ch>
 std::basic_istream<Ch>&
-ggg::basic_entity<Ch>::read_human(std::basic_istream<Ch>& in) {
+ggg::basic_entity<Ch>
+::read_human(std::basic_istream<Ch>& in) {
 	typename std::basic_istream<Ch>::sentry s(in);
 	if (s) {
 		bits::read_all_fields(
-			in, basic_entity<Ch>::delimiter,
+			in,
+			basic_entity<Ch>::delimiter,
 			this->_name,
 			this->_uid,
-			this->_gid,
 			this->_realname,
 			this->_homedir,
 			this->_shell
@@ -99,17 +144,19 @@ ggg::basic_entity<Ch>::read_human(std::basic_istream<Ch>& in) {
 
 template <class Ch>
 size_t
-ggg::buffer_size(const basic_entity<Ch>& rhs) noexcept {
+ggg
+::buffer_size(const basic_entity<Ch>& rhs) noexcept {
 	return rhs._name.size() + 1
-		+ rhs._password.size() + 1
-		+ rhs._realname.size() + 1
-		+ rhs._homedir.size() + 1
-		+ rhs._shell.size() + 1;
+	       + rhs._password.size() + 1
+	       + rhs._realname.size() + 1
+	       + rhs._homedir.size() + 1
+	       + rhs._shell.size() + 1;
 }
 
 template <class Ch>
 void
-ggg::copy_to(
+ggg
+::copy_to(
 	const basic_entity<Ch>& ent,
 	struct ::passwd* lhs,
 	char* buffer
@@ -127,19 +174,20 @@ ggg::copy_to(
 
 template <class Ch>
 bool
-ggg::basic_entity<Ch>::has_valid_name() const noexcept {
+ggg::basic_entity<Ch>
+::has_valid_name() const noexcept {
 	bool ret = !this->_name.empty();
 	if (ret) {
 		ret = std::all_of(
 			this->_name.begin(),
 			this->_name.end(),
 			[] (char ch) {
-				return (ch >= 'a' && ch <= 'z')
-					|| (ch >= 'A' && ch <= 'Z')
-					|| (ch >= '0' && ch <= '9')
-					|| ch == '-' || ch == '.' || ch == '_';
+			    return (ch >= 'a' && ch <= 'z')
+			    || (ch >= 'A' && ch <= 'Z')
+			    || (ch >= '0' && ch <= '9')
+			    || ch == '-' || ch == '.' || ch == '_';
 			}
-		);
+		      );
 	}
 	// not composed entirely of digits
 	if (ret) {
@@ -147,9 +195,9 @@ ggg::basic_entity<Ch>::has_valid_name() const noexcept {
 			this->_name.begin(),
 			this->_name.end(),
 			[] (char ch) {
-				return ch >= '0' && ch <= '9';
+			    return ch >= '0' && ch <= '9';
 			}
-		);
+		      );
 	}
 	// starts with a character
 	if (ret) {
@@ -161,7 +209,8 @@ ggg::basic_entity<Ch>::has_valid_name() const noexcept {
 
 template <class Ch>
 void
-ggg::basic_entity<Ch>::clear() {
+ggg::basic_entity<Ch>
+::clear() {
 	this->_name.clear();
 	this->_password.clear();
 	this->_realname.clear();
@@ -174,7 +223,8 @@ ggg::basic_entity<Ch>::clear() {
 
 template <class Ch>
 void
-ggg::basic_entity<Ch>::set(const form_field& field, const Ch* value) {
+ggg::basic_entity<Ch>
+::set(const form_field& field, const Ch* value) {
 	typedef std::basic_stringstream<char_type, traits_type> sstream_type;
 	const std::string& t = field.target();
 	if (t == "basic_entity.name") {
@@ -198,7 +248,8 @@ ggg::basic_entity<Ch>::set(const form_field& field, const Ch* value) {
 			throw std::invalid_argument("bad gid");
 		}
 	} else if (t == "basic_entity.origin") {
-		this->_origin = value;
+		bits::wcvt_type cv;
+		this->_origin = bits::to_bytes<char>(cv, value);
 	} else {
 		throw std::invalid_argument("bad field target");
 	}
@@ -206,7 +257,8 @@ ggg::basic_entity<Ch>::set(const form_field& field, const Ch* value) {
 
 template <class Ch>
 void
-ggg::basic_entity<Ch>::merge(const basic_entity& rhs) {
+ggg::basic_entity<Ch>
+::merge(const basic_entity& rhs) {
 	if (this->_name != rhs._name) {
 		return;
 	}
@@ -225,7 +277,8 @@ ggg::basic_entity<Ch>::merge(const basic_entity& rhs) {
 
 template <class Ch>
 void
-ggg::assign(basic_entity<Ch>& lhs, const struct ::passwd& rhs) {
+ggg
+::assign(basic_entity<Ch>& lhs, const struct ::passwd& rhs) {
 	lhs._name = rhs.pw_name;
 	lhs._password = rhs.pw_passwd;
 	lhs._realname = rhs.pw_gecos;
@@ -239,13 +292,16 @@ template class ggg::basic_entity<char>;
 template class ggg::basic_entity<wchar_t>;
 
 template void
-ggg::copy_to(const basic_entity<char>& ent, struct ::passwd* lhs, char* buffer);
+ggg
+::copy_to(const basic_entity<char>& ent, struct ::passwd* lhs, char* buffer);
 
 template size_t
-ggg::buffer_size(const basic_entity<char>& ent) noexcept;
+ggg
+::buffer_size(const basic_entity<char>& ent) noexcept;
 
 template void
-ggg::assign(basic_entity<char>& lhs, const struct ::passwd& rhs);
+ggg
+::assign(basic_entity<char>& lhs, const struct ::passwd& rhs);
 
 template std::basic_istream<char>&
 ggg::operator>>(std::basic_istream<char>& in, basic_entity<char>& rhs);
@@ -257,4 +313,8 @@ template std::basic_ostream<char>&
 ggg::operator<<(std::basic_ostream<char>& out, const basic_entity<char>& rhs);
 
 template std::basic_ostream<wchar_t>&
-ggg::operator<<(std::basic_ostream<wchar_t>& out, const basic_entity<wchar_t>& rhs);
+ggg::operator<<(
+	std::basic_ostream<wchar_t>& out,
+	const
+	basic_entity<wchar_t>& rhs
+);

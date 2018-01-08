@@ -55,6 +55,7 @@ ggg::Add_entity::execute()  {
 	}
 	while (!this->_args.empty()) {
 		sys::tmpfile tmp;
+		tmp.out().imbue(std::locale::classic());
 		this->generate_entities(g, tmp.out());
 		edit_file_or_throw(tmp.filename());
 		this->add_entities(g, tmp.filename());
@@ -68,10 +69,7 @@ ggg::Add_entity::execute()  {
 void
 ggg::Add_entity::generate_entities(GGG& g, std::ostream& out) {
 	file_lock lock;
-	std::vector<entity> cnt;
-	for (const std::string& name : this->args()) {
-		cnt.emplace_back(g.generate(name));
-	}
+	std::set<entity> cnt = g.generate(this->args());
 	align_columns(cnt, out, entity::delimiter);
 	out.flush();
 }
@@ -87,6 +85,7 @@ ggg::Add_entity::add_entities(GGG& g, const std::string& filename) {
 		"unable to read entities"
 	);
 	check_duplicates(ents, traits_type::eq);
+	std::clog.imbue(std::locale::classic());
 	for (const entity& ent : ents) {
 		const std::string& fname = this->get_filename(ent);
 		try {
@@ -105,7 +104,7 @@ ggg::Add_entity::get_filename(const entity& ent) const {
 	std::string filename;
 	if (this->_type == Type::Directory) {
 		if (this->_path.empty()) {
-			filename = ent.name();
+			filename = "entities";
 		} else {
 			filename.append(this->_path);
 			filename.push_back(sys::file_separator);
