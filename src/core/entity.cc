@@ -51,6 +51,7 @@ std::basic_istream<Ch>&
 ggg::operator>>(std::basic_istream<Ch>& in, basic_entity<Ch>& rhs) {
 	typename std::basic_istream<Ch>::sentry s(in);
 	if (s) {
+		rhs.clear();
 		bits::read_all_fields(
 			in,
 			basic_entity<Ch>::delimiter,
@@ -126,6 +127,7 @@ ggg::basic_entity<Ch>
 ::read_human(std::basic_istream<Ch>& in) {
 	typename std::basic_istream<Ch>::sentry s(in);
 	if (s) {
+		this->clear();
 		bits::read_all_fields(
 			in,
 			basic_entity<Ch>::delimiter,

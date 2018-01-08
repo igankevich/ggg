@@ -271,6 +271,7 @@ std::istream&
 ggg::account::read_human(std::istream& in) {
 	std::istream::sentry s(in);
 	if (s) {
+		this->clear();
 		auto fmt_expire = make_formatted(&this->_expire);
 		bits::read_all_fields(
 			in, account::delimiter,
