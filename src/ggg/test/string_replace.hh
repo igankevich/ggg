@@ -17,7 +17,7 @@ string_replace(
 }
 
 int
-run_script(std::string script, std::string arg) {
+run_script(std::string script, const std::string& arg) {
 	string_replace(script, "%", arg);
 	return std::system(script.data());
 }

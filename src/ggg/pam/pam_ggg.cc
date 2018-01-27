@@ -65,7 +65,7 @@ namespace {
 	}
 
 	void
-	update_account(const ggg::account acc) {
+	update_account(const ggg::account& acc) {
 		ggg::file_lock lock;
 		all_accounts.update(acc);
 	}

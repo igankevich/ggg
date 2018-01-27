@@ -31,7 +31,6 @@ void
 ggg::delete_account(pam_handle_t *pamh, void *data, int error_status) {
 	account* acc = reinterpret_cast<account*>(data);
 	delete acc;
-	data = nullptr;
 }
 
 

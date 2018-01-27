@@ -69,7 +69,7 @@ namespace ggg {
 			if (s) {
 				Ch prev = 0;
 				while (in.get(ch) and
-					(ch != sep || (ch == sep && prev == '\\')) and
+					(ch != sep || prev == '\\') and
 					ch != '\n')
 				{
 					if (ch == sep && prev == '\\') {

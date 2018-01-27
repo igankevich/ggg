@@ -247,7 +247,7 @@ ggg
 	buffer = bits::bufcopy(&lhs->pw_gecos, buffer, ent._realname.data());
 	#endif
 	buffer = bits::bufcopy(&lhs->pw_dir, buffer, ent._homedir.data());
-	buffer = bits::bufcopy(&lhs->pw_shell, buffer, ent._shell.data());
+	bits::bufcopy(&lhs->pw_shell, buffer, ent._shell.data());
 	lhs->pw_uid = ent._uid;
 	lhs->pw_gid = ent._gid;
 }

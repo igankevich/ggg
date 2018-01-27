@@ -46,11 +46,6 @@ namespace {
 			return "\n";
 		}
 
-		inline static const char*
-		new_suffix() noexcept {
-			return ".new";
-		}
-
 	};
 
 	template <>
@@ -59,11 +54,6 @@ namespace {
 		inline static const wchar_t*
 		newline() noexcept {
 			return L"\n";
-		}
-
-		inline static const wchar_t*
-		new_suffix() noexcept {
-			return L".new";
 		}
 
 	};

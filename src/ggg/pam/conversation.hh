@@ -11,7 +11,7 @@ namespace ggg {
 	class response: public ::pam_response {
 
 	public:
-		inline
+		inline explicit
 		response(char* text) noexcept:
 		::pam_response{text, 0}
 		{}
