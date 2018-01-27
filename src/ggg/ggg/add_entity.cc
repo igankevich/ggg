@@ -70,7 +70,7 @@ void
 ggg::Add_entity::generate_entities(GGG& g, std::ostream& out) {
 	file_lock lock;
 	std::set<entity> cnt = g.generate(this->args());
-	align_columns(cnt, out, entity::delimiter);
+	align_columns(cnt, out, entity::delimiter, entity::delimiter, false);
 	out.flush();
 }
 

@@ -18,6 +18,82 @@ namespace {
 		}
 	}
 
+	template <class Ch>
+	struct entity_headers;
+
+	template <>
+	struct entity_headers<char> {
+
+		typedef char char_type;
+
+		inline static char_type*
+		name() noexcept {
+			return "USERNAME";
+		}
+
+		inline static char_type*
+		id() noexcept {
+			return "ID";
+		}
+
+		inline static char_type*
+		real_name() noexcept {
+			return "REALNAME";
+		}
+
+		inline static char_type*
+		home() noexcept {
+			return "HOME";
+		}
+
+		inline static char_type*
+		shell() noexcept {
+			return "SHELL";
+		}
+
+		inline static char_type*
+		all() noexcept {
+			return "USERNAME:unused:ID:unused:REALNAME:HOME:SHELL";
+		}
+
+	};
+
+	template <>
+	struct entity_headers<wchar_t> {
+
+		typedef wchar_t char_type;
+
+		inline static char_type*
+		name() noexcept {
+			return L"USERNAME";
+		}
+
+		inline static char_type*
+		id() noexcept {
+			return L"ID";
+		}
+
+		inline static char_type*
+		real_name() noexcept {
+			return L"REALNAME";
+		}
+
+		inline static char_type*
+		home() noexcept {
+			return L"HOME";
+		}
+
+		inline static char_type*
+		shell() noexcept {
+			return L"SHELL";
+		}
+
+		inline static char_type*
+		all() noexcept {
+			return L"USERNAME:unused:ID:unused:REALNAME:HOME:SHELL";
+		}
+
+	};
 }
 
 template <class Ch>
@@ -87,6 +163,7 @@ template <class Ch>
 void
 ggg::basic_entity<Ch>
 ::write_header(ostream_type& out, columns_type width, char_type delim) {
+	typedef entity_headers<Ch> h;
 	if (width) {
 		const char_type d[4] = {
 			' ',
@@ -94,13 +171,13 @@ ggg::basic_entity<Ch>
 			delim == ' ' ? char_type(0) : ' ',
 			0
 		};
-		out << std::left << std::setw(width[0]) << L"USERNAME" << d
-			<< std::right << std::setw(width[2]) << L"ID" << d
-			<< std::left << std::setw(width[4]) << L"REALNAME" << d
-			<< std::left << std::setw(width[5]) << L"HOME" << d
-			<< std::left << std::setw(width[6]) << L"SHELL" << '\n';
+		out << std::left << std::setw(width[0]) << h::name() << d
+			<< std::right << std::setw(width[2]) << h::id() << d
+			<< std::left << std::setw(width[4]) << h::real_name() << d
+			<< std::left << std::setw(width[5]) << h::home() << d
+			<< std::left << std::setw(width[6]) << h::shell() << '\n';
 	} else {
-		out << L"USERNAME:unused:ID:unused:REALNAME:HOME:SHELL\n";
+		out << h::all() << '\n';
 	}
 }
 
@@ -137,6 +214,7 @@ ggg::basic_entity<Ch>
 			this->_homedir,
 			this->_shell
 		);
+		this->_gid = this->_uid;
 		if (in.eof()) {
 			in.clear();
 		}
