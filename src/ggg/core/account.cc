@@ -120,9 +120,20 @@ namespace {
 		return formatted_date<const T*>(rhs);
 	}
 
+	template <class T>
+	void
+	read_field(T& field, const char* value, const char* err) {
+		std::stringstream str(value);
+		str >> field;
+		if (str.fail()) {
+			throw std::invalid_argument(err);
+		}
+	}
+
 }
 
-namespace ggg {
+namespace std {
+namespace chrono {
 
 	std::ostream&
 	operator<<(std::ostream& out, const ggg::account::time_point& rhs) {
@@ -164,16 +175,7 @@ namespace ggg {
 		return in;
 	}
 
-	template <class T>
-	void
-	read_field(T& field, const char* value, const char* err) {
-		std::stringstream str(value);
-		str >> field;
-		if (str.fail()) {
-			throw std::invalid_argument(err);
-		}
-	}
-
+}
 }
 
 size_t
@@ -185,7 +187,7 @@ ggg::account::buffer_size() const noexcept {
 void
 ggg::account::copy_to(struct ::spwd* lhs, char* buffer) const {
 	buffer = bits::bufcopy(&lhs->sp_namp, buffer, this->_login.data());
-	buffer = bits::bufcopy(&lhs->sp_pwdp, buffer, this->_password.data());
+	bits::bufcopy(&lhs->sp_pwdp, buffer, this->_password.data());
 	set_days(lhs->sp_lstchg, this->_lastchange);
 	set_days(lhs->sp_min, this->_minchange);
 	set_days(lhs->sp_max, this->_maxchange);
