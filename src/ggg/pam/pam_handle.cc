@@ -109,7 +109,7 @@ ggg::pam_handle::get_conversation() const {
 	if (ret != PAM_SUCCESS) {
 		throw_pam_error(pam_errc(ret));
 	}
-	if (!ptr && !ptr->conv) {
+	if (!ptr || !ptr->conv) {
 		throw_pam_error(pam_errc::conversation_error);
 	}
 	return conversation_ptr(ptr);

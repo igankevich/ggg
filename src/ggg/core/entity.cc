@@ -26,32 +26,32 @@ namespace {
 
 		typedef char char_type;
 
-		inline static char_type*
+		inline static const char_type*
 		name() noexcept {
 			return "USERNAME";
 		}
 
-		inline static char_type*
+		inline static const char_type*
 		id() noexcept {
 			return "ID";
 		}
 
-		inline static char_type*
+		inline static const char_type*
 		real_name() noexcept {
 			return "REALNAME";
 		}
 
-		inline static char_type*
+		inline static const char_type*
 		home() noexcept {
 			return "HOME";
 		}
 
-		inline static char_type*
+		inline static const char_type*
 		shell() noexcept {
 			return "SHELL";
 		}
 
-		inline static char_type*
+		inline static const char_type*
 		all() noexcept {
 			return "USERNAME:unused:ID:unused:REALNAME:HOME:SHELL";
 		}
@@ -63,32 +63,32 @@ namespace {
 
 		typedef wchar_t char_type;
 
-		inline static char_type*
+		inline static const char_type*
 		name() noexcept {
 			return L"USERNAME";
 		}
 
-		inline static char_type*
+		inline static const char_type*
 		id() noexcept {
 			return L"ID";
 		}
 
-		inline static char_type*
+		inline static const char_type*
 		real_name() noexcept {
 			return L"REALNAME";
 		}
 
-		inline static char_type*
+		inline static const char_type*
 		home() noexcept {
 			return L"HOME";
 		}
 
-		inline static char_type*
+		inline static const char_type*
 		shell() noexcept {
 			return L"SHELL";
 		}
 
-		inline static char_type*
+		inline static const char_type*
 		all() noexcept {
 			return L"USERNAME:unused:ID:unused:REALNAME:HOME:SHELL";
 		}
