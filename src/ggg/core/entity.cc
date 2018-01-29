@@ -346,9 +346,9 @@ ggg::basic_entity<Ch>
 	merge_str(this->_realname, rhs._realname);
 	merge_str(this->_homedir, rhs._homedir);
 	merge_str(this->_shell, rhs._shell);
-	merge_str(this->_origin, rhs._origin);
 	if (!this->has_id() && rhs.has_id()) {
 		this->_uid = rhs._uid;
+		merge_str(this->_origin, rhs._origin);
 	}
 	if (!this->has_gid() && rhs.has_gid()) {
 		this->_gid = rhs._gid;
