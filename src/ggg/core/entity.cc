@@ -18,6 +18,14 @@ namespace {
 		}
 	}
 
+	template <class String>
+	inline void
+	merge_origin(String& lhs, const String& rhs) {
+		if (!rhs.empty()) {
+			lhs = rhs;
+		}
+	}
+
 	template <class Ch>
 	struct entity_headers;
 
@@ -348,7 +356,7 @@ ggg::basic_entity<Ch>
 	merge_str(this->_shell, rhs._shell);
 	if (!this->has_id() && rhs.has_id()) {
 		this->_uid = rhs._uid;
-		merge_str(this->_origin, rhs._origin);
+		merge_origin(this->_origin, rhs._origin);
 	}
 	if (!this->has_gid() && rhs.has_gid()) {
 		this->_gid = rhs._gid;
