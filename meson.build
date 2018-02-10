@@ -11,7 +11,7 @@ if not cpp.has_header('nss.h')
 	error('Header nss.h is required to compile the module.')
 endif
 
-if get_option('buildtype') == 'release'
+if not get_option('buildtype').contains('debug')
 	add_global_arguments('-DNDEBUG', language: 'cpp')
 endif
 

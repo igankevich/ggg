@@ -93,7 +93,7 @@ namespace ggg {
 			return this->_password;
 		}
 
-		inline const std::unordered_set<string_type>&
+		inline container_type&
 		members() const noexcept {
 			return this->_members;
 		}

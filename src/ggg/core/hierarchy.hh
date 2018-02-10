@@ -272,6 +272,9 @@ namespace ggg {
 		process_links();
 
 		void
+		process_nested_groups();
+
+		void
 		filter_entities();
 
 		void

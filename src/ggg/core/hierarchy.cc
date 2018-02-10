@@ -102,11 +102,12 @@ ggg::basic_hierarchy<Ch>
 			}
 		}
 	}
-	process_links();
-	filter_entities();
-	generate_groups();
-	filter_groups();
-	_isopen = true;
+	this->process_links();
+	this->filter_entities();
+	this->generate_groups();
+	this->process_nested_groups();
+	this->filter_groups();
+	this->_isopen = true;
 }
 
 template <class Ch>
@@ -135,9 +136,10 @@ ggg::basic_hierarchy<Ch>
 ::process_links() {
 	size_t num_insertions = 1;
 	size_t old_size = 0;
-	for (size_t i=0; i<_maxlinks && num_insertions > 0; ++i) {
+	const size_t max_links = this->_maxlinks;
+	for (size_t i=0; i<max_links && num_insertions > 0; ++i) {
 		num_insertions = 0;
-		for (const entity_pair_type& pair : _links) {
+		for (const entity_pair_type& pair : this->_links) {
 			const entity_type& link = pair.first;
 			entity_set_type& s = _entities[link];
 			old_size = s.size();
@@ -158,11 +160,52 @@ ggg::basic_hierarchy<Ch>
 template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
+::process_nested_groups() {
+	size_t num_insertions = 1;
+	const size_t max_links = this->_maxlinks;
+	entity_set_type add, sub;
+	for (size_t i=0; i<max_links && num_insertions > 0; ++i) {
+		num_insertions = 0;
+		for (const group_type& group : this->_groups) {
+			auto& members = group.members();
+			for (const auto& member : members) {
+				if (member != group.name()) {
+					auto result = this->_groups.find(group_type(member));
+					if (result != this->_groups.end()) {
+						const auto& s = result->members();
+						if (!s.empty()) {
+							#ifndef NDEBUG
+							log_traits<Ch>::log() << "Nest "
+								<< group.name() << " and " << member << std::endl;
+							#endif
+							add.insert(s.begin(), s.end());
+							sub.insert(member);
+						}
+					}
+				}
+			}
+			if (!add.empty()) {
+				const size_t old_size = members.size();
+				members.insert(add.begin(), add.end());
+				for (const string_type& name : sub) {
+					members.erase(name);
+				}
+				num_insertions += members.size() - old_size;
+				add.clear();
+				sub.clear();
+			}
+		}
+	}
+}
+
+template <class Ch>
+void
+ggg::basic_hierarchy<Ch>
 ::filter_entities() {
 	erase_if(
-		_entities,
+		this->_entities,
 		[this] (const entity_pair_type& rhs) {
-		    return !rhs.first.has_id() || rhs.first.id() < _minuid;
+		    return !rhs.first.has_id() || rhs.first.id() < this->_minuid;
 		}
 	);
 }
@@ -192,34 +235,13 @@ template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
 ::filter_groups() {
-	/*
-	   // add entities to the groups with the same names
-	   for (const group_type& rhs : this->_groups) {
-	    const_iterator result = this->find_by_name(rhs.name().data());
-	    if (result != this->_entities.end()) {
-	        rhs.push(result->name());
-	    }
-	   }
-	   // remove empty groups
-	   erase_if(
-	    this->_groups,
-	    [] (const group_type& rhs) {
-	        return rhs.members().empty();
-	    }
-	   );
-	 */
-	/*
-	   // remove duplicate entities
-	   for (const group_type& grp : _groups) {
-	    _entities.erase(entity_type(grp.name().data()));
-	   }
-	 */
 	// remove non-existent groups
 	for (entity_pair_type& pair : this->_entities) {
 		erase_if(
 			pair.second,
 			[this] (const string_type& grname) {
-			    return this->_groups.find(group_type(grname)) == this->_groups.end();
+				return this->_groups.find(group_type(grname)) ==
+					   this->_groups.end();
 			}
 		);
 	}
