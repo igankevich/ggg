@@ -13,6 +13,7 @@
 
 #include <ggg/bits/io.hh>
 #include <ggg/bits/to_bytes.hh>
+#include <ggg/core/sets.hh>
 
 namespace {
 
@@ -143,13 +144,13 @@ ggg::basic_hierarchy<Ch>
 			const entity_type& link = pair.first;
 			entity_set_type& s = _entities[link];
 			old_size = s.size();
-			s.insert(pair.second.begin(), pair.second.end());
+			set_union(s, pair.second);
 			num_insertions += s.size() - old_size;
 			for (entity_pair_type& pair2 : _entities) {
 				entity_set_type& s2 = pair2.second;
 				if (s2.count(link.name())) {
 					old_size = s2.size();
-					s2.insert(pair.second.begin(), pair.second.end());
+					set_union(s2, pair.second);
 					num_insertions += s2.size() - old_size;
 				}
 			}
@@ -178,7 +179,7 @@ ggg::basic_hierarchy<Ch>
 							log_traits<Ch>::log() << "Nest "
 								<< group.name() << " and " << member << std::endl;
 							#endif
-							add.insert(s.begin(), s.end());
+							set_union(add, s);
 							sub.insert(member);
 						}
 					}
@@ -186,10 +187,8 @@ ggg::basic_hierarchy<Ch>
 			}
 			if (!add.empty()) {
 				const size_t old_size = members.size();
-				members.insert(add.begin(), add.end());
-				for (const string_type& name : sub) {
-					members.erase(name);
-				}
+				set_difference(members, sub);
+				set_union(members, add);
 				num_insertions += members.size() - old_size;
 				add.clear();
 				sub.clear();
