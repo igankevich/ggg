@@ -315,27 +315,27 @@ ggg::basic_entity<Ch>
 ::set(const form_field& field, const Ch* value) {
 	typedef std::basic_stringstream<char_type, traits_type> sstream_type;
 	const std::string& t = field.target();
-	if (t == "basic_entity.name") {
+	if (t == "entity.name") {
 		this->_name = value;
-	} else if (t == "basic_entity.realname") {
+	} else if (t == "entity.realname") {
 		this->_realname = value;
-	} else if (t == "basic_entity.homedir") {
+	} else if (t == "entity.homedir") {
 		this->_homedir = value;
-	} else if (t == "basic_entity.shell") {
+	} else if (t == "entity.shell") {
 		this->_shell = value;
-	} else if (t == "basic_entity.uid") {
+	} else if (t == "entity.uid") {
 		sstream_type str(value);
 		str >> this->_uid;
 		if (str.fail()) {
 			throw std::invalid_argument("bad uid");
 		}
-	} else if (t == "basic_entity.gid") {
+	} else if (t == "entity.gid") {
 		sstream_type str(value);
 		str >> this->_gid;
 		if (str.fail()) {
 			throw std::invalid_argument("bad gid");
 		}
-	} else if (t == "basic_entity.origin") {
+	} else if (t == "entity.origin") {
 		bits::wcvt_type cv;
 		this->_origin = bits::to_bytes<char>(cv, value);
 	} else {
