@@ -1,14 +1,17 @@
 #ifndef CTL_FORM_HH
 #define CTL_FORM_HH
 
+#include <tuple>
+#include <unordered_map>
+#include <vector>
+
 #include <ggg/core/account.hh>
 #include <ggg/core/entity.hh>
 #include <ggg/core/form_field.hh>
 #include <ggg/core/form_type.hh>
+#ifndef GGG_DISABLE_PAM
 #include <ggg/pam/pam_handle.hh>
-#include <tuple>
-#include <unordered_map>
-#include <vector>
+#endif
 
 namespace ggg {
 
@@ -34,9 +37,9 @@ namespace ggg {
 		operator=(const form&) = default;
 
 		inline explicit
-		form(const account& recruiter, double minentropy):
+		form(const char* name, double minentropy):
 		_minentropy(minentropy) {
-			this->read_fields(recruiter);
+			this->read_fields(name);
 		}
 
 		inline void
@@ -55,18 +58,25 @@ namespace ggg {
 		}
 
 		void
-		read_fields(const account& recruiter);
+		read_fields(const char* name);
 
+		#ifndef GGG_DISABLE_PAM
 		std::tuple<entity,account>
 		input_entity(ggg::pam_handle* pamh);
+		#endif
+
+		std::tuple<entity,account>
+		input_entity();
 
 	private:
 
+		#ifndef GGG_DISABLE_PAM
 		std::vector<bool>
 		validate(const responses& r);
 
 		std::tuple<entity,account>
 		make_entity_and_account(const responses& r, pam_handle* pamh);
+		#endif
 
 	};
 

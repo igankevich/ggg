@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <codecvt>
 #include <fstream>
+#include <iostream>
 #include <iterator>
 #include <locale>
 #include <regex>
@@ -11,10 +12,14 @@
 
 #include <ggg/config.hh>
 #include <ggg/ctl/password.hh>
+#include <ggg/sec/echo_guard.hh>
+#ifndef GGG_DISABLE_PAM
 #include <ggg/pam/conversation.hh>
+#endif
 
 namespace {
 
+	#ifndef GGG_DISABLE_PAM
 	inline int
 	get_prompt(const ggg::form_field& rhs) {
 		return rhs.type() == ggg::field_type::password
@@ -39,15 +44,75 @@ namespace {
 			}
 		);
 	}
+	#endif
+
+	template <class Iterator, class Iterator2>
+	std::tuple<ggg::entity,ggg::account>
+	make_entity_and_account_2(
+		Iterator first,
+		Iterator last,
+		Iterator2 first2,
+		double min_entropy,
+		ggg::secure_string password_id,
+		unsigned int num_rounds
+	) {
+		using namespace ggg;
+		field_values values;
+		entity ent;
+		account acc;
+		while (first != last) {
+			if (first->type() == field_type::set) {
+				bool is_entity_field = first->target().find("entity.") == 0;
+				bool is_account_field = first->target().find("account.") == 0;
+				if (is_entity_field || is_account_field) {
+					std::string value = interpolate(first->regex(), values);
+					if (is_account_field) {
+						acc.set(*first, value.data());
+					} else {
+						ent.set(*first, value.data());
+					}
+				}
+			} else if (first->type() == field_type::set_secure) {
+				if (first->target() == "account.password") {
+					form_field::id_type id = 0;
+					std::stringstream str(first->regex());
+					char ch = str.get();
+					if (ch != '$') {
+						str.putback(ch);
+					}
+					str >> id;
+					auto it = values.find(form_field(id));
+					if (it != values.end()) {
+						const char* new_password = it->second;
+						ggg::validate_password(new_password, min_entropy);
+						ggg::secure_string encrypted = ggg::encrypt(
+							new_password,
+							ggg::account::password_prefix(
+								ggg::generate_salt(),
+								password_id,
+								num_rounds
+							)
+													   );
+						acc.set_password(encrypted);
+					}
+				}
+			} else {
+				values.emplace(*first, first2->data());
+			}
+			++first;
+			++first2;
+		}
+		return std::make_tuple(ent, acc);
+	}
 
 }
 
 void
-ggg::form::read_fields(const account& recruiter) {
+ggg::form::read_fields(const char* name) {
 	std::string path;
 	path.append(GGG_REG_ROOT);
 	path.push_back('/');
-	path.append(recruiter.login().data());
+	path.append(name);
 	std::ifstream in(path);
 	in.imbue(std::locale::classic());
 	if (in.is_open()) {
@@ -60,6 +125,48 @@ ggg::form::read_fields(const account& recruiter) {
 	}
 }
 
+std::tuple<ggg::entity,ggg::account>
+ggg::form::input_entity() {
+	entity ent;
+	account acc;
+	std::vector<std::string> responses;
+	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
+	for (const form_field& ff : this->_fields) {
+		if (ff.is_input()) {
+			bool valid = false;
+			std::wstring name = cv.from_bytes(ff.name());
+			std::wregex expr(cv.from_bytes(ff.regex()));
+			std::wstring value;
+			do {
+				value.clear();
+				std::wcout << name << ": " << std::flush;
+				if (ff.type() == field_type::password) {
+					echo_guard g(STDIN_FILENO);
+					std::getline(std::wcin, value, L'\n');
+				} else {
+					std::getline(std::wcin, value, L'\n');
+				}
+				if (std::wcin) {
+					valid = std::regex_match(value, expr);
+				} else {
+					std::wcin.clear();
+				}
+			} while (!valid);
+			responses.emplace_back(cv.to_bytes(value));
+		}
+	}
+	std::tie(ent, acc) = make_entity_and_account_2(
+		this->_fields.begin(),
+		this->_fields.end(),
+		responses.begin(),
+		this->_minentropy,
+		"6",
+		0
+	);
+	return std::make_tuple(ent, acc);
+}
+
+#ifndef GGG_DISABLE_PAM
 std::tuple<ggg::entity,ggg::account>
 ggg::form::input_entity(ggg::pam_handle* pamh) {
 	messages m;
@@ -189,6 +296,7 @@ ggg::form::make_entity_and_account(const responses& r, ggg::pam_handle* pamh) {
 	}
 	return std::make_tuple(ent, acc);
 }
+#endif
 
 std::string
 ggg::interpolate(std::string orig, const field_values& values, char prefix) {

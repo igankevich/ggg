@@ -30,3 +30,17 @@ executable(
 	dependencies: [unistdx,libcrypt,ggg_core],
 	install: true
 )
+
+ggg_form_src = files([
+	'ggg_form.cc',
+]) + forms_src
+
+executable(
+	'ggg-form',
+	sources: ggg_form_src,
+	include_directories: inc,
+	dependencies: [unistdx,libcrypt,ggg_core,zxcvbn],
+	install: true,
+	cpp_args: ['-DGGG_DISABLE_PAM']
+)
+

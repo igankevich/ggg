@@ -167,7 +167,7 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
 
 void
 ggg::pam_handle::register_new_user(const account& recruiter) {
-	form f(recruiter, this->_minentropy);
+	form f(recruiter.login().data(), this->_minentropy);
 	f.set_type(this->_type);
 	bool success, stopped = false;
 	do {

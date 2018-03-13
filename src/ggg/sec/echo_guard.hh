@@ -1,0 +1,35 @@
+#ifndef GGG_SEC_ECHO_GUARD_HH
+#define GGG_SEC_ECHO_GUARD_HH
+
+#include <termios.h>
+
+#include <unistdx/io/fildes>
+
+namespace ggg {
+
+	class echo_guard: public ::termios {
+
+	private:
+		sys::fd_type _fd = -1;
+
+	public:
+
+		inline explicit
+		echo_guard(sys::fd_type fd):
+		_fd(fd) {
+			UNISTDX_CHECK(::tcgetattr(this->_fd, this));
+			this->c_lflag &= ~ECHO;
+			UNISTDX_CHECK(::tcsetattr(this->_fd, TCSANOW, this));
+		}
+
+		inline
+		~echo_guard() {
+			this->c_lflag |= ECHO;
+			UNISTDX_CHECK(::tcsetattr(this->_fd, TCSANOW, this));
+		}
+
+	};
+
+}
+
+#endif // vim:filetype=cpp
