@@ -89,6 +89,7 @@ ggg::operator<<(std::ostream& out, const password_match& rhs) {
 
 void
 ggg::validate_password(const char* new_password, double min_entropy) {
+	// TODO consider user name
 	ggg::password_match match;
 	if (match.find(new_password) &&
 		match.entropy() < min_entropy) {

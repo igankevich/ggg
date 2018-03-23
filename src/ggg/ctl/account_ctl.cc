@@ -9,6 +9,7 @@
 
 #include <unistdx/base/check>
 #include <unistdx/fs/file_mode>
+#include <unistdx/ipc/identity>
 
 #include <ggg/config.hh>
 #include <ggg/bits/io.hh>
@@ -164,13 +165,22 @@ ggg::account_ctl::generate(const char* user) {
 
 void
 ggg::account_ctl::add(const account& acc) {
-	if (this->verbose()) {
-		std::clog << "appending " << acc.login()
-			<< " to " << GGG_SHADOW << std::endl;
-	}
 	if (acc.login().empty()) {
 		throw std::invalid_argument("bad login");
 	}
-	bits::append(acc, GGG_SHADOW, "unable to add account");
+	const sys::uid_type uid = sys::this_process::user();
+	sys::path dest;
+	if (uid == 0) {
+		dest = GGG_SHADOW;
+	} else if (!acc.origin().empty()) {
+		dest = acc.origin();
+	} else {
+		throw std::invalid_argument("bad origin");
+	}
+	if (this->verbose()) {
+		std::clog << "appending " << acc.login()
+			<< " to " << dest << std::endl;
+	}
+	bits::append(acc, dest, "unable to add account");
 }
 

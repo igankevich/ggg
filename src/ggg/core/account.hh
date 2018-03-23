@@ -2,13 +2,17 @@
 #define ACCOUNT_HH
 
 #include <shadow.h>
+
 #include <chrono>
 #include <ostream>
 #include <istream>
 #include <type_traits>
+
+#include <unistdx/fs/path>
+
+#include <ggg/core/account_flags.hh>
+#include <ggg/core/form_field.hh>
 #include <ggg/sec/secure_string.hh>
-#include "account_flags.hh"
-#include "form_field.hh"
 
 namespace ggg {
 
@@ -27,6 +31,7 @@ namespace ggg {
 		typedef clock_type::time_point time_point;
 		typedef clock_type::duration duration;
 		typedef const size_t columns_type[9];
+		typedef sys::path path_type;
 
 		static constexpr const char delimiter = ':';
 		static constexpr const char separator = '$';
@@ -44,6 +49,7 @@ namespace ggg {
 		duration _maxinactive = duration::zero();
 		time_point _expire = time_point(duration::zero());
 		account_flags _flags = account_flags(0);
+		path_type _origin;
 
 	public:
 		inline explicit
@@ -272,6 +278,21 @@ namespace ggg {
 		inline void
 		set_max_change(duration rhs) noexcept {
 			this->_maxchange = rhs;
+		}
+
+		inline const path_type&
+		origin() const noexcept {
+			return this->_origin;
+		}
+
+		inline void
+		origin(const path_type& rhs) {
+			this->_origin = rhs;
+		}
+
+		inline bool
+		has_origin() const noexcept {
+			return !this->_origin.empty();
 		}
 
 		void clear();

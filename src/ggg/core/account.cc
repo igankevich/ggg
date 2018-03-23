@@ -380,6 +380,7 @@ ggg::account::clear() {
 	this->_maxinactive = duration::zero();
 	this->_expire = time_point(duration::zero());
 	this->_flags = account_flags(0);
+	this->_origin.clear();
 }
 
 void
@@ -401,6 +402,8 @@ ggg::account::set(const form_field& field, const char* value) {
 		read_field(this->_expire, value, "bad expire");
 	} else if (t == "account.flags") {
 		read_field(this->_flags, value, "bad flags");
+	} else if (t == "account.origin") {
+		this->_origin = value;
 	} else {
 		throw std::invalid_argument("bad field target");
 	}

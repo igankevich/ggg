@@ -13,8 +13,8 @@
 namespace ggg {
 
 	void
-	register_user(form& f) {
-		const bool debug = false;
+	register_user(form& f, sys::path origin) {
+		const bool debug = true;
 		const int max_iterations = 7;
 		bool success;
 		int i = 0;
@@ -39,6 +39,7 @@ namespace ggg {
 				}
 				{
 					file_lock lock(true);
+					acc.origin(origin);
 					g.add(ent, ent.origin(), acc);
 				}
 				success = true;
@@ -48,7 +49,7 @@ namespace ggg {
 			}
 		} while (!success && ++i < max_iterations);
 		if (success) {
-			native_message(std::wcout, "Registered successfully!\n");
+			native_message(std::wcout, "\nRegistered successfully!\n");
 		}
 	}
 
@@ -60,15 +61,18 @@ main() {
 	try {
 		ggg::form f;
 		f.set_type(ggg::form_type::console);
+		sys::path origin;
 		{
+			ggg::file_lock lock;
 			ggg::Hierarchy h(GGG_ENT_ROOT);
 			auto result = h.find_by_uid(sys::this_process::user());
 			if (result == h.end()) {
 				throw std::invalid_argument("unable to find form");
 			}
 			f.open(result->name().data());
+			origin = sys::path(GGG_ROOT, "acc", result->name());
 		}
-		ggg::register_user(f);
+		ggg::register_user(f, origin);
 	} catch (const std::exception& err) {
 		std::cerr << err.what() << std::endl;
 	}

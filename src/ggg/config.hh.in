@@ -5,6 +5,7 @@
 
 #define GGG_ROOT "@root_directory@"
 #define GGG_ENT_ROOT "@ent_root_directory@"
+#define GGG_LOCK_DIR "@lock_directory@"
 #define GGG_LOCK_FILE "@lock_file@"
 #define GGG_REG_ROOT "@reg_root_directory@"
 #define GGG_GIT_ROOT "@git_root_directory@"
