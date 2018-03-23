@@ -23,7 +23,7 @@ namespace ggg {
 	private:
 		container_type _fields;
 		form_type _type = form_type::console;
-		double _minentropy = 0.0;
+		double _minentropy = 30.0;
 
 	public:
 
@@ -37,9 +37,8 @@ namespace ggg {
 		operator=(const form&) = default;
 
 		inline explicit
-		form(const char* name, double minentropy):
-		_minentropy(minentropy) {
-			this->read_fields(name);
+		form(const char* name) {
+			this->open(name);
 		}
 
 		inline void
@@ -58,11 +57,12 @@ namespace ggg {
 		}
 
 		void
-		read_fields(const char* name);
+		open(const char* name);
 
 		#ifndef GGG_DISABLE_PAM
 		std::tuple<entity,account>
 		input_entity(ggg::pam_handle* pamh);
+
 		#endif
 
 		std::tuple<entity,account>
@@ -76,6 +76,7 @@ namespace ggg {
 
 		std::tuple<entity,account>
 		make_entity_and_account(const responses& r, pam_handle* pamh);
+
 		#endif
 
 	};

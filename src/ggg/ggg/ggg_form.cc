@@ -2,52 +2,75 @@
 
 #include <ggg/core/lock.hh>
 #include <ggg/core/native.hh>
+#include <ggg/core/hierarchy.hh>
 #include <ggg/ctl/form.hh>
 #include <ggg/ctl/ggg.hh>
 #include <ggg/sec/secure_string.hh>
 #include <ggg/config.hh>
 
+#include <unistdx/ipc/identity>
+
+namespace ggg {
+
+	void
+	register_user(form& f) {
+		const bool debug = false;
+		const int max_iterations = 7;
+		bool success;
+		int i = 0;
+		do {
+			try {
+				entity ent;
+				account acc;
+				std::tie(ent, acc) = f.input_entity();
+				file_lock lock;
+				GGG g(GGG_ENT_ROOT, debug);
+				lock.unlock();
+				bool has_uid = ent.has_id();
+				bool has_gid = ent.has_gid();
+				if (!has_uid || !has_gid) {
+					sys::uid_type id = g.next_uid();
+					if (!has_uid) {
+						ent.set_uid(id);
+					}
+					if (!has_gid) {
+						ent.set_gid(id);
+					}
+				}
+				{
+					file_lock lock(true);
+					g.add(ent, ent.origin(), acc);
+				}
+				success = true;
+			} catch (const std::exception& err) {
+				success = false;
+				std::cerr << std::endl << err.what() << std::endl;
+			}
+		} while (!success && ++i < max_iterations);
+		if (success) {
+			native_message(std::wcout, "Registered successfully!\n");
+		}
+	}
+
+}
+
 int
 main() {
-	using namespace ggg;
-	bool debug = true;
-	double min_entropy = 30;
-	const char* name = "pi";
 	ggg::init_locale();
-	form f(name, min_entropy);
-	f.set_type(form_type::console);
-	bool success, stopped = false;
-	do {
-		try {
-			entity ent;
-			account acc;
-			std::tie(ent, acc) = f.input_entity();
-			file_lock lock;
-			GGG g(GGG_ENT_ROOT, debug);
-			lock.unlock();
-			bool has_uid = ent.has_id();
-			bool has_gid = ent.has_gid();
-			if (!has_uid || !has_gid) {
-				sys::uid_type id = g.next_uid();
-				if (!has_uid) {
-					ent.set_uid(id);
-				}
-				if (!has_gid) {
-					ent.set_gid(id);
-				}
+	try {
+		ggg::form f;
+		f.set_type(ggg::form_type::console);
+		{
+			ggg::Hierarchy h(GGG_ENT_ROOT);
+			auto result = h.find_by_uid(sys::this_process::user());
+			if (result == h.end()) {
+				throw std::invalid_argument("unable to find form");
 			}
-			{
-				file_lock lock(true);
-				g.add(ent, ent.origin(), acc);
-			}
-			success = true;
-		} catch (const std::exception& err) {
-			success = false;
-			std::cerr << std::endl << err.what() << std::endl;
+			f.open(result->name().data());
 		}
-	} while (!success && !stopped);
-	if (success) {
-		native_message(std::wcout, "Registered successfully!\n");
+		ggg::register_user(f);
+	} catch (const std::exception& err) {
+		std::cerr << err.what() << std::endl;
 	}
 	std::cout << "press any key to continue..." << std::endl;
 	std::cin.get();

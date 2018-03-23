@@ -44,6 +44,7 @@ namespace {
 			}
 		);
 	}
+
 	#endif
 
 	template <class Iterator, class Iterator2>
@@ -52,9 +53,9 @@ namespace {
 		Iterator first,
 		Iterator last,
 		Iterator2 first2,
-		double min_entropy,
 		ggg::secure_string password_id,
-		unsigned int num_rounds
+		unsigned int num_rounds,
+		double min_entropy
 	) {
 		using namespace ggg;
 		field_values values;
@@ -85,14 +86,15 @@ namespace {
 					if (it != values.end()) {
 						const char* new_password = it->second;
 						ggg::validate_password(new_password, min_entropy);
-						ggg::secure_string encrypted = ggg::encrypt(
-							new_password,
-							ggg::account::password_prefix(
-								ggg::generate_salt(),
-								password_id,
-								num_rounds
-							)
-													   );
+						ggg::secure_string encrypted =
+							ggg::encrypt(
+								new_password,
+								ggg::account::password_prefix(
+									ggg::generate_salt(),
+									password_id,
+									num_rounds
+								)
+							);
 						acc.set_password(encrypted);
 					}
 				}
@@ -108,25 +110,38 @@ namespace {
 }
 
 void
-ggg::form::read_fields(const char* name) {
+ggg::form
+::open(const char* name) {
 	std::string path;
 	path.append(GGG_REG_ROOT);
 	path.push_back('/');
 	path.append(name);
 	std::ifstream in(path);
+	if (!in.is_open()) {
+		throw std::invalid_argument("unknown form");
+	}
 	in.imbue(std::locale::classic());
-	if (in.is_open()) {
-		std::copy(
-			std::istream_iterator<form_field>(in),
-			std::istream_iterator<form_field>(),
-			std::back_inserter(this->_fields)
-		);
-		std::sort(this->_fields.begin(), this->_fields.end());
+	std::copy(
+		std::istream_iterator<form_field>(in),
+		std::istream_iterator<form_field>(),
+		std::back_inserter(this->_fields)
+	);
+	std::sort(this->_fields.begin(), this->_fields.end());
+	for (const form_field& ff : this->_fields) {
+		if (ff.type() == field_type::set && ff.target() == "entropy") {
+			try {
+				this->_minentropy = std::max(0.0, std::stod(ff.regex()));
+			} catch (const std::exception& err) {
+				std::cerr << std::endl << "bad entropy" << std::endl;
+				throw;
+			}
+		}
 	}
 }
 
 std::tuple<ggg::entity,ggg::account>
-ggg::form::input_entity() {
+ggg::form
+::input_entity() {
 	entity ent;
 	account acc;
 	std::vector<std::string> responses;
@@ -147,7 +162,18 @@ ggg::form::input_entity() {
 					std::getline(std::wcin, value, L'\n');
 				}
 				if (std::wcin) {
-					valid = std::regex_match(value, expr);
+					if (ff.type() == field_type::password) {
+						std::string p = cv.to_bytes(value);
+						try {
+							ggg::validate_password(p.data(), this->_minentropy);
+							valid = std::regex_match(value, expr);
+						} catch (const std::exception& err) {
+							std::cerr << std::endl << err.what() << std::endl;
+							valid = false;
+						}
+					} else {
+						valid = std::regex_match(value, expr);
+					}
 				} else {
 					std::wcin.clear();
 				}
@@ -155,20 +181,22 @@ ggg::form::input_entity() {
 			responses.emplace_back(cv.to_bytes(value));
 		}
 	}
-	std::tie(ent, acc) = make_entity_and_account_2(
-		this->_fields.begin(),
-		this->_fields.end(),
-		responses.begin(),
-		this->_minentropy,
-		"6",
-		0
-	);
+	std::tie(ent, acc) =
+		make_entity_and_account_2(
+			this->_fields.begin(),
+			this->_fields.end(),
+			responses.begin(),
+			"6",
+			0,
+			this->_minentropy
+		);
 	return std::make_tuple(ent, acc);
 }
 
 #ifndef GGG_DISABLE_PAM
 std::tuple<ggg::entity,ggg::account>
-ggg::form::input_entity(ggg::pam_handle* pamh) {
+ggg::form
+::input_entity(ggg::pam_handle* pamh) {
 	messages m;
 	init_messages(this->_fields, m, this->is_console());
 	conversation_ptr conv = pamh->get_conversation();
@@ -209,24 +237,25 @@ ggg::form::input_entity(ggg::pam_handle* pamh) {
 			pamh->debug("%s", s.data());
 		}
 		/*
-		std::stringstream msg;
-		msg << "fields=";
-		std::copy(
-			this->_fields.begin(),
-			this->_fields.end(),
-			std::ostream_iterator<form_field>(msg, ",")
-		);
-		msg << "ent=" << ent
+		   std::stringstream msg;
+		   msg << "fields=";
+		   std::copy(
+		    this->_fields.begin(),
+		    this->_fields.end(),
+		    std::ostream_iterator<form_field>(msg, ",")
+		   );
+		   msg << "ent=" << ent
 		    << ",acc=" << acc
 		    << ",valid=" << valid;
-		pamh->debug("%s", msg.str().data());
-		*/
+		   pamh->debug("%s", msg.str().data());
+		 */
 	} while (!valid);
 	return std::make_tuple(ent, acc);
 }
 
 std::vector<bool>
-ggg::form::validate(const responses& r) {
+ggg::form
+::validate(const responses& r) {
 	std::vector<bool> status(r.size());
 	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
 	const size_t n = r.size();
@@ -235,9 +264,9 @@ ggg::form::validate(const responses& r) {
 		const form_field& ff = this->_fields[i];
 		bool valid = true;
 		if (ff.is_input()) {
-		    std::wregex expr(cv.from_bytes(ff.regex()));
-		    std::wstring field_value = cv.from_bytes(resp.text());
-		    valid = std::regex_match(field_value, expr);
+			std::wregex expr(cv.from_bytes(ff.regex()));
+			std::wstring field_value = cv.from_bytes(resp.text());
+			valid = std::regex_match(field_value, expr);
 		}
 		status[i] = valid;
 	}
@@ -245,7 +274,8 @@ ggg::form::validate(const responses& r) {
 }
 
 std::tuple<ggg::entity,ggg::account>
-ggg::form::make_entity_and_account(const responses& r, ggg::pam_handle* pamh) {
+ggg::form
+::make_entity_and_account(const responses& r, ggg::pam_handle* pamh) {
 	field_values values;
 	entity ent;
 	account acc;
@@ -277,14 +307,15 @@ ggg::form::make_entity_and_account(const responses& r, ggg::pam_handle* pamh) {
 				if (it != values.end()) {
 					const char* new_password = it->second;
 					ggg::validate_password(new_password, this->_minentropy);
-					ggg::secure_string encrypted = ggg::encrypt(
-						new_password,
-						ggg::account::password_prefix(
-							ggg::generate_salt(),
-							pamh->password_id(),
-							pamh->num_rounds()
-						)
-					                               );
+					ggg::secure_string encrypted =
+						ggg::encrypt(
+							new_password,
+							ggg::account::password_prefix(
+								ggg::generate_salt(),
+								pamh->password_id(),
+								pamh->num_rounds()
+							)
+						);
 					acc.set_password(encrypted);
 				}
 			}
@@ -296,10 +327,12 @@ ggg::form::make_entity_and_account(const responses& r, ggg::pam_handle* pamh) {
 	}
 	return std::make_tuple(ent, acc);
 }
-#endif
+
+#endif // ifndef GGG_DISABLE_PAM
 
 std::string
-ggg::interpolate(std::string orig, const field_values& values, char prefix) {
+ggg
+::interpolate(std::string orig, const field_values& values, char prefix) {
 	enum state_type {
 		parsing_string,
 		parsing_open_bracket,
