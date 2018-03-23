@@ -35,12 +35,11 @@ ggg::generate_salt() {
 
 ggg::secure_string
 ggg::encrypt(const char* password, const secure_string& prefix) {
-	secure_allocator<crypt_data> alloc;
-	std::unique_ptr<crypt_data> pdata(alloc.allocate(1));
+	crypt_data data;
 	char* encrypted = ::crypt_r(
 		password,
 		prefix.data(),
-		pdata.get()
+		&data
 	);
 	if (!encrypted) {
 		throw std::system_error(errno, std::system_category());
