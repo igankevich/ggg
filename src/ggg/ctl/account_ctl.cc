@@ -1,18 +1,23 @@
 #include "account_ctl.hh"
 
+#include <unistd.h>
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <locale>
+#include <sstream>
 #include <system_error>
-#include <unistd.h>
 
 #include <unistdx/base/check>
+#include <unistdx/fs/canonical_path>
 #include <unistdx/fs/file_mode>
+#include <unistdx/fs/path>
 #include <unistdx/ipc/identity>
 
-#include <ggg/config.hh>
 #include <ggg/bits/io.hh>
+#include <ggg/config.hh>
+#include <ggg/core/iacctree.hh>
 
 namespace {
 
@@ -21,150 +26,83 @@ namespace {
 		ggg::bits::rename(GGG_SHADOW_NEW, GGG_SHADOW);
 	}
 
-	void
-	change_permissions(const char* filename, sys::file_mode m) {
+	inline void
+	set_mode(const char* filename, sys::file_mode m) {
 		UNISTDX_CHECK(::chmod(filename, m));
 	}
 
-}
+	inline void
+	set_owner(const char* filename, sys::uid_type uid, sys::gid_type gid) {
+		UNISTDX_CHECK(::chown(filename, uid, gid));
+	}
 
-ggg::account_ctl::iterator
-ggg::account_ctl::find(const char* user) const {
-	bits::check(GGG_SHADOW, R_OK);
-	iterator result;
-	std::ifstream shadow;
-	try {
-		shadow.imbue(std::locale::classic());
-		shadow.exceptions(std::ios::badbit);
-		shadow.open(GGG_SHADOW);
-		result = std::find_if(
-			iterator(shadow),
-			iterator(),
-			[user] (const account& rhs) {
-				return rhs.login() == user;
-			}
+	inline void
+	set_perms(
+		const char* filename,
+		sys::uid_type uid,
+		sys::gid_type gid,
+		sys::file_mode m
+	) {
+		set_owner(filename, uid, gid);
+		set_mode(filename, m);
+	}
+
+	inline sys::path
+	tmp_file(sys::path rhs) {
+		sys::path p(rhs);
+		p += ".new";
+		return p;
+	}
+
+	template <class Function>
+	inline void
+	for_each_account_file(Function func) {
+		ggg::iacctree tree(sys::path(GGG_ROOT, "acc"));
+		std::for_each(
+			ggg::iacctree_iterator<sys::pathentry>(tree),
+			ggg::iacctree_iterator<sys::pathentry>(),
+			func
 		);
-	} catch (...) {
-		bits::throw_io_error(shadow, "unable to read accounts from " GGG_SHADOW);
 	}
-	return result;
-}
 
-void
-ggg::account_ctl::for_each(process_account func) const {
-	bits::check(GGG_SHADOW, R_OK);
-	std::ifstream shadow;
-	try {
-		shadow.exceptions(std::ios::badbit);
-		shadow.imbue(std::locale::classic());
-		shadow.open(GGG_SHADOW);
-		std::for_each(iterator(shadow), iterator(), func);
-	} catch (...) {
-		bits::throw_io_error(shadow, "unable to read accounts from " GGG_SHADOW);
-	}
-}
-
-void
-ggg::account_ctl::erase(const char* user) {
-	bits::check(GGG_SHADOW, R_OK | W_OK);
-	bits::check(GGG_SHADOW_NEW, R_OK | W_OK, false);
-	std::ifstream shadow;
-	std::ofstream shadow_new;
-	try {
-		shadow.exceptions(std::ios::badbit);
-		shadow.imbue(std::locale::classic());
-		shadow.open(GGG_SHADOW);
-		shadow_new.exceptions(std::ios::badbit);
-		shadow_new.imbue(std::locale::classic());
-		shadow_new.open(GGG_SHADOW_NEW);
-		change_permissions(GGG_SHADOW_NEW, 0000);
-		std::copy_if(
-			iterator(shadow),
-			iterator(),
-			oiterator(shadow_new, "\n"),
-			[user,this] (const account& rhs) {
-				bool match = rhs.login() == user;
-				if (match && this->_verbose) {
-					std::clog
-						<< "removing " << user
-						<< " from " << GGG_SHADOW
-						<< std::endl;
-				}
-				return !match;
-			}
+	template <class Function>
+	inline void
+	find_in_account_files(Function func) {
+		ggg::iacctree tree(sys::path(GGG_ROOT, "acc"));
+		std::find_if(
+			ggg::iacctree_iterator<sys::pathentry>(tree),
+			ggg::iacctree_iterator<sys::pathentry>(),
+			func
 		);
-	} catch (...) {
-		bits::throw_io_error(shadow, "unable to write accounts to " GGG_SHADOW_NEW);
 	}
-	rename_shadow();
+
 }
 
 void
-ggg::account_ctl::update(const account& acc) {
-	bits::check(GGG_SHADOW, R_OK | W_OK);
-	bits::check(GGG_SHADOW_NEW, R_OK | W_OK, false);
-	std::ifstream shadow;
-	std::ofstream shadow_new;
-	try {
-		shadow.exceptions(std::ios::badbit);
-		shadow.imbue(std::locale::classic());
-		shadow.open(GGG_SHADOW);
-		shadow_new.exceptions(std::ios::badbit);
-		shadow_new.imbue(std::locale::classic());
-		shadow_new.open(GGG_SHADOW_NEW);
-		change_permissions(GGG_SHADOW_NEW, 0000);
-		std::transform(
-			iterator(shadow),
-			iterator(),
-			oiterator(shadow_new, "\n"),
-			[&acc] (const account& rhs) {
-				return rhs.login() == acc.login() ? acc : rhs;
-			}
-		);
-	} catch (...) {
-		bits::throw_io_error(shadow, "unable to write accounts to " GGG_SHADOW_NEW);
+ggg::account_ctl
+::erase(const char* user) {
+	const_iterator result = this->find(user);
+	if (result == this->end()) {
+		return;
 	}
-	rename_shadow();
+	bits::erase<account,char_type>(*result, this->_verbose);
 }
 
 void
-ggg::account_ctl::update(const char* acc, update_account func) {
-	bits::check(GGG_SHADOW, R_OK | W_OK);
-	bits::check(GGG_SHADOW_NEW, R_OK | W_OK, false);
-	std::ifstream shadow;
-	std::ofstream shadow_new;
-	try {
-		shadow.exceptions(std::ios::badbit);
-		shadow.imbue(std::locale::classic());
-		shadow.open(GGG_SHADOW);
-		shadow_new.exceptions(std::ios::badbit);
-		shadow_new.imbue(std::locale::classic());
-		shadow_new.open(GGG_SHADOW_NEW);
-		change_permissions(GGG_SHADOW_NEW, 0000);
-		std::transform(
-			iterator(shadow),
-			iterator(),
-			oiterator(shadow_new, "\n"),
-			[acc,&func] (const account& rhs) {
-				if (rhs.login() == acc) {
-					func(const_cast<account&>(rhs));
-				}
-				return rhs;
-			}
-		);
-	} catch (...) {
-		bits::throw_io_error(shadow, "unable to write accounts to " GGG_SHADOW_NEW);
+ggg::account_ctl
+::update(const account& acc) {
+	if (acc.origin().empty()) {
+		throw std::invalid_argument("bad origin");
 	}
-	rename_shadow();
-}
-
-ggg::account
-ggg::account_ctl::generate(const char* user) {
-	return account(user);
+	const sys::uid_type uid = sys::this_process::user();
+	const sys::gid_type gid = sys::this_process::group();
+	const sys::file_mode m = uid == 0 ? 0 : 0600;
+	bits::update<account,char_type>(acc, this->_verbose);
 }
 
 void
-ggg::account_ctl::add(const account& acc) {
+ggg::account_ctl
+::add(const account& acc) {
 	if (acc.login().empty()) {
 		throw std::invalid_argument("bad login");
 	}
@@ -179,8 +117,40 @@ ggg::account_ctl::add(const account& acc) {
 	}
 	if (this->verbose()) {
 		std::clog << "appending " << acc.login()
-			<< " to " << dest << std::endl;
+		          << " to " << dest << std::endl;
 	}
 	bits::append(acc, dest, "unable to add account");
 }
 
+void
+ggg::account_ctl
+::open() {
+	this->_accounts.clear();
+	ggg::iacctree tree(sys::path(GGG_ROOT, "acc"));
+	std::for_each(
+		ggg::iacctree_iterator<sys::pathentry>(tree),
+		ggg::iacctree_iterator<sys::pathentry>(),
+		[this] (const sys::pathentry& entry) {
+		    sys::path f(entry.getpath());
+		    std::ifstream in;
+		    try {
+		        in.imbue(std::locale::classic());
+		        in.exceptions(std::ios::badbit);
+		        in.open(f);
+		        std::for_each(
+					std::istream_iterator<account>(in),
+					std::istream_iterator<account>(),
+					[this,&f] (const account& rhs) {
+						account acc(rhs);
+						acc.origin(f);
+						this->_accounts.insert(acc);
+					}
+		        );
+			} catch (...) {
+		        std::stringstream msg;
+		        msg << "unable to read accounts from " << f;
+		        bits::throw_io_error(in, msg.str());
+			}
+		}
+	);
+}

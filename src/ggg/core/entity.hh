@@ -243,14 +243,14 @@ namespace ggg {
 namespace std {
 
 	template<class Ch>
-	struct hash<ggg::basic_entity<Ch>> {
+	struct hash<ggg::basic_entity<Ch>>: public hash<basic_string<Ch>> {
 
 		typedef size_t result_type;
 		typedef ggg::basic_entity<Ch> argument_type;
 
-		size_t
+		inline result_type
 		operator()(const argument_type& rhs) const noexcept {
-			return std::hash<std::basic_string<Ch>>()(rhs.name());
+			return hash<basic_string<Ch>>::operator()(rhs.name());
 		}
 
 	};

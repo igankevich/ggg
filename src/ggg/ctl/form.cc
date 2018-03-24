@@ -53,7 +53,7 @@ namespace {
 		Iterator first,
 		Iterator last,
 		Iterator2 first2,
-		ggg::secure_string password_id,
+		std::string password_id,
 		unsigned int num_rounds,
 		double min_entropy
 	) {

@@ -4,6 +4,8 @@
 #include <ostream>
 #include <string>
 
+#include <unistdx/fs/path>
+
 #include "command.hh"
 #include <ggg/ctl/ggg.hh>
 
@@ -27,8 +29,8 @@ namespace ggg {
 
 	private:
 		void generate_entities(GGG& g, std::ostream& out);
-		void add_entities(GGG& g, const std::string& filename);
-		std::string get_filename(const entity& ent) const;
+		void add_entities(GGG& g, sys::path filename);
+		sys::path get_filename(const entity& ent) const;
 
 	};
 

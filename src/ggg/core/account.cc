@@ -335,18 +335,18 @@ ggg::account::parse_password() {
 	}
 }
 
-ggg::account::string
+ggg::account::string_type
 ggg::account::password_prefix() const {
 	return password_prefix(this->_salt, this->_id, this->_nrounds);
 }
 
-ggg::account::string
+ggg::account::string_type
 ggg::account::password_prefix(
-	const string& new_salt,
-	const string& new_id,
+	const string_type& new_salt,
+	const string_type& new_id,
 	unsigned int nrounds
 ) {
-	secure_stringstream s;
+	std::stringstream s;
 	s.put(separator);
 	s << new_id;
 	s.put(separator);

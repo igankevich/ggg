@@ -17,48 +17,6 @@
 
 namespace {
 
-	template <class Ch>
-	struct log_traits;
-
-	template <>
-	struct log_traits<char> {
-		inline static std::ostream&
-		log() noexcept {
-			return std::clog;
-		}
-	};
-
-	template <>
-	struct log_traits<wchar_t> {
-		inline static std::wostream&
-		log() noexcept {
-			return std::wclog;
-		}
-	};
-
-	template <class Ch>
-	struct delimiter_traits;
-
-	template <>
-	struct delimiter_traits<char> {
-
-		inline static const char*
-		newline() noexcept {
-			return "\n";
-		}
-
-	};
-
-	template <>
-	struct delimiter_traits<wchar_t> {
-
-		inline static const wchar_t*
-		newline() noexcept {
-			return L"\n";
-		}
-
-	};
-
 }
 
 template <class Ch>
@@ -82,7 +40,7 @@ ggg::basic_hierarchy<Ch>
 	try {
 		tree.open(sys::path(bits::to_bytes<char>(cv, this->_root)));
 	} catch (...) {
-		log_traits<Ch>::log() << "Skipping bad hierarchy root " << _root << std::endl;
+		bits::log_traits<Ch>::log() << "Skipping bad hierarchy root " << _root << std::endl;
 		return;
 	}
 	while (!tree.eof()) {
@@ -176,7 +134,7 @@ ggg::basic_hierarchy<Ch>
 						const auto& s = result->members();
 						if (!s.empty()) {
 							#ifndef NDEBUG
-							log_traits<Ch>::log() << "Nest "
+							bits::log_traits<Ch>::log() << "Nest "
 								<< group.name() << " and " << member << std::endl;
 							#endif
 							set_union(add, s);
@@ -333,7 +291,7 @@ void
 ggg::basic_hierarchy<Ch>
 ::erase_link(const entity_type& ent) {
 	if (this->_verbose) {
-		log_traits<Ch>::log() << "unlinking " << ent.origin() << std::endl;
+		bits::log_traits<Ch>::log() << "unlinking " << ent.origin() << std::endl;
 	}
 	int ret = ::unlink(ent.origin());
 	if (ret == -1) {
@@ -345,43 +303,7 @@ template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
 ::erase_regular(const entity_type& ent) {
-	typedef std::istream_iterator<entity_type,Ch> iterator;
-	typedef std::ostream_iterator<entity_type,Ch> oiterator;
-	std::string new_origin;
-	canonical_path_type origin(ent.origin());
-	new_origin.append(origin);
-	new_origin.append(".new");
-	bits::wcvt_type cv;
-	bits::check(origin, R_OK | W_OK);
-	bits::check(new_origin, R_OK | W_OK, false);
-	std::basic_ifstream<Ch> file;
-	std::basic_ofstream<Ch> file_new;
-	try {
-		file.exceptions(std::ios::badbit);
-		file.imbue(std::locale::classic());
-		file.open(origin, std::ios_base::in | std::ios_base::binary);
-		file_new.exceptions(std::ios::badbit);
-		file_new.imbue(std::locale::classic());
-		file_new.open(new_origin, std::ios_base::out | std::ios_base::binary);
-		std::copy_if(
-			iterator(file),
-			iterator(),
-			oiterator(file_new, delimiter_traits<Ch>::newline()),
-			[&ent,this] (const entity_type& rhs) {
-			    bool match = rhs.name() == ent.name();
-			    if (match && this->_verbose) {
-			        log_traits<Ch>::log()
-			        << "removing " << rhs.name() << ':' << rhs.id()
-			        << " from " << ent.origin()
-			        << std::endl;
-				}
-			    return !match;
-			}
-		);
-	} catch (...) {
-		bits::throw_io_error(file, "unable to remove entity");
-	}
-	ggg::bits::rename(new_origin, origin);
+	bits::erase<entity,char_type>(ent, this->_verbose);
 }
 
 template <class Ch>
@@ -438,46 +360,10 @@ ggg::basic_hierarchy<Ch>
 template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
-::update_regular(
-	const entity_type& ent,
-	path_type ent_origin
-) {
-	typedef std::istream_iterator<entity_type,Ch> iterator;
-	typedef std::ostream_iterator<entity_type,Ch> oiterator;
-	std::string new_origin;
-	canonical_path_type origin(ent_origin);
-	new_origin.append(origin);
-	new_origin.append(".new");
-	bits::check(origin, R_OK | W_OK);
-	bits::check(new_origin.data(), R_OK | W_OK, false);
-	std::basic_ifstream<Ch> file;
-	std::basic_ofstream<Ch> file_new;
-	try {
-		file.exceptions(std::ios::badbit);
-		file.imbue(std::locale::classic());
-		file.open(origin, std::ios_base::in | std::ios_base::binary);
-		file_new.exceptions(std::ios::badbit);
-		file_new.imbue(std::locale::classic());
-		file_new.open(new_origin, std::ios_base::out | std::ios_base::binary);
-		std::transform(
-			iterator(file),
-			iterator(),
-			oiterator(file_new, delimiter_traits<Ch>::newline()),
-			[&ent,&ent_origin,this] (const entity_type& rhs) {
-			    bool match = rhs.name() == ent.name();
-			    if (match && this->_verbose) {
-			        log_traits<Ch>::log()
-			        << "updating " << rhs.name() << ':' << rhs.id()
-			        << " in " << ent_origin
-			        << std::endl;
-				}
-			    return match ? ent : rhs;
-			}
-		);
-	} catch (...) {
-		bits::throw_io_error(file, "unable to update entity");
-	}
-	ggg::bits::rename(new_origin, origin);
+::update_regular(const entity_type& ent, path_type ent_origin) {
+	entity_type tmp(ent);
+	tmp.origin(ent_origin);
+	bits::update(tmp);
 }
 
 template <class Ch>
@@ -518,11 +404,8 @@ ggg::basic_hierarchy<Ch>
 template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
-::add(
-	const entity_type& ent,
-	const std::string& filename
-) {
-	if (filename.empty()) {
+::add(const entity_type& ent) {
+	if (ent.origin().empty()) {
 		throw std::invalid_argument("empty filename");
 	}
 	this->validate_entity(ent);
@@ -541,7 +424,7 @@ ggg::basic_hierarchy<Ch>
 	if (::getpwnam(byte_ent.name().data())) {
 		throw std::invalid_argument("conflicting system user");
 	}
-	this->append_entity(ent, filename);
+	this->append_entity(ent, ent.origin());
 }
 
 template <class Ch>
@@ -553,7 +436,7 @@ ggg::basic_hierarchy<Ch>
 ) {
 	sys::path dest(this->_root, filename);
 	if (this->verbose()) {
-		log_traits<Ch>::log()
+		bits::log_traits<Ch>::log()
 		    << "appending " << ent.name() << ':' << ent.id()
 		    << " to " << dest
 		    << std::endl;

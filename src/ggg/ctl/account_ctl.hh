@@ -3,34 +3,52 @@
 
 #include <ggg/core/account.hh>
 
-#include <iterator>
 #include <istream>
-#include <functional>
+#include <iterator>
+#include <unordered_set>
 
 namespace ggg {
 
 	class account_ctl {
 
 	public:
-		typedef std::istream_iterator<account> iterator;
-		typedef std::ostream_iterator<account> oiterator;
-		typedef std::function<void(account&)> update_account;
-		typedef std::function<void(const account&)> process_account;
+		typedef char char_type;
+		typedef std::unordered_set<account> container_type;
+		typedef typename container_type::iterator iterator;
+		typedef typename container_type::const_iterator const_iterator;
 
 	private:
+		container_type _accounts;
 		bool _verbose = false;
 
 	public:
-		iterator
-		find(const char* user) const;
+
+		inline
+		account_ctl() {
+			this->open();
+		}
+
+		account_ctl(const account_ctl&) = delete;
+
+		account_ctl&
+		operator=(const account_ctl&) = delete;
+
+		account_ctl(account_ctl&&) = default;
+
+		~account_ctl() = default;
+
+		void
+		open();
+
+		inline const_iterator
+		find(const char* user) const {
+			return this->_accounts.find(account(user));
+		}
 
 		inline bool
 		exists(const char* user) const {
 			return this->find(user) != end();
 		}
-
-		void
-		for_each(process_account func) const;
 
 		void
 		erase(const char* user);
@@ -39,18 +57,7 @@ namespace ggg {
 		update(const account& acc);
 
 		void
-		update(const char* acc, update_account func);
-
-		account
-		generate(const char* user);
-
-		void
 		add(const account& acc);
-
-		inline static iterator
-		end() {
-			return iterator();
-		}
 
 		inline void
 		verbose(bool rhs) noexcept {
@@ -62,10 +69,34 @@ namespace ggg {
 			return this->_verbose;
 		}
 
-	private:
-		static inline iterator
-		begin(std::istream& in) {
-			return iterator(in);
+		inline iterator
+		begin() {
+			return this->_accounts.begin();
+		}
+
+		inline iterator
+		end() {
+			return this->_accounts.end();
+		}
+
+		inline const_iterator
+		begin() const {
+			return this->_accounts.begin();
+		}
+
+		inline const_iterator
+		end() const {
+			return this->_accounts.end();
+		}
+
+		inline const_iterator
+		cbegin() const {
+			return this->_accounts.begin();
+		}
+
+		inline const_iterator
+		cend() const {
+			return this->_accounts.end();
 		}
 
 	};

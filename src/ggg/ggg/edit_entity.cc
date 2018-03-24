@@ -115,6 +115,7 @@ ggg::Edit_entity::update_objects(GGG& g, const std::string& filename) {
 	check_duplicates(ents, traits_type::eq);
 	for (const T& ent : ents) {
 		try {
+			std::clog << "ent.origin()=" << ent.origin() << std::endl;
 			g.update(ent);
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {

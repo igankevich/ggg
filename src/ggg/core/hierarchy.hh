@@ -191,7 +191,7 @@ namespace ggg {
 		update(const entity_type& ent);
 
 		void
-		add(const entity_type& ent, const std::string& filename);
+		add(const entity_type& ent);
 
 		entity_type
 		generate(const char_type* name);

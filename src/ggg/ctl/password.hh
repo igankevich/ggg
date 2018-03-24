@@ -2,6 +2,7 @@
 #define CTL_PASSWORD_HH
 
 #include <iosfwd>
+#include <string>
 
 #include <zxcvbn/zxcvbn.h>
 
@@ -9,11 +10,11 @@
 
 namespace ggg {
 
-	secure_string
+	std::string
 	generate_salt();
 
 	secure_string
-	encrypt(const char* password, const secure_string& prefix);
+	encrypt(const char* password, const std::string& prefix);
 
 	std::ostream&
 	operator<<(std::ostream& out, ZxcTypeMatch_t rhs);

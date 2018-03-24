@@ -40,7 +40,7 @@ namespace ggg {
 				{
 					file_lock lock(true);
 					acc.origin(origin);
-					g.add(ent, ent.origin(), acc);
+					g.add(ent, acc);
 				}
 				success = true;
 			} catch (const std::exception& err) {

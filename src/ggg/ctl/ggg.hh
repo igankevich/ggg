@@ -78,15 +78,13 @@ namespace ggg {
 		template <class Container, class Result>
 		inline void
 		find_accounts(const Container& names, Result result) {
-			this->_accounts.for_each(
-				[&] (const account& rhs) {
-				    string_type key(rhs.login().begin(), rhs.login().end());
-				    auto it = names.find(key);
-				    if (it != names.end()) {
-				        *result++ = rhs;
-					}
+			auto end = this->_accounts.end();
+			for (const auto& n : names) {
+				auto result2 = this->_accounts.find(n);
+				if (result2 != end) {
+					*result++ = *result2;
 				}
-			);
+			}
 		}
 
 		bool
@@ -110,14 +108,7 @@ namespace ggg {
 		update(const account& ent);
 
 		void
-		add(const entity_type& ent, const std::string& filename);
-
-		void
-		add(
-			const entity_type& ent,
-			const std::string& filename,
-			const account& acc
-		);
+		add(const entity_type& ent, const account& acc);
 
 		inline bool
 		verbose() const noexcept {
@@ -133,6 +124,9 @@ namespace ggg {
 		accounts() const noexcept {
 			return this->_accounts;
 		}
+
+		sys::path
+		account_origin(sys::uid_type uid);
 
 	private:
 

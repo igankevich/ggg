@@ -4,8 +4,8 @@
 #include <shadow.h>
 
 #include <chrono>
-#include <ostream>
 #include <istream>
+#include <ostream>
 #include <type_traits>
 
 #include <unistdx/fs/path>
@@ -26,6 +26,8 @@ namespace ggg {
 
 	public:
 		typedef char char_type;
+		typedef std::char_traits<char_type> traits_type;
+		typedef std::basic_string<char_type, traits_type> string_type;
 		typedef secure_string string;
 		typedef std::chrono::system_clock clock_type;
 		typedef clock_type::time_point time_point;
@@ -37,9 +39,9 @@ namespace ggg {
 		static constexpr const char separator = '$';
 
 	private:
-		string _login;
-		string _id;
-		string _salt;
+		string_type _login;
+		string_type _id;
+		string_type _salt;
 		unsigned int _nrounds = 0;
 		string _password;
 		time_point _lastchange = time_point(duration::zero());
@@ -49,7 +51,7 @@ namespace ggg {
 		duration _maxinactive = duration::zero();
 		time_point _expire = time_point(duration::zero());
 		account_flags _flags = account_flags(0);
-		path_type _origin;
+		mutable path_type _origin;
 
 	public:
 		inline explicit
@@ -58,9 +60,13 @@ namespace ggg {
 		{}
 
 		account() = default;
+
 		account(const account&) = default;
+
 		account(account&&) = default;
-		account& operator=(const account&) = default;
+
+		account&
+		operator=(const account&) = default;
 
 		inline void
 		make_expired() noexcept {
@@ -95,9 +101,9 @@ namespace ggg {
 		inline bool
 		password_has_expired(time_point now) const noexcept {
 			return (this->_lastchange > time_point(duration::zero())
-				&& this->_maxchange > duration::zero()
-				&& this->_lastchange < now - this->_maxchange)
-				|| (this->_flags & account_flags::password_has_expired);
+			        && this->_maxchange > duration::zero()
+			        && this->_lastchange < now - this->_maxchange)
+			       || (this->_flags & account_flags::password_has_expired);
 		}
 
 		inline void
@@ -152,8 +158,13 @@ namespace ggg {
 			return this->_login < rhs._login;
 		}
 
-		inline const string&
+		inline const string_type&
 		login() const noexcept {
+			return this->_login;
+		}
+
+		inline const string_type&
+		name() const noexcept {
 			return this->_login;
 		}
 
@@ -162,7 +173,7 @@ namespace ggg {
 			return this->_password;
 		}
 
-		inline const string&
+		inline const string_type&
 		password_id() const noexcept {
 			return this->_id;
 		}
@@ -172,18 +183,18 @@ namespace ggg {
 			return this->_nrounds;
 		}
 
-		inline const string&
+		inline const string_type&
 		password_salt() const noexcept {
 			return this->_salt;
 		}
 
-		string
+		string_type
 		password_prefix() const;
 
-		static string
+		static string_type
 		password_prefix(
-			const string& new_salt,
-			const string& new_id,
+			const string_type& new_salt,
+			const string_type& new_id,
 			unsigned int nrounds
 		);
 
@@ -286,7 +297,7 @@ namespace ggg {
 		}
 
 		inline void
-		origin(const path_type& rhs) {
+		origin(const path_type& rhs) const {
 			this->_origin = rhs;
 		}
 
@@ -295,7 +306,8 @@ namespace ggg {
 			return !this->_origin.empty();
 		}
 
-		void clear();
+		void
+		clear();
 
 		void
 		set(const form_field& field, const char* value);
@@ -311,6 +323,24 @@ namespace ggg {
 
 	std::istream&
 	operator>>(std::istream& in, account& rhs);
+
+}
+
+namespace std {
+
+	template<>
+	struct hash<ggg::account>: public hash<string> {
+
+		typedef size_t result_type;
+		typedef ggg::account argument_type;
+
+		inline result_type
+		operator()(const argument_type& rhs) const noexcept {
+			return hash<string>::operator()(rhs.login());
+		}
+
+	};
+
 }
 
 #endif // ACCOUNT_HH

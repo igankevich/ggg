@@ -1,6 +1,8 @@
 #ifndef BITS_TO_BYTES_HH
 #define BITS_TO_BYTES_HH
 
+#include <codecvt>
+
 namespace ggg {
 
 	namespace bits {

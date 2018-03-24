@@ -191,7 +191,7 @@ ggg::pam_handle::register_new_user(const account& recruiter) {
 			}
 			{
 				file_lock lock(true);
-				g.add(ent, ent.origin(), acc);
+				g.add(ent, acc);
 			}
 			success = true;
 		} catch (const std::system_error& err) {

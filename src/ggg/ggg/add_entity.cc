@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <vector>
 
+#include <unistdx/ipc/identity>
+
 #include "quiet_error.hh"
 #include "align_columns.hh"
 #include "tmpfile.hh"
@@ -58,7 +60,7 @@ ggg::Add_entity::execute()  {
 		tmp.out().imbue(std::locale::classic());
 		this->generate_entities(g, tmp.out());
 		edit_file_or_throw(tmp.filename());
-		this->add_entities(g, tmp.filename());
+		this->add_entities(g, sys::path(tmp.filename()));
 		if (!this->_args.empty()) {
 			std::clog << "press any key to continue..." << std::endl;
 			std::cin.get();
@@ -75,8 +77,10 @@ ggg::Add_entity::generate_entities(GGG& g, std::ostream& out) {
 }
 
 void
-ggg::Add_entity::add_entities(GGG& g, const std::string& filename) {
+ggg::Add_entity::add_entities(GGG& g, sys::path filename) {
 	file_lock lock(true);
+	const sys::uid_type uid = sys::this_process::user();
+	sys::path acc_origin = g.account_origin(uid);
 	typedef Object_traits<entity> traits_type;
 	std::vector<entity> ents;
 	read_objects<entity>(
@@ -86,10 +90,12 @@ ggg::Add_entity::add_entities(GGG& g, const std::string& filename) {
 	);
 	check_duplicates(ents, traits_type::eq);
 	std::clog.imbue(std::locale::classic());
-	for (const entity& ent : ents) {
-		const std::string& fname = this->get_filename(ent);
+	for (entity& ent : ents) {
 		try {
-			g.add(ent, fname);
+			ent.origin(this->get_filename(ent));
+			account acc(ent.name().data());
+			acc.origin(acc_origin);
+			g.add(ent, acc);
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
 			std::cerr << gettext("error adding") << ' ';
@@ -99,9 +105,9 @@ ggg::Add_entity::add_entities(GGG& g, const std::string& filename) {
 	}
 }
 
-std::string
+sys::path
 ggg::Add_entity::get_filename(const entity& ent) const {
-	std::string filename;
+	sys::path filename;
 	if (this->_type == Type::Directory) {
 		if (this->_path.empty()) {
 			filename = "entities";

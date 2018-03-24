@@ -174,23 +174,9 @@ ggg::basic_ggg<Ch>
 template <class Ch>
 void
 ggg::basic_ggg<Ch>
-::add(const entity_type& ent, const std::string& filename) {
-	bits::wcvt_type cv;
-	this->add(ent, filename, this->_accounts.generate(
-		bits::to_bytes<char>(cv, ent.name()).data()
-	));
-}
-
-template <class Ch>
-void
-ggg::basic_ggg<Ch>
-::add(
-	const entity_type& ent,
-	const std::string& filename,
-	const account& acc
-) {
-	this->mkdirs(this->to_relative_path(filename));
-	this->_hierarchy.add(ent, filename);
+::add(const entity_type& ent, const account& acc) {
+	this->mkdirs(this->to_relative_path(ent.origin()));
+	this->_hierarchy.add(ent);
 	this->_accounts.add(acc);
 }
 
@@ -235,6 +221,31 @@ ggg::basic_ggg<Ch>
 		}
 		i0 = i1 + 1;
 	}
+}
+
+template <class Ch>
+sys::path
+ggg::basic_ggg<Ch>
+::account_origin(sys::uid_type uid) {
+	sys::path acc_origin;
+	if (uid != 0) {
+		auto result = this->_hierarchy.find_by_uid(uid);
+		if (result == this->_hierarchy.end()) {
+			throw std::runtime_error(
+				"the user is not allowed to add new entities"
+			);
+		}
+		bits::wcvt_type cv;
+		acc_origin =
+			sys::path(
+				GGG_ROOT,
+				"acc",
+				bits::to_bytes<char>(cv, result->name()).data()
+			);
+	} else {
+		acc_origin = GGG_SHADOW;
+	}
+	return acc_origin;
 }
 
 template class ggg::basic_ggg<char>;

@@ -15,9 +15,9 @@ namespace {
 		engine_type;
 }
 
-ggg::secure_string
+std::string
 ggg::generate_salt() {
-	secure_string salt;
+	std::string salt;
 	engine_type engine;
 	int i = 0;
 	while (i < GGG_SALT_LENGTH) {
@@ -34,7 +34,7 @@ ggg::generate_salt() {
 }
 
 ggg::secure_string
-ggg::encrypt(const char* password, const secure_string& prefix) {
+ggg::encrypt(const char* password, const std::string& prefix) {
 	crypt_data data;
 	char* encrypted = ::crypt_r(
 		password,

@@ -54,7 +54,7 @@ namespace ggg {
 			return this->_minentropy;
 		}
 
-		inline secure_string
+		inline std::string
 		password_id() const noexcept {
 			return "6";
 		}
