@@ -57,7 +57,19 @@ namespace ggg {
 		update(const account& acc);
 
 		void
+		update_password(const account& acc);
+
+		void
 		add(const account& acc);
+
+		void
+		expire(const char* user);
+
+		void
+		activate(const char* user);
+
+		void
+		expire_password(const char* user);
 
 		inline void
 		verbose(bool rhs) noexcept {
@@ -97,6 +109,11 @@ namespace ggg {
 		inline const_iterator
 		cend() const {
 			return this->_accounts.end();
+		}
+
+		inline void
+		clear() {
+			this->_accounts.clear();
 		}
 
 	};

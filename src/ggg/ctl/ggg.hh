@@ -51,14 +51,20 @@ namespace ggg {
 		void
 		erase(const string_type& user);
 
-		void
-		expire(const std::string& user);
+		inline void
+		expire(const std::string& user) {
+			this->_accounts.expire(user.data());
+		}
 
-		void
-		reset(const std::string& user);
+		inline void
+		reset(const std::string& user) {
+			this->_accounts.expire_password(user.data());
+		}
 
-		void
-		activate(const std::string& user);
+		inline void
+		activate(const std::string& user) {
+			this->_accounts.activate(user.data());
+		}
 
 		template <class Iterator, class Result>
 		inline void
@@ -80,7 +86,7 @@ namespace ggg {
 		find_accounts(const Container& names, Result result) {
 			auto end = this->_accounts.end();
 			for (const auto& n : names) {
-				auto result2 = this->_accounts.find(n);
+				auto result2 = this->_accounts.find(n.data());
 				if (result2 != end) {
 					*result++ = *result2;
 				}
@@ -101,11 +107,15 @@ namespace ggg {
 			return this->_hierarchy.next_uid();
 		}
 
-		void
-		update(const entity_type& ent);
+		inline void
+		update(const entity_type& ent) {
+			this->_hierarchy.update(ent);
+		}
 
-		void
-		update(const account& ent);
+		inline void
+		update(const account& acc) {
+			this->_accounts.update(acc);
+		}
 
 		void
 		add(const entity_type& ent, const account& acc);

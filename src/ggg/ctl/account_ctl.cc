@@ -26,27 +26,6 @@ namespace {
 		ggg::bits::rename(GGG_SHADOW_NEW, GGG_SHADOW);
 	}
 
-	inline void
-	set_mode(const char* filename, sys::file_mode m) {
-		UNISTDX_CHECK(::chmod(filename, m));
-	}
-
-	inline void
-	set_owner(const char* filename, sys::uid_type uid, sys::gid_type gid) {
-		UNISTDX_CHECK(::chown(filename, uid, gid));
-	}
-
-	inline void
-	set_perms(
-		const char* filename,
-		sys::uid_type uid,
-		sys::gid_type gid,
-		sys::file_mode m
-	) {
-		set_owner(filename, uid, gid);
-		set_mode(filename, m);
-	}
-
 	inline sys::path
 	tmp_file(sys::path rhs) {
 		sys::path p(rhs);
@@ -82,10 +61,9 @@ void
 ggg::account_ctl
 ::erase(const char* user) {
 	const_iterator result = this->find(user);
-	if (result == this->end()) {
-		return;
+	if (result != this->end()) {
+		bits::erase<account,char_type>(*result, this->_verbose);
 	}
-	bits::erase<account,char_type>(*result, this->_verbose);
 }
 
 void
@@ -94,9 +72,34 @@ ggg::account_ctl
 	if (acc.origin().empty()) {
 		throw std::invalid_argument("bad origin");
 	}
-	const sys::uid_type uid = sys::this_process::user();
-	const sys::gid_type gid = sys::this_process::group();
-	const sys::file_mode m = uid == 0 ? 0 : 0600;
+	const_iterator result = this->_accounts.find(acc);
+	if (result == this->end()) {
+		throw std::invalid_argument("bad account");
+	}
+	account old(*result);
+	this->_accounts.erase(result);
+	this->_accounts.insert(acc);
+	try {
+		// update without touching the password
+		account new_acc(old);
+		new_acc.copy_from(acc);
+		if (this->verbose()) {
+		    std::clog << "updating " << new_acc.login() << std::endl;
+		}
+		bits::update<account,char_type>(new_acc, this->_verbose);
+	} catch (...) {
+		this->_accounts.erase(acc);
+		this->_accounts.insert(old);
+		throw;
+	}
+}
+
+void
+ggg::account_ctl
+::update_password(const account& acc) {
+	if (acc.origin().empty()) {
+		throw std::invalid_argument("bad origin");
+	}
 	bits::update<account,char_type>(acc, this->_verbose);
 }
 
@@ -105,6 +108,10 @@ ggg::account_ctl
 ::add(const account& acc) {
 	if (acc.login().empty()) {
 		throw std::invalid_argument("bad login");
+	}
+	const_iterator result = this->_accounts.find(acc);
+	if (result != this->end()) {
+		throw std::invalid_argument("bad account");
 	}
 	const sys::uid_type uid = sys::this_process::user();
 	sys::path dest;
@@ -154,3 +161,55 @@ ggg::account_ctl
 		}
 	);
 }
+
+void
+ggg::account_ctl
+::expire(const char* user) {
+	const_iterator result = this->find(user);
+	if (result == this->end()) {
+		throw std::invalid_argument("bad account");
+	}
+	if (!result->has_expired()) {
+		account tmp(*result);
+		if (this->verbose()) {
+			std::clog << "deactivating " << tmp.login() << std::endl;
+		}
+		tmp.make_expired();
+		this->update(tmp);
+	}
+}
+
+void
+ggg::account_ctl
+::activate(const char* user) {
+	const_iterator result = this->find(user);
+	if (result == this->end()) {
+		throw std::invalid_argument("bad account");
+	}
+	if (result->has_expired()) {
+		account tmp(*result);
+		if (this->verbose()) {
+			std::clog << "activating " << tmp.login() << std::endl;
+		}
+		tmp.make_active();
+		this->update(tmp);
+	}
+}
+
+void
+ggg::account_ctl
+::expire_password(const char* user) {
+	const_iterator result = this->find(user);
+	if (result == this->end()) {
+		throw std::invalid_argument("bad account");
+	}
+	if (!result->password_has_expired()) {
+		account tmp(*result);
+		if (this->verbose()) {
+			std::clog << "resetting password for " << tmp.login() << std::endl;
+		}
+		tmp.reset_password();
+		this->update(tmp);
+	}
+}
+

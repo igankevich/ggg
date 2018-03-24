@@ -8,12 +8,36 @@
 #include <sstream>
 #include <system_error>
 
+#include <unistdx/base/check>
 #include <unistdx/fs/canonical_path>
+#include <unistdx/fs/file_mode>
 #include <unistdx/fs/path>
+#include <unistdx/ipc/identity>
 
 #include <ggg/bits/to_bytes.hh>
 
 namespace ggg {
+
+	inline void
+	set_mode(const char* filename, sys::file_mode m) {
+		UNISTDX_CHECK(::chmod(filename, m));
+	}
+
+	inline void
+	set_owner(const char* filename, sys::uid_type uid, sys::gid_type gid) {
+		UNISTDX_CHECK(::chown(filename, uid, gid));
+	}
+
+	inline void
+	set_perms(
+		const char* filename,
+		sys::uid_type uid,
+		sys::gid_type gid,
+		sys::file_mode m
+	) {
+		set_owner(filename, uid, gid);
+		set_mode(filename, m);
+	}
 
 	namespace bits {
 
@@ -123,37 +147,48 @@ namespace ggg {
 			}
 		}
 
-		/*
-		template <class Ch>
+		template <class Stream>
 		inline void
-		open_stream(std::basic_istream<Ch>& file, const sys::path& origin) {
+		open(
+			Stream& file,
+			std::ios_base::openmode mode,
+			const sys::path& origin,
+			sys::uid_type uid
+		) {
 			file.exceptions(std::ios::badbit);
 			file.imbue(std::locale::classic());
-			file.open(origin, std::ios_base::in | std::ios_base::binary);
+			file.open(origin, mode | std::ios_base::binary);
+			set_mode(origin, uid == 0 ? 0 : 0600);
 		}
-		*/
+
+		template <class Ch>
+		inline std::pair<sys::canonical_path,sys::path>
+		open_both(
+			std::basic_ifstream<Ch>& in,
+			std::basic_ofstream<Ch>& out,
+			sys::path orig
+		) {
+			sys::canonical_path origin(orig);
+			sys::path new_origin;
+			new_origin.append(origin);
+			new_origin.append(".new");
+			check(origin, R_OK | W_OK);
+			check(new_origin, R_OK | W_OK, false);
+			const sys::uid_type uid = sys::this_process::user();
+			open(in, std::ios_base::in, origin, uid);
+			open(out, std::ios_base::out, new_origin, uid);
+			return std::make_pair(std::move(origin), std::move(new_origin));
+		}
 
 		template <class T, class Ch>
 		void
 		erase(const T& ent, bool verbose) {
 			typedef std::istream_iterator<T,Ch> iterator;
 			typedef std::ostream_iterator<T,Ch> oiterator;
-			std::string new_origin;
-			sys::canonical_path origin(ent.origin());
-			new_origin.append(origin);
-			new_origin.append(".new");
-			wcvt_type cv;
-			check(origin, R_OK | W_OK);
-			check(new_origin, R_OK | W_OK, false);
 			std::basic_ifstream<Ch> file;
 			std::basic_ofstream<Ch> file_new;
 			try {
-				file.exceptions(std::ios::badbit);
-				file.imbue(std::locale::classic());
-				file.open(origin, std::ios_base::in | std::ios_base::binary);
-				file_new.exceptions(std::ios::badbit);
-				file_new.imbue(std::locale::classic());
-				file_new.open(new_origin, std::ios_base::out | std::ios_base::binary);
+				auto files = open_both(file, file_new, ent.origin());
 				std::copy_if(
 					iterator(file),
 					iterator(),
@@ -162,19 +197,20 @@ namespace ggg {
 						const bool match = rhs.name() == ent.name();
 						if (match && verbose) {
 							log_traits<Ch>::log()
-							<< "removing " << rhs.name() << ':' << rhs.id()
+							<< "removing " << rhs.name()
 							<< " from " << ent.origin()
 							<< std::endl;
 						}
 						return !match;
 					}
 				);
+				rename(files.second, files.first);
 			} catch (...) {
+				wcvt_type cv;
 				std::stringstream msg;
-				msg << "unable to remove " << ent.name();
+				msg << "unable to remove " << to_bytes<char>(cv, ent.name());
 				throw_io_error(file, msg.str());
 			}
-			rename(new_origin, origin);
 		}
 
 		template <class T, class Ch>
@@ -182,23 +218,11 @@ namespace ggg {
 		update(const T& ent, bool verbose) {
 			typedef std::istream_iterator<T,Ch> iterator;
 			typedef std::ostream_iterator<T,Ch> oiterator;
-			std::string new_origin;
-			sys::canonical_path origin(ent.origin());
-			new_origin.append(origin);
-			new_origin.append(".new");
-			wcvt_type cv;
-			check(origin, R_OK | W_OK);
-			check(new_origin, R_OK | W_OK, false);
 			std::basic_ifstream<Ch> file;
 			std::basic_ofstream<Ch> file_new;
 			try {
-				file.exceptions(std::ios::badbit);
-				file.imbue(std::locale::classic());
-				file.open(origin, std::ios_base::in | std::ios_base::binary);
-				file_new.exceptions(std::ios::badbit);
-				file_new.imbue(std::locale::classic());
-				file_new.open(new_origin, std::ios_base::out | std::ios_base::binary);
-				std::copy_if(
+				auto files = open_both(file, file_new, ent.origin());
+				std::transform(
 					iterator(file),
 					iterator(),
 					oiterator(file_new, bits::delimiter_traits<Ch>::newline()),
@@ -206,19 +230,20 @@ namespace ggg {
 						const bool match = rhs.name() == ent.name();
 						if (match && verbose) {
 							log_traits<Ch>::log()
-							<< "removing " << rhs.name() << ':' << rhs.id()
+							<< "modifying " << rhs.name()
 							<< " from " << ent.origin()
 							<< std::endl;
 						}
 						return match ? ent : rhs;
 					}
 				);
+				rename(files.second, files.first);
 			} catch (...) {
+				wcvt_type cv;
 				std::stringstream msg;
-				msg << "unable to remove " << ent.name();
+				msg << "unable to modify " << to_bytes<char>(cv, ent.name());
 				throw_io_error(file, msg.str());
 			}
-			rename(new_origin, origin);
 		}
 
 	}

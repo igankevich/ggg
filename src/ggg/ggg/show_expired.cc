@@ -28,8 +28,7 @@ ggg::Show_expired::execute() {
 	wentity::wcvt_type cv;
 	WGGG g(GGG_ENT_ROOT, this->verbose());
 	const auto& h = g.hierarchy();
-	const account_ctl& accounts = g.accounts();
-	accounts.for_each([&] (const account& acc) {
+	for (const account& acc : g.accounts()) {
 		if (acc.has_expired()) {
 			std::wstring wlogin = cv.from_bytes(acc.login().data());
 			auto it = h.find_by_name(wlogin.data());
@@ -39,6 +38,6 @@ ggg::Show_expired::execute() {
 				this->_result.insert(*it);
 			}
 		}
-	});
+	}
 	Show_base::execute();
 }

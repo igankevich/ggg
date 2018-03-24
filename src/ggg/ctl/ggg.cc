@@ -56,57 +56,6 @@ ggg::basic_ggg<Ch>
 }
 
 template <class Ch>
-void
-ggg::basic_ggg<Ch>
-::expire(const std::string& user) {
-	this->_accounts.update(
-		user.data(),
-		[&] (account& rhs) {
-		    if (!rhs.has_expired()) {
-		        if (this->verbose()) {
-		            std::clog << "deactivating " << rhs.login() << std::endl;
-				}
-		        rhs.make_expired();
-			}
-		}
-	);
-}
-
-template <class Ch>
-void
-ggg::basic_ggg<Ch>
-::activate(const std::string& user) {
-	this->_accounts.update(
-		user.data(),
-		[&] (account& rhs) {
-		    if (rhs.has_expired()) {
-		        if (this->verbose()) {
-		            std::clog << "activating " << rhs.login() << std::endl;
-				}
-		        rhs.make_active();
-			}
-		}
-	);
-}
-
-template <class Ch>
-void
-ggg::basic_ggg<Ch>
-::reset(const std::string& user) {
-	this->_accounts.update(
-		user.data(),
-		[&] (account& rhs) {
-		    if (!rhs.password_has_expired()) {
-		        if (this->verbose()) {
-		            std::clog << "deactivating " << rhs.login() << std::endl;
-				}
-		        rhs.reset_password();
-			}
-		}
-	);
-}
-
-template <class Ch>
 bool
 ggg::basic_ggg<Ch>
 ::contains(const string_type& name) {
@@ -114,29 +63,6 @@ ggg::basic_ggg<Ch>
 	return this->_hierarchy.find_by_name(name.data()) != this->_hierarchy.end()
 	       || this->_accounts.find(bits::to_bytes<char>(cv, name).data()) !=
 	       this->_accounts.end();
-}
-
-template <class Ch>
-void
-ggg::basic_ggg<Ch>
-::update(const entity_type& ent) {
-	this->_hierarchy.update(ent);
-}
-
-template <class Ch>
-void
-ggg::basic_ggg<Ch>
-::update(const account& acc) {
-	// update without touching the password
-	this->_accounts.update(
-		acc.login().data(),
-		[&acc,this] (account& existing) {
-		    existing.copy_from(acc);
-		    if (this->verbose()) {
-		        std::clog << "updating " << existing.login() << std::endl;
-			}
-		}
-	);
 }
 
 template <class Ch>

@@ -52,11 +52,9 @@ namespace {
 		return duration_cast<days>(tmp).count();
 	}
 
-	ggg::account_ctl all_accounts;
-
-	ggg::account
-	find_account(const char* user) {
-		ggg::file_lock lock;
+	inline ggg::account
+	find_account(ggg::account_ctl& all_accounts, const char* user) {
+		ggg::file_lock lock(true);
 		auto result = all_accounts.find(user);
 		if (result == all_accounts.end()) {
 			throw_pam_error(ggg::pam_errc::unknown_user);
@@ -64,10 +62,10 @@ namespace {
 		return *result;
 	}
 
-	void
-	update_account(const ggg::account& acc) {
-		ggg::file_lock lock;
-		all_accounts.update(acc);
+	inline void
+	update_account(ggg::account_ctl& all_accounts, const ggg::account& acc) {
+		ggg::file_lock lock(true);
+		all_accounts.update_password(acc);
 	}
 
 	void
@@ -96,7 +94,9 @@ int pam_sm_authenticate(
 		const char* user = pamh.get_user();
 		pamh.debug("authenticating user \"%s\"", user);
 		const char* password = pamh.get_password(pam_errc::auth_error);
-		ggg::account acc = find_account(user);
+		ggg::account_ctl all_accounts;
+		ggg::account acc = find_account(all_accounts, user);
+		all_accounts.clear();
 		check_password(password, acc);
 		pamh.set_account(acc);
 		pamh.debug("successfully authenticated user \"%s\"", user);
@@ -170,7 +170,9 @@ int pam_sm_chauthtok(
 			pamh.set_password_type("GGG");
 			const char* user = pamh.get_user();
 			pamh.debug("changing password for user \"%s\"", user);
-			ggg::account acc = find_account(user);
+			ggg::account_ctl all_accounts;
+			ggg::account acc = find_account(all_accounts, user);
+			all_accounts.clear();
 			const ggg::account::time_point now = ggg::account::clock_type::now();
 			if (acc.has_expired(now)) {
 				pamh.debug(
@@ -208,7 +210,7 @@ int pam_sm_chauthtok(
 				)
 			);
 			acc.set_password(encrypted);
-			update_account(acc);
+			update_account(all_accounts, acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = pam_errc::success;
 		} catch (const std::system_error& e) {
