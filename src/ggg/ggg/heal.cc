@@ -15,6 +15,8 @@
 
 namespace {
 
+	size_t num_errors = 0;
+
 	void
 	change_permissions(
 		const char* filename,
@@ -29,6 +31,7 @@ namespace {
 				UNISTDX_CHECK(::chmod(filename, m));
 			}
 		} catch (const std::exception& err) {
+			++num_errors;
 			std::cerr
 			    << "failed to change permissions of "
 			    << filename << " to " << m << ": " << err.what()
@@ -47,6 +50,7 @@ namespace {
 		try {
 			UNISTDX_CHECK(::chown(filename, uid, gid));
 		} catch (const std::exception& err) {
+			++num_errors;
 			std::cerr
 			    << "failed to change owner of "
 			    << filename << " to " << uid << ':' << gid << ": " << err.what()
@@ -92,6 +96,7 @@ namespace {
 				sys::mkdirs(sys::path(root), sys::path(name));
 				st.update(p);
 			} catch (const std::exception& err) {
+				++num_errors;
 				std::cerr
 				    << "failed to create "
 				    << p << ": " << err.what()
@@ -202,10 +207,11 @@ namespace {
 void
 ggg::Heal
 ::execute() {
+	make_directory("/", GGG_ROOT, 0, 0, 0755);
 	make_directory(GGG_ROOT, "ent", 0, 0, 0755);
 	make_directory(GGG_ROOT, "reg", 0, 0, 0755);
 	make_directory(GGG_ROOT, "acc", 0, 0, 0755);
-	make_directory(GGG_ROOT, "lck", 0, 0, 1777);
+	make_directory(GGG_ROOT, "lck", 0, 0, 01777);
 	change_owner(GGG_ROOT, 0, 0);
 	change_permissions(GGG_ROOT, 0755);
 	make_file(GGG_LOCK_FILE, 0, 0, 0644);
@@ -214,10 +220,17 @@ ggg::Heal
 	try {
 		h.open(GGG_ROOT);
 	} catch (const std::exception& err) {
+		++num_errors;
 		std::cerr
-			<< "unable to fully heal accounts and forms: entities are broken"
+			<< "unable to fully " << this->prefix()
+			<< " accounts and forms: entities are broken"
 			<< std::endl;
 	}
 	heal_forms(h);
 	heal_accounts(h);
+	if (num_errors > 0) {
+		std::stringstream msg;
+		msg << "unable to fully " << this->prefix() << " directories";
+		throw std::runtime_error(msg.str());
+	}
 }

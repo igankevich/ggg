@@ -43,11 +43,26 @@ config.set('catalog', 'ggg')
 
 unistdx = dependency('unistdx')
 gtest = dependency('gtest', main: true)
+gtest_nomain = dependency('gtest', main: false)
 nss_wrapper = dependency('nss_wrapper')
 threads = dependency('threads')
 zxcvbn = dependency('zxcvbn')
 pam = cpp.find_library('pam')
 libcrypt = cpp.find_library('crypt')
+
+# integration tests {{{
+unshare = find_program('unshare', required: false)
+if unshare.found()
+	run_target(
+		'init-integration-tests',
+		command: join_paths(
+			meson.source_root(),
+			'scripts',
+			'init-integration-tests'
+		)
+	)
+endif
+# }}}
 
 subdir('src')
 subdir('po')

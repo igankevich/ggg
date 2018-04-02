@@ -5,7 +5,8 @@ test(
 		sources: ['entity_test.cc'],
 		include_directories: inc,
 		dependencies: [unistdx, gtest, ggg_core]
-	)
+	),
+	suite: 'unit'
 )
 
 test(
@@ -15,7 +16,8 @@ test(
 		sources: ['group_test.cc'],
 		include_directories: inc,
 		dependencies: [unistdx, gtest, ggg_core]
-	)
+	),
+	suite: 'unit'
 )
 
 test(
@@ -25,7 +27,8 @@ test(
 		sources: ['account_test.cc'],
 		include_directories: inc,
 		dependencies: [unistdx, gtest, ggg_core]
-	)
+	),
+	suite: 'unit'
 )
 
 test(
@@ -35,7 +38,8 @@ test(
 		sources: ['hierarchy_test.cc'],
 		include_directories: inc,
 		dependencies: [unistdx, gtest, ggg_core]
-	)
+	),
+	suite: 'unit'
 )
 
 if not etc.startswith('/')
@@ -62,7 +66,8 @@ if not etc.startswith('/')
 			'NSS_WRAPPER_DEBUGLEVEL=3',
 			'NSS_WRAPPER_PASSWD=passwd',
 			'NSS_WRAPPER_GROUP=group',
-		]
+		],
+		suite: 'unit'
 	)
 	
 	test(
@@ -80,7 +85,8 @@ if not etc.startswith('/')
 			'NSS_WRAPPER_DEBUGLEVEL=3',
 			'NSS_WRAPPER_PASSWD=passwd',
 			'NSS_WRAPPER_GROUP=group',
-		]
+		],
+		suite: 'unit'
 	)
 
 endif
@@ -93,8 +99,10 @@ test(
 		include_directories: inc,
 		link_with: pam_ggg,
 		dependencies: [unistdx, gtest, libcrypt, pam, ggg_core]
-	)
+	),
+	suite: 'unit'
 )
+
 test(
 	'form-field-test',
 	executable(
@@ -103,6 +111,25 @@ test(
 		include_directories: inc,
 		link_with: pam_ggg,
 		dependencies: [unistdx, gtest, pam, libcrypt, ggg_core]
-	)
+	),
+	suite: 'unit'
 )
 
+if unshare.found()
+	test(
+		'nss-test',
+		unshare,
+		args: [
+			'--mount',
+			executable(
+				'nss-test',
+				sources: ['nss_test.cc'],
+				dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+			).full_path()
+		],
+		env: [
+			'GGG_OVERLAY=' + join_paths(meson.build_root(), 'overlay')
+		],
+		suite: 'integration'
+	)
+endif
