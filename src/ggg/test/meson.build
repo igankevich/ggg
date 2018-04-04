@@ -117,13 +117,13 @@ test(
 
 if unshare.found()
 	test(
-		'nss-test',
+		'commands-test',
 		unshare,
 		args: [
 			'--mount',
 			executable(
-				'nss-test',
-				sources: ['nss_test.cc'],
+				'commands-test',
+				sources: ['commands_test.cc'],
 				dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
 			).full_path()
 		],

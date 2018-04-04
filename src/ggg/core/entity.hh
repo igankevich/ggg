@@ -10,7 +10,8 @@
 #include <unistdx/fs/path>
 #include <unistdx/util/user>
 
-#include "form_field.hh"
+#include <ggg/core/eq_traits.hh>
+#include <ggg/core/form_field.hh>
 
 namespace ggg {
 
@@ -237,6 +238,18 @@ namespace ggg {
 
 	typedef basic_entity<char> entity;
 	typedef basic_entity<wchar_t> wentity;
+
+	template <class Ch>
+	struct eq_traits<basic_entity<Ch>> {
+
+		typedef basic_entity<Ch> entity_type;
+
+		inline static bool
+		eq(const entity_type& lhs, const entity_type& rhs) {
+			return lhs.id() == rhs.id() || lhs.name() == rhs.name();
+		}
+
+	};
 
 }
 

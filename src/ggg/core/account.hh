@@ -11,6 +11,7 @@
 #include <unistdx/fs/path>
 
 #include <ggg/core/account_flags.hh>
+#include <ggg/core/eq_traits.hh>
 #include <ggg/core/form_field.hh>
 #include <ggg/sec/secure_string.hh>
 
@@ -323,6 +324,16 @@ namespace ggg {
 
 	std::istream&
 	operator>>(std::istream& in, account& rhs);
+
+	template <>
+	struct eq_traits<account> {
+
+		inline static bool
+		eq(const account& lhs, const account& rhs) {
+			return lhs.name() == rhs.name();
+		}
+
+	};
 
 }
 

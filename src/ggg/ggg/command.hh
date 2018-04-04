@@ -58,6 +58,11 @@ namespace ggg {
 			return this->_args;
 		}
 
+		inline bool
+		is_batch() const noexcept {
+			return this->_args.size() == 1 && *this->_args.begin() == "-";
+		}
+
 	};
 
 }

@@ -34,6 +34,12 @@ namespace ggg {
 		template <class T>
 		void edit_objects(GGG& g);
 
+		template <class T>
+		void edit_interactive(GGG& g);
+
+		template <class T>
+		void edit_batch(GGG& g);
+
 		void edit_directory();
 
 	};

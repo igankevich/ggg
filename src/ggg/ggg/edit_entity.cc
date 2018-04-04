@@ -20,6 +20,7 @@
 #include "align_columns.hh"
 #include "object_traits.hh"
 #include <ggg/core/lock.hh>
+#include <ggg/ggg/quiet_error.hh>
 
 void
 ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
@@ -63,6 +64,16 @@ ggg::Edit_entity::execute()  {
 template <class T>
 void
 ggg::Edit_entity::edit_objects(GGG& g) {
+	if (this->is_batch()) {
+		this->edit_batch<T>(g);
+	} else {
+		this->edit_interactive<T>(g);
+	}
+}
+
+template <class T>
+void
+ggg::Edit_entity::edit_interactive(GGG& g) {
 	while (!this->_args.empty()) {
 		sys::tmpfile tmp;
 		tmp.out().imbue(std::locale::classic());
@@ -74,6 +85,16 @@ ggg::Edit_entity::edit_objects(GGG& g) {
 			std::cin.get();
 		}
 	}
+}
+
+template <class T>
+void
+ggg::Edit_entity::edit_batch(GGG& g) {
+	sys::tmpfile tmp;
+	tmp.out().imbue(std::locale::classic());
+	tmp.out() << std::cin.rdbuf();
+	tmp.out().flush();
+	this->update_objects<T>(g, tmp.filename());
 }
 
 template <class T>
@@ -113,16 +134,20 @@ ggg::Edit_entity::update_objects(GGG& g, const std::string& filename) {
 		"unable to read entities"
 	);
 	check_duplicates(ents, traits_type::eq);
+	int nerrors = 0;
 	for (const T& ent : ents) {
 		try {
-			std::clog << "ent.origin()=" << ent.origin() << std::endl;
 			g.update(ent);
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
+			++nerrors;
 			std::cerr << "error updating ";
 			traits_type::print(std::cerr, ent);
 			std::cerr << ": " << err.what() << std::endl;
 		}
+	}
+	if (nerrors > 0) {
+		throw quiet_error();
 	}
 }
 
@@ -153,3 +178,11 @@ template void
 ggg::Edit_entity::edit_objects<ggg::entity>(GGG& g);
 template void
 ggg::Edit_entity::edit_objects<ggg::account>(GGG& g);
+template void
+ggg::Edit_entity::edit_batch<ggg::entity>(GGG& g);
+template void
+ggg::Edit_entity::edit_batch<ggg::account>(GGG& g);
+template void
+ggg::Edit_entity::edit_interactive<ggg::entity>(GGG& g);
+template void
+ggg::Edit_entity::edit_interactive<ggg::account>(GGG& g);

@@ -9,6 +9,7 @@
 
 #include <ggg/config.hh>
 #include <ggg/core/entity.hh>
+#include <ggg/ggg/quiet_error.hh>
 
 namespace {
 	struct compare_uid {
@@ -56,6 +57,9 @@ ggg::Show_duplicates::execute() {
 	}
 	for (entity ent : duplicates) {
 		std::cout << ent << '\n';
+	}
+	if (!duplicates.empty()) {
+		throw quiet_error();
 	}
 }
 

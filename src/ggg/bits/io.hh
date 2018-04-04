@@ -15,6 +15,7 @@
 #include <unistdx/ipc/identity>
 
 #include <ggg/bits/to_bytes.hh>
+#include <ggg/core/eq_traits.hh>
 
 namespace ggg {
 
@@ -218,6 +219,7 @@ namespace ggg {
 		update(const T& ent, bool verbose) {
 			typedef std::istream_iterator<T,Ch> iterator;
 			typedef std::ostream_iterator<T,Ch> oiterator;
+			typedef ::ggg::eq_traits<T> traits_type;
 			std::basic_ifstream<Ch> file;
 			std::basic_ofstream<Ch> file_new;
 			try {
@@ -227,7 +229,7 @@ namespace ggg {
 					iterator(),
 					oiterator(file_new, bits::delimiter_traits<Ch>::newline()),
 					[&ent,verbose] (const T& rhs) {
-						const bool match = rhs.name() == ent.name();
+						const bool match = traits_type::eq(rhs, ent);
 						if (match && verbose) {
 							log_traits<Ch>::log()
 							<< "modifying " << rhs.name()
