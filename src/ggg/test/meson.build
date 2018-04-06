@@ -115,7 +115,7 @@ test(
 	suite: 'unit'
 )
 
-if unshare.found()
+if unshare.found() and su.found()
 	test(
 		'commands-test',
 		unshare,

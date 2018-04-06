@@ -52,7 +52,8 @@ libcrypt = cpp.find_library('crypt')
 
 # integration tests {{{
 unshare = find_program('unshare', required: false)
-if unshare.found()
+su = find_program('su', required: false)
+if unshare.found() and su.found()
 	run_target(
 		'init-integration-tests',
 		command: join_paths(
