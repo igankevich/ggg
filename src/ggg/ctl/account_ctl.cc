@@ -11,9 +11,7 @@
 
 #include <unistdx/base/check>
 #include <unistdx/fs/canonical_path>
-#include <unistdx/fs/file_mode>
 #include <unistdx/fs/path>
-#include <unistdx/ipc/identity>
 
 #include <ggg/bits/io.hh>
 #include <ggg/config.hh>
@@ -62,7 +60,12 @@ ggg::account_ctl
 ::erase(const char* user) {
 	const_iterator result = this->find(user);
 	if (result != this->end()) {
-		bits::erase<account,char_type>(*result, this->_verbose);
+		const sys::uid_type uid = sys::this_process::user();
+		bits::erase<account,char_type>(
+			*result,
+			this->_verbose,
+			this->getperms(uid)
+		);
 	}
 }
 
@@ -86,7 +89,12 @@ ggg::account_ctl
 		if (this->verbose()) {
 		    std::clog << "updating " << new_acc.login() << std::endl;
 		}
-		bits::update<account,char_type>(new_acc, this->_verbose);
+		const sys::uid_type uid = sys::this_process::user();
+		bits::update<account,char_type>(
+			new_acc,
+			this->_verbose,
+			this->getperms(uid)
+		);
 	} catch (...) {
 		this->_accounts.erase(acc);
 		this->_accounts.insert(old);
@@ -100,7 +108,8 @@ ggg::account_ctl
 	if (acc.origin().empty()) {
 		throw std::invalid_argument("bad origin");
 	}
-	bits::update<account,char_type>(acc, this->_verbose);
+	const sys::uid_type uid = sys::this_process::user();
+	bits::update<account,char_type>(acc, this->_verbose, this->getperms(uid));
 }
 
 void
@@ -126,7 +135,7 @@ ggg::account_ctl
 		std::clog << "appending " << acc.login()
 		          << " to " << dest << std::endl;
 	}
-	bits::append(acc, dest, "unable to add account");
+	bits::append(acc, dest, "unable to add account", this->getperms(uid));
 }
 
 void

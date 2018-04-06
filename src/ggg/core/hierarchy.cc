@@ -303,7 +303,7 @@ template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
 ::erase_regular(const entity_type& ent) {
-	bits::erase<entity_type,char_type>(ent, this->_verbose);
+	bits::erase<entity_type,char_type>(ent, this->_verbose, 0644);
 }
 
 template <class Ch>
@@ -363,7 +363,7 @@ ggg::basic_hierarchy<Ch>
 ::update_regular(const entity_type& ent, path_type ent_origin) {
 	entity_type tmp(ent);
 	tmp.origin(ent_origin);
-	bits::update<entity_type,char_type>(tmp, this->_verbose);
+	bits::update<entity_type,char_type>(tmp, this->_verbose, 0644);
 }
 
 template <class Ch>
@@ -441,7 +441,7 @@ ggg::basic_hierarchy<Ch>
 		    << " to " << dest
 		    << std::endl;
 	}
-	bits::append(ent, dest, "unable to add entity");
+	bits::append(ent, dest, "unable to add entity", 0644);
 }
 
 template class ggg::basic_hierarchy<char>;

@@ -32,7 +32,7 @@ namespace ggg {
 		void add_entities(GGG& g, sys::path filename);
 		void add_interactive(GGG& g);
 		void add_batch(GGG& g);
-		sys::path get_filename(const entity& ent) const;
+		sys::path get_filename(const entity& ent, GGG& g) const;
 
 	};
 

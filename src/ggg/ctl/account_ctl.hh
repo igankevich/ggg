@@ -1,11 +1,14 @@
 #ifndef CONTROL_ACCOUNT_CONTROL_HH
 #define CONTROL_ACCOUNT_CONTROL_HH
 
-#include <ggg/core/account.hh>
-
 #include <istream>
 #include <iterator>
 #include <unordered_set>
+
+#include <unistdx/fs/file_mode>
+#include <unistdx/ipc/identity>
+
+#include <ggg/core/account.hh>
 
 namespace ggg {
 
@@ -114,6 +117,13 @@ namespace ggg {
 		inline void
 		clear() {
 			this->_accounts.clear();
+		}
+
+	private:
+
+		inline static sys::file_mode
+		getperms(sys::uid_type uid) noexcept {
+			return uid == 0 ? 0 : 0600;
 		}
 
 	};

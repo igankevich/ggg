@@ -121,7 +121,7 @@ ggg::Add_entity
 	int nerrors = 0;
 	for (entity& ent : ents) {
 		try {
-			ent.origin(this->get_filename(ent));
+			ent.origin(this->get_filename(ent, g));
 			account acc(ent.name().data());
 			acc.origin(acc_origin);
 			g.add(ent, acc);
@@ -140,11 +140,22 @@ ggg::Add_entity
 
 sys::path
 ggg::Add_entity
-::get_filename(const entity& ent) const {
+::get_filename(const entity& ent, GGG& g) const {
 	sys::path filename;
 	if (this->_type == Type::Directory) {
 		if (this->_path.empty()) {
-			filename = "entities";
+			const sys::uid_type uid = sys::this_process::user();
+			if (uid == 0) {
+				filename = "entities";
+			} else {
+				auto result = g.hierarchy().find_by_uid(uid);
+				if (result == g.hierarchy().end()) {
+					throw std::runtime_error(
+						"the user is not allowed to add new entities"
+					);
+				}
+				filename = sys::path(result->name(), "entities");
+			}
 		} else {
 			filename.append(this->_path);
 			filename.push_back(sys::file_separator);

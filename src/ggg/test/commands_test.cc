@@ -20,7 +20,7 @@
 
 #include <gtest/gtest.h>
 
-class VirtualEnvironment: public ::testing::Environment {
+class ChrootEnvironment: public ::testing::Environment {
 
 public:
 
@@ -213,9 +213,39 @@ TEST_F(Commands, Edit) {
 	output_is("u2::2222:2222:REAL NAME:/home/HOME:/bin/SHELL\n", "ggg find -t u2");
 }
 
+TEST_F(Commands, Form) {
+	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+	ok(
+		R"(echo '
+text:1:First name:^[A-Za-z ]+$
+text:2:Last name:^[A-Za-zА-Яа-я ]+$
+text:3:Username:^[A-Za-z0-9]+$
+password:4:Password:^.{6,100}$
+set:entropy:30.0
+set:entity.name:$3
+set:entity.realname:$1 $2
+set:entity.shell:/bin/bash
+set:entity.homedir:/
+set:entity.origin:u1/entities
+set:account.login:$3
+set_secure:account.password:4
+		')"
+		"> " GGG_ROOT "/reg/u1"
+	);
+	ok("ggg init");
+	ok("echo 'F\nL\nu2\nnXq2UYKUD5yZd32jeN8M\n' | su - u1 -c ggg-form");
+	output_is("u2::2002:2002:F L:/:/bin/bash\n", "ggg find -t u2");
+	output_is("u2::2002:2002:F L:/:/bin/bash\n", "getent passwd u2");
+	ok("su - u1 -c 'echo u3:2003:U3:/:/bin/sh | ggg add -'");
+	output_is("u3::2003:2003:U3:/:/bin/sh\n", "ggg find -t u3");
+	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u1 -c 'ggg find -t u3'");
+	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u2 -c 'ggg find -t u3'");
+	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u3 -c 'ggg find -t u3'");
+}
+
 int
 main(int argc, char* argv[]) {
 	::testing::InitGoogleTest(&argc, argv);
-	::testing::AddGlobalTestEnvironment(new VirtualEnvironment);
+	::testing::AddGlobalTestEnvironment(new ChrootEnvironment);
 	return RUN_ALL_TESTS();
 }

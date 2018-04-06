@@ -158,8 +158,25 @@ namespace {
 					}
 			        change_permissions(f, 0600);
 					sys::file_mode m = (uid == 0) ? 0 : 0600;
-					make_file(sys::path(GGG_ROOT, "acc", entry.name()), uid, gid, m);
-					make_file(sys::path(GGG_ROOT, "lck", entry.name()), uid, gid, m);
+					make_file(
+						sys::path(GGG_ROOT, "acc", entry.name()),
+						uid,
+						gid,
+						m
+					);
+					make_file(
+						sys::path(GGG_ROOT, "lck", entry.name()),
+						uid,
+						gid,
+						m
+					);
+					make_directory(
+						sys::path(GGG_ROOT, "ent"),
+						entry.name(),
+						uid,
+						gid,
+						0755
+					);
 				} else if (st.type() == sys::file_type::directory) {
 			        if (st.owner() != 0 || st.group() != 0) {
 			            change_owner(f, 0, 0);

@@ -8,12 +8,13 @@
 #include <unistdx/fs/file_stat>
 
 #include <ggg/config.hh>
+#include <ggg/core/fs.hh>
 
 namespace {
 
 	std::array<std::string,3> all_tmpdirs{"TMPDIR", "TMP", "TEMP"};
 
-	sys::fildes
+	inline sys::fildes
 	get_fd(std::string& tpl) {
 		sys::fildes fd(::mkostemp(&tpl[0], O_CLOEXEC));
 		if (!fd) {
@@ -45,7 +46,7 @@ sys::find_temporary_directory() {
 		possible_dirs.end(),
 		[] (const std::string& rhs) {
 			sys::file_stat st(rhs.data());
-			return st.is_directory();
+			return st.is_directory() && ggg::can_write(sys::path(rhs));
 		}
 	);
 	if (result == possible_dirs.end()) {

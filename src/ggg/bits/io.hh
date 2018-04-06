@@ -133,19 +133,19 @@ namespace ggg {
 			rename(old.data(), new_name.data());
 		}
 
-		template <class T>
-		void
-		append(const T& ent, const char* dest, const char* msg) {
-			typedef typename T::char_type char_type;
-			std::basic_ofstream<char_type> out;
-			try {
-				out.exceptions(std::ios::badbit);
-				out.imbue(std::locale::classic());
-				out.open(dest, std::ios::out | std::ios::app);
-				out << ent << '\n';
-			} catch (...) {
-				throw_io_error(out, msg);
-			}
+		template <class Stream>
+		inline void
+		open(
+			Stream& file,
+			std::ios_base::openmode mode,
+			sys::path origin,
+			sys::uid_type uid,
+			sys::file_mode m
+		) {
+			file.exceptions(std::ios::badbit);
+			file.imbue(std::locale::classic());
+			file.open(origin, mode | std::ios_base::binary);
+			set_mode(origin, m);
 		}
 
 		template <class Stream>
@@ -153,13 +153,10 @@ namespace ggg {
 		open(
 			Stream& file,
 			std::ios_base::openmode mode,
-			const sys::path& origin,
+			sys::path origin,
 			sys::uid_type uid
 		) {
-			file.exceptions(std::ios::badbit);
-			file.imbue(std::locale::classic());
-			file.open(origin, mode | std::ios_base::binary);
-			set_mode(origin, uid == 0 ? 0 : 0600);
+			open<Stream>(file, mode, origin, uid, uid == 0 ? 0 : 0600);
 		}
 
 		template <class Ch>
@@ -167,7 +164,8 @@ namespace ggg {
 		open_both(
 			std::basic_ifstream<Ch>& in,
 			std::basic_ofstream<Ch>& out,
-			sys::path orig
+			sys::path orig,
+			sys::file_mode m
 		) {
 			sys::canonical_path origin(orig);
 			sys::path new_origin;
@@ -176,20 +174,39 @@ namespace ggg {
 			check(origin, R_OK | W_OK);
 			check(new_origin, R_OK | W_OK, false);
 			const sys::uid_type uid = sys::this_process::user();
-			open(in, std::ios_base::in, origin, uid);
-			open(out, std::ios_base::out, new_origin, uid);
+			open(in, std::ios_base::in, origin, uid, m);
+			open(out, std::ios_base::out, new_origin, uid, m);
 			return std::make_pair(std::move(origin), std::move(new_origin));
+		}
+
+		template <class T>
+		void
+		append(
+			const T& ent,
+			const char* dest,
+			const char* msg,
+			sys::file_mode m
+		) {
+			typedef typename T::char_type char_type;
+			std::basic_ofstream<char_type> out;
+			try {
+				const sys::uid_type uid = sys::this_process::user();
+				open(out, std::ios::out | std::ios::app, sys::path(dest), uid, m);
+				out << ent << '\n';
+			} catch (...) {
+				throw_io_error(out, msg);
+			}
 		}
 
 		template <class T, class Ch>
 		void
-		erase(const T& ent, bool verbose) {
+		erase(const T& ent, bool verbose, sys::file_mode m) {
 			typedef std::istream_iterator<T,Ch> iterator;
 			typedef std::ostream_iterator<T,Ch> oiterator;
 			std::basic_ifstream<Ch> file;
 			std::basic_ofstream<Ch> file_new;
 			try {
-				auto files = open_both(file, file_new, ent.origin());
+				auto files = open_both(file, file_new, ent.origin(), m);
 				std::copy_if(
 					iterator(file),
 					iterator(),
@@ -216,14 +233,14 @@ namespace ggg {
 
 		template <class T, class Ch>
 		void
-		update(const T& ent, bool verbose) {
+		update(const T& ent, bool verbose, sys::file_mode m) {
 			typedef std::istream_iterator<T,Ch> iterator;
 			typedef std::ostream_iterator<T,Ch> oiterator;
 			typedef ::ggg::eq_traits<T> traits_type;
 			std::basic_ifstream<Ch> file;
 			std::basic_ofstream<Ch> file_new;
 			try {
-				auto files = open_both(file, file_new, ent.origin());
+				auto files = open_both(file, file_new, ent.origin(), m);
 				std::transform(
 					iterator(file),
 					iterator(),

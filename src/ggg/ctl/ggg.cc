@@ -101,6 +101,10 @@ template <class Ch>
 void
 ggg::basic_ggg<Ch>
 ::add(const entity_type& ent, const account& acc) {
+	bits::wcvt_type cv;
+	if (bits::to_bytes<char>(cv, ent.name()) != acc.login()) {
+		throw std::invalid_argument("entity name does not match account name");
+	}
 	this->mkdirs(this->to_relative_path(ent.origin()));
 	this->_hierarchy.add(ent);
 	this->_accounts.add(acc);

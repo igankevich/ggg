@@ -3,12 +3,9 @@
 
 #include <unistdx/fs/idirtree>
 
-namespace ggg {
+#include <ggg/core/fs.hh>
 
-	inline bool
-	can_read(const sys::path& path) {
-		return ::eaccess(path, R_OK) != -1;
-	}
+namespace ggg {
 
 	struct ignore_hidden_and_inaccessible_files:
 		public sys::ignore_hidden_files {

@@ -1,12 +1,12 @@
 #include <iostream>
 
+#include <ggg/config.hh>
+#include <ggg/core/hierarchy.hh>
 #include <ggg/core/lock.hh>
 #include <ggg/core/native.hh>
-#include <ggg/core/hierarchy.hh>
 #include <ggg/ctl/form.hh>
 #include <ggg/ctl/ggg.hh>
 #include <ggg/sec/secure_string.hh>
-#include <ggg/config.hh>
 
 #include <unistdx/ipc/identity>
 
@@ -43,6 +43,12 @@ namespace ggg {
 					g.add(ent, acc);
 				}
 				success = true;
+			} catch (const std::system_error& err) {
+				success = false;
+				if (std::errc(err.code().value()) ==
+				    std::errc::permission_denied) {
+					throw;
+				}
 			} catch (const std::exception& err) {
 				success = false;
 				std::cerr << std::endl << err.what() << std::endl;
@@ -57,6 +63,7 @@ namespace ggg {
 
 int
 main() {
+	int ret = 0;
 	ggg::init_locale();
 	try {
 		ggg::form f;
@@ -74,9 +81,12 @@ main() {
 		}
 		ggg::register_user(f, origin);
 	} catch (const std::exception& err) {
+		ret = 1;
 		std::cerr << err.what() << std::endl;
 	}
-	std::cout << "press any key to continue..." << std::endl;
-	std::cin.get();
-	return 0;
+	if (::isatty(STDIN_FILENO)) {
+		std::cout << "press any key to continue..." << std::endl;
+		std::cin.get();
+	}
+	return ret;
 }
