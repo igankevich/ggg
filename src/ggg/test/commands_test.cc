@@ -10,9 +10,9 @@
 #include <unistdx/fs/idirtree>
 #include <unistdx/fs/path>
 #include <unistdx/fs/pathentry>
-#include <unistdx/io/pipe>
 #include <unistdx/io/fdstream>
 #include <unistdx/io/open_flag>
+#include <unistdx/io/pipe>
 #include <unistdx/ipc/execute>
 #include <unistdx/ipc/process>
 
@@ -48,6 +48,11 @@ public:
 		UNISTDX_CHECK(::mount("proc", "/proc", "proc", 0, nullptr));
 	}
 
+	void
+	TearDown() override {
+		ASSERT_EQ(0, ::system("rm -rf " GGG_ROOT));
+	}
+
 };
 
 
@@ -70,7 +75,7 @@ namespace {
 		sys::pipe pipe;
 		pipe.in().unsetf(sys::open_flag::non_blocking);
 		pipe.out().unsetf(sys::open_flag::non_blocking);
-		sys::process child{
+		sys::process child {
 			[cmd,&pipe] () {
 				pipe.in().close();
 				pipe.out().remap(STDOUT_FILENO);
@@ -115,9 +120,12 @@ TEST_F(Commands, Add) {
 }
 
 TEST_F(Commands, Remove) {
+	output_is("", "ggg find u1");
 	ok("ggg rm u1");
 	ok("echo 'u1:3001:U1:/home/u1:/bin/sh' | ggg add -");
+	output_is("u1\n", "ggg find u1");
 	ok("ggg rm u1");
+	output_is("", "ggg find u1");
 	ok("ggg rm u1");
 }
 
@@ -205,12 +213,21 @@ TEST_F(Commands, Edit) {
 	ok("echo 'u1:2001:REAL NAME:/home/HOME:/bin/sh' | ggg edit -");
 	output_is("u1::2001:2001:REAL NAME:/home/HOME:/bin/sh\n", "ggg find -t u1");
 	ok("echo 'u1:2001:REAL NAME:/home/HOME:/bin/SHELL' | ggg edit -");
-	output_is("u1::2001:2001:REAL NAME:/home/HOME:/bin/SHELL\n", "ggg find -t u1");
+	output_is(
+		"u1::2001:2001:REAL NAME:/home/HOME:/bin/SHELL\n",
+		"ggg find -t u1"
+	);
 	ok("echo 'u1:2222:REAL NAME:/home/HOME:/bin/SHELL' | ggg edit -");
-	output_is("u1::2222:2222:REAL NAME:/home/HOME:/bin/SHELL\n", "ggg find -t u1");
+	output_is(
+		"u1::2222:2222:REAL NAME:/home/HOME:/bin/SHELL\n",
+		"ggg find -t u1"
+	);
 	ok("echo 'u2:2222:REAL NAME:/home/HOME:/bin/SHELL' | ggg edit -");
 	output_is("", "ggg find -t u1");
-	output_is("u2::2222:2222:REAL NAME:/home/HOME:/bin/SHELL\n", "ggg find -t u2");
+	output_is(
+		"u2::2222:2222:REAL NAME:/home/HOME:/bin/SHELL\n",
+		"ggg find -t u2"
+	);
 }
 
 TEST_F(Commands, Form) {
@@ -236,11 +253,64 @@ set_secure:account.password:4
 	ok("echo 'F\nL\nu2\nnXq2UYKUD5yZd32jeN8M\n' | su - u1 -c ggg-form");
 	output_is("u2::2002:2002:F L:/:/bin/bash\n", "ggg find -t u2");
 	output_is("u2::2002:2002:F L:/:/bin/bash\n", "getent passwd u2");
+}
+
+TEST_F(Commands, EmptyForm) {
+	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+	ok("touch " GGG_ROOT "/reg/u1");
+	ok("ggg init");
+	fail("echo 'F\nL\nu2\nnXq2UYKUD5yZd32jeN8M\n' | su - u1 -c ggg-form");
+}
+
+TEST_F(Commands, AddUnpriviledged) {
+	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+	ok("echo 'u2:2002:U2:/:/bin/sh' | ggg add -");
+	ok("touch " GGG_ROOT "/reg/u1");
+	ok("ggg init");
 	ok("su - u1 -c 'echo u3:2003:U3:/:/bin/sh | ggg add -'");
 	output_is("u3::2003:2003:U3:/:/bin/sh\n", "ggg find -t u3");
 	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u1 -c 'ggg find -t u3'");
 	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u2 -c 'ggg find -t u3'");
 	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u3 -c 'ggg find -t u3'");
+}
+
+TEST_F(Commands, EditUnpriviledged) {
+	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+	ok("echo 'u2:2002:U2:/:/bin/sh' | ggg add -");
+	ok("echo 'u3:2003:U3:/:/bin/sh' | ggg add -");
+	ok("touch " GGG_ROOT "/reg/u1");
+	ok("touch " GGG_ROOT "/reg/u2");
+	ok("ggg init");
+	ok("su - u1 -c 'echo u4:2004:U4:/:/bin/sh | ggg add -'");
+	ok("su - u1 -c 'echo u4:2004:REALNAME:/:/bin/sh | ggg edit -'");
+	output_is("u4::2004:2004:REALNAME:/:/bin/sh\n", "ggg find -t u4");
+	output_is(
+		"u4::2004:2004:REALNAME:/:/bin/sh\n",
+		"su - u1 -c 'ggg find -t u4'"
+	);
+	output_is(
+		"u4::2004:2004:REALNAME:/:/bin/sh\n",
+		"su - u2 -c 'ggg find -t u4'"
+	);
+	output_is(
+		"u4::2004:2004:REALNAME:/:/bin/sh\n",
+		"su - u3 -c 'ggg find -t u4'"
+	);
+	fail("su - u2 -c 'echo u4:2004:NEWNAME:/:/bin/sh | ggg edit -'");
+	fail("su - u3 -c 'echo u4:2004:NEWNAME:/:/bin/sh | ggg edit -'");
+	fail("su - u4 -c 'echo u4:2004:NEWNAME:/:/bin/sh | ggg edit -'");
+}
+
+TEST_F(Commands, RemoveUnpriviledged) {
+	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+	ok("echo 'u2:2002:U2:/:/bin/sh' | ggg add -");
+	ok("touch " GGG_ROOT "/reg/u1");
+	ok("ggg init");
+	output_is("", "ggg find u3");
+	ok("su - u1 -c 'echo u3:2003:U3:/:/bin/sh | ggg add -'");
+	output_is("u3\n", "ggg find u3");
+	ok("su - u1 -c 'ggg rm u3'");
+	output_is("", "ggg find u3");
 }
 
 int

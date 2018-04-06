@@ -54,9 +54,10 @@ namespace ggg {
 				std::cerr << std::endl << err.what() << std::endl;
 			}
 		} while (!success && ++i < max_iterations);
-		if (success) {
-			native_message(std::wcout, "\nRegistered successfully!\n");
+		if (!success) {
+			throw std::runtime_error("reached maximum number of attempts");
 		}
+		native_message(std::wcout, "\nRegistered successfully!\n");
 	}
 
 }

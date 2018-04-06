@@ -13,12 +13,14 @@ namespace ggg {
 		inline bool
 		operator()(const sys::path& prefix, const sys::direntry& rhs) const {
 			return sys::ignore_hidden_files::operator()(prefix, rhs) &&
+			       sys::get_file_type(prefix, rhs) == sys::file_type::regular &&
 			       can_read(sys::path(prefix, rhs.name()));
 		}
 
 		inline bool
 		operator()(const sys::path& prefix, const sys::pathentry& rhs) const {
 			return sys::ignore_hidden_files::operator()(prefix, rhs) &&
+			       sys::get_file_type(rhs) == sys::file_type::regular &&
 			       can_read(rhs.getpath());
 		}
 
@@ -26,6 +28,7 @@ namespace ggg {
 		operator()(const sys::path& prefix, const sys::file& rhs) const
 		noexcept {
 			return sys::ignore_hidden_files::operator()(prefix, rhs) &&
+			       rhs.type() == sys::file_type::regular &&
 			       can_read(rhs);
 		}
 

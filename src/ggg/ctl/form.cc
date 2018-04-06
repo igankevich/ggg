@@ -152,6 +152,8 @@ ggg::form
 			std::wstring name = cv.from_bytes(ff.name());
 			std::wregex expr(cv.from_bytes(ff.regex()));
 			std::wstring value;
+			const int max_iterations = 100;
+			int i = 0;
 			do {
 				value.clear();
 				std::wcout << name << ": " << std::flush;
@@ -177,7 +179,10 @@ ggg::form
 				} else {
 					std::wcin.clear();
 				}
-			} while (!valid);
+			} while (!valid && ++i < max_iterations);
+			if (!valid) {
+				throw std::runtime_error("reached maximum number of attempts");
+			}
 			responses.emplace_back(cv.to_bytes(value));
 		}
 	}

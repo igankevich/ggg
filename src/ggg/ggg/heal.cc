@@ -158,8 +158,15 @@ namespace {
 					}
 			        change_permissions(f, 0600);
 					sys::file_mode m = (uid == 0) ? 0 : 0600;
+					make_directory(
+						sys::path(GGG_ROOT, "acc"),
+						entry.name(),
+						uid,
+						gid,
+						0700
+					);
 					make_file(
-						sys::path(GGG_ROOT, "acc", entry.name()),
+						sys::path(GGG_ROOT, "acc", entry.name(), "shadow"),
 						uid,
 						gid,
 						m
@@ -196,25 +203,30 @@ namespace {
 			[&h] (const sys::pathentry& entry) {
 			    sys::path f(entry.getpath());
 			    sys::file_stat st(f);
-			    if (st.type() == sys::file_type::regular) {
-			        auto result = h.find_by_name(entry.name());
-			        sys::uid_type uid = 0;
-			        sys::uid_type gid = 0;
-			        if (result != h.end()) {
-			            uid = result->id();
-			            gid = result->gid();
-					}
-			        if (st.owner() != uid || st.group() != gid) {
-			            change_owner(f, uid, gid);
-					}
-					sys::file_mode m = (uid == 0) ? 0 : 0600;
-			        change_permissions(f, m);
-				} else if (st.type() == sys::file_type::directory) {
-			        if (st.owner() != 0 || st.group() != 0) {
-			            change_owner(f, 0, 0);
-					}
-			        change_permissions(f, 0755);
+				std::string name;
+				sys::file_mode m;
+			    if (st.type() == sys::file_type::directory) {
+					name = entry.name();
+					m = 0700;
+				} else if (st.type() == sys::file_type::regular) {
+					sys::canonical_path dir(entry.dirname());
+					name = dir.basename();
+					m = 0600;
 				}
+			    auto result = h.find_by_name(name.data());
+			    sys::uid_type uid = 0;
+			    sys::uid_type gid = 0;
+			    if (result != h.end()) {
+			        uid = result->id();
+			        gid = result->gid();
+				}
+				if (uid == 0) {
+					m = 0;
+				}
+			    if (st.owner() != uid || st.group() != gid) {
+			        change_owner(f, uid, gid);
+				}
+			    change_permissions(f, m);
 			}
 		);
 	}

@@ -170,7 +170,8 @@ ggg::basic_ggg<Ch>
 			sys::path(
 				GGG_ROOT,
 				"acc",
-				bits::to_bytes<char>(cv, result->name()).data()
+				bits::to_bytes<char>(cv, result->name()).data(),
+				"shadow"
 			);
 	} else {
 		acc_origin = GGG_SHADOW;

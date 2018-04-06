@@ -223,6 +223,8 @@ namespace ggg {
 					}
 				);
 				rename(files.second, files.first);
+			} catch (const std::exception& err) {
+				throw_io_error(file, err.what());
 			} catch (...) {
 				wcvt_type cv;
 				std::stringstream msg;
@@ -257,6 +259,8 @@ namespace ggg {
 					}
 				);
 				rename(files.second, files.first);
+			} catch (const std::exception& err) {
+				throw_io_error(file, err.what());
 			} catch (...) {
 				wcvt_type cv;
 				std::stringstream msg;

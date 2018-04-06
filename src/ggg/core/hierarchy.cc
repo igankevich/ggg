@@ -405,10 +405,10 @@ template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
 ::add(const entity_type& ent) {
+	this->validate_entity(ent);
 	if (ent.origin().empty()) {
 		throw std::invalid_argument("empty filename");
 	}
-	this->validate_entity(ent);
 	const_iterator result1 = this->find_by_name(ent.name().data());
 	const_iterator result2 = this->find_by_uid(ent.id());
 	const_iterator last = this->cend();
