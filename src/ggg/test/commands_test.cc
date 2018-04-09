@@ -143,6 +143,7 @@ TEST_F(Commands, GetEnt) {
 	fail("getent group u1");
 	ok("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
 	output_is("u1::2001:2001:U1:/home/u1:/bin/sh\n", "getent passwd u1");
+	output_is("u1::2001:2001:U1:/home/u1:/bin/sh\n", "LANG=donotexist getent passwd u1");
 	output_is("u1::2001:\n", "getent group u1");
 	output_is("u1\n", "getent group u1 | cut -d: -f1");
 	output_is("2001\n", "getent group u1 | cut -d: -f3");
