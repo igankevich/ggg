@@ -1,7 +1,8 @@
 #include "native.hh"
 
-#include <locale>
 #include <iostream>
+#include <locale>
+
 #include <ggg/config.hh>
 
 namespace {
@@ -14,23 +15,54 @@ namespace {
 
 	private:
 		std::locale _locale;
-		const facet_type& _facet;
-		catalog_type _catalog;
+		catalog_type _catalog = -1;
 
 	public:
-		Messages():
-		_locale(""),
-		_facet(std::use_facet<facet_type>(_locale)),
-		_catalog(_facet.open(GGG_CATALOG, _locale))
-		{}
+		Messages() {
+			try {
+				this->open(std::locale(""));
+			} catch (const std::exception& err) {
+				this->error("open");
+				try {
+					this->open(std::locale::classic());
+				} catch (const std::exception& err) {
+					this->error("open");
+					throw;
+				}
+			}
+		}
 
 		~Messages() {
-			this->_facet.close(this->_catalog);
+			try {
+				this->facet().close(this->_catalog);
+			} catch (const std::exception& err) {
+				this->error("close");
+			}
+		}
+
+		void
+		open(std::locale rhs) {
+			this->_locale = rhs;
+			this->_catalog = this->facet().open(GGG_CATALOG, this->_locale);
+			if (this->_catalog < 0) {
+				throw std::runtime_error("failed to open message catalog");
+			}
+		}
+
+		void
+		error(const char* func) {
+			std::cerr << "GGG: failed to " << func << " message catalog for "
+			          << this->_locale.name() << " locale" << std::endl;
 		}
 
 		std::string
 		get(const char* text) const {
-			return this->_facet.get(this->_catalog, 0, 0, text);
+			return this->facet().get(this->_catalog, 0, 0, text);
+		}
+
+		const facet_type&
+		facet() const {
+			return std::use_facet<facet_type>(this->_locale);
 		}
 
 	};
@@ -40,12 +72,14 @@ namespace {
 }
 
 std::string
-ggg::native(const char* text) {
+ggg
+::native(const char* text) {
 	return messages.get(text);
 }
 
 void
-ggg::init_locale() {
+ggg
+::init_locale() {
 	std::locale::global(std::locale(""));
 	std::cout.imbue(std::locale::classic());
 	std::wcout.imbue(std::locale::classic());
@@ -54,4 +88,3 @@ ggg::init_locale() {
 	std::wcerr.imbue(std::locale::classic());
 	std::wclog.imbue(std::locale::classic());
 }
-
