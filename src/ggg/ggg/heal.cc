@@ -46,19 +46,27 @@ namespace {
 	}
 
 	void
-	change_owner(const char* filename, sys::uid_type uid, sys::gid_type gid) {
-		try {
-			std::clog
-			    << "changing owner of "
-			    << filename << " to " << uid << ':' << gid
-				<< std::endl;
-			UNISTDX_CHECK(::chown(filename, uid, gid));
-		} catch (const std::exception& err) {
-			++num_errors;
-			std::cerr
-			    << "failed to change owner of "
-			    << filename << " to " << uid << ':' << gid << ": " << err.what()
-			    << std::endl;
+	change_owner(
+		const char* filename,
+		sys::file_stat st,
+		sys::uid_type uid,
+		sys::gid_type gid
+	) {
+		if (st.owner() != uid || st.group() != gid) {
+			try {
+				std::clog
+					<< "changing owner of "
+					<< filename << " to " << uid << ':' << gid
+					<< std::endl;
+				UNISTDX_CHECK(::chown(filename, uid, gid));
+			} catch (const std::exception& err) {
+				++num_errors;
+				std::cerr
+					<< "failed to change owner of "
+					<< filename << " to " << uid << ':' << gid
+					<< ": " << err.what()
+					<< std::endl;
+			}
 		}
 	}
 
@@ -79,9 +87,7 @@ namespace {
 			if (!st.is_regular()) {
 				std::cerr << filename << " is not a regular file" << std::endl;
 			} else {
-				if (st.owner() != uid || st.group() != gid) {
-					change_owner(filename, uid, gid);
-				}
+				change_owner(filename, st, uid, gid);
 				change_permissions(filename, st, m);
 			}
 		}
@@ -115,9 +121,7 @@ namespace {
 			if (!st.is_directory()) {
 				std::cerr << p << " is not a directory" << std::endl;
 			} else {
-				if (st.owner() != uid || st.group() != gid) {
-					change_owner(p, uid, gid);
-				}
+				change_owner(p, st, uid, gid);
 				change_permissions(p, st, m);
 			}
 		}
@@ -125,16 +129,14 @@ namespace {
 
 	void
 	heal_entities_subdir(sys::path dir, sys::uid_type uid, sys::gid_type gid) {
-		sys::idirtree tree(sys::path(GGG_ROOT, "ent"));
+		sys::idirtree tree(dir);
 		std::for_each(
 			sys::idirtree_iterator<sys::pathentry>(tree),
 			sys::idirtree_iterator<sys::pathentry>(),
 			[uid,gid] (const sys::pathentry& entry) {
 			    sys::path f(entry.getpath());
 			    sys::file_stat st(f);
-			    if (st.owner() != uid || st.group() != gid) {
-			        change_owner(f, uid, gid);
-				}
+				change_owner(f, st, uid, gid);
 			    if (st.type() == sys::file_type::regular) {
 			        change_permissions(f, 0644);
 				} else if (st.type() == sys::file_type::directory) {
@@ -154,9 +156,7 @@ namespace {
 			    sys::path f(entry.getpath());
 			    sys::file_stat st(f);
 			    if (st.type() == sys::file_type::regular) {
-			    	if (st.owner() != 0 || st.group() != 0) {
-			    	    change_owner(f, 0, 0);
-					}
+					change_owner(f, st, 0, 0);
 			        change_permissions(f, 0644);
 				} else if (st.type() == sys::file_type::directory) {
 			        auto result = h.find_by_name(entry.name());
@@ -166,9 +166,7 @@ namespace {
 			            uid = result->id();
 			            gid = result->gid();
 					}
-			        if (st.owner() != uid || st.group() != gid) {
-			            change_owner(f, uid, gid);
-					}
+			        change_owner(f, st, uid, gid);
 			        change_permissions(f, 0755);
 					heal_entities_subdir(f, uid, gid);
 				}
@@ -197,9 +195,7 @@ namespace {
 			            uid = result->id();
 			            gid = result->gid();
 					}
-			        if (st.owner() != uid || st.group() != gid) {
-			            change_owner(f, uid, gid);
-					}
+					change_owner(f, st, uid, gid);
 			        change_permissions(f, 0600);
 					sys::file_mode m = (uid == 0) ? 0 : 0600;
 					make_directory(
@@ -229,9 +225,7 @@ namespace {
 						0755
 					);
 				} else if (st.type() == sys::file_type::directory) {
-			        if (st.owner() != 0 || st.group() != 0) {
-			            change_owner(f, 0, 0);
-					}
+					change_owner(f, st, 0, 0);
 			        change_permissions(f, 0755);
 				}
 			}
@@ -267,9 +261,7 @@ namespace {
 				if (uid == 0) {
 					m = 0;
 				}
-			    if (st.owner() != uid || st.group() != gid) {
-			        change_owner(f, uid, gid);
-				}
+				change_owner(f, st, uid, gid);
 			    change_permissions(f, m);
 			}
 		);
@@ -285,7 +277,7 @@ ggg::Heal
 	make_directory(GGG_ROOT, "reg", 0, 0, 0755);
 	make_directory(GGG_ROOT, "acc", 0, 0, 0755);
 	make_directory(GGG_ROOT, "lck", 0, 0, 01777);
-	change_owner(GGG_ROOT, 0, 0);
+	change_owner(GGG_ROOT, sys::file_stat(GGG_ROOT), 0, 0);
 	change_permissions(GGG_ROOT, 0755);
 	make_file(GGG_LOCK_FILE, 0, 0, 0644);
 	ggg::Hierarchy h;
