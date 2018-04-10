@@ -131,7 +131,7 @@ main() {
 				throw std::invalid_argument("unable to find form");
 			}
 			f.open(result->name().data());
-			origin = sys::path(GGG_ROOT, "acc", result->name());
+			origin = sys::path(GGG_ROOT, "acc", result->name(), "shadow");
 		}
 		ggg::register_user(f, origin);
 	} catch (const std::exception& err) {
