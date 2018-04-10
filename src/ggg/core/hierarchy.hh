@@ -5,6 +5,7 @@
 #include "group.hh"
 
 #include <algorithm>
+#include <cassert>
 #include <deque>
 #include <iterator>
 #include <map>
@@ -15,6 +16,10 @@
 #include <unistdx/fs/pathentry>
 
 #include <ggg/bits/field_iterator.hh>
+
+#ifndef NDEBUG
+#include <ggg/config.hh>
+#endif
 
 namespace ggg {
 
@@ -83,6 +88,9 @@ namespace ggg {
 		inline void
 		open(const char* root) {
 			this->_root = canonical_path_type(root);
+			#ifndef NDEBUG
+			assert(sys::path(root) != sys::path(GGG_ROOT));
+			#endif
 			this->read();
 		}
 

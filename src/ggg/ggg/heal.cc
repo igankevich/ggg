@@ -206,12 +206,6 @@ namespace {
 						0700
 					);
 					make_file(
-						sys::path(GGG_ROOT, "acc", entry.name(), "shadow"),
-						uid,
-						gid,
-						m
-					);
-					make_file(
 						sys::path(GGG_ROOT, "lck", entry.name()),
 						uid,
 						gid,
@@ -282,7 +276,7 @@ ggg::Heal
 	make_file(GGG_LOCK_FILE, 0, 0, 0644);
 	ggg::Hierarchy h;
 	try {
-		h.open(GGG_ROOT);
+		h.open(sys::path(GGG_ROOT, "ent"));
 	} catch (const std::exception& err) {
 		++num_errors;
 		std::cerr
