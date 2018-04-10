@@ -48,6 +48,10 @@ namespace {
 	void
 	change_owner(const char* filename, sys::uid_type uid, sys::gid_type gid) {
 		try {
+			std::clog
+			    << "changing owner of "
+			    << filename << " to " << uid << ':' << gid
+				<< std::endl;
 			UNISTDX_CHECK(::chown(filename, uid, gid));
 		} catch (const std::exception& err) {
 			++num_errors;
@@ -144,7 +148,7 @@ namespace {
 			    if (st.type() == sys::file_type::regular) {
 			        auto result = h.find_by_name(entry.name());
 			        sys::uid_type uid = 0;
-			        sys::uid_type gid = 0;
+			        sys::gid_type gid = 0;
 			        if (result == h.end()) {
 			            std::cerr << "unable to find "
 			                      << entry.name() << " form entity"

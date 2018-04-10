@@ -41,7 +41,6 @@ executable(
 	sources: ggg_form_src,
 	include_directories: inc,
 	dependencies: [unistdx,libcrypt,ggg_core,zxcvbn],
-	install: true,
-	cpp_args: ['-DGGG_DISABLE_PAM']
+	install: true
 )
 
