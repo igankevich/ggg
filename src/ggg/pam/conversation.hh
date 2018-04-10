@@ -82,7 +82,7 @@ namespace ggg {
 
 		inline
 		~messages() {
-			for (::pam_message* m : this->_msgs) {
+			for (auto* m : this->_msgs) {
 				delete m;
 			}
 		}
