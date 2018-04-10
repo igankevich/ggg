@@ -199,6 +199,8 @@ TEST_F(Commands, AddUnpriviledged) {
 	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u1 -c 'ggg find -t u3'");
 	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u2 -c 'ggg find -t u3'");
 	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u3 -c 'ggg find -t u3'");
+	ok("ggg info u3");
+	ok("ggg info -a u3");
 }
 
 TEST_F(Commands, EditUnpriviledged) {

@@ -143,32 +143,38 @@ ggg::account_ctl
 ::open() {
 	this->_accounts.clear();
 	ggg::iacctree tree(sys::path(GGG_ROOT, "acc"));
-	std::for_each(
-		ggg::iacctree_iterator<sys::pathentry>(tree),
-		ggg::iacctree_iterator<sys::pathentry>(),
-		[this] (const sys::pathentry& entry) {
-		    sys::path f(entry.getpath());
-		    std::ifstream in;
-		    try {
-		        in.imbue(std::locale::classic());
-		        in.exceptions(std::ios::badbit);
-		        in.open(f);
-		        std::for_each(
-					std::istream_iterator<account>(in),
-					std::istream_iterator<account>(),
-					[this,&f] (const account& rhs) {
-						account acc(rhs);
-						acc.origin(f);
-						this->_accounts.insert(acc);
-					}
-		        );
-			} catch (...) {
-		        std::stringstream msg;
-		        msg << "unable to read accounts from " << f;
-		        bits::throw_io_error(in, msg.str());
+	while (!tree.eof()) {
+		tree.clear();
+		std::for_each(
+			ggg::iacctree_iterator<sys::pathentry>(tree),
+			ggg::iacctree_iterator<sys::pathentry>(),
+			[this] (const sys::pathentry& entry) {
+				if (sys::get_file_type(entry) != sys::file_type::regular) {
+					return;
+				}
+				sys::path f(entry.getpath());
+				std::ifstream in;
+				try {
+					in.imbue(std::locale::classic());
+					in.exceptions(std::ios::badbit);
+					in.open(f);
+					std::for_each(
+						std::istream_iterator<account>(in),
+						std::istream_iterator<account>(),
+						[this,&f] (const account& rhs) {
+							account acc(rhs);
+							acc.origin(f);
+							this->_accounts.insert(acc);
+						}
+					);
+				} catch (...) {
+					std::stringstream msg;
+					msg << "unable to read accounts from " << f;
+					bits::throw_io_error(in, msg.str());
+				}
 			}
-		}
-	);
+		);
+	}
 }
 
 void
