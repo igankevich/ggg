@@ -206,7 +206,7 @@ namespace {
 						0700
 					);
 					make_file(
-						sys::path(GGG_ROOT, "lck", entry.name()),
+						sys::path(GGG_ROOT, "lck", std::to_string(uid)),
 						uid,
 						gid,
 						m
