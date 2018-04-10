@@ -11,6 +11,7 @@
 #include <unistdx/ipc/process>
 
 #include <ggg/config.hh>
+#include <ggg/core/fs.hh>
 
 ggg::file_lock
 ::file_lock(bool write):
@@ -47,7 +48,7 @@ ggg::file_lock
 //	sys::log_message("lck", "unlocking " GGG_LOCK_FILE);
 	if (this->_write) {
 		sys::file_stat st(GGG_GIT_ROOT);
-		if (st.exists() && st.is_directory()) {
+		if (st.exists() && st.is_directory() && can_write(GGG_GIT_ROOT)) {
 			sys::process p {
 				[] () {
 					if (-1 == ::chdir(GGG_ROOT)) {

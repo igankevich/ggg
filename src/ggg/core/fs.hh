@@ -15,6 +15,11 @@ namespace ggg {
 		return ::eaccess(path, W_OK) != -1;
 	}
 
+	inline bool
+	can_write(const char* rhs) {
+		return ::eaccess(rhs, W_OK) != -1;
+	}
+
 }
 
 #endif // vim:filetype=cpp

@@ -211,6 +211,12 @@ namespace {
 						gid,
 						m
 					);
+					make_file(
+						sys::path(GGG_ROOT, "acc", entry.name(), "shadow"),
+						uid,
+						gid,
+						m
+					);
 					make_directory(
 						sys::path(GGG_ROOT, "ent"),
 						entry.name(),

@@ -23,7 +23,7 @@ namespace {
 			sys::idirtree_iterator<sys::pathentry>(),
 			[&empty_files] (const sys::pathentry& entry) {
 				sys::file_stat st(entry.getpath());
-				if (st.is_regular() && st.size() == 0) {
+				if (st.is_regular() && st.size() == 0 && st.owner() == 0) {
 					empty_files.emplace_back(entry.getpath());
 				}
 			}
@@ -44,5 +44,4 @@ void
 ggg::Sanitise
 ::execute() {
 	remove_empty_files(sys::path(GGG_ROOT, "ent"));
-	remove_empty_files(sys::path(GGG_ROOT, "acc"));
 }
