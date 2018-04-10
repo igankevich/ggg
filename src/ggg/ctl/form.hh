@@ -1,6 +1,7 @@
 #ifndef CTL_FORM_HH
 #define CTL_FORM_HH
 
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
@@ -9,9 +10,6 @@
 #include <ggg/core/entity.hh>
 #include <ggg/core/form_field.hh>
 #include <ggg/core/form_type.hh>
-#ifndef GGG_DISABLE_PAM
-#include <ggg/pam/pam_handle.hh>
-#endif
 
 namespace ggg {
 
@@ -59,25 +57,18 @@ namespace ggg {
 		void
 		open(const char* name);
 
-		#ifndef GGG_DISABLE_PAM
-		std::tuple<entity,account>
-		input_entity(ggg::pam_handle* pamh);
+		inline void
+		clear() {
+			this->_fields.clear();
+		}
 
-		#endif
-
-		std::tuple<entity,account>
-		input_entity();
-
-	private:
-
-		#ifndef GGG_DISABLE_PAM
-		std::vector<bool>
-		validate(const responses& r);
+		inline double
+		min_entropy() const noexcept {
+			return this->_minentropy;
+		}
 
 		std::tuple<entity,account>
-		make_entity_and_account(const responses& r, pam_handle* pamh);
-
-		#endif
+		make_entity_and_account(std::vector<std::string> responses);
 
 	};
 

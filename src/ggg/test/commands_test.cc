@@ -5,56 +5,14 @@
 #include <iostream>
 #include <sstream>
 
-#include <unistdx/base/check>
-#include <unistdx/fs/canonical_path>
-#include <unistdx/fs/idirtree>
-#include <unistdx/fs/path>
-#include <unistdx/fs/pathentry>
-#include <unistdx/io/fdstream>
-#include <unistdx/io/open_flag>
-#include <unistdx/io/pipe>
-#include <unistdx/ipc/execute>
-#include <unistdx/ipc/process>
+#include <unistdx/fs/file_stat>
 
 #include <ggg/config.hh>
 
 #include <gtest/gtest.h>
 
-class ChrootEnvironment: public ::testing::Environment {
-
-public:
-
-	void
-	SetUp() override {
-//		UNISTDX_CHECK(::unshare(CLONE_NEWNS));
-		sys::canonical_path overlay(std::getenv("GGG_OVERLAY"));
-		sys::path myroot(overlay, "myroot");
-		sys::path newroot(overlay, "newroot");
-		sys::path workdir(overlay, "workdir");
-		std::stringstream opts;
-		opts << "lowerdir=/,upperdir=" << myroot << ",workdir=" << workdir;
-		UNISTDX_CHECK(
-			::mount(
-				"overlay",
-				newroot,
-				"overlay",
-				0,
-				opts.str().data()
-			)
-		);
-		UNISTDX_CHECK(::chroot(newroot));
-		UNISTDX_CHECK(::mount("devtmpfs", "/dev", "devtmpfs", 0, nullptr));
-		UNISTDX_CHECK(::mount("devpts", "/dev/pts", "devpts", 0, nullptr));
-		UNISTDX_CHECK(::mount("proc", "/proc", "proc", 0, nullptr));
-	}
-
-	void
-	TearDown() override {
-		ASSERT_EQ(0, ::system("rm -rf " GGG_ROOT));
-	}
-
-};
-
+#include "chroot_environment.hh"
+#include "execute_command.hh"
 
 class Commands: public ::testing::Test {
 
@@ -67,38 +25,6 @@ protected:
 	}
 
 };
-
-namespace {
-
-	std::pair<sys::proc_status,std::string>
-	execute_command(const char* cmd) {
-		sys::pipe pipe;
-		pipe.in().unsetf(sys::open_flag::non_blocking);
-		pipe.out().unsetf(sys::open_flag::non_blocking);
-		sys::process child {
-			[cmd,&pipe] () {
-				pipe.in().close();
-				pipe.out().remap(STDOUT_FILENO);
-				return sys::this_process::execute_command("/bin/sh", "-c", cmd);
-			}
-		};
-		pipe.out().close();
-		sys::ifdstream in(std::move(pipe.in()));
-		std::stringstream tmp;
-		tmp << in.rdbuf();
-		return std::make_pair(child.wait(), tmp.str());
-	}
-
-}
-
-#define ok(cmdline) EXPECT_EQ(0, ::system(cmdline))
-#define fail(cmdline) EXPECT_NE(0, ::system(cmdline))
-#define output_is(output, cmdline) \
-	{ \
-		auto result = ::execute_command(cmdline); \
-		EXPECT_EQ(0, result.first.exit_code()); \
-		EXPECT_EQ(output, result.second); \
-	}
 
 TEST(CommandsBase, Init) {
 	ok("ggg init");

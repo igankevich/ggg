@@ -111,9 +111,6 @@ namespace ggg {
 		void
 		parse_args(int argc, const char** argv);
 
-		void
-		register_new_user(const account& recruiter);
-
 		inline operator ::pam_handle_t*() noexcept {
 			return this->_pamh;
 		}

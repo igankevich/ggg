@@ -1,3 +1,8 @@
+test_src = files([
+	'chroot_environment.cc',
+	'execute_command.cc',
+])
+
 test(
 	'entity-test',
 	executable(
@@ -116,6 +121,7 @@ test(
 )
 
 if unshare.found() and su.found()
+
 	test(
 		'commands-test',
 		unshare,
@@ -123,7 +129,7 @@ if unshare.found() and su.found()
 			'--mount',
 			executable(
 				'commands-test',
-				sources: ['commands_test.cc'],
+				sources: ['commands_test.cc'] + test_src,
 				dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
 			).full_path()
 		],
@@ -132,4 +138,23 @@ if unshare.found() and su.found()
 		],
 		suite: 'integration'
 	)
+
+	test(
+		'ggg-dm-test',
+		unshare,
+		args: [
+			'--mount',
+			executable(
+				'ggg-dm-test',
+				sources: ['ggg_dm_test.cc'] + test_src,
+				dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+			).full_path()
+		],
+		env: [
+			'GGG_OVERLAY=' + join_paths(meson.build_root(), 'overlay')
+		],
+		suite: 'gui',
+		timeout: 600
+	)
+
 endif

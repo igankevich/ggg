@@ -17,7 +17,6 @@
 #include <ggg/core/entity.hh>
 #include <ggg/core/form_field.hh>
 #include <ggg/core/lock.hh>
-#include <ggg/core/native.hh>
 #include <ggg/ctl/form.hh>
 #include <ggg/ctl/ggg.hh>
 
@@ -164,53 +163,3 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
 		}
 	}
 }
-
-void
-ggg::pam_handle::register_new_user(const account& recruiter) {
-	form f(recruiter.login().data());
-	f.set_type(this->_type);
-	bool success, stopped = false;
-	do {
-		try {
-			entity ent;
-			account acc;
-			std::tie(ent, acc) = f.input_entity(this);
-			file_lock lock;
-			GGG g(GGG_ENT_ROOT, this->debug());
-			lock.unlock();
-			bool has_uid = ent.has_id();
-			bool has_gid = ent.has_gid();
-			if (!has_uid || !has_gid) {
-				sys::uid_type id = g.next_uid();
-				if (!has_uid) {
-					ent.set_uid(id);
-				}
-				if (!has_gid) {
-					ent.set_gid(id);
-				}
-			}
-			{
-				file_lock lock(true);
-				g.add(ent, acc);
-			}
-			success = true;
-		} catch (const std::system_error& err) {
-			success = false;
-			if (pam_errc(err.code().value()) == pam_errc::conversation_error) {
-				stopped = true;
-			} else {
-				this->get_conversation()->error(err.what());
-			}
-		} catch (const std::exception& err) {
-			success = false;
-			this->get_conversation()->error(err.what());
-		}
-	} while (!success && !stopped);
-	if (success) {
-		this->get_conversation()->info(native("Registered successfully!").data());
-	}
-	if (this->_type == form_type::console) {
-		this->get_conversation()->prompt("press any key to continue...");
-	}
-}
-

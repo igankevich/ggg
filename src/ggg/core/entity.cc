@@ -339,7 +339,9 @@ ggg::basic_entity<Ch>
 		bits::wcvt_type cv;
 		this->_origin = bits::to_bytes<char>(cv, value);
 	} else {
-		throw std::invalid_argument("bad field target");
+		std::stringstream msg;
+		msg << "bad field target: \"" << t << "\"";
+		throw std::invalid_argument(msg.str());
 	}
 }
 

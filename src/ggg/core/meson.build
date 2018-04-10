@@ -1,11 +1,11 @@
 hierarchy_src += files([
-	'hierarchy.cc',
-	'entity.cc',
-	'group.cc',
 	'account.cc',
 	'account_flags.cc',
-	'native.cc',
+	'entity.cc',
+	'group.cc',
+	'hierarchy.cc',
 	'lock.cc',
+	'native.cc',
 ])
 
 forms_src += files([

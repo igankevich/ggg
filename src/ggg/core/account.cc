@@ -405,6 +405,8 @@ ggg::account::set(const form_field& field, const char* value) {
 	} else if (t == "account.origin") {
 		this->_origin = value;
 	} else {
-		throw std::invalid_argument("bad field target");
+		std::stringstream msg;
+		msg << "bad field target: \"" << t << "\"";
+		throw std::invalid_argument(msg.str());
 	}
 }

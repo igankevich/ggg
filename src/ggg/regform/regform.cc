@@ -1,6 +1,6 @@
-#include <sys/types.h>
-#include <pwd.h>
 #include <grp.h>
+#include <pwd.h>
+#include <sys/types.h>
 
 #include <security/pam_appl.h>
 
@@ -8,48 +8,36 @@
 
 #include <algorithm>
 #include <codecvt>
-#include <condition_variable>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <locale>
-#include <mutex>
 #include <regex>
 #include <sstream>
-#include <thread>
 #include <vector>
 
 #include <ggg/config.hh>
-#include <ggg/pam/pam_handle.hh>
-#include <ggg/pam/pam_call.hh>
-#include <ggg/pam/conversation.hh>
+#include <ggg/core/hierarchy.hh>
+#include <ggg/core/lock.hh>
 #include <ggg/core/native.hh>
-#include <ggg/ctl/form.hh>
 #include <ggg/ctl/account_ctl.hh>
+#include <ggg/ctl/form.hh>
+#include <ggg/ctl/ggg.hh>
 #include <ggg/ctl/password.hh>
+#include <ggg/pam/conversation.hh>
+#include <ggg/pam/pam_call.hh>
+#include <ggg/pam/pam_handle.hh>
 
 #include <unistdx/base/check>
 #include <unistdx/base/log_message>
+#include <unistdx/ipc/identity>
+#include <unistdx/util/backtrace>
 
-enum struct Conversation_state {
-	Authenticating,
-	Changing_password,
-	Validating,
-	Registering,
-	Finished,
-	Quit
-};
-
-enum struct Form_type {
-	Registration,
-	Login
-};
-
-Form_type form_type = Form_type::Login;
-Conversation_state state = Conversation_state::Authenticating;
-ggg::account recruiter;
+std::string form_user;
 ggg::form::container_type fields;
+ggg::form form;
+sys::path origin;
 ggg::field_values values;
 std::vector<std::string> all_values;
 GtkWidget* registerPageGrid = nullptr;
@@ -60,11 +48,9 @@ GtkWidget* loginEntry = nullptr;
 GtkWidget* passwordEntry = nullptr;
 std::vector<GtkWidget*> all_entries;
 std::vector<GtkWidget*> all_error_labels;
-std::thread pam_thread;
-std::recursive_mutex pam_mutex;
-std::condition_variable_any pam_cv;
-const char* username = nullptr;
 bool all_valid = false;
+volatile bool form_loaded = false;
+
 
 bool
 regex_match(const char* string, const std::string& expr) {
@@ -74,14 +60,68 @@ regex_match(const char* string, const std::string& expr) {
 	return std::regex_match(value, reg);
 }
 
+gboolean
+show_message_box(const char* msg, GtkMessageType type) {
+	GtkWidget* dialog = gtk_message_dialog_new(
+		GTK_WINDOW(window),
+		GTK_DIALOG_MODAL,
+		type,
+		GTK_BUTTONS_OK,
+		"%s",
+		msg
+	                    );
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return FALSE;
+}
+
 void
 register_user(GtkButton*, gpointer) {
 	if (!all_valid) return;
 	// disable the button
 	gtk_widget_set_sensitive(GTK_WIDGET(registerButton), FALSE);
-	gtk_button_set_label(GTK_BUTTON(registerButton), ggg::native("Please wait...").data());
-	// proceed PAM conversation
-	pam_cv.notify_one();
+	gtk_button_set_label(
+		GTK_BUTTON(registerButton),
+		ggg::native(
+			"Please wait..."
+		).data()
+	);
+	try {
+		using namespace ggg;
+		entity ent;
+		account acc;
+		std::tie(ent, acc) = ::form.make_entity_and_account(all_values);
+		file_lock lock;
+		GGG g(GGG_ENT_ROOT, true);
+		lock.unlock();
+		bool has_uid = ent.has_id();
+		bool has_gid = ent.has_gid();
+		if (!has_uid || !has_gid) {
+			sys::uid_type id = g.next_uid();
+			if (!has_uid) {
+				ent.set_uid(id);
+			}
+			if (!has_gid) {
+				ent.set_gid(id);
+			}
+		}
+		{
+			file_lock lock(true);
+			acc.origin(origin);
+			g.add(ent, acc);
+		}
+		show_message_box("Registered successfully!", GTK_MESSAGE_INFO);
+		for (GtkWidget* entry : all_entries) {
+			gtk_entry_set_text(GTK_ENTRY(entry), "");
+		}
+	} catch (const std::exception& err) {
+		show_message_box(err.what(), GTK_MESSAGE_ERROR);
+	}
+	gtk_widget_set_sensitive(GTK_WIDGET(registerButton), TRUE);
+	gtk_button_set_label(
+		GTK_BUTTON(registerButton),
+		ggg::native("Register").data()
+	);
 }
 
 void
@@ -109,10 +149,10 @@ validate_login() {
 		fields.begin(),
 		fields.end(),
 		[&] (const ggg::form_field& rhs) {
-			return rhs.type() == ggg::field_type::set &&
-				rhs.target() == "entity.name";
+		    return rhs.type() == ggg::field_type::set &&
+		    rhs.target() == "entity.name";
 		}
-	);
+	              );
 	bool valid = true;
 	const char* errorText = "";
 	if (result != fields.end()) {
@@ -132,10 +172,10 @@ validate_password() {
 		fields.begin(),
 		fields.end(),
 		[&] (const ggg::form_field& rhs) {
-			return rhs.type() == ggg::field_type::set_secure &&
-				rhs.target() == "account.password";
+		    return rhs.type() == ggg::field_type::set_secure &&
+		    rhs.target() == "account.password";
 		}
-	);
+	              );
 	bool valid = true;
 	const char* errorText = "";
 	if (result != fields.end()) {
@@ -151,8 +191,9 @@ validate_password() {
 		if (it != values.end()) {
 			const char* new_password = it->second;
 			ggg::password_match match;
-			if (match.find(new_password)) {
-				std::clog << "bad password: " << match << std::endl;
+			if (match.find(new_password) &&
+			    match.entropy() < form.min_entropy()) {
+				valid = false;
 			}
 		}
 		errorText = (valid) ? "" : "Weak password";
@@ -160,6 +201,7 @@ validate_password() {
 	gtk_label_set_text(GTK_LABEL(loginErrorLabel), errorText);
 	return valid;
 }
+
 void
 read_all_entries() {
 	all_values.clear();
@@ -205,15 +247,13 @@ allocate(size_t n) {
 }
 
 std::vector<GtkWidget*>
-new_widget(const struct pam_message* msg, const ggg::form_field& ff) {
-	const bool is_input = msg->msg_style == PAM_PROMPT_ECHO_ON ||
-		msg->msg_style == PAM_PROMPT_ECHO_OFF;
+new_widget(const ggg::form_field& ff) {
 	std::vector<GtkWidget*> ret;
-	if (is_input) {
-		GtkWidget* label = gtk_label_new(msg->msg);
+	if (ff.is_input()) {
+		GtkWidget* label = gtk_label_new(ff.name().data());
 		gtk_label_set_xalign(GTK_LABEL(label), 1.f);
 		GtkWidget* entry = gtk_entry_new();
-		if (msg->msg_style == PAM_PROMPT_ECHO_OFF) {
+		if (ff.type() == ggg::field_type::password) {
 			gtk_entry_set_input_purpose(
 				GTK_ENTRY(entry),
 				GTK_INPUT_PURPOSE_PASSWORD
@@ -227,34 +267,31 @@ new_widget(const struct pam_message* msg, const ggg::form_field& ff) {
 		ret.push_back(errorLabel);
 		all_entries.push_back(entry);
 		all_error_labels.push_back(errorLabel);
-	} else if (msg->msg_style == PAM_ERROR_MSG) {
-		GtkWidget* label = gtk_label_new(nullptr);
-		std::string text_in_bold;
-		text_in_bold.append("<b>");
-		text_in_bold.append(msg->msg);
-		text_in_bold.append("</b>");
-		gtk_label_set_markup(GTK_LABEL(label), text_in_bold.data());
-		ret.push_back(label);
 	} else {
-		GtkWidget* label = gtk_label_new(msg->msg);
+		GtkWidget* label = gtk_label_new(ff.name().data());
 		ret.push_back(label);
 	}
 	return ret;
 }
 
 GtkWidget*
-new_widget_form(const struct pam_message** msg, int num_msg) {
+new_widget_form() {
 	all_entries.clear();
 	all_error_labels.clear();
 	GtkWidget* grid = gtk_grid_new();
 	gtk_grid_set_row_spacing(GTK_GRID(grid), 2);
 	gtk_grid_set_column_spacing(GTK_GRID(grid), 2);
-	for (int i=0; i<num_msg; ++i) {
+	const int n = fields.size();
+	int num_input_fields = 0;
+	for (int i=0; i<n; ++i) {
 		const ggg::form_field& ff = fields[i];
-		std::vector<GtkWidget*> widgets = new_widget(msg[i], ff);
-		const int nwidgets = widgets.size();
-		for (int j=0; j<nwidgets; ++j) {
-			gtk_grid_attach(GTK_GRID(grid), widgets[j], j, i, 1, 1);
+		if (ff.is_input()) {
+			std::vector<GtkWidget*> widgets = new_widget(ff);
+			const int nwidgets = widgets.size();
+			for (int j=0; j<nwidgets; ++j) {
+				gtk_grid_attach(GTK_GRID(grid), widgets[j], j, i, 1, 1);
+			}
+			++num_input_fields;
 		}
 	}
 	// widgets
@@ -262,35 +299,21 @@ new_widget_form(const struct pam_message** msg, int num_msg) {
 	gtk_widget_set_sensitive(registerButton, FALSE);
 	loginErrorLabel = gtk_label_new("");
 	// layout
-	gtk_grid_attach(GTK_GRID(grid), registerButton, 1, num_msg, 1, 1);
-	gtk_grid_attach(GTK_GRID(grid), loginErrorLabel, 0, num_msg+1, 3, 1);
+	gtk_grid_attach(GTK_GRID(grid), registerButton, 1, num_input_fields, 1, 1);
+	gtk_grid_attach(
+		GTK_GRID(grid),
+		loginErrorLabel,
+		0,
+		num_input_fields+1,
+		3,
+		1
+	);
 	return grid;
 }
 
 gboolean
-show_message_box(gpointer data) {
-	const struct pam_message* msg = reinterpret_cast<const struct pam_message*>(data);
-	GtkWidget* dialog = gtk_message_dialog_new(
-		GTK_WINDOW(window),
-		GTK_DIALOG_MODAL,
-		msg->msg_style == PAM_ERROR_MSG ? GTK_MESSAGE_ERROR : GTK_MESSAGE_INFO,
-		GTK_BUTTONS_OK,
-		"%s",
-		msg->msg
-	);
-	gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-	pam_cv.notify_one();
-	return FALSE;
-}
-
-gboolean
-show_registration_form(gpointer data) {
-	typedef std::pair<const struct pam_message**,int> pair_type;
-	pair_type* pair = reinterpret_cast<pair_type*>(data);
-	const struct pam_message** msg = pair->first;
-	int num_msg = pair->second;
-	GtkWidget* newRegisterForm = new_widget_form(msg, num_msg);
+show_registration_form() {
+	GtkWidget* newRegisterForm = new_widget_form();
 	gtk_container_foreach(
 		GTK_CONTAINER(registerPageGrid),
 		(GtkCallback)gtk_widget_destroy,
@@ -308,7 +331,8 @@ show_registration_form(gpointer data) {
 	return FALSE;
 }
 
-int converse_log_in(
+int
+converse_log_in(
 	int num_msg,
 	const struct pam_message** msg,
 	struct pam_response** resp,
@@ -327,89 +351,19 @@ int converse_log_in(
 	return int(ret);
 }
 
-int converse(
-	int num_msg,
-	const struct pam_message** msg,
-	struct pam_response** resp,
-	void* appdata_ptr
-) {
-	ggg::pam_errc ret = ggg::pam_errc::success;
-	if (state == Conversation_state::Authenticating) {
-		if (num_msg == 1 && msg[0]->msg_style == PAM_PROMPT_ECHO_OFF) {
-			*resp = allocate<struct pam_response>(1);
-			resp[0]->resp = strdup("");
-			resp[0]->resp_retcode = 0;
-			state = Conversation_state::Validating;
-		} else {
-			ret = ggg::pam_errc::conversation_error;
-		}
-	} else if (state == Conversation_state::Changing_password) {
-		// TODO
-		ret = ggg::pam_errc::conversation_error;
-	} else if (state == Conversation_state::Validating) {
-		auto pair = std::make_pair(msg, num_msg);
-		gdk_threads_add_idle(show_registration_form, &pair);
-		std::unique_lock<std::recursive_mutex> lock(pam_mutex);
-		pam_cv.wait(lock);
-		if (state == Conversation_state::Quit) {
-			*resp = nullptr;
-			ret = ggg::pam_errc::conversation_error;
-		} else {
-			if (size_t(num_msg) != all_values.size()) {
-				*resp = nullptr;
-				ret = ggg::pam_errc::conversation_error;
-			} else {
-				struct pam_response* r = allocate<struct pam_response>(num_msg);
-				for (int i=0; i<num_msg; ++i) {
-					r[i].resp = strdup(all_values[i].data());
-					r[i].resp_retcode = 0;
-				}
-				*resp = r;
-				state = Conversation_state::Registering;
-			}
-		}
-	} else if (state == Conversation_state::Registering) {
-		if (num_msg == 1 && (msg[0]->msg_style == PAM_ERROR_MSG ||
-					msg[0]->msg_style == PAM_TEXT_INFO))
-		{
-			gdk_threads_add_idle(show_message_box, const_cast<struct pam_message*>(msg[0]));
-			std::unique_lock<std::recursive_mutex> lock(pam_mutex);
-			pam_cv.wait(lock);
-			if (msg[0]->msg_style == PAM_TEXT_INFO) {
-				state = Conversation_state::Finished;
-			} else {
-				state = Conversation_state::Validating;
-			}
-		} else {
-			ret = ggg::pam_errc::conversation_error;
-		}
-	}
-	return int(ret);
-}
-
 void
-parse_arguments(int argc, char* argv[]) {
-	int opt;
-	while ((opt = ::getopt(argc, argv, "l")) != -1) {
-		if (opt == 'l') {
-			form_type = Form_type::Login;
-		}
+load_form() {
+	form.clear();
+	form.set_type(ggg::form_type::graphical);
+	ggg::file_lock lock;
+	ggg::Hierarchy h(GGG_ENT_ROOT);
+	auto result = h.find_by_name(form_user.data());
+	if (result == h.end()) {
+		throw std::invalid_argument("unable to find form");
 	}
-	if (::optind == argc) {
-		throw std::invalid_argument("bad username");
-	}
-}
-
-void
-load_form(const char* username) {
-	ggg::account_ctl accounts;
-	auto result = accounts.find(username);
-	if (result == accounts.end()) {
-		throw std::invalid_argument("account not found");
-	}
-	recruiter = *result;
-	ggg::form f(recruiter.login().data());
-	fields = f.fields();
+	form.open(result->name().data());
+	origin = sys::path(GGG_ROOT, "acc", result->name());
+	fields = form.fields();
 }
 
 gboolean
@@ -428,7 +382,6 @@ do_pam(const char* username, ConverseFunc func) {
 		ggg::pam::call(::pam_authenticate(pamh, 0));
 	} catch (const std::system_error& err) {
 		if (err.code().value() == PAM_NEW_AUTHTOK_REQD) {
-			state = Conversation_state::Changing_password;
 			ggg::pam::call(::pam_chauthtok(pamh, 0));
 		} else {
 			throw;
@@ -443,36 +396,62 @@ do_pam(const char* username, ConverseFunc func) {
 }
 
 void
-fork_exec(const char* username) {
+chdir_error(const char* rhs, const char* error) {
+	sys::log_message(
+		"error",
+		"failed to change directory to \"_\": _",
+		rhs,
+		error
+	);
+}
+
+const char*
+change_directory(const char* pwd) {
+	try {
+		UNISTDX_CHECK(::chdir(pwd));
+	} catch (const std::exception& err) {
+		chdir_error(pwd, err.what());
+		try {
+			pwd = "/";
+			UNISTDX_CHECK(::chdir(pwd));
+		} catch (const std::exception& err2) {
+			chdir_error(pwd, err.what());
+			throw;
+		}
+	}
+	return pwd;
+}
+
+void
+set_environment(const char* name, const char* value) {
+	UNISTDX_CHECK(::setenv(name, value, TRUE))
+}
+
+void
+launch_desktop(const char* username) {
 	struct ::passwd* pw = ::getpwnam(username);
 	if (!pw) {
 		std::clog << "user " << username << " not found via NSS." << std::endl;
 		std::exit(1);
 	}
-	const char* pwd = pw->pw_dir;
-	if (-1 == ::chdir(pwd)) {
-		pwd = "/";
-		UNISTDX_CHECK(::chdir(pwd));
-	}
+	const char* pwd = change_directory(pw->pw_dir);
 	const char* cmd = std::getenv("DESKTOP_SESSION");
 	if (!cmd) {
 		cmd = "/bin/xinit";
 	}
-	::setenv("USER", username, TRUE);
-	::setenv("LOGNAME", username, TRUE);
-	::setenv("USERNAME", username, TRUE);
-	::setenv("HOME", pw->pw_dir, TRUE);
-	::setenv("SHELL", pw->pw_shell, TRUE);
-	::setenv("PWD", pwd, TRUE);
-	// TODO change to setgroups???
+	set_environment("USER", username);
+	set_environment("LOGNAME", username);
+	set_environment("USERNAME", username);
+	set_environment("HOME", pw->pw_dir);
+	set_environment("SHELL", pw->pw_shell);
+	set_environment("PWD", pwd);
 	UNISTDX_CHECK(::initgroups(username, pw->pw_gid));
 	UNISTDX_CHECK(::setregid(pw->pw_gid, pw->pw_gid));
 	UNISTDX_CHECK(::setreuid(pw->pw_uid, pw->pw_uid));
 	const char* argv[] = {
 		pw->pw_shell, "-c", cmd, 0
 	};
-	::execve(argv[0], const_cast<char *const *>(argv), environ);
-//	sys::this_process::execute(pw->pw_shell, "-c", cmd);
+	UNISTDX_CHECK(::execve(argv[0], const_cast<char* const*>(argv), environ));
 	std::exit(1);
 }
 
@@ -483,8 +462,9 @@ log_in(GtkButton* btn, gpointer) {
 	try {
 		do_pam(username, converse_log_in);
 		std::clog << "ok" << std::endl;
-		fork_exec(username);
+		launch_desktop(username);
 	} catch (const std::exception& err) {
+		sys::backtrace(STDERR_FILENO);
 		std::clog << "error: " << err.what() << std::endl;
 		GtkWidget* dialog = gtk_message_dialog_new(
 			GTK_WINDOW(window),
@@ -493,7 +473,7 @@ log_in(GtkButton* btn, gpointer) {
 			GTK_BUTTONS_OK,
 			"%s",
 			err.what()
-		);
+		                    );
 		gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 	}
@@ -510,7 +490,11 @@ new_login_form() {
 	gtk_label_set_xalign(GTK_LABEL(passwordLabel), 1.f);
 	passwordEntry = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(passwordEntry), FALSE);
-	GtkWidget* logInButton = gtk_button_new_with_label(ggg::native("Log in").data());
+	GtkWidget* logInButton = gtk_button_new_with_label(
+		ggg::native(
+			"Log in"
+		).data()
+	                         );
 	// layout
 	GtkWidget* grid = gtk_grid_new();
 	gtk_grid_set_row_spacing(GTK_GRID(grid), 2);
@@ -532,23 +516,24 @@ activate_register_form(
 	guint page_num,
 	gpointer user_data
 ) {
-	if (page_num == 1 && !pam_thread.joinable()) {
-		pam_thread = std::thread([&] () {
-			try {
-				load_form(username);
-				do_pam(username, converse);
-			} catch (const std::exception& err) {
-				sys::log_message("error", "failed to init registration form: _", err.what());
-			}
-		});
+	if (page_num == 1 && !form_loaded) {
+		try {
+			load_form();
+			form_loaded = true;
+			show_registration_form();
+		} catch (const std::exception& err) {
+			sys::log_message(
+				"error",
+				"failed to init registration form: _",
+				err.what()
+			);
+		}
 	}
 }
 
 void
 terminate_conversation() {
-	state = Conversation_state::Quit;
 	window = nullptr;
-	pam_cv.notify_one();
 }
 
 void
@@ -562,7 +547,11 @@ login_form_app(GtkApplication* app, gpointer) {
 	GtkWidget* loginPageGrid = new_login_form();
 	GtkWidget* loginPageLabel = gtk_label_new(ggg::native("Log in").data());
 	registerPageGrid = gtk_grid_new();
-	GtkWidget* registerPageLabel = gtk_label_new(ggg::native("Register").data());
+	GtkWidget* registerPageLabel = gtk_label_new(
+		ggg::native(
+			"Register"
+		).data()
+	                               );
 	// layout
 	GtkWidget* notebook = gtk_notebook_new();
 	gtk_notebook_append_page(
@@ -592,30 +581,32 @@ login_form_app(GtkApplication* app, gpointer) {
 	gtk_widget_show_all(window);
 }
 
+void
+parse_arguments(int argc, char* argv[]) {
+	if (argc != 2) {
+		throw std::invalid_argument(
+				  "please, specify username as the first argument"
+		);
+	}
+	form_user = argv[1];
+}
+
 int
 main(int argc, char* argv[]) {
 	int ret = EXIT_SUCCESS;
 	try {
 		parse_arguments(argc, argv);
-		username = argv[::optind];
 		gtk_init(nullptr, nullptr);
-		if (form_type == Form_type::Login) {
-			GtkApplication* app = gtk_application_new(
-				"com.igankevich.ggg",
-				G_APPLICATION_FLAGS_NONE
-			);
-			g_signal_connect(app, "activate", G_CALLBACK(login_form_app), NULL);
-			ret = g_application_run(G_APPLICATION(app), 0, nullptr);
-			g_object_unref(app);
-		} else {
-			throw std::runtime_error("please, use -l option");
-		}
+		GtkApplication* app = gtk_application_new(
+			"com.igankevich.ggg",
+			G_APPLICATION_FLAGS_NONE
+		                      );
+		g_signal_connect(app, "activate", G_CALLBACK(login_form_app), NULL);
+		ret = g_application_run(G_APPLICATION(app), 0, nullptr);
+		g_object_unref(app);
 	} catch (const std::exception& err) {
 		ret = EXIT_FAILURE;
 		std::cerr << err.what() << std::endl;
-	}
-	if (pam_thread.joinable()) {
-		pam_thread.join();
 	}
 	return ret;
 }
