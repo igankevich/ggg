@@ -76,10 +76,14 @@ namespace {
 		);
 		sys::file_stat st(filename);
 		if (st.exists()) {
-			if (st.owner() != uid || st.group() != gid) {
-				change_owner(filename, uid, gid);
+			if (!st.is_regular()) {
+				std::cerr << filename << " is not a regular file" << std::endl;
+			} else {
+				if (st.owner() != uid || st.group() != gid) {
+					change_owner(filename, uid, gid);
+				}
+				change_permissions(filename, st, m);
 			}
-			change_permissions(filename, st, m);
 		}
 	}
 
@@ -108,29 +112,65 @@ namespace {
 			}
 		}
 		if (st.exists()) {
-			if (st.owner() != uid || st.group() != gid) {
-				change_owner(p, uid, gid);
+			if (!st.is_directory()) {
+				std::cerr << p << " is not a directory" << std::endl;
+			} else {
+				if (st.owner() != uid || st.group() != gid) {
+					change_owner(p, uid, gid);
+				}
+				change_permissions(p, st, m);
 			}
-			change_permissions(p, st, m);
 		}
 	}
 
 	void
-	heal_entities() {
+	heal_entities_subdir(sys::path dir, sys::uid_type uid, sys::gid_type gid) {
 		sys::idirtree tree(sys::path(GGG_ROOT, "ent"));
 		std::for_each(
 			sys::idirtree_iterator<sys::pathentry>(tree),
 			sys::idirtree_iterator<sys::pathentry>(),
-			[] (const sys::pathentry& entry) {
+			[uid,gid] (const sys::pathentry& entry) {
 			    sys::path f(entry.getpath());
 			    sys::file_stat st(f);
-			    if (st.owner() != 0 || st.group() != 0) {
-			        change_owner(f, 0, 0);
+			    if (st.owner() != uid || st.group() != gid) {
+			        change_owner(f, uid, gid);
 				}
 			    if (st.type() == sys::file_type::regular) {
 			        change_permissions(f, 0644);
 				} else if (st.type() == sys::file_type::directory) {
 			        change_permissions(f, 0755);
+				}
+			}
+		);
+	}
+
+	void
+	heal_entities(const ggg::Hierarchy& h) {
+		sys::idirectory dir(sys::path(GGG_ROOT, "ent"));
+		std::for_each(
+			sys::idirectory_iterator<sys::pathentry>(dir),
+			sys::idirectory_iterator<sys::pathentry>(),
+			[&h] (const sys::pathentry& entry) {
+			    sys::path f(entry.getpath());
+			    sys::file_stat st(f);
+			    if (st.type() == sys::file_type::regular) {
+			    	if (st.owner() != 0 || st.group() != 0) {
+			    	    change_owner(f, 0, 0);
+					}
+			        change_permissions(f, 0644);
+				} else if (st.type() == sys::file_type::directory) {
+			        auto result = h.find_by_name(entry.name());
+			        sys::uid_type uid = 0;
+			        sys::gid_type gid = 0;
+			        if (result != h.end()) {
+			            uid = result->id();
+			            gid = result->gid();
+					}
+			        if (st.owner() != uid || st.group() != gid) {
+			            change_owner(f, uid, gid);
+					}
+			        change_permissions(f, 0755);
+					heal_entities_subdir(f, uid, gid);
 				}
 			}
 		);
@@ -248,7 +288,6 @@ ggg::Heal
 	change_owner(GGG_ROOT, 0, 0);
 	change_permissions(GGG_ROOT, 0755);
 	make_file(GGG_LOCK_FILE, 0, 0, 0644);
-	heal_entities();
 	ggg::Hierarchy h;
 	try {
 		h.open(GGG_ROOT);
@@ -259,6 +298,7 @@ ggg::Heal
 			<< " accounts and forms: entities are broken"
 			<< std::endl;
 	}
+	heal_entities(h);
 	heal_forms(h);
 	heal_accounts(h);
 	if (num_errors > 0) {
