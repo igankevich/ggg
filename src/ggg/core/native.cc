@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#include <ggg/config.hh>
-
 namespace {
 
 	class Messages {

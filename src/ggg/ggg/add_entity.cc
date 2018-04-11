@@ -78,7 +78,7 @@ ggg::Add_entity
 			// ignore quiet error
 		}
 		if (!this->_args.empty()) {
-			native_message(std::clog, "press any key to continue...");
+			native_message(std::clog, "Press any key to continue...");
 			std::cin.get();
 		}
 	}

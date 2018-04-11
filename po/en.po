@@ -1,7 +1,7 @@
-# Russian translations for ggg package
-# Copyright (C) 2017 Ivan Gankevich
+# English translations for ggg package
+# Copyright (C) 2018 Ivan Gankevich
 # This file is distributed under the same license as the ggg package.
-# Ivan Gankevich <igankevich@ya.ru>, 2017.
+# Ivan Gankevich <igankevich@ya.ru>, 2018.
 #
 msgid ""
 msgstr ""
@@ -15,61 +15,59 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #: src/ggg/ggg/add_entity.cc:64
 msgid "Entity _ already exists."
-msgstr "Сущность _ уже существует."
+msgstr ""
 
 #: src/ggg/ggg/add_entity.cc:81
 msgid "Press any key to continue..."
-msgstr "Нажмите клавишу, чтобы продолжить ..."
+msgstr ""
 
 #: src/ggg/ggg/add_entity.cc:117
 msgid "Unable to read entities."
-msgstr "Не могу прочитать сущности."
+msgstr ""
 
 #: src/ggg/ggg/add_entity.cc:131
 msgid "error adding _: _"
-msgstr "ошибка при добавлении _: _"
+msgstr ""
 
 #: src/ggg/ggg/ggg_form.cc:114
 msgid "Registered successfully!"
-msgstr "Зарегистрирован!"
+msgstr ""
 
 #: src/ggg/ggg/show_base.cc:37
 msgid "_ entities."
 msgid_plural "_ entities."
-msgstr[0] "_ сущность."
-msgstr[1] "_ сущности."
-msgstr[2] "_ сущностей."
+msgstr[0] "_ entity."
+msgstr[1] "_ entities."
 
 #: src/ggg/ggg/show_expired.cc:36 src/ggg/ggg/show_groups.cc:33
 #: src/ggg/ggg/show_groups.cc:40 src/ggg/ggg/show_members.cc:34
 #: src/ggg/ggg/show_members.cc:39
 msgid "Unable to find _."
-msgstr "Не могу найти _."
+msgstr ""
 
 #: src/ggg/regform/regform.cc:86
 msgid "Please wait..."
-msgstr "Секундочку..."
+msgstr ""
 
 #. widgets
 #: src/ggg/regform/regform.cc:123 src/ggg/regform/regform.cc:298
 #: src/ggg/regform/regform.cc:552
 msgid "Register"
-msgstr "Зарегистрироваться"
+msgstr ""
 
 #. widgets
 #: src/ggg/regform/regform.cc:486
 msgid "Login"
-msgstr "Пользователь"
+msgstr ""
 
 #: src/ggg/regform/regform.cc:489
 msgid "Password"
-msgstr "Пароль"
+msgstr ""
 
 #: src/ggg/regform/regform.cc:495 src/ggg/regform/regform.cc:548
 msgid "Log in"
-msgstr "Войти"
+msgstr ""

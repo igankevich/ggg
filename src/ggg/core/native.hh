@@ -5,6 +5,8 @@
 #include <ostream>
 #include <string>
 
+#include <ggg/config.hh>
+
 namespace ggg {
 
 	/// Set default system locale, but retain classic
@@ -17,6 +19,11 @@ namespace ggg {
 
 	std::string
 	native(const char* text);
+
+	inline std::string
+	native_n(const char* text, unsigned long n) {
+		return ::dngettext(GGG_CATALOG, text, text, n);
+	}
 
 	template <class Ch>
 	std::basic_ostream<Ch>&
@@ -58,6 +65,19 @@ namespace ggg {
 		const Args& ... args
 	) {
 		std::string str = native(s);
+		str.push_back('\n');
+		return format_message(out, str.data(), args...);
+	}
+
+	template<class Ch, class ... Args>
+	std::basic_ostream<Ch>&
+	native_message_n(
+		std::basic_ostream<Ch>& out,
+		unsigned long n,
+		const char* s,
+		const Args& ... args
+	) {
+		std::string str = native_n(s, n);
 		str.push_back('\n');
 		return format_message(out, str.data(), args...);
 	}

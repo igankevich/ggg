@@ -34,7 +34,7 @@ ggg::Show_base::execute() {
 		const size_t nentities = this->_result.size();
 		if (nentities > 7) {
 			std::wcout << std::endl;
-			native_message(std::wcout, "_ entities.", nentities);
+			native_message_n(std::wcout, nentities, "_ entities.", nentities);
 		}
 	} else {
 		for (const wentity& ent : this->_result) {
