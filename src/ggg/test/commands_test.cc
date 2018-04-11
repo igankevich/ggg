@@ -166,6 +166,7 @@ text:2:Last name:^[A-Za-zА-Яа-я ]+$
 text:3:Username:^[A-Za-z0-9]+$
 password:4:Password:^.{6,100}$
 set:entropy:30.0
+set:locale:ru_RU.UTF-8
 set:entity.name:$3
 set:entity.realname:$1 $2
 set:entity.shell:/bin/bash

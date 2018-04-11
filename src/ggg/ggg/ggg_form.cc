@@ -31,7 +31,7 @@ namespace ggg {
 				int i = 0;
 				do {
 					value.clear();
-					std::wcout << name << ": " << std::flush;
+					std::wcout << name << L": " << std::flush;
 					if (ff.type() == field_type::password) {
 						echo_guard g(STDIN_FILENO);
 						std::getline(std::wcin, value, L'\n');
@@ -67,6 +67,9 @@ namespace ggg {
 
 	void
 	register_user(form& f, sys::path origin) {
+		std::wcin.imbue(f.locale());
+		std::wcout.imbue(f.locale());
+		std::wclog.imbue(f.locale());
 		const bool debug = false;
 		const int max_iterations = 7;
 		bool success;
@@ -115,26 +118,10 @@ namespace ggg {
 
 }
 
-void
-init_system_locale() {
-	try {
-		std::locale loc("");
-		std::locale::global(loc);
-		std::wcout.imbue(loc);
-		std::wcin.imbue(loc);
-		std::wclog.imbue(loc);
-		std::cout.imbue(loc);
-		std::cin.imbue(loc);
-		std::clog.imbue(loc);
-	} catch (const std::exception& err) {
-		std::cerr << "GGG: failed to init locale" << std::endl;
-	}
-}
-
 int
 main() {
 	int ret = 0;
-	init_system_locale();
+	ggg::init_locale();
 	try {
 		ggg::form f;
 		f.set_type(ggg::form_type::console);

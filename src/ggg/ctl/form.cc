@@ -32,12 +32,21 @@ ggg::form
 	);
 	std::sort(this->_fields.begin(), this->_fields.end());
 	for (const form_field& ff : this->_fields) {
-		if (ff.type() == field_type::set && ff.target() == "entropy") {
-			try {
-				this->_minentropy = std::max(0.0, std::stod(ff.regex()));
-			} catch (const std::exception& err) {
-				std::cerr << std::endl << "bad entropy" << std::endl;
-				throw;
+		if (ff.type() == field_type::set) {
+			if (ff.target() == "entropy") {
+				try {
+					this->_minentropy = std::max(0.0, std::stod(ff.regex()));
+				} catch (const std::exception& err) {
+					std::cerr << std::endl << "bad entropy" << std::endl;
+					throw;
+				}
+			} else if (ff.target() == "locale") {
+				try {
+					this->_locale = std::locale(ff.regex());
+				} catch (const std::exception& err) {
+					std::cerr << std::endl << "bad locale" << std::endl;
+					throw;
+				}
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 #ifndef CTL_FORM_HH
 #define CTL_FORM_HH
 
+#include <locale>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -22,6 +23,7 @@ namespace ggg {
 		container_type _fields;
 		form_type _type = form_type::console;
 		double _minentropy = 30.0;
+		std::locale _locale = std::locale::classic();
 
 	public:
 
@@ -65,6 +67,11 @@ namespace ggg {
 		inline double
 		min_entropy() const noexcept {
 			return this->_minentropy;
+		}
+
+		inline const std::locale&
+		locale() const noexcept {
+			return this->_locale;
 		}
 
 		std::tuple<entity,account>
