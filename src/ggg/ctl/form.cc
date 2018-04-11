@@ -43,6 +43,7 @@ ggg::form
 			} else if (ff.target() == "locale") {
 				try {
 					this->_locale = std::locale(ff.regex());
+					std::clog << "locale: " << this->_locale.name() << std::endl;
 				} catch (const std::exception& err) {
 					std::cerr << std::endl << "bad locale" << std::endl;
 					throw;
