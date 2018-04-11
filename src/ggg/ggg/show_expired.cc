@@ -33,7 +33,7 @@ ggg::Show_expired::execute() {
 			std::wstring wlogin = cv.from_bytes(acc.login().data());
 			auto it = h.find_by_name(wlogin.data());
 			if (it == h.end()) {
-				native_message(std::wcerr, "Unable to find _.\n", wlogin);
+				native_message(std::wcerr, "Unable to find _.", wlogin);
 			} else {
 				this->_result.insert(*it);
 			}

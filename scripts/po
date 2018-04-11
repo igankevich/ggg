@@ -1,0 +1,4 @@
+#!/bin/sh
+
+ninja -C "$MESON_BUILD_ROOT" ggg-pot
+ninja -C "$MESON_BUILD_ROOT" ggg-update-po

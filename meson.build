@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '0.2',
+	version: '0.2.12',
 	meson_version: '>=0.31',
 	default_options: ['cpp_std=c++14']
 )
@@ -102,4 +102,7 @@ if cppcheck.found()
 		]
 	)
 endif
+# }}}
+# gettext {{{
+run_target('po', command: [join_paths(meson.source_root(), 'scripts', 'po')])
 # }}}

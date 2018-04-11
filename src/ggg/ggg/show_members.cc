@@ -31,12 +31,12 @@ ggg::Show_members::execute() {
 		std::wstring wa = cv.from_bytes(a);
 		auto it0 = h.find_group_by_name(wa.data());
 		if (it0 == h.group_end()) {
-			native_message(std::wcerr, "Unable to find _.\n", wa);
+			native_message(std::wcerr, "Unable to find _.", wa);
 		} else {
 			for (const std::wstring& m : it0->members()) {
 				auto it = h.find_by_name(m.data());
 				if (it == h.end()) {
-					native_message(std::wcerr, "Unable to find _.\n", m);
+					native_message(std::wcerr, "Unable to find _.", m);
 				} else {
 					this->_result.insert(*it);
 				}

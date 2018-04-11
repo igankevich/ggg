@@ -80,7 +80,7 @@ namespace ggg {
 
 	template <class T, class Result>
 	void
-	read_objects(const std::string& filename, Result result, const char* msg) {
+	read_objects(const std::string& filename, Result result, std::string msg) {
 		std::ifstream in;
 		try {
 			in.exceptions(std::ios::badbit);

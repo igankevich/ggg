@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ggg\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-20 00:12+0300\n"
-"PO-Revision-Date: 2017-08-20 00:23+0300\n"
+"POT-Creation-Date: 2018-04-11 16:44+0300\n"
+"PO-Revision-Date: 2018-04-11 16:45+0300\n"
 "Last-Translator: Ivan Gankevich <igankevich@ya.ru>\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
@@ -18,10 +18,55 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: src/ggg/add_entity.cc:49
-msgid "error: entity _ already exists\n"
-msgstr "Ошибка: сущность _ уже существует.\n"
+#: src/ggg/ggg/add_entity.cc:64
+msgid "Entity _ already exists."
+msgstr "Сущность _ уже существует."
 
-#: src/ggg/add_entity.cc:93
-msgid "error adding"
+#: src/ggg/ggg/add_entity.cc:81
+msgid "press any key to continue..."
 msgstr ""
+
+#: src/ggg/ggg/add_entity.cc:117
+msgid "Unable to read entities."
+msgstr "Не могу прочитать сущности."
+
+#: src/ggg/ggg/add_entity.cc:131
+msgid "error adding _: _"
+msgstr "ошибка при добавлении _: _"
+
+#: src/ggg/ggg/ggg_form.cc:114
+msgid "Registered successfully!"
+msgstr "Зарегистрирован!"
+
+#: src/ggg/ggg/show_base.cc:37
+msgid "_ entities."
+msgstr "_ штук."
+
+#: src/ggg/ggg/show_expired.cc:36 src/ggg/ggg/show_groups.cc:33
+#: src/ggg/ggg/show_groups.cc:40 src/ggg/ggg/show_members.cc:34
+#: src/ggg/ggg/show_members.cc:39
+msgid "Unable to find _."
+msgstr "Не могу найти _."
+
+#: src/ggg/regform/regform.cc:86
+msgid "Please wait..."
+msgstr "Секундочку..."
+
+#. widgets
+#: src/ggg/regform/regform.cc:123 src/ggg/regform/regform.cc:298
+#: src/ggg/regform/regform.cc:552
+msgid "Register"
+msgstr "Зарегистрироваться"
+
+#. widgets
+#: src/ggg/regform/regform.cc:486
+msgid "Login"
+msgstr "Пользователь"
+
+#: src/ggg/regform/regform.cc:489
+msgid "Password"
+msgstr "Пароль"
+
+#: src/ggg/regform/regform.cc:495 src/ggg/regform/regform.cc:548
+msgid "Log in"
+msgstr "Войти"

@@ -1,1 +1,8 @@
-src/ggg/add_entity.cc
+src/ggg/ggg/add_entity.cc
+src/ggg/ggg/ggg_form.cc
+src/ggg/ggg/ggg_main.cc
+src/ggg/ggg/show_base.cc
+src/ggg/ggg/show_expired.cc
+src/ggg/ggg/show_groups.cc
+src/ggg/ggg/show_members.cc
+src/ggg/regform/regform.cc

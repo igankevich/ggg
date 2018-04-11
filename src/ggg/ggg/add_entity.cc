@@ -61,7 +61,7 @@ ggg::Add_entity
 	for (const std::string& ent : this->args()) {
 		if (g.contains(ent)) {
 			success = false;
-			native_message(std::cerr, "error: entity _ already exists\n", ent);
+			native_message(std::cerr, "Entity _ already exists.", ent);
 		}
 	}
 	if (!success) {
@@ -78,7 +78,7 @@ ggg::Add_entity
 			// ignore quiet error
 		}
 		if (!this->_args.empty()) {
-			std::clog << "press any key to continue..." << std::endl;
+			native_message(std::clog, "press any key to continue...");
 			std::cin.get();
 		}
 	}
@@ -114,7 +114,7 @@ ggg::Add_entity
 	read_objects<entity>(
 		filename,
 		std::back_inserter(ents),
-		"unable to read entities"
+		native("Unable to read entities.")
 	);
 	check_duplicates(ents, traits_type::eq);
 	std::clog.imbue(std::locale::classic());
@@ -128,9 +128,7 @@ ggg::Add_entity
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
 			++nerrors;
-			std::cerr << gettext("error adding") << ' ';
-			traits_type::print(std::cerr, ent);
-			std::cerr << ": " << err.what() << std::endl;
+			native_message(std::cerr, "error adding _: _", ent, err.what());
 		}
 	}
 	if (nerrors > 0) {

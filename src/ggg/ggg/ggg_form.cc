@@ -110,7 +110,8 @@ namespace ggg {
 		if (!success) {
 			throw std::runtime_error("reached maximum number of attempts");
 		}
-		native_message(std::wcout, "\nRegistered successfully!\n");
+		std::wcout << std::endl;
+		native_message(std::wcout, "Registered successfully!");
 	}
 
 }

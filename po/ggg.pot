@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ggg\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-28 21:28+0300\n"
+"POT-Creation-Date: 2018-04-11 16:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,55 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/ggg/add_entity.cc:47
-msgid "error: entity _ already exists\n"
+#: src/ggg/ggg/add_entity.cc:64
+msgid "Entity _ already exists."
 msgstr ""
 
-#: src/ggg/add_entity.cc:91
-msgid "error adding"
+#: src/ggg/ggg/add_entity.cc:81
+msgid "press any key to continue..."
+msgstr ""
+
+#: src/ggg/ggg/add_entity.cc:117
+msgid "Unable to read entities."
+msgstr ""
+
+#: src/ggg/ggg/add_entity.cc:131
+msgid "error adding _: _"
+msgstr ""
+
+#: src/ggg/ggg/ggg_form.cc:114
+msgid "Registered successfully!"
+msgstr ""
+
+#: src/ggg/ggg/show_base.cc:37
+msgid "_ entities."
+msgstr ""
+
+#: src/ggg/ggg/show_expired.cc:36 src/ggg/ggg/show_groups.cc:33
+#: src/ggg/ggg/show_groups.cc:40 src/ggg/ggg/show_members.cc:34
+#: src/ggg/ggg/show_members.cc:39
+msgid "Unable to find _."
+msgstr ""
+
+#: src/ggg/regform/regform.cc:86
+msgid "Please wait..."
+msgstr ""
+
+#. widgets
+#: src/ggg/regform/regform.cc:123 src/ggg/regform/regform.cc:298
+#: src/ggg/regform/regform.cc:552
+msgid "Register"
+msgstr ""
+
+#. widgets
+#: src/ggg/regform/regform.cc:486
+msgid "Login"
+msgstr ""
+
+#: src/ggg/regform/regform.cc:489
+msgid "Password"
+msgstr ""
+
+#: src/ggg/regform/regform.cc:495 src/ggg/regform/regform.cc:548
+msgid "Log in"
 msgstr ""

@@ -30,14 +30,14 @@ ggg::Show_groups::execute() {
 		std::wstring wa = cv.from_bytes(a);
 		auto it0 = h.find_by_name(wa.data());
 		if (it0 == h.end()) {
-			native_message(std::wcerr, "Unable to find _.\n", wa);
+			native_message(std::wcerr, "Unable to find _.", wa);
 		} else {
 			const wentity& ent = *it0;
 			auto groups = h.find_supplementary_groups(ent.name());
 			for (const std::wstring& g : groups) {
 				auto it1 = h.find_by_name(g.data());
 				if (it1 == h.end()) {
-					native_message(std::wcerr, "Unable to find _.\n", g);
+					native_message(std::wcerr, "Unable to find _.", g);
 				} else {
 					this->_result.insert(*it1);
 				}

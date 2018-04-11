@@ -33,7 +33,8 @@ ggg::Show_base::execute() {
 		align_columns(this->_result, std::wcout, wentity::delimiter, L' ', true);
 		const size_t nentities = this->_result.size();
 		if (nentities > 7) {
-			native_message(std::wcout, "\n_ entities.\n", nentities);
+			std::wcout << std::endl;
+			native_message(std::wcout, "_ entities.", nentities);
 		}
 	} else {
 		for (const wentity& ent : this->_result) {

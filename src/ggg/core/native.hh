@@ -58,6 +58,7 @@ namespace ggg {
 		const Args& ... args
 	) {
 		std::string str = native(s);
+		str.push_back('\n');
 		return format_message(out, str.data(), args...);
 	}
 
