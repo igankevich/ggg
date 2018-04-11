@@ -1,7 +1,6 @@
 #include "native.hh"
 
 #include <iostream>
-#include <locale>
 
 #include <ggg/config.hh>
 
@@ -81,14 +80,20 @@ void
 ggg
 ::init_locale() {
 	try {
-		std::locale::global(std::locale(""));
-		std::cout.imbue(std::locale::classic());
-		std::wcout.imbue(std::locale::classic());
-		std::cerr.imbue(std::locale::classic());
-		std::clog.imbue(std::locale::classic());
-		std::wcerr.imbue(std::locale::classic());
-		std::wclog.imbue(std::locale::classic());
+		init_locale(std::locale(""));
 	} catch (const std::exception& err) {
 		std::cerr << "GGG: failed to init locale" << std::endl;
 	}
+}
+
+void
+ggg
+::init_locale(std::locale rhs) {
+	std::locale::global(rhs);
+	std::cout.imbue(std::locale::classic());
+	std::wcout.imbue(std::locale::classic());
+	std::cerr.imbue(std::locale::classic());
+	std::clog.imbue(std::locale::classic());
+	std::wcerr.imbue(std::locale::classic());
+	std::wclog.imbue(std::locale::classic());
 }

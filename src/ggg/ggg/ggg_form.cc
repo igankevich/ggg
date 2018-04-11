@@ -67,9 +67,6 @@ namespace ggg {
 
 	void
 	register_user(form& f, sys::path origin) {
-		std::wcin.imbue(f.locale());
-		std::wcout.imbue(f.locale());
-		std::wclog.imbue(f.locale());
 		const bool debug = false;
 		const int max_iterations = 7;
 		bool success;
@@ -121,7 +118,6 @@ namespace ggg {
 int
 main() {
 	int ret = 0;
-	ggg::init_locale();
 	try {
 		ggg::form f;
 		f.set_type(ggg::form_type::console);
@@ -136,6 +132,7 @@ main() {
 			f.open(result->name().data());
 			origin = sys::path(GGG_ROOT, "acc", result->name(), "shadow");
 		}
+		ggg::init_locale(f.locale());
 		ggg::register_user(f, origin);
 	} catch (const std::exception& err) {
 		ret = 1;

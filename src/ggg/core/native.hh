@@ -1,8 +1,9 @@
 #ifndef GGG_NATIVE_HH
 #define GGG_NATIVE_HH
 
-#include <string>
+#include <locale>
 #include <ostream>
+#include <string>
 
 namespace ggg {
 
@@ -10,6 +11,9 @@ namespace ggg {
 	/// locale for output and error streams.
 	void
 	init_locale();
+
+	void
+	init_locale(std::locale rhs);
 
 	std::string
 	native(const char* text);
