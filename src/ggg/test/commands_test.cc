@@ -124,6 +124,8 @@ TEST_F(Commands, GroupsAndMembers) {
 	ok("rm -f " GGG_ROOT "/ent/g1");
 	output_is("", "ggg groups u1");
 	output_is("", "ggg members g1");
+	fail("ggg groups donotexist");
+	fail("ggg members donotexist");
 }
 
 TEST_F(Commands, Version) {

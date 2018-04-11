@@ -10,6 +10,7 @@
 #include <ggg/core/lock.hh>
 #include <ggg/core/native.hh>
 #include <ggg/ctl/ggg.hh>
+#include <ggg/ggg/quiet_error.hh>
 
 #include "object_traits.hh"
 
@@ -27,15 +28,18 @@ ggg::Show_members::execute() {
 	WGGG g(GGG_ENT_ROOT, this->verbose());
 	const auto& h = g.hierarchy();
 	wentity::wcvt_type cv;
+	int nerrors = 0;
 	for (const std::string& a : this->args()) {
 		std::wstring wa = cv.from_bytes(a);
 		auto it0 = h.find_group_by_name(wa.data());
 		if (it0 == h.group_end()) {
+			++nerrors;
 			native_message(std::wcerr, "Unable to find _.", wa);
 		} else {
 			for (const std::wstring& m : it0->members()) {
 				auto it = h.find_by_name(m.data());
 				if (it == h.end()) {
+					++nerrors;
 					native_message(std::wcerr, "Unable to find _.", m);
 				} else {
 					this->_result.insert(*it);
@@ -44,4 +48,7 @@ ggg::Show_members::execute() {
 		}
 	}
 	Show_base::execute();
+	if (nerrors > 0) {
+		throw quiet_error();
+	}
 }

@@ -5,6 +5,7 @@
 #include <ostream>
 #include <string>
 
+#include <ggg/bits/to_bytes.hh>
 #include <ggg/config.hh>
 
 namespace ggg {
@@ -27,7 +28,7 @@ namespace ggg {
 
 	template <class Ch>
 	std::basic_ostream<Ch>&
-	format_message(std::basic_ostream<Ch>& out, char, const char* s) {
+	format_message(std::basic_ostream<Ch>& out, Ch, const Ch* s) {
 		return out << s;
 	}
 
@@ -35,8 +36,8 @@ namespace ggg {
 	std::basic_ostream<Ch>&
 	format_message(
 		std::basic_ostream<Ch>& out,
-		char ch,
-		const char* s,
+		Ch ch,
+		const Ch* s,
 		const T& value,
 		const Args& ... args
 	) {
@@ -51,10 +52,10 @@ namespace ggg {
 	std::basic_ostream<Ch>&
 	format_message(
 		std::basic_ostream<Ch>& out,
-		const char* s,
+		const Ch* s,
 		const Args& ... args
 	) {
-		return format_message(out, '_', s, args ...);
+		return format_message<Ch>(out, Ch('_'), s, args ...);
 	}
 
 	template<class Ch, class ... Args>
@@ -64,7 +65,8 @@ namespace ggg {
 		const char* s,
 		const Args& ... args
 	) {
-		std::string str = native(s);
+		bits::wcvt_type cv;
+		std::basic_string<Ch> str = bits::to_bytes<Ch>(cv, native(s));
 		str.push_back('\n');
 		return format_message(out, str.data(), args...);
 	}
@@ -77,7 +79,8 @@ namespace ggg {
 		const char* s,
 		const Args& ... args
 	) {
-		std::string str = native_n(s, n);
+		bits::wcvt_type cv;
+		std::basic_string<Ch> str = bits::to_bytes<Ch>(cv, native_n(s, n));
 		str.push_back('\n');
 		return format_message(out, str.data(), args...);
 	}

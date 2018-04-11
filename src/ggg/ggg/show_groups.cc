@@ -8,6 +8,7 @@
 #include <ggg/core/lock.hh>
 #include <ggg/core/native.hh>
 #include <ggg/ctl/ggg.hh>
+#include <ggg/ggg/quiet_error.hh>
 
 #include "align_columns.hh"
 #include "object_traits.hh"
@@ -26,10 +27,12 @@ ggg::Show_groups::execute() {
 	WGGG g(GGG_ENT_ROOT, this->verbose());
 	const auto& h = g.hierarchy();
 	wentity::wcvt_type cv;
+	int nerrors = 0;
 	for (const std::string& a : this->args()) {
 		std::wstring wa = cv.from_bytes(a);
 		auto it0 = h.find_by_name(wa.data());
 		if (it0 == h.end()) {
+			++nerrors;
 			native_message(std::wcerr, "Unable to find _.", wa);
 		} else {
 			const wentity& ent = *it0;
@@ -37,6 +40,7 @@ ggg::Show_groups::execute() {
 			for (const std::wstring& g : groups) {
 				auto it1 = h.find_by_name(g.data());
 				if (it1 == h.end()) {
+					++nerrors;
 					native_message(std::wcerr, "Unable to find _.", g);
 				} else {
 					this->_result.insert(*it1);
@@ -45,5 +49,8 @@ ggg::Show_groups::execute() {
 		}
 	}
 	Show_base::execute();
+	if (nerrors > 0) {
+		throw quiet_error();
+	}
 }
 
