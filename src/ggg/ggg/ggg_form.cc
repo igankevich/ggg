@@ -67,7 +67,7 @@ namespace ggg {
 
 	void
 	register_user(form& f, sys::path origin) {
-		const bool debug = true;
+		const bool debug = false;
 		const int max_iterations = 7;
 		bool success;
 		int i = 0;
@@ -115,10 +115,26 @@ namespace ggg {
 
 }
 
+void
+init_system_locale() {
+	try {
+		std::locale loc("");
+		std::locale::global(loc);
+		std::wcout.imbue(loc);
+		std::wcin.imbue(loc);
+		std::wclog.imbue(loc);
+		std::cout.imbue(loc);
+		std::cin.imbue(loc);
+		std::clog.imbue(loc);
+	} catch (const std::exception& err) {
+		std::cerr << "GGG: failed to init locale" << std::endl;
+	}
+}
+
 int
 main() {
 	int ret = 0;
-	ggg::init_locale();
+	init_system_locale();
 	try {
 		ggg::form f;
 		f.set_type(ggg::form_type::console);

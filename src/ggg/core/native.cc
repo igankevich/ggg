@@ -80,11 +80,15 @@ ggg
 void
 ggg
 ::init_locale() {
-	std::locale::global(std::locale(""));
-	std::cout.imbue(std::locale::classic());
-	std::wcout.imbue(std::locale::classic());
-	std::cerr.imbue(std::locale::classic());
-	std::clog.imbue(std::locale::classic());
-	std::wcerr.imbue(std::locale::classic());
-	std::wclog.imbue(std::locale::classic());
+	try {
+		std::locale::global(std::locale(""));
+		std::cout.imbue(std::locale::classic());
+		std::wcout.imbue(std::locale::classic());
+		std::cerr.imbue(std::locale::classic());
+		std::clog.imbue(std::locale::classic());
+		std::wcerr.imbue(std::locale::classic());
+		std::wclog.imbue(std::locale::classic());
+	} catch (const std::exception& err) {
+		std::cerr << "GGG: failed to init locale" << std::endl;
+	}
 }
