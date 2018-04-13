@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ggg\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-13 23:09+0300\n"
+"POT-Creation-Date: 2018-04-13 23:57+0300\n"
 "PO-Revision-Date: 2018-04-11 16:45+0300\n"
 "Last-Translator: Ivan Gankevich <igankevich@ya.ru>\n"
 "Language-Team: Russian\n"
@@ -93,7 +93,7 @@ msgstr "Название сущности не совпадает с имене�
 msgid "file path must be relative to hierarchy root"
 msgstr "Путь должен быть относильно корня иерархии."
 
-#: src/ggg/ctl/ggg.cc:165 src/ggg/ggg/add_entity.cc:152
+#: src/ggg/ctl/ggg.cc:165 src/ggg/ggg/add_entity.cc:156
 msgid "the user is not allowed to add new entities"
 msgstr "Текущая сущность не может порождать новые."
 
@@ -107,7 +107,7 @@ msgstr "Укажите имена сущностей."
 msgid "Entity _ already exists."
 msgstr "Сущность _ уже существует."
 
-#: src/ggg/ggg/add_entity.cc:81 src/ggg/ggg/ggg_form.cc:191
+#: src/ggg/ggg/add_entity.cc:81 src/ggg/ggg/ggg_form.cc:196
 msgid "Press any key to continue..."
 msgstr "Нажмите клавишу, чтобы продолжить..."
 
@@ -115,13 +115,13 @@ msgstr "Нажмите клавишу, чтобы продолжить..."
 msgid "Unable to read entities."
 msgstr "Не могу прочитать сущности."
 
-#: src/ggg/ggg/add_entity.cc:131
-msgid "error adding _: _"
-msgstr "Ошибка при добавлении _: _"
+#: src/ggg/ggg/add_entity.cc:134
+msgid "Error adding _. "
+msgstr "Ошибка при добавлении _. "
 
 #: src/ggg/ggg/all_commands.cc:79 src/ggg/ggg/ggg_main.cc:18
 msgid "bad command"
-msgstr ""
+msgstr "Неизвестная команда."
 
 #: src/ggg/ggg/edit_entity.cc:43
 msgid "arguments are not allowed when editing directory"
@@ -139,8 +139,8 @@ msgstr "Ошибка при изменении _: _"
 msgid "bad exit code from editor"
 msgstr "Ненулевой код возврата из редактора."
 
-#: src/ggg/ggg/ggg_form.cc:38 src/ggg/ggg/ggg_form.cc:90
-#: src/ggg/ggg/ggg_form.cc:159
+#: src/ggg/ggg/ggg_form.cc:38 src/ggg/ggg/ggg_form.cc:91
+#: src/ggg/ggg/ggg_form.cc:162
 msgid "reached maximum number of attempts"
 msgstr "Предельное количество попыток достигнуто."
 
@@ -148,15 +148,15 @@ msgstr "Предельное количество попыток достигн�
 msgid "repeat"
 msgstr "повторно"
 
-#: src/ggg/ggg/ggg_form.cc:86
+#: src/ggg/ggg/ggg_form.cc:87
 msgid "Passwords do not match."
 msgstr "Пароли не совпадают."
 
-#: src/ggg/ggg/ggg_form.cc:162 src/ggg/regform/regform.cc:115
+#: src/ggg/ggg/ggg_form.cc:165 src/ggg/regform/regform.cc:115
 msgid "Registered successfully!"
 msgstr "Зарегистрирован!"
 
-#: src/ggg/ggg/ggg_form.cc:179 src/ggg/regform/regform.cc:388
+#: src/ggg/ggg/ggg_form.cc:183 src/ggg/regform/regform.cc:388
 msgid "unable to find form"
 msgstr "Не могу найти форму."
 
@@ -167,6 +167,10 @@ msgstr "Ошибка выделения памяти."
 #: src/ggg/ggg/object_traits.hh:107
 msgid "duplicate names/ids"
 msgstr "Повторяющиеся имена или идентификаторы."
+
+#: src/ggg/ggg/sanitise.cc:35
+msgid "Removing empty file _."
+msgstr "Удаляю пустой файл _."
 
 #: src/ggg/ggg/show_base.cc:37
 msgid "_ entities."
@@ -199,7 +203,7 @@ msgstr "Секундочку..."
 
 #. widgets
 #: src/ggg/regform/regform.cc:123 src/ggg/regform/regform.cc:324
-#: src/ggg/regform/regform.cc:575
+#: src/ggg/regform/regform.cc:570
 msgid "Register"
 msgstr "Зарегистрироваться"
 
@@ -208,18 +212,18 @@ msgid "the name is taken"
 msgstr "имя занято"
 
 #. widgets
-#: src/ggg/regform/regform.cc:513
+#: src/ggg/regform/regform.cc:512
 msgid "Login"
 msgstr "Пользователь"
 
-#: src/ggg/regform/regform.cc:516
+#: src/ggg/regform/regform.cc:515
 msgid "Password"
 msgstr "Пароль"
 
-#: src/ggg/regform/regform.cc:521 src/ggg/regform/regform.cc:572
+#: src/ggg/regform/regform.cc:520 src/ggg/regform/regform.cc:567
 msgid "Log in"
 msgstr "Войти"
 
-#: src/ggg/regform/regform.cc:609
+#: src/ggg/regform/regform.cc:604
 msgid "please, specify username as the first argument"
 msgstr "Укажите имя сущности в качестве первого аргумента."

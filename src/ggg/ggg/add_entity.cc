@@ -128,7 +128,11 @@ ggg::Add_entity
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
 			++nerrors;
-			native_message(std::cerr, "error adding _: _", ent, err.what());
+			bits::wcvt_type cv;
+			std::stringstream tmp;
+			tmp << ent;
+			native_sentence(std::wcerr, cv, "Error adding _. ", cv.from_bytes(tmp.str()));
+			error_message(std::wcerr, cv, err);
 		}
 	}
 	if (nerrors > 0) {

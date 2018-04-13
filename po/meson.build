@@ -8,6 +8,8 @@ i18n.gettext(
 		'--keyword=wnative:1',
 		'--keyword=native_n:1,1',
 		'--keyword=native_message:2',
+		'--keyword=native_sentence:2',
+		'--keyword=native_sentence:3',
 		'--keyword=native_message_n:3,3',
 		'--keyword=invalid_argument:1',
 		'--keyword=runtime_error:1',

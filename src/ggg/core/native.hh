@@ -187,15 +187,48 @@ namespace ggg {
 		return format_message(out, str.data(), args ...);
 	}
 
+	template<class ... Args>
+	std::wostream&
+	native_sentence(
+		std::wostream& out,
+		bits::wcvt_type& cv,
+		const char* s,
+		const Args& ... args
+	) {
+		std::wstring str = bits::to_bytes<wchar_t>(cv, native(s));
+		return format_message(out, str.data(), args ...);
+	}
+
+	template<class ... Args>
+	inline std::ostream&
+	native_sentence(std::ostream& out, const char* s, const Args& ... args) {
+		return format_message(out, native(s), args ...);
+	}
+
+	inline std::ostream&
+	error_sentence(std::ostream& out, const std::exception& err) {
+		return out << native(err.what());
+	}
+
+	inline std::wostream&
+	error_sentence(std::wostream& out, bits::wcvt_type& cv, const std::exception& err) {
+		return out << cv.from_bytes(native(err.what()));
+	}
+
 	inline std::ostream&
 	error_message(std::ostream& out, const std::exception& err) {
-		return out << native(err.what()) << std::endl;
+		return error_sentence(out, err) << std::endl;
 	}
 
 	inline std::wostream&
 	error_message(std::wostream& out, const std::exception& err) {
 		bits::wcvt_type cv;
-		return out << cv.from_bytes(native(err.what())) << std::endl;
+		return error_sentence(out, cv, err) << std::endl;
+	}
+
+	inline std::wostream&
+	error_message(std::wostream& out, bits::wcvt_type& cv, const std::exception& err) {
+		return error_sentence(out, cv, err) << std::endl;
 	}
 
 }

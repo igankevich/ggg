@@ -491,7 +491,6 @@ log_in(GtkButton* btn, gpointer) {
 		launch_desktop(username);
 	} catch (const std::exception& err) {
 		sys::backtrace(STDERR_FILENO);
-		std::clog << "error: " << err.what() << std::endl;
 		GtkWidget* dialog =
 			gtk_message_dialog_new(
 				GTK_WINDOW(window),
@@ -499,7 +498,7 @@ log_in(GtkButton* btn, gpointer) {
 				GTK_MESSAGE_ERROR,
 				GTK_BUTTONS_OK,
 				"%s",
-				err.what()
+				ggg::native(err.what())
 			);
 		gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
@@ -546,11 +545,7 @@ activate_register_form(
 			form_loaded = true;
 			show_registration_form();
 		} catch (const std::exception& err) {
-			sys::log_message(
-				"error",
-				"failed to init registration form: _",
-				err.what()
-			);
+			error_message_box(err);
 		}
 	}
 }

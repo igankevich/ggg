@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ggg\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-13 23:09+0300\n"
+"POT-Creation-Date: 2018-04-13 23:57+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -93,7 +93,7 @@ msgstr ""
 msgid "file path must be relative to hierarchy root"
 msgstr ""
 
-#: src/ggg/ctl/ggg.cc:165 src/ggg/ggg/add_entity.cc:152
+#: src/ggg/ctl/ggg.cc:165 src/ggg/ggg/add_entity.cc:156
 msgid "the user is not allowed to add new entities"
 msgstr ""
 
@@ -107,7 +107,7 @@ msgstr ""
 msgid "Entity _ already exists."
 msgstr ""
 
-#: src/ggg/ggg/add_entity.cc:81 src/ggg/ggg/ggg_form.cc:191
+#: src/ggg/ggg/add_entity.cc:81 src/ggg/ggg/ggg_form.cc:196
 msgid "Press any key to continue..."
 msgstr ""
 
@@ -115,8 +115,8 @@ msgstr ""
 msgid "Unable to read entities."
 msgstr ""
 
-#: src/ggg/ggg/add_entity.cc:131
-msgid "error adding _: _"
+#: src/ggg/ggg/add_entity.cc:134
+msgid "Error adding _. "
 msgstr ""
 
 #: src/ggg/ggg/all_commands.cc:79 src/ggg/ggg/ggg_main.cc:18
@@ -139,8 +139,8 @@ msgstr ""
 msgid "bad exit code from editor"
 msgstr ""
 
-#: src/ggg/ggg/ggg_form.cc:38 src/ggg/ggg/ggg_form.cc:90
-#: src/ggg/ggg/ggg_form.cc:159
+#: src/ggg/ggg/ggg_form.cc:38 src/ggg/ggg/ggg_form.cc:91
+#: src/ggg/ggg/ggg_form.cc:162
 msgid "reached maximum number of attempts"
 msgstr ""
 
@@ -148,15 +148,15 @@ msgstr ""
 msgid "repeat"
 msgstr ""
 
-#: src/ggg/ggg/ggg_form.cc:86
+#: src/ggg/ggg/ggg_form.cc:87
 msgid "Passwords do not match."
 msgstr ""
 
-#: src/ggg/ggg/ggg_form.cc:162 src/ggg/regform/regform.cc:115
+#: src/ggg/ggg/ggg_form.cc:165 src/ggg/regform/regform.cc:115
 msgid "Registered successfully!"
 msgstr ""
 
-#: src/ggg/ggg/ggg_form.cc:179 src/ggg/regform/regform.cc:388
+#: src/ggg/ggg/ggg_form.cc:183 src/ggg/regform/regform.cc:388
 msgid "unable to find form"
 msgstr ""
 
@@ -166,6 +166,10 @@ msgstr ""
 
 #: src/ggg/ggg/object_traits.hh:107
 msgid "duplicate names/ids"
+msgstr ""
+
+#: src/ggg/ggg/sanitise.cc:35
+msgid "Removing empty file _."
 msgstr ""
 
 #: src/ggg/ggg/show_base.cc:37
@@ -198,7 +202,7 @@ msgstr ""
 
 #. widgets
 #: src/ggg/regform/regform.cc:123 src/ggg/regform/regform.cc:324
-#: src/ggg/regform/regform.cc:575
+#: src/ggg/regform/regform.cc:570
 msgid "Register"
 msgstr ""
 
@@ -207,18 +211,18 @@ msgid "the name is taken"
 msgstr ""
 
 #. widgets
-#: src/ggg/regform/regform.cc:513
+#: src/ggg/regform/regform.cc:512
 msgid "Login"
 msgstr ""
 
-#: src/ggg/regform/regform.cc:516
+#: src/ggg/regform/regform.cc:515
 msgid "Password"
 msgstr ""
 
-#: src/ggg/regform/regform.cc:521 src/ggg/regform/regform.cc:572
+#: src/ggg/regform/regform.cc:520 src/ggg/regform/regform.cc:567
 msgid "Log in"
 msgstr ""
 
-#: src/ggg/regform/regform.cc:609
+#: src/ggg/regform/regform.cc:604
 msgid "please, specify username as the first argument"
 msgstr ""

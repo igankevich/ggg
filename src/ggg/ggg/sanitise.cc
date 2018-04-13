@@ -11,6 +11,7 @@
 #include <unistdx/fs/pathentry>
 
 #include <ggg/config.hh>
+#include <ggg/core/native.hh>
 
 namespace {
 
@@ -28,12 +29,13 @@ namespace {
 				}
 			}
 		);
+		ggg::bits::wcvt_type cv;
 		for (const sys::path& p : empty_files) {
 			try {
-				std::clog << "removing empty file " << p << std::endl;
+				ggg::native_message(std::wclog, "Removing empty file _.", cv.from_bytes(p));
 				UNISTDX_CHECK(::unlink(p));
 			} catch (const std::exception& err) {
-				std::cerr << err.what() << std::endl;
+				ggg::error_message(std::wcerr, cv, err);
 			}
 		}
 	}

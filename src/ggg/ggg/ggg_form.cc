@@ -75,7 +75,8 @@ namespace ggg {
 					ggg::validate_password(p.data(), min_entropy);
 					valid = std::regex_match(value, expr);
 				} catch (const std::exception& err) {
-					std::wcerr << std::endl << err.what() << std::endl;
+					std::wcerr << std::endl;
+					error_message(std::wcerr, cv, err);
 					valid = false;
 				}
 			} else {
@@ -152,7 +153,9 @@ namespace ggg {
 				}
 			} catch (const std::exception& err) {
 				success = false;
-				std::wcerr << std::endl << err.what() << std::endl;
+				bits::wcvt_type cv;
+				std::wcerr << std::endl;
+				error_message(std::wcerr, cv, err);
 			}
 		} while (!success && ++i < max_iterations);
 		if (!success) {
@@ -166,14 +169,15 @@ namespace ggg {
 
 int
 main() {
+	using namespace ggg;
 	int ret = 0;
 	try {
-		ggg::form f;
-		f.set_type(ggg::form_type::console);
+		form f;
+		f.set_type(form_type::console);
 		sys::path origin;
 		{
-			ggg::file_lock lock;
-			ggg::Hierarchy h(GGG_ENT_ROOT);
+			file_lock lock;
+			Hierarchy h(GGG_ENT_ROOT);
 			auto result = h.find_by_uid(sys::this_process::user());
 			if (result == h.end()) {
 				throw std::invalid_argument("unable to find form");
@@ -181,14 +185,15 @@ main() {
 			f.open(result->name().data());
 			origin = sys::path(GGG_ROOT, "acc", result->name(), "shadow");
 		}
-		ggg::init_locale(f.locale());
-		ggg::register_user(f, origin);
+		init_locale(f.locale());
+		register_user(f, origin);
 	} catch (const std::exception& err) {
 		ret = 1;
-		std::wcerr << err.what() << std::endl;
+		bits::wcvt_type cv;
+		error_message(std::wcerr, cv, err);
 	}
 	if (::isatty(STDIN_FILENO)) {
-		ggg::native_message(std::wcout, "Press any key to continue...");
+		native_message(std::wcout, "Press any key to continue...");
 		std::wcin.get();
 	}
 	return ret;
