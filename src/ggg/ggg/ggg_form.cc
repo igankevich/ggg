@@ -75,7 +75,7 @@ namespace ggg {
 					ggg::validate_password(p.data(), min_entropy);
 					valid = std::regex_match(value, expr);
 				} catch (const std::exception& err) {
-					std::cerr << std::endl << err.what() << std::endl;
+					std::wcerr << std::endl << err.what() << std::endl;
 					valid = false;
 				}
 			} else {
@@ -152,7 +152,7 @@ namespace ggg {
 				}
 			} catch (const std::exception& err) {
 				success = false;
-				std::cerr << std::endl << err.what() << std::endl;
+				std::wcerr << std::endl << err.what() << std::endl;
 			}
 		} while (!success && ++i < max_iterations);
 		if (!success) {
@@ -185,11 +185,11 @@ main() {
 		ggg::register_user(f, origin);
 	} catch (const std::exception& err) {
 		ret = 1;
-		std::cerr << err.what() << std::endl;
+		std::wcerr << err.what() << std::endl;
 	}
 	if (::isatty(STDIN_FILENO)) {
-		std::cout << "press any key to continue..." << std::endl;
-		std::cin.get();
+		ggg::native_message(std::wcout, "Press any key to continue...");
+		std::wcin.get();
 	}
 	return ret;
 }

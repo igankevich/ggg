@@ -22,9 +22,9 @@ msgstr ""
 msgid "Entity _ already exists."
 msgstr "Сущность _ уже существует."
 
-#: src/ggg/ggg/add_entity.cc:81
+#: src/ggg/ggg/add_entity.cc:81 src/ggg/ggg/ggg_form.cc:196
 msgid "Press any key to continue..."
-msgstr "Нажмите клавишу, чтобы продолжить ..."
+msgstr "Нажмите клавишу, чтобы продолжить..."
 
 #: src/ggg/ggg/add_entity.cc:117
 msgid "Unable to read entities."
