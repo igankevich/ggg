@@ -314,7 +314,8 @@ new_widget_form() {
 			}
 			++row;
 			if (ff.type() == ggg::field_type::password) {
-				auto rep = new_widget(ff, ff.name() + "(repeat)");
+				std::string name =  ff.name() + " (" + ggg::native("repeat") + ")";
+				auto rep = new_widget(ff, name);
 				const int nrep = rep.size();
 				for (int j=0; j<nrep; ++j) {
 					gtk_grid_attach(GTK_GRID(grid), rep[j], j, row, 1, 1);

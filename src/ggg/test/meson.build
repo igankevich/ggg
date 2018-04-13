@@ -157,4 +157,22 @@ if unshare.found() and su.found()
 		timeout: 600
 	)
 
+	test(
+		'ggg-form-test',
+		unshare,
+		args: [
+			'--mount',
+			executable(
+				'ggg-form-test',
+				sources: ['ggg_form_test.cc'] + test_src,
+				dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+			).full_path()
+		],
+		env: [
+			'GGG_OVERLAY=' + join_paths(meson.build_root(), 'overlay')
+		],
+		suite: 'cli',
+		timeout: 600
+	)
+
 endif

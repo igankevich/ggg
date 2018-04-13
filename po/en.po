@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ggg\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-13 16:06+0300\n"
+"POT-Creation-Date: 2018-04-13 16:32+0300\n"
 "PO-Revision-Date: 2018-04-11 16:45+0300\n"
 "Last-Translator: Ivan Gankevich <igankevich@ya.ru>\n"
 "Language-Team: Russian\n"
@@ -33,11 +33,15 @@ msgstr ""
 msgid "error adding _: _"
 msgstr ""
 
-#: src/ggg/ggg/ggg_form.cc:85
+#: src/ggg/ggg/ggg_form.cc:66 src/ggg/regform/regform.cc:317
+msgid "repeat"
+msgstr ""
+
+#: src/ggg/ggg/ggg_form.cc:86
 msgid "Passwords do not match."
 msgstr ""
 
-#: src/ggg/ggg/ggg_form.cc:161 src/ggg/regform/regform.cc:114
+#: src/ggg/ggg/ggg_form.cc:162 src/ggg/regform/regform.cc:114
 msgid "Registered successfully!"
 msgstr ""
 
@@ -58,8 +62,8 @@ msgid "Please wait..."
 msgstr ""
 
 #. widgets
-#: src/ggg/regform/regform.cc:126 src/ggg/regform/regform.cc:328
-#: src/ggg/regform/regform.cc:579
+#: src/ggg/regform/regform.cc:126 src/ggg/regform/regform.cc:329
+#: src/ggg/regform/regform.cc:580
 msgid "Register"
 msgstr ""
 
@@ -68,14 +72,14 @@ msgid "the name is taken"
 msgstr ""
 
 #. widgets
-#: src/ggg/regform/regform.cc:517
+#: src/ggg/regform/regform.cc:518
 msgid "Login"
 msgstr ""
 
-#: src/ggg/regform/regform.cc:520
+#: src/ggg/regform/regform.cc:521
 msgid "Password"
 msgstr ""
 
-#: src/ggg/regform/regform.cc:525 src/ggg/regform/regform.cc:576
+#: src/ggg/regform/regform.cc:526 src/ggg/regform/regform.cc:577
 msgid "Log in"
 msgstr ""

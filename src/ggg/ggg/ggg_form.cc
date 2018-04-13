@@ -61,8 +61,9 @@ namespace ggg {
 				std::getline(std::wcin, value, L'\n');
 			}
 			{
+				std::wcout << std::endl;
 				std::wcout << name
-				           << L'(' << wnative("repeat", cv) << L"): "
+				           << L" (" << wnative("repeat", cv) << L"): "
 				           << std::flush;
 				echo_guard g(STDIN_FILENO);
 				std::getline(std::wcin, rep, L'\n');
