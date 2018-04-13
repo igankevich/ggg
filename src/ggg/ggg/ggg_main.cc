@@ -7,11 +7,6 @@
 #include "quiet_error.hh"
 #include <ggg/core/native.hh>
 
-void
-show_error(const char* what) {
-	std::cerr << "error: " << what << std::endl;
-}
-
 ggg::command_ptr
 parse_command(int argc, char* argv[]) {
 	ggg::command_ptr cmd = nullptr;
@@ -39,14 +34,14 @@ int main(int argc, char* argv[]) {
 	} catch (const ggg::quiet_error& err) {
 		// info has been already printed
 	} catch (const std::bad_alloc& err) {
-		show_error("memory allocation error");
+		ggg::native_message(std::wcerr, "memory allocation error");
 	} catch (const std::invalid_argument& err) {
-		show_error(err.what());
+		ggg::error_message(std::wcerr, err);
 		if (cmd && !parse_success) {
 			cmd->print_usage();
 		}
 	} catch (const std::exception& err) {
-		show_error(err.what());
+		ggg::error_message(std::wcerr, err);
 	}
 	return ret;
 }

@@ -20,6 +20,7 @@
 #include "align_columns.hh"
 #include "object_traits.hh"
 #include <ggg/core/lock.hh>
+#include <ggg/core/native.hh>
 #include <ggg/ggg/quiet_error.hh>
 
 void
@@ -141,9 +142,16 @@ ggg::Edit_entity::update_objects(GGG& g, const std::string& filename) {
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
 			++nerrors;
-			std::cerr << "error updating ";
-			traits_type::print(std::cerr, ent);
-			std::cerr << ": " << err.what() << std::endl;
+			bits::wcvt_type cv;
+			std::stringstream tmp;
+			tmp.imbue(std::locale::classic());
+			tmp << ent;
+			native_message(
+				std::wcerr,
+				"error updating _: _",
+				cv.from_bytes(tmp.str()),
+				wnative(err.what(), cv)
+			);
 		}
 	}
 	if (nerrors > 0) {

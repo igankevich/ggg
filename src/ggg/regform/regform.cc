@@ -78,14 +78,16 @@ show_message_box(const char* msg, GtkMessageType type) {
 }
 
 void
+error_message_box(const std::exception& err) {
+	show_message_box(ggg::native(err.what()), GTK_MESSAGE_ERROR);
+}
+
+void
 register_user(GtkButton*, gpointer) {
 	if (!all_valid) return;
 	// disable the button
 	gtk_widget_set_sensitive(GTK_WIDGET(registerButton), FALSE);
-	gtk_button_set_label(
-		GTK_BUTTON(registerButton),
-		ggg::native("Please wait...").data()
-	);
+	gtk_button_set_label(GTK_BUTTON(registerButton), ggg::native("Please wait..."));
 	try {
 		using namespace ggg;
 		entity ent;
@@ -110,21 +112,15 @@ register_user(GtkButton*, gpointer) {
 			acc.origin(origin);
 			g.add(ent, acc);
 		}
-		show_message_box(
-			ggg::native("Registered successfully!").data(),
-			GTK_MESSAGE_INFO
-		);
+		show_message_box(ggg::native("Registered successfully!"), GTK_MESSAGE_INFO);
 		for (GtkWidget* entry : all_entries) {
 			gtk_entry_set_text(GTK_ENTRY(entry), "");
 		}
 	} catch (const std::exception& err) {
-		show_message_box(err.what(), GTK_MESSAGE_ERROR);
+		error_message_box(err);
 	}
 	gtk_widget_set_sensitive(GTK_WIDGET(registerButton), TRUE);
-	gtk_button_set_label(
-		GTK_BUTTON(registerButton),
-		ggg::native("Register").data()
-	);
+	gtk_button_set_label(GTK_BUTTON(registerButton), ggg::native("Register"));
 }
 
 void
@@ -164,8 +160,7 @@ validate_login() {
 		std::string value = interpolate(ff.regex(), values);
 		struct passwd* pwd = getpwnam(value.data());
 		valid &= pwd == nullptr;
-		errorText = (valid || value.empty())
-		            ? "" : ggg::native("the name is taken").data();
+		errorText = (valid || value.empty()) ? "" : ggg::native("the name is taken");
 	}
 	gtk_label_set_text(GTK_LABEL(loginErrorLabel), errorText);
 	return valid;
@@ -326,7 +321,7 @@ new_widget_form() {
 		}
 	}
 	// widgets
-	registerButton = gtk_button_new_with_label(ggg::native("Register").data());
+	registerButton = gtk_button_new_with_label(ggg::native("Register"));
 	gtk_widget_set_sensitive(registerButton, FALSE);
 	loginErrorLabel = gtk_label_new("");
 	// layout
@@ -515,15 +510,15 @@ log_in(GtkButton* btn, gpointer) {
 GtkWidget*
 new_login_form() {
 	// widgets
-	GtkWidget* loginLabel = gtk_label_new(ggg::native("Login").data());
+	GtkWidget* loginLabel = gtk_label_new(ggg::native("Login"));
 	gtk_label_set_xalign(GTK_LABEL(loginLabel), 1.f);
 	loginEntry = gtk_entry_new();
-	GtkWidget* passwordLabel = gtk_label_new(ggg::native("Password").data());
+	GtkWidget* passwordLabel = gtk_label_new(ggg::native("Password"));
 	gtk_label_set_xalign(GTK_LABEL(passwordLabel), 1.f);
 	passwordEntry = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(passwordEntry), FALSE);
 	GtkWidget* logInButton =
-		gtk_button_new_with_label(ggg::native("Log in").data());
+		gtk_button_new_with_label(ggg::native("Log in"));
 	// layout
 	GtkWidget* grid = gtk_grid_new();
 	gtk_grid_set_row_spacing(GTK_GRID(grid), 2);
@@ -574,10 +569,10 @@ login_form_app(GtkApplication* app, gpointer) {
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	// widgets
 	GtkWidget* loginPageGrid = new_login_form();
-	GtkWidget* loginPageLabel = gtk_label_new(ggg::native("Log in").data());
+	GtkWidget* loginPageLabel = gtk_label_new(ggg::native("Log in"));
 	registerPageGrid = gtk_grid_new();
 	GtkWidget* registerPageLabel =
-		gtk_label_new(ggg::native("Register").data());
+		gtk_label_new(ggg::native("Register"));
 	// layout
 	GtkWidget* notebook = gtk_notebook_new();
 	gtk_notebook_append_page(
@@ -630,7 +625,7 @@ main(int argc, char* argv[]) {
 		g_object_unref(app);
 	} catch (const std::exception& err) {
 		ret = EXIT_FAILURE;
-		std::cerr << err.what() << std::endl;
+		ggg::error_message(std::cerr, err);
 	}
 	return ret;
 }

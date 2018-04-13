@@ -3,6 +3,7 @@
 
 #include <locale>
 #include <ostream>
+#include <stdexcept>
 #include <string>
 
 #include <unistdx/base/check>
@@ -112,7 +113,7 @@ namespace ggg {
 	void
 	init_locale(std::locale rhs);
 
-	inline std::string
+	inline const char*
 	native(const char* id) {
 		return text_domain(GGG_CATALOG).text(id);
 	}
@@ -184,6 +185,17 @@ namespace ggg {
 		std::basic_string<Ch> str = bits::to_bytes<Ch>(cv, native_n(s, n));
 		str.push_back('\n');
 		return format_message(out, str.data(), args ...);
+	}
+
+	inline std::ostream&
+	error_message(std::ostream& out, const std::exception& err) {
+		return out << native(err.what()) << std::endl;
+	}
+
+	inline std::wostream&
+	error_message(std::wostream& out, const std::exception& err) {
+		bits::wcvt_type cv;
+		return out << cv.from_bytes(native(err.what())) << std::endl;
 	}
 
 }

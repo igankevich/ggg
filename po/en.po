@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ggg\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-13 16:32+0300\n"
+"POT-Creation-Date: 2018-04-13 23:09+0300\n"
 "PO-Revision-Date: 2018-04-11 16:45+0300\n"
 "Last-Translator: Ivan Gankevich <igankevich@ya.ru>\n"
 "Language-Team: Russian\n"
@@ -17,11 +17,96 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
+#: src/ggg/core/entity.cc:330 src/ggg/core/hierarchy.cc:314
+msgid "bad uid"
+msgstr ""
+
+#: src/ggg/core/entity.cc:336 src/ggg/core/hierarchy.cc:317
+msgid "bad gid"
+msgstr ""
+
+#: src/ggg/core/form_field.cc:101
+msgid "bad field type"
+msgstr ""
+
+#: src/ggg/core/form_type.cc:32
+msgid "bad form type"
+msgstr ""
+
+#: src/ggg/core/hierarchy.cc:320
+msgid "bad name"
+msgstr ""
+
+#: src/ggg/core/hierarchy.cc:323
+msgid "bad home directory"
+msgstr ""
+
+#: src/ggg/core/hierarchy.cc:326
+msgid "bad shell"
+msgstr ""
+
+#: src/ggg/core/hierarchy.cc:341
+msgid "bad entity"
+msgstr ""
+
+#: src/ggg/core/hierarchy.cc:344
+msgid "conflicting name/uid pair"
+msgstr ""
+
+#: src/ggg/core/hierarchy.cc:348 src/ggg/ctl/account_ctl.cc:76
+#: src/ggg/ctl/account_ctl.cc:109 src/ggg/ctl/account_ctl.cc:132
+msgid "bad origin"
+msgstr ""
+
+#: src/ggg/core/hierarchy.cc:354 src/ggg/core/hierarchy.cc:425
+msgid "conflicting system user"
+msgstr ""
+
+#: src/ggg/core/hierarchy.cc:410
+msgid "empty filename"
+msgstr ""
+
+#: src/ggg/core/hierarchy.cc:419
+msgid "entity with the same name/uid already exists"
+msgstr ""
+
+#: src/ggg/ctl/account_ctl.cc:80 src/ggg/ctl/account_ctl.cc:123
+#: src/ggg/ctl/account_ctl.cc:185 src/ggg/ctl/account_ctl.cc:202
+#: src/ggg/ctl/account_ctl.cc:219
+msgid "bad account"
+msgstr ""
+
+#: src/ggg/ctl/account_ctl.cc:119
+msgid "bad login"
+msgstr ""
+
+#: src/ggg/ctl/form.cc:25
+msgid "unknown form"
+msgstr ""
+
+#: src/ggg/ctl/ggg.cc:106
+msgid "entity name does not match account name"
+msgstr ""
+
+#: src/ggg/ctl/ggg.cc:123
+msgid "file path must be relative to hierarchy root"
+msgstr ""
+
+#: src/ggg/ctl/ggg.cc:165 src/ggg/ggg/add_entity.cc:152
+msgid "the user is not allowed to add new entities"
+msgstr ""
+
+#: src/ggg/ggg/add_entity.cc:40 src/ggg/ggg/edit_entity.cc:48
+#: src/ggg/ggg/show_entity.cc:153 src/ggg/ggg/show_groups.cc:20
+#: src/ggg/ggg/show_members.cc:21
+msgid "please, specify entity names"
+msgstr ""
+
 #: src/ggg/ggg/add_entity.cc:64
 msgid "Entity _ already exists."
 msgstr ""
 
-#: src/ggg/ggg/add_entity.cc:81
+#: src/ggg/ggg/add_entity.cc:81 src/ggg/ggg/ggg_form.cc:191
 msgid "Press any key to continue..."
 msgstr ""
 
@@ -33,7 +118,32 @@ msgstr ""
 msgid "error adding _: _"
 msgstr ""
 
-#: src/ggg/ggg/ggg_form.cc:66 src/ggg/regform/regform.cc:317
+#: src/ggg/ggg/all_commands.cc:79 src/ggg/ggg/ggg_main.cc:18
+msgid "bad command"
+msgstr ""
+
+#: src/ggg/ggg/edit_entity.cc:43
+msgid "arguments are not allowed when editing directory"
+msgstr ""
+
+#: src/ggg/ggg/edit_entity.cc:109 src/ggg/ggg/show_entity.cc:125
+msgid "not found"
+msgstr ""
+
+#: src/ggg/ggg/edit_entity.cc:151
+msgid "error updating _: _"
+msgstr ""
+
+#: src/ggg/ggg/editor.cc:37
+msgid "bad exit code from editor"
+msgstr ""
+
+#: src/ggg/ggg/ggg_form.cc:38 src/ggg/ggg/ggg_form.cc:90
+#: src/ggg/ggg/ggg_form.cc:159
+msgid "reached maximum number of attempts"
+msgstr ""
+
+#: src/ggg/ggg/ggg_form.cc:66 src/ggg/regform/regform.cc:312
 msgid "repeat"
 msgstr ""
 
@@ -41,8 +151,20 @@ msgstr ""
 msgid "Passwords do not match."
 msgstr ""
 
-#: src/ggg/ggg/ggg_form.cc:162 src/ggg/regform/regform.cc:114
+#: src/ggg/ggg/ggg_form.cc:162 src/ggg/regform/regform.cc:115
 msgid "Registered successfully!"
+msgstr ""
+
+#: src/ggg/ggg/ggg_form.cc:179 src/ggg/regform/regform.cc:388
+msgid "unable to find form"
+msgstr ""
+
+#: src/ggg/ggg/ggg_main.cc:37
+msgid "memory allocation error"
+msgstr ""
+
+#: src/ggg/ggg/object_traits.hh:107
+msgid "duplicate names/ids"
 msgstr ""
 
 #: src/ggg/ggg/show_base.cc:37
@@ -51,35 +173,51 @@ msgid_plural "_ entities."
 msgstr[0] "_ entity."
 msgstr[1] "_ entities."
 
+#: src/ggg/ggg/show_expired.cc:21
+msgid "please, do not specify entity names"
+msgstr ""
+
 #: src/ggg/ggg/show_expired.cc:36 src/ggg/ggg/show_groups.cc:36
 #: src/ggg/ggg/show_groups.cc:44 src/ggg/ggg/show_members.cc:37
 #: src/ggg/ggg/show_members.cc:43
 msgid "Unable to find _."
 msgstr ""
 
-#: src/ggg/regform/regform.cc:87
+#: src/ggg/ggg/tmpfile.cc:22
+msgid "unable to create a file in temporary directory"
+msgstr ""
+
+#: src/ggg/ggg/tmpfile.cc:53
+msgid "unable to find temporary directory"
+msgstr ""
+
+#: src/ggg/regform/regform.cc:90
 msgid "Please wait..."
 msgstr ""
 
 #. widgets
-#: src/ggg/regform/regform.cc:126 src/ggg/regform/regform.cc:329
-#: src/ggg/regform/regform.cc:580
+#: src/ggg/regform/regform.cc:123 src/ggg/regform/regform.cc:324
+#: src/ggg/regform/regform.cc:575
 msgid "Register"
 msgstr ""
 
-#: src/ggg/regform/regform.cc:168
+#: src/ggg/regform/regform.cc:163
 msgid "the name is taken"
 msgstr ""
 
 #. widgets
-#: src/ggg/regform/regform.cc:518
+#: src/ggg/regform/regform.cc:513
 msgid "Login"
 msgstr ""
 
-#: src/ggg/regform/regform.cc:521
+#: src/ggg/regform/regform.cc:516
 msgid "Password"
 msgstr ""
 
-#: src/ggg/regform/regform.cc:526 src/ggg/regform/regform.cc:577
+#: src/ggg/regform/regform.cc:521 src/ggg/regform/regform.cc:572
 msgid "Log in"
+msgstr ""
+
+#: src/ggg/regform/regform.cc:609
+msgid "please, specify username as the first argument"
 msgstr ""
