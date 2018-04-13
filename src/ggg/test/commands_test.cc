@@ -180,7 +180,7 @@ set_secure:account.password:4
 		"> " GGG_ROOT "/reg/u1"
 	);
 	ok("ggg init");
-	ok("echo 'F\nL\nu2\nnXq2UYKUD5yZd32jeN8M\n' | su - u1 -c ggg-form");
+	ok("echo 'F\nL\nu2\nnXq2UYKUD5yZd32jeN8M\nnXq2UYKUD5yZd32jeN8M\n' | su - u1 -c ggg-form");
 	output_is("u2::2002:2002:F L:/:/bin/bash\n", "ggg find -t u2");
 	output_is("u2::2002:2002:F L:/:/bin/bash\n", "getent passwd u2");
 }

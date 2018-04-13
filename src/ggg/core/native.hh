@@ -21,6 +21,11 @@ namespace ggg {
 	std::string
 	native(const char* text);
 
+	inline std::wstring
+	wnative(const char* text, bits::wcvt_type& cv) {
+		return bits::to_bytes<wchar_t>(cv, native(text));
+	}
+
 	inline std::string
 	native_n(const char* text, unsigned long n) {
 		return ::dngettext(GGG_CATALOG, text, text, n);

@@ -48,6 +48,7 @@ GtkWidget* loginEntry = nullptr;
 GtkWidget* passwordEntry = nullptr;
 std::vector<GtkWidget*> all_entries;
 std::vector<GtkWidget*> all_error_labels;
+std::vector<std::pair<GtkWidget*,GtkWidget*>> password_pairs;
 bool all_valid = false;
 volatile bool form_loaded = false;
 
@@ -62,14 +63,15 @@ regex_match(const char* string, const std::string& expr) {
 
 gboolean
 show_message_box(const char* msg, GtkMessageType type) {
-	GtkWidget* dialog = gtk_message_dialog_new(
-		GTK_WINDOW(window),
-		GTK_DIALOG_MODAL,
-		type,
-		GTK_BUTTONS_OK,
-		"%s",
-		msg
-	                    );
+	GtkWidget* dialog =
+		gtk_message_dialog_new(
+			GTK_WINDOW(window),
+			GTK_DIALOG_MODAL,
+			type,
+			GTK_BUTTONS_OK,
+			"%s",
+			msg
+		);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return FALSE;
@@ -82,9 +84,7 @@ register_user(GtkButton*, gpointer) {
 	gtk_widget_set_sensitive(GTK_WIDGET(registerButton), FALSE);
 	gtk_button_set_label(
 		GTK_BUTTON(registerButton),
-		ggg::native(
-			"Please wait..."
-		).data()
+		ggg::native("Please wait...").data()
 	);
 	try {
 		using namespace ggg;
@@ -110,7 +110,10 @@ register_user(GtkButton*, gpointer) {
 			acc.origin(origin);
 			g.add(ent, acc);
 		}
-		show_message_box("Registered successfully!", GTK_MESSAGE_INFO);
+		show_message_box(
+			ggg::native("Registered successfully!").data(),
+			GTK_MESSAGE_INFO
+		);
 		for (GtkWidget* entry : all_entries) {
 			gtk_entry_set_text(GTK_ENTRY(entry), "");
 		}
@@ -145,14 +148,15 @@ validate_entry(
 
 bool
 validate_login() {
-	auto result = std::find_if(
-		fields.begin(),
-		fields.end(),
-		[&] (const ggg::form_field& rhs) {
-		    return rhs.type() == ggg::field_type::set &&
-		    rhs.target() == "entity.name";
-		}
-	              );
+	auto result =
+		std::find_if(
+			fields.begin(),
+			fields.end(),
+			[&] (const ggg::form_field& rhs) {
+			    return rhs.type() == ggg::field_type::set &&
+			    rhs.target() == "entity.name";
+			}
+		);
 	bool valid = true;
 	const char* errorText = "";
 	if (result != fields.end()) {
@@ -160,7 +164,8 @@ validate_login() {
 		std::string value = interpolate(ff.regex(), values);
 		struct passwd* pwd = getpwnam(value.data());
 		valid &= pwd == nullptr;
-		errorText = (valid || value.empty()) ? "" : "User already exists";
+		errorText = (valid || value.empty())
+		            ? "" : ggg::native("the name is taken").data();
 	}
 	gtk_label_set_text(GTK_LABEL(loginErrorLabel), errorText);
 	return valid;
@@ -168,14 +173,15 @@ validate_login() {
 
 bool
 validate_password() {
-	auto result = std::find_if(
-		fields.begin(),
-		fields.end(),
-		[&] (const ggg::form_field& rhs) {
-		    return rhs.type() == ggg::field_type::set_secure &&
-		    rhs.target() == "account.password";
-		}
-	              );
+	auto result =
+		std::find_if(
+			fields.begin(),
+			fields.end(),
+			[&] (const ggg::form_field& rhs) {
+			    return rhs.type() == ggg::field_type::set_secure &&
+			    rhs.target() == "account.password";
+			}
+		);
 	bool valid = true;
 	const char* errorText = "";
 	if (result != fields.end()) {
@@ -194,9 +200,19 @@ validate_password() {
 			if (match.find(new_password) &&
 			    match.entropy() < form.min_entropy()) {
 				valid = false;
+				errorText = "Weak password";
 			}
 		}
-		errorText = (valid) ? "" : "Weak password";
+	}
+	if (valid) {
+		for (const auto& pair : password_pairs) {
+			const char* p1 = gtk_entry_get_text(GTK_ENTRY(pair.first));
+			const char* p2 = gtk_entry_get_text(GTK_ENTRY(pair.second));
+			if (std::strcmp(p1, p2) != 0) {
+				valid = false;
+				errorText = "Passwords do not match";
+			}
+		}
 	}
 	gtk_label_set_text(GTK_LABEL(loginErrorLabel), errorText);
 	return valid;
@@ -205,11 +221,10 @@ validate_password() {
 void
 read_all_entries() {
 	all_values.clear();
-	const size_t nfields = fields.size();
 	int entry_no = 0;
-	for (size_t i=0; i<nfields; ++i) {
-		if (fields[i].is_input()) {
-			read_entry(all_entries[entry_no], fields[i]);
+	for (const ggg::form_field& ff : fields) {
+		if (ff.is_input()) {
+			read_entry(all_entries[entry_no], ff);
 			++entry_no;
 		}
 	}
@@ -247,10 +262,10 @@ allocate(size_t n) {
 }
 
 std::vector<GtkWidget*>
-new_widget(const ggg::form_field& ff) {
+new_widget(const ggg::form_field& ff, std::string name) {
 	std::vector<GtkWidget*> ret;
 	if (ff.is_input()) {
-		GtkWidget* label = gtk_label_new(ff.name().data());
+		GtkWidget* label = gtk_label_new(name.data());
 		gtk_label_set_xalign(GTK_LABEL(label), 1.f);
 		GtkWidget* entry = gtk_entry_new();
 		if (ff.type() == ggg::field_type::password) {
@@ -274,24 +289,39 @@ new_widget(const ggg::form_field& ff) {
 	return ret;
 }
 
+std::vector<GtkWidget*>
+new_widget(const ggg::form_field& ff) {
+	return new_widget(ff, ff.name());
+}
+
 GtkWidget*
 new_widget_form() {
 	all_entries.clear();
 	all_error_labels.clear();
+	password_pairs.clear();
 	GtkWidget* grid = gtk_grid_new();
 	gtk_grid_set_row_spacing(GTK_GRID(grid), 2);
 	gtk_grid_set_column_spacing(GTK_GRID(grid), 2);
 	const int n = fields.size();
-	int num_input_fields = 0;
+	int row = 0;
 	for (int i=0; i<n; ++i) {
 		const ggg::form_field& ff = fields[i];
 		if (ff.is_input()) {
-			std::vector<GtkWidget*> widgets = new_widget(ff);
+			auto widgets = new_widget(ff);
 			const int nwidgets = widgets.size();
 			for (int j=0; j<nwidgets; ++j) {
-				gtk_grid_attach(GTK_GRID(grid), widgets[j], j, i, 1, 1);
+				gtk_grid_attach(GTK_GRID(grid), widgets[j], j, row, 1, 1);
 			}
-			++num_input_fields;
+			++row;
+			if (ff.type() == ggg::field_type::password) {
+				auto rep = new_widget(ff, ff.name() + "(repeat)");
+				const int nrep = rep.size();
+				for (int j=0; j<nrep; ++j) {
+					gtk_grid_attach(GTK_GRID(grid), rep[j], j, row, 1, 1);
+				}
+				++row;
+				password_pairs.emplace_back(widgets[1], rep[1]);
+			}
 		}
 	}
 	// widgets
@@ -299,12 +329,12 @@ new_widget_form() {
 	gtk_widget_set_sensitive(registerButton, FALSE);
 	loginErrorLabel = gtk_label_new("");
 	// layout
-	gtk_grid_attach(GTK_GRID(grid), registerButton, 1, num_input_fields, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid), registerButton, 1, row, 1, 1);
 	gtk_grid_attach(
 		GTK_GRID(grid),
 		loginErrorLabel,
 		0,
-		num_input_fields+1,
+		row+1,
 		3,
 		1
 	);
@@ -466,14 +496,15 @@ log_in(GtkButton* btn, gpointer) {
 	} catch (const std::exception& err) {
 		sys::backtrace(STDERR_FILENO);
 		std::clog << "error: " << err.what() << std::endl;
-		GtkWidget* dialog = gtk_message_dialog_new(
-			GTK_WINDOW(window),
-			GTK_DIALOG_MODAL,
-			GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_OK,
-			"%s",
-			err.what()
-		                    );
+		GtkWidget* dialog =
+			gtk_message_dialog_new(
+				GTK_WINDOW(window),
+				GTK_DIALOG_MODAL,
+				GTK_MESSAGE_ERROR,
+				GTK_BUTTONS_OK,
+				"%s",
+				err.what()
+			);
 		gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 	}
@@ -490,11 +521,8 @@ new_login_form() {
 	gtk_label_set_xalign(GTK_LABEL(passwordLabel), 1.f);
 	passwordEntry = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(passwordEntry), FALSE);
-	GtkWidget* logInButton = gtk_button_new_with_label(
-		ggg::native(
-			"Log in"
-		).data()
-	                         );
+	GtkWidget* logInButton =
+		gtk_button_new_with_label(ggg::native("Log in").data());
 	// layout
 	GtkWidget* grid = gtk_grid_new();
 	gtk_grid_set_row_spacing(GTK_GRID(grid), 2);
@@ -547,11 +575,8 @@ login_form_app(GtkApplication* app, gpointer) {
 	GtkWidget* loginPageGrid = new_login_form();
 	GtkWidget* loginPageLabel = gtk_label_new(ggg::native("Log in").data());
 	registerPageGrid = gtk_grid_new();
-	GtkWidget* registerPageLabel = gtk_label_new(
-		ggg::native(
-			"Register"
-		).data()
-	                               );
+	GtkWidget* registerPageLabel =
+		gtk_label_new(ggg::native("Register").data());
 	// layout
 	GtkWidget* notebook = gtk_notebook_new();
 	gtk_notebook_append_page(
@@ -597,10 +622,8 @@ main(int argc, char* argv[]) {
 	try {
 		parse_arguments(argc, argv);
 		gtk_init(nullptr, nullptr);
-		GtkApplication* app = gtk_application_new(
-			"com.igankevich.ggg",
-			G_APPLICATION_FLAGS_NONE
-		                      );
+		GtkApplication* app =
+			gtk_application_new("com.igankevich.ggg", G_APPLICATION_FLAGS_NONE);
 		g_signal_connect(app, "activate", G_CALLBACK(login_form_app), NULL);
 		ret = g_application_run(G_APPLICATION(app), 0, nullptr);
 		g_object_unref(app);

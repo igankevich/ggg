@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ggg\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-11 17:17+0300\n"
+"POT-Creation-Date: 2018-04-13 16:06+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,7 +34,11 @@ msgstr ""
 msgid "error adding _: _"
 msgstr ""
 
-#: src/ggg/ggg/ggg_form.cc:114
+#: src/ggg/ggg/ggg_form.cc:85
+msgid "Passwords do not match."
+msgstr ""
+
+#: src/ggg/ggg/ggg_form.cc:161 src/ggg/regform/regform.cc:114
 msgid "Registered successfully!"
 msgstr ""
 
@@ -44,31 +48,35 @@ msgid_plural "_ entities."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/ggg/ggg/show_expired.cc:36 src/ggg/ggg/show_groups.cc:33
-#: src/ggg/ggg/show_groups.cc:40 src/ggg/ggg/show_members.cc:34
-#: src/ggg/ggg/show_members.cc:39
+#: src/ggg/ggg/show_expired.cc:36 src/ggg/ggg/show_groups.cc:36
+#: src/ggg/ggg/show_groups.cc:44 src/ggg/ggg/show_members.cc:37
+#: src/ggg/ggg/show_members.cc:43
 msgid "Unable to find _."
 msgstr ""
 
-#: src/ggg/regform/regform.cc:86
+#: src/ggg/regform/regform.cc:87
 msgid "Please wait..."
 msgstr ""
 
 #. widgets
-#: src/ggg/regform/regform.cc:123 src/ggg/regform/regform.cc:298
-#: src/ggg/regform/regform.cc:552
+#: src/ggg/regform/regform.cc:126 src/ggg/regform/regform.cc:328
+#: src/ggg/regform/regform.cc:579
 msgid "Register"
 msgstr ""
 
+#: src/ggg/regform/regform.cc:168
+msgid "the name is taken"
+msgstr ""
+
 #. widgets
-#: src/ggg/regform/regform.cc:486
+#: src/ggg/regform/regform.cc:517
 msgid "Login"
 msgstr ""
 
-#: src/ggg/regform/regform.cc:489
+#: src/ggg/regform/regform.cc:520
 msgid "Password"
 msgstr ""
 
-#: src/ggg/regform/regform.cc:495 src/ggg/regform/regform.cc:548
+#: src/ggg/regform/regform.cc:525 src/ggg/regform/regform.cc:576
 msgid "Log in"
 msgstr ""
