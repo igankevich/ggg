@@ -12,10 +12,13 @@
 #include <unistdx/io/fildes>
 
 #include <ggg/config.hh>
+#include <ggg/core/native.hh>
+#include <ggg/ggg/quiet_error.hh>
 
 namespace {
 
 	size_t num_errors = 0;
+	ggg::bits::wcvt_type cv;
 
 	void
 	change_permissions(
@@ -25,17 +28,24 @@ namespace {
 	) {
 		try {
 			if (st.exists() && st.mode() != m) {
-				std::clog
-				    << "changing permissions of "
-				    << filename << " to " << m << std::endl;
+				ggg::native_message(
+					std::wclog,
+					"Changing permissions of _ to _.",
+					filename,
+					m
+				);
 				UNISTDX_CHECK(::chmod(filename, m));
 			}
 		} catch (const std::exception& err) {
 			++num_errors;
-			std::cerr
-			    << "failed to change permissions of "
-			    << filename << " to " << m << ": " << err.what()
-			    << std::endl;
+			ggg::native_sentence(
+				std::wcerr,
+				cv,
+				"Failed to change permissions of _ to _. ",
+				cv.from_bytes(filename),
+				m
+			);
+			ggg::error_message(std::wcerr, cv, err);
 		}
 	}
 
@@ -54,18 +64,25 @@ namespace {
 	) {
 		if (st.owner() != uid || st.group() != gid) {
 			try {
-				std::clog
-					<< "changing owner of "
-					<< filename << " to " << uid << ':' << gid
-					<< std::endl;
+				ggg::native_message(
+					std::wclog,
+					"Changing owner of _ to _:_.",
+					filename,
+					uid,
+					gid
+				);
 				UNISTDX_CHECK(::chown(filename, uid, gid));
 			} catch (const std::exception& err) {
 				++num_errors;
-				std::cerr
-					<< "failed to change owner of "
-					<< filename << " to " << uid << ':' << gid
-					<< ": " << err.what()
-					<< std::endl;
+				ggg::native_sentence(
+					std::wcerr,
+					cv,
+					"Failed to change owner of _ to _:_. ",
+					cv.from_bytes(filename),
+					uid,
+					gid
+				);
+				ggg::error_message(std::wcerr, cv, err);
 			}
 		}
 	}
@@ -85,7 +102,11 @@ namespace {
 		sys::file_stat st(filename);
 		if (st.exists()) {
 			if (!st.is_regular()) {
-				std::cerr << filename << " is not a regular file" << std::endl;
+				ggg::native_message(
+					std::wcerr,
+					"_ is not a regular file.",
+					cv.from_bytes(filename)
+				);
 			} else {
 				change_owner(filename, st, uid, gid);
 				change_permissions(filename, st, m);
@@ -106,20 +127,27 @@ namespace {
 		if (!st.exists()) {
 			try {
 				name += '/';
-				std::clog << "creating " << p << std::endl;
+				ggg::native_message(std::wclog, "Creating _.", cv.from_bytes(p));
 				sys::mkdirs(sys::path(root), sys::path(name));
 				st.update(p);
 			} catch (const std::exception& err) {
 				++num_errors;
-				std::cerr
-				    << "failed to create "
-				    << p << ": " << err.what()
-				    << std::endl;
+				ggg::native_sentence(
+					std::wcerr,
+					cv,
+					"Failed to create _. ",
+					cv.from_bytes(p)
+				);
+				ggg::error_message(std::wcerr, cv, err);
 			}
 		}
 		if (st.exists()) {
 			if (!st.is_directory()) {
-				std::cerr << p << " is not a directory" << std::endl;
+				ggg::native_message(
+					std::wcerr,
+					"_ is not a directory.",
+					cv.from_bytes(p)
+				);
 			} else {
 				change_owner(p, st, uid, gid);
 				change_permissions(p, st, m);
@@ -188,9 +216,11 @@ namespace {
 			        sys::uid_type uid = 0;
 			        sys::gid_type gid = 0;
 			        if (result == h.end()) {
-			            std::cerr << "unable to find "
-			                      << entry.name() << " form entity"
-			                      << std::endl;
+						ggg::native_message(
+							std::wcerr,
+							"Unable to find form entity _.",
+							cv.from_bytes(entry.name())
+						);
 					} else {
 			            uid = result->id();
 			            gid = result->gid();
@@ -272,6 +302,7 @@ namespace {
 void
 ggg::Heal
 ::execute() {
+	init_locale();
 	make_directory("/", GGG_ROOT, 0, 0, 0755);
 	make_directory(GGG_ROOT, "ent", 0, 0, 0755);
 	make_directory(GGG_ROOT, "reg", 0, 0, 0755);
@@ -285,17 +316,13 @@ ggg::Heal
 		h.open(sys::path(GGG_ROOT, "ent"));
 	} catch (const std::exception& err) {
 		++num_errors;
-		std::cerr
-			<< "unable to fully " << this->prefix()
-			<< " accounts and forms: entities are broken"
-			<< std::endl;
+		native_sentence(std::wcerr, cv, "Entities are broken.");
+		error_message(std::wcerr, cv, err);
 	}
 	heal_entities(h);
 	heal_forms(h);
 	heal_accounts(h);
 	if (num_errors > 0) {
-		std::stringstream msg;
-		msg << "unable to fully " << this->prefix() << " directories";
-		throw std::runtime_error(msg.str());
+		throw quiet_error();
 	}
 }

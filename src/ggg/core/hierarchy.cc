@@ -37,12 +37,7 @@ ggg::basic_hierarchy<Ch>
 ::read() {
 	bits::wcvt_type cv;
 	sys::idirtree tree;
-	try {
-		tree.open(sys::path(bits::to_bytes<char>(cv, this->_root)));
-	} catch (...) {
-		bits::log_traits<Ch>::log() << "Skipping bad hierarchy root " << _root << std::endl;
-		return;
-	}
+	tree.open(sys::path(bits::to_bytes<char>(cv, this->_root)));
 	while (!tree.eof()) {
 		tree.clear();
 		sys::pathentry entry;
@@ -52,7 +47,12 @@ ggg::basic_hierarchy<Ch>
 				try {
 					this->process_entry(entry, cv, success);
 				} catch (...) {
-					std::clog << "Skipping bad file " << entry << std::endl;
+					#ifndef NDEBUG
+					bits::log_traits<Ch>::log()
+						<< "Skipping bad file "
+						<< bits::to_bytes<Ch>(cv, entry.getpath())
+						<< std::endl;
+					#endif
 				}
 			} else {
 				if (tree.eof()) {

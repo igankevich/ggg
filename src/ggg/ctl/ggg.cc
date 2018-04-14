@@ -8,6 +8,7 @@
 
 #include <ggg/bits/to_bytes.hh>
 #include <ggg/config.hh>
+#include <ggg/core/native.hh>
 
 namespace {
 
@@ -135,6 +136,7 @@ template <class Ch>
 void
 ggg::basic_ggg<Ch>
 ::mkdirs(std::string relative_path) {
+	bits::wcvt_type cv;
 	// split path into components ignoring the last one
 	// since it is a file
 	size_t i0 = 0, i1 = 0;
@@ -143,7 +145,7 @@ ggg::basic_ggg<Ch>
 		sys::file_stat st(p);
 		if (!st.exists()) {
 			if (this->verbose()) {
-				std::clog << "making " << p << std::endl;
+				native_message(std::wclog, "Creating _.", cv.from_bytes(p));
 			}
 			if (-1 == ::mkdir(p, 0755)) {
 				throw std::system_error(errno, std::system_category());

@@ -457,7 +457,12 @@ void
 launch_desktop(const char* username) {
 	struct ::passwd* pw = ::getpwnam(username);
 	if (!pw) {
-		std::clog << "user " << username << " not found via NSS." << std::endl;
+		ggg::bits::wcvt_type cv;
+		ggg::native_message(
+			std::wcerr,
+			"User _ not found via NSS.",
+			cv.from_bytes(username)
+		);
 		std::exit(1);
 	}
 	const char* pwd = change_directory(pw->pw_dir);
@@ -487,7 +492,6 @@ log_in(GtkButton* btn, gpointer) {
 	const char* username = gtk_entry_get_text(GTK_ENTRY(loginEntry));
 	try {
 		do_pam(username, converse_log_in);
-		std::clog << "ok" << std::endl;
 		launch_desktop(username);
 	} catch (const std::exception& err) {
 		sys::backtrace(STDERR_FILENO);
@@ -620,7 +624,7 @@ main(int argc, char* argv[]) {
 		g_object_unref(app);
 	} catch (const std::exception& err) {
 		ret = EXIT_FAILURE;
-		ggg::error_message(std::cerr, err);
+		ggg::error_message(std::wcerr, err);
 	}
 	return ret;
 }

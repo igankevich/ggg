@@ -10,6 +10,7 @@
 #include <string>
 
 #include <ggg/config.hh>
+#include <ggg/core/native.hh>
 #include <ggg/ctl/password.hh>
 
 
@@ -22,7 +23,7 @@ ggg::form
 	path.append(name);
 	std::ifstream in(path);
 	if (!in.is_open()) {
-		throw std::invalid_argument("unknown form");
+		throw std::invalid_argument("bad form");
 	}
 	in.imbue(std::locale::classic());
 	std::copy(
@@ -37,16 +38,17 @@ ggg::form
 				try {
 					this->_minentropy = std::max(0.0, std::stod(ff.regex()));
 				} catch (const std::exception& err) {
-					std::cerr << std::endl << "bad entropy" << std::endl;
-					throw;
+					std::stringstream msg;
+					native_sentence(msg, "Bad entropy \"_\".", ff.regex());
+					throw std::runtime_error(msg.str());
 				}
 			} else if (ff.target() == "locale") {
 				try {
 					this->_locale = std::locale(ff.regex());
-					std::clog << "locale: " << this->_locale.name() << std::endl;
 				} catch (const std::exception& err) {
-					std::cerr << std::endl << "bad locale" << std::endl;
-					throw;
+					std::stringstream msg;
+					native_sentence(msg, "Bad locale \"_\".", ff.regex());
+					throw std::runtime_error(msg.str());
 				}
 			}
 		}

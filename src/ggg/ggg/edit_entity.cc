@@ -82,8 +82,8 @@ ggg::Edit_entity::edit_interactive(GGG& g) {
 		edit_file_or_throw(tmp.filename());
 		this->update_objects<T>(g, tmp.filename());
 		if (!this->_args.empty()) {
-			std::clog << "press any key to continue..." << std::endl;
-			std::cin.get();
+			native_message(std::wclog, "Press any key to continue...");
+			std::wcin.get();
 		}
 	}
 }
@@ -167,9 +167,9 @@ ggg::Edit_entity::edit_directory() {
 		status = ::ggg::edit_directory(sys::path(GGG_ENT_ROOT));
 		success = status.exited() && status.exit_code() == 0;
 		if (!success) {
-			std::cerr << "bad exit code from editor" << std::endl;
-			std::clog << "press any key to continue..." << std::endl;
-			std::cin.get();
+			native_message(std::wcerr, "bad exit code from editor");
+			native_message(std::wcerr, "Press any key to continue...");
+			std::wcin.get();
 		}
 	} while (!success);
 }

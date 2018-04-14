@@ -16,6 +16,7 @@
 #include <ggg/bits/io.hh>
 #include <ggg/config.hh>
 #include <ggg/core/iacctree.hh>
+#include <ggg/core/native.hh>
 
 namespace {
 
@@ -87,7 +88,12 @@ ggg::account_ctl
 		account new_acc(old);
 		new_acc.copy_from(acc);
 		if (this->verbose()) {
-		    std::clog << "updating " << new_acc.login() << std::endl;
+			bits::wcvt_type cv;
+			native_message(
+				std::wclog,
+				"Updating _.",
+				cv.from_bytes(new_acc.login())
+			);
 		}
 		const sys::uid_type uid = sys::this_process::user();
 		bits::update<account,char_type>(
@@ -132,8 +138,13 @@ ggg::account_ctl
 		throw std::invalid_argument("bad origin");
 	}
 	if (this->verbose()) {
-		std::clog << "appending " << acc.login()
-		          << " to " << dest << std::endl;
+		bits::wcvt_type cv;
+		native_message(
+			std::wclog,
+			"Appeding _ to _.",
+			cv.from_bytes(acc.login()),
+			cv.from_bytes(dest)
+		);
 	}
 	bits::append(acc, dest, "unable to add account", this->getperms(uid));
 }
@@ -187,7 +198,12 @@ ggg::account_ctl
 	if (!result->has_expired()) {
 		account tmp(*result);
 		if (this->verbose()) {
-			std::clog << "deactivating " << tmp.login() << std::endl;
+			bits::wcvt_type cv;
+			native_message(
+				std::wclog,
+				"Deactivating _.",
+				cv.from_bytes(tmp.login())
+			);
 		}
 		tmp.make_expired();
 		this->update(tmp);
@@ -204,7 +220,12 @@ ggg::account_ctl
 	if (result->has_expired()) {
 		account tmp(*result);
 		if (this->verbose()) {
-			std::clog << "activating " << tmp.login() << std::endl;
+			bits::wcvt_type cv;
+			native_message(
+				std::wclog,
+				"Activating _.",
+				cv.from_bytes(tmp.login())
+			);
 		}
 		tmp.make_active();
 		this->update(tmp);
@@ -221,7 +242,12 @@ ggg::account_ctl
 	if (!result->password_has_expired()) {
 		account tmp(*result);
 		if (this->verbose()) {
-			std::clog << "resetting password for " << tmp.login() << std::endl;
+			bits::wcvt_type cv;
+			native_message(
+				std::wclog,
+				"Resetting password for _.",
+				cv.from_bytes(tmp.login())
+			);
 		}
 		tmp.reset_password();
 		this->update(tmp);

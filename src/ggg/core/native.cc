@@ -8,7 +8,7 @@ ggg
 	try {
 		init_locale(std::locale(""));
 	} catch (const std::exception& err) {
-		std::cerr << "GGG: failed to init locale" << std::endl;
+		std::wcerr << "GGG: failed to init locale" << std::endl;
 	}
 }
 

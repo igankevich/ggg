@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ggg\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-13 23:57+0300\n"
+"POT-Creation-Date: 2018-04-14 12:40+0300\n"
 "PO-Revision-Date: 2018-04-11 16:45+0300\n"
 "Last-Translator: Ivan Gankevich <igankevich@ya.ru>\n"
 "Language-Team: Russian\n"
@@ -54,8 +54,8 @@ msgstr ""
 msgid "conflicting name/uid pair"
 msgstr "Конфликтующая пара имя-идентификатор."
 
-#: src/ggg/core/hierarchy.cc:348 src/ggg/ctl/account_ctl.cc:76
-#: src/ggg/ctl/account_ctl.cc:109 src/ggg/ctl/account_ctl.cc:132
+#: src/ggg/core/hierarchy.cc:348 src/ggg/ctl/account_ctl.cc:77
+#: src/ggg/ctl/account_ctl.cc:115 src/ggg/ctl/account_ctl.cc:138
 msgid "bad origin"
 msgstr ""
 
@@ -71,29 +71,61 @@ msgstr ""
 msgid "entity with the same name/uid already exists"
 msgstr "Сущность с таким же именем или идентификатором уже существует."
 
-#: src/ggg/ctl/account_ctl.cc:80 src/ggg/ctl/account_ctl.cc:123
-#: src/ggg/ctl/account_ctl.cc:185 src/ggg/ctl/account_ctl.cc:202
-#: src/ggg/ctl/account_ctl.cc:219
+#: src/ggg/ctl/account_ctl.cc:81 src/ggg/ctl/account_ctl.cc:129
+#: src/ggg/ctl/account_ctl.cc:196 src/ggg/ctl/account_ctl.cc:218
+#: src/ggg/ctl/account_ctl.cc:240
 msgid "bad account"
 msgstr ""
 
-#: src/ggg/ctl/account_ctl.cc:119
+#: src/ggg/ctl/account_ctl.cc:94
+msgid "Updating _."
+msgstr "Обновляю _."
+
+#: src/ggg/ctl/account_ctl.cc:125
 msgid "bad login"
 msgstr ""
 
-#: src/ggg/ctl/form.cc:25
-msgid "unknown form"
+#: src/ggg/ctl/account_ctl.cc:144
+msgid "Appeding _ to _."
 msgstr ""
 
-#: src/ggg/ctl/ggg.cc:106
+#: src/ggg/ctl/account_ctl.cc:204
+msgid "Deactivating _."
+msgstr "Блокирую _."
+
+#: src/ggg/ctl/account_ctl.cc:226
+msgid "Activating _."
+msgstr "Активирую _."
+
+#: src/ggg/ctl/account_ctl.cc:248
+msgid "Resetting password for _."
+msgstr "Сбрасываю пароль для _."
+
+#: src/ggg/ctl/form.cc:26
+msgid "bad form"
+msgstr ""
+
+#: src/ggg/ctl/form.cc:42
+msgid "Bad entropy \"_\"."
+msgstr "Неверное значение энтропии \"_\"."
+
+#: src/ggg/ctl/form.cc:50
+msgid "Bad locale \"_\"."
+msgstr "Неверное значение локали \"_\"."
+
+#: src/ggg/ctl/ggg.cc:107
 msgid "entity name does not match account name"
 msgstr "Название сущности не совпадает с именем учетной записи."
 
-#: src/ggg/ctl/ggg.cc:123
+#: src/ggg/ctl/ggg.cc:124
 msgid "file path must be relative to hierarchy root"
 msgstr "Путь должен быть относильно корня иерархии."
 
-#: src/ggg/ctl/ggg.cc:165 src/ggg/ggg/add_entity.cc:156
+#: src/ggg/ctl/ggg.cc:148 src/ggg/ggg/heal.cc:130
+msgid "Creating _."
+msgstr "Создаю _."
+
+#: src/ggg/ctl/ggg.cc:167 src/ggg/ggg/add_entity.cc:167
 msgid "the user is not allowed to add new entities"
 msgstr "Текущая сущность не может порождать новые."
 
@@ -103,19 +135,20 @@ msgstr "Текущая сущность не может порождать но�
 msgid "please, specify entity names"
 msgstr "Укажите имена сущностей."
 
-#: src/ggg/ggg/add_entity.cc:64
+#: src/ggg/ggg/add_entity.cc:69
 msgid "Entity _ already exists."
 msgstr "Сущность _ уже существует."
 
-#: src/ggg/ggg/add_entity.cc:81 src/ggg/ggg/ggg_form.cc:196
+#: src/ggg/ggg/add_entity.cc:88 src/ggg/ggg/edit_entity.cc:85
+#: src/ggg/ggg/edit_entity.cc:171 src/ggg/ggg/ggg_form.cc:196
 msgid "Press any key to continue..."
 msgstr "Нажмите клавишу, чтобы продолжить..."
 
-#: src/ggg/ggg/add_entity.cc:117
+#: src/ggg/ggg/add_entity.cc:124
 msgid "Unable to read entities."
 msgstr "Не могу прочитать сущности."
 
-#: src/ggg/ggg/add_entity.cc:134
+#: src/ggg/ggg/add_entity.cc:143
 msgid "Error adding _. "
 msgstr "Ошибка при добавлении _. "
 
@@ -135,7 +168,7 @@ msgstr "Не найдено."
 msgid "error updating _: _"
 msgstr "Ошибка при изменении _: _"
 
-#: src/ggg/ggg/editor.cc:37
+#: src/ggg/ggg/edit_entity.cc:170 src/ggg/ggg/editor.cc:37
 msgid "bad exit code from editor"
 msgstr "Ненулевой код возврата из редактора."
 
@@ -163,6 +196,42 @@ msgstr "Не могу найти форму."
 #: src/ggg/ggg/ggg_main.cc:37
 msgid "memory allocation error"
 msgstr "Ошибка выделения памяти."
+
+#: src/ggg/ggg/heal.cc:33
+msgid "Changing permissions of _ to _."
+msgstr "Изменяю права доступа к _ на _."
+
+#: src/ggg/ggg/heal.cc:44
+msgid "Failed to change permissions of _ to _. "
+msgstr "Не могу изменить права доступа к _ на _. "
+
+#: src/ggg/ggg/heal.cc:69
+msgid "Changing owner of _ to _:_."
+msgstr "Изменяю владельца _ на _:_."
+
+#: src/ggg/ggg/heal.cc:80
+msgid "Failed to change owner of _ to _:_. "
+msgstr "Не могу изменить владельца _ на _:_. "
+
+#: src/ggg/ggg/heal.cc:107
+msgid "_ is not a regular file."
+msgstr "_ не является обычным файлом."
+
+#: src/ggg/ggg/heal.cc:138
+msgid "Failed to create _. "
+msgstr "Не могу создать _. "
+
+#: src/ggg/ggg/heal.cc:148
+msgid "_ is not a directory."
+msgstr "_ не является директорией."
+
+#: src/ggg/ggg/heal.cc:221
+msgid "Unable to find form entity _."
+msgstr "Не могу найти связанную с формой сущность."
+
+#: src/ggg/ggg/heal.cc:319
+msgid "Entities are broken."
+msgstr "Не могу загрузить сущности."
 
 #: src/ggg/ggg/object_traits.hh:107
 msgid "duplicate names/ids"
@@ -203,7 +272,7 @@ msgstr "Секундочку..."
 
 #. widgets
 #: src/ggg/regform/regform.cc:123 src/ggg/regform/regform.cc:324
-#: src/ggg/regform/regform.cc:570
+#: src/ggg/regform/regform.cc:574
 msgid "Register"
 msgstr "Зарегистрироваться"
 
@@ -211,19 +280,23 @@ msgstr "Зарегистрироваться"
 msgid "the name is taken"
 msgstr "имя занято"
 
+#: src/ggg/regform/regform.cc:463
+msgid "User _ not found via NSS."
+msgstr "Пользователь _ не найден."
+
 #. widgets
-#: src/ggg/regform/regform.cc:512
+#: src/ggg/regform/regform.cc:516
 msgid "Login"
 msgstr "Пользователь"
 
-#: src/ggg/regform/regform.cc:515
+#: src/ggg/regform/regform.cc:519
 msgid "Password"
 msgstr "Пароль"
 
-#: src/ggg/regform/regform.cc:520 src/ggg/regform/regform.cc:567
+#: src/ggg/regform/regform.cc:524 src/ggg/regform/regform.cc:571
 msgid "Log in"
 msgstr "Войти"
 
-#: src/ggg/regform/regform.cc:604
+#: src/ggg/regform/regform.cc:608
 msgid "please, specify username as the first argument"
 msgstr "Укажите имя сущности в качестве первого аргумента."
