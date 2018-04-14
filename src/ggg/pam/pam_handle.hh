@@ -105,7 +105,7 @@ namespace ggg {
 		template <class ... Args>
 		inline void
 		info(const char* msg, Args ... args) {
-			pam_info(this->_pamh, msg, args...);
+			pam_info(this->_pamh, "%s", msg, args...);
 		}
 
 		void

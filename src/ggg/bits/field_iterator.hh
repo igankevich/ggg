@@ -18,7 +18,7 @@ namespace stdx {
 		typedef value_type* pointer;
 		typedef const pointer const_pointer;
 		typedef value_type& reference;
-		typedef const reference const_reference;
+		typedef const value_type& const_reference;
 
 		field_iterator() = default;
 

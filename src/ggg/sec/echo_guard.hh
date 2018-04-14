@@ -31,7 +31,10 @@ namespace ggg {
 		~echo_guard() {
 			if (this->_fd != -1) {
 				this->c_lflag |= ECHO;
-				UNISTDX_CHECK(::tcsetattr(this->_fd, TCSANOW, this));
+				int ret = ::tcsetattr(this->_fd, TCSANOW, this);
+				if (ret == -1) {
+					std::terminate();
+				}
 			}
 		}
 
