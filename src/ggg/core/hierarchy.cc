@@ -17,6 +17,68 @@
 
 namespace {
 
+	template <class Ch>
+	inline sys::path
+	cache_file_path(sys::canonical_path root) {
+		for (char& ch : root) {
+			if (ch == '/') {
+				ch = '_';
+			}
+		}
+		if (std::is_same<char,Ch>::value) {
+			root += '.';
+			root += 'c';
+		} else {
+			root += '.';
+			root += 'w';
+		}
+		return sys::path(GGG_CACHE_DIRECTORY, root);
+	}
+
+}
+
+
+namespace ggg {
+
+	template <class Container, class Ch>
+	sys::basic_bstream<Ch>&
+	operator<<(sys::basic_bstream<Ch>& out, const Container& rhs) {
+		out << uint32_t(rhs.size());
+		for (const auto& elem : rhs) {
+			out << elem;
+		}
+		return out;
+	}
+
+	template <class Ch, class T>
+	sys::basic_bstream<Ch>&
+	operator>>(sys::basic_bstream<Ch>& in, std::set<T>& rhs) {
+		rhs.clear();
+		uint32_t n = 0;
+		in >> n;
+		for (uint32_t i=0; i<n; ++i) {
+			T elem;
+			in >> elem;
+			rhs.emplace(elem);
+		}
+		return in;
+	}
+
+	template <class Ch, class K, class V>
+	sys::basic_bstream<Ch>&
+	operator>>(sys::basic_bstream<Ch>& in, std::map<K,V>& rhs) {
+		rhs.clear();
+		uint32_t n = 0;
+		in >> n;
+		for (uint32_t i=0; i<n; ++i) {
+			K key;
+			V val;
+			in >> key >> val;
+			rhs.emplace(key, val);
+		}
+		return in;
+	}
+
 }
 
 template <class Ch>
@@ -29,6 +91,79 @@ ggg::operator<<(std::basic_ostream<Ch>& out, const entity_pair<Ch>& rhs) {
 		sys::intersperse_iterator<std::basic_string<Ch>,Ch,Ch>(out, Ch(','))
 	);
 	return out;
+}
+
+template <class Ch>
+void
+ggg::basic_hierarchy<Ch>
+::open(const char* root) {
+	#ifndef NDEBUG
+	assert(sys::path(root) != sys::path(GGG_ROOT));
+	#endif
+	this->_root = canonical_path_type(root);
+	sys::path cache = cache_file_path<Ch>(this->_root);
+	if (!this->open_cache(cache)) {
+		this->clear();
+		this->read();
+		if (sys::this_process::user() == 0) {
+			this->write_cache(cache);
+		}
+	}
+}
+
+template <class Ch>
+bool
+ggg::basic_hierarchy<Ch>
+::open_cache(sys::path cache) {
+	using std::chrono::seconds;
+	sys::file_stat st(cache);
+	const auto dt = clock_type::now() - time_point(seconds(st.st_mtime));
+	bool success = false;
+	if (st.exists() &&
+	    st.is_regular() &&
+	    dt > duration::zero() &&
+	    dt < this->_ttl) {
+		try {
+			this->read_cache(cache);
+			success = true;
+		} catch (...) {
+			success = false;
+		}
+	}
+	return success;
+}
+
+template <class Ch>
+void
+ggg::basic_hierarchy<Ch>
+::read_cache(sys::path cache) {
+	std::basic_filebuf<Ch> buf;
+	buf.open(cache, std::ios_base::in | std::ios_base::binary);
+	if (!buf.is_open()) {
+		throw std::runtime_error("bad cache file");
+	}
+	sys::basic_bstream<Ch> in(&buf);
+	in >> *this;
+	this->_isopen = true;
+}
+
+template <class Ch>
+void
+ggg::basic_hierarchy<Ch>
+::write_cache(sys::path cache) {
+	std::basic_filebuf<Ch> buf;
+	buf.open(
+		cache,
+		std::ios_base::out | std::ios_base::binary |
+		std::ios_base::trunc
+	);
+	if (!buf.is_open()) {
+		return;
+	}
+	set_perms(cache, 0, 0, 0644);
+	sys::basic_bstream<Ch> out(&buf);
+	out << *this;
+	out.flush();
 }
 
 template <class Ch>
@@ -49,9 +184,9 @@ ggg::basic_hierarchy<Ch>
 				} catch (...) {
 					#ifndef NDEBUG
 					bits::log_traits<Ch>::log()
-						<< "Skipping bad file "
-						<< bits::to_bytes<Ch>(cv, entry.getpath())
-						<< std::endl;
+					    << "Skipping bad file "
+					    << bits::to_bytes<Ch>(cv, entry.getpath())
+					    << std::endl;
 					#endif
 				}
 			} else {
@@ -135,7 +270,8 @@ ggg::basic_hierarchy<Ch>
 						if (!s.empty()) {
 							#ifndef NDEBUG
 							bits::log_traits<Ch>::log() << "Nest "
-								<< group.name() << " and " << member << std::endl;
+							                            << group.name() <<
+							    " and " << member << std::endl;
 							#endif
 							set_union(add, s);
 							sub.insert(member);
@@ -197,8 +333,8 @@ ggg::basic_hierarchy<Ch>
 		erase_if(
 			pair.second,
 			[this] (const string_type& grname) {
-				return this->_groups.find(group_type(grname)) ==
-					   this->_groups.end();
+			    return this->_groups.find(group_type(grname)) ==
+			    this->_groups.end();
 			}
 		);
 	}
@@ -291,7 +427,8 @@ void
 ggg::basic_hierarchy<Ch>
 ::erase_link(const entity_type& ent) {
 	if (this->_verbose) {
-		bits::log_traits<Ch>::log() << "unlinking " << ent.origin() << std::endl;
+		bits::log_traits<Ch>::log() << "unlinking " << ent.origin() <<
+		    std::endl;
 	}
 	int ret = ::unlink(ent.origin());
 	if (ret == -1) {
@@ -444,6 +581,24 @@ ggg::basic_hierarchy<Ch>
 	bits::append(ent, dest, "unable to add entity", 0644);
 }
 
+template <class Ch>
+sys::basic_bstream<Ch>&
+ggg::operator<<(sys::basic_bstream<Ch>& out, const entity_pair<Ch>& rhs) {
+	return out << rhs.first << rhs.second;
+}
+
+template <class Ch>
+sys::basic_bstream<Ch>&
+ggg::operator<<(sys::basic_bstream<Ch>& out, const basic_hierarchy<Ch>& rhs) {
+	return out << rhs._entities << rhs._links << rhs._groups;
+}
+
+template <class Ch>
+sys::basic_bstream<Ch>&
+ggg::operator>>(sys::basic_bstream<Ch>& in, basic_hierarchy<Ch>& rhs) {
+	return in >> rhs._entities >> rhs._links >> rhs._groups;
+}
+
 template class ggg::basic_hierarchy<char>;
 template class ggg::basic_hierarchy<wchar_t>;
 
@@ -455,3 +610,16 @@ ggg::operator<<(
 
 template std::basic_ostream<char>&
 ggg::operator<<(std::basic_ostream<char>& out, const entity_pair<char>& rhs);
+
+template sys::basic_bstream<char>&
+ggg::operator<<(sys::basic_bstream<char>& out, const entity_pair<char>& rhs);
+
+template sys::basic_bstream<char>&
+ggg::operator<<(
+	sys::basic_bstream<char>& out,
+	const
+	basic_hierarchy<char>& rhs
+);
+
+template sys::basic_bstream<char>&
+ggg::operator>>(sys::basic_bstream<char>& in, basic_hierarchy<char>& rhs);

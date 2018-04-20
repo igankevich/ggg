@@ -6,14 +6,18 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <deque>
+#include <iosfwd>
 #include <iterator>
 #include <map>
+#include <ostream>
 #include <set>
 #include <sstream>
 
 #include <unistdx/fs/canonical_path>
 #include <unistdx/fs/pathentry>
+#include <unistdx/net/bstream>
 
 #include <ggg/bits/field_iterator.hh>
 
@@ -41,6 +45,10 @@ namespace ggg {
 	operator<<(std::basic_ostream<Ch>& out, const entity_pair<Ch>& rhs);
 
 	template <class Ch>
+	sys::basic_bstream<Ch>&
+	operator<<(sys::basic_bstream<Ch>& out, const entity_pair<Ch>& rhs);
+
+	template <class Ch>
 	class basic_hierarchy {
 
 	private:
@@ -55,6 +63,9 @@ namespace ggg {
 		typedef std::set<group_type> group_container_type;
 		typedef sys::canonical_path canonical_path_type;
 		typedef typename entity_type::path_type path_type;
+		typedef std::chrono::system_clock clock_type;
+		typedef clock_type::duration duration;
+		typedef clock_type::time_point time_point;
 
 	private:
 		map_type _entities;
@@ -66,6 +77,7 @@ namespace ggg {
 		size_t _maxlinks = 100;
 		bool _isopen = false;
 		bool _verbose = false;
+		std::chrono::seconds _ttl = std::chrono::minutes(5);
 
 	public:
 		typedef stdx::field_iterator<typename map_type::iterator,0>
@@ -85,14 +97,8 @@ namespace ggg {
 		basic_hierarchy(const char* root)
 		{ this->open(root); }
 
-		inline void
-		open(const char* root) {
-			this->_root = canonical_path_type(root);
-			#ifndef NDEBUG
-			assert(sys::path(root) != sys::path(GGG_ROOT));
-			#endif
-			this->read();
-		}
+		void
+		open(const char* root);
 
 		inline bool
 		is_open() const noexcept {
@@ -110,6 +116,7 @@ namespace ggg {
 		clear() {
 			this->_entities.clear();
 			this->_links.clear();
+			this->_groups.clear();
 			this->_isopen = false;
 		}
 
@@ -272,9 +279,26 @@ namespace ggg {
 		friend std::basic_ostream<X>&
 		operator<<(std::basic_ostream<X>& out, const basic_hierarchy<X>& rhs);
 
+		template <class X>
+		friend sys::basic_bstream<X>&
+		operator<<(sys::basic_bstream<X>& out, const basic_hierarchy<X>& rhs);
+
+		template <class X>
+		friend sys::basic_bstream<X>&
+		operator>>(sys::basic_bstream<X>& in, basic_hierarchy<X>& rhs);
+
 	private:
 		void
 		read();
+
+		bool
+		open_cache(sys::path cache);
+
+		void
+		read_cache(sys::path cache);
+
+		void
+		write_cache(sys::path cache);
 
 		void
 		process_links();
@@ -344,6 +368,14 @@ namespace ggg {
 	template <class Ch>
 	std::basic_ostream<Ch>&
 	operator<<(std::basic_ostream<Ch>& out, const basic_hierarchy<Ch>& rhs);
+
+	template <class Ch>
+	sys::basic_bstream<Ch>&
+	operator<<(sys::basic_bstream<Ch>& out, const basic_hierarchy<Ch>& rhs);
+
+	template <class Ch>
+	sys::basic_bstream<Ch>&
+	operator>>(sys::basic_bstream<Ch>& in, basic_hierarchy<Ch>& rhs);
 
 	typedef basic_hierarchy<char> Hierarchy;
 

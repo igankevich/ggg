@@ -134,3 +134,17 @@ TEST(EntityTest, CopyTo) {
 	EXPECT_STREQ(ent.real_name().data(), pw.pw_gecos);
 	#endif
 }
+
+TEST_P(EntityTest, BstreamIO) {
+	ggg::entity ent, ent2;
+	{
+		std::stringstream tmp;
+		tmp << GetParam();
+		tmp >> ent;
+	}
+	std::stringbuf buf;
+	sys::bstream str(&buf);
+	str << ent;
+	str >> ent2;
+	EXPECT_EQ(ent, ent2);
+}

@@ -102,6 +102,31 @@ namespace {
 		}
 
 	};
+
+}
+
+namespace ggg {
+
+	sys::basic_bstream<wchar_t>&
+	operator<<(sys::basic_bstream<wchar_t>& out, const std::string& rhs) {
+		out << uint32_t(rhs.size());
+		for (const auto& elem : rhs) {
+			out << elem;
+		}
+		return out;
+	}
+
+	sys::basic_bstream<wchar_t>&
+	operator>>(sys::basic_bstream<wchar_t>& in, std::string& rhs) {
+		uint32_t n = 0;
+		in >> n;
+		rhs.resize(n);
+		for (auto& elem : rhs) {
+			in >> elem;
+		}
+		return in;
+	}
+
 }
 
 template <class Ch>
@@ -168,6 +193,34 @@ ggg::operator<<(std::basic_ostream<Ch>& out, const basic_entity<Ch>& rhs) {
 }
 
 template <class Ch>
+sys::basic_bstream<Ch>&
+ggg::operator<<(sys::basic_bstream<Ch>& out, const basic_entity<Ch>& rhs) {
+	return out << rhs._name
+	           << rhs._password
+	           << rhs._realname
+	           << rhs._homedir
+	           << rhs._shell
+	           << rhs._uid
+	           << rhs._gid
+	           << rhs._origin;
+}
+
+template <class Ch>
+sys::basic_bstream<Ch>&
+ggg::operator>>(sys::basic_bstream<Ch>& in, basic_entity<Ch>& rhs) {
+	rhs.clear();
+	return in
+	       >> rhs._name
+	       >> rhs._password
+	       >> rhs._realname
+	       >> rhs._homedir
+	       >> rhs._shell
+	       >> rhs._uid
+	       >> rhs._gid
+	       >> static_cast<std::string&>(rhs._origin);
+}
+
+template <class Ch>
 void
 ggg::basic_entity<Ch>
 ::write_header(ostream_type& out, columns_type width, char_type delim) {
@@ -180,10 +233,10 @@ ggg::basic_entity<Ch>
 			0
 		};
 		out << std::left << std::setw(width[0]) << h::name() << d
-			<< std::right << std::setw(width[2]) << h::id() << d
-			<< std::left << std::setw(width[4]) << h::real_name() << d
-			<< std::left << std::setw(width[5]) << h::home() << d
-			<< std::left << std::setw(width[6]) << h::shell() << '\n';
+		    << std::right << std::setw(width[2]) << h::id() << d
+		    << std::left << std::setw(width[4]) << h::real_name() << d
+		    << std::left << std::setw(width[5]) << h::home() << d
+		    << std::left << std::setw(width[6]) << h::shell() << '\n';
 	} else {
 		out << h::all() << '\n';
 	}
@@ -394,17 +447,25 @@ ggg
 ::assign(basic_entity<char>& lhs, const struct ::passwd& rhs);
 
 template std::basic_istream<char>&
-ggg::operator>>(std::basic_istream<char>& in, basic_entity<char>& rhs);
+ggg::operator>>(std::basic_istream<char>&, basic_entity<char>&);
 
 template std::basic_istream<wchar_t>&
-ggg::operator>>(std::basic_istream<wchar_t>& in, basic_entity<wchar_t>& rhs);
+ggg::operator>>(std::basic_istream<wchar_t>&, basic_entity<wchar_t>&);
 
 template std::basic_ostream<char>&
-ggg::operator<<(std::basic_ostream<char>& out, const basic_entity<char>& rhs);
+ggg::operator<<(std::basic_ostream<char>&, const basic_entity<char>&);
 
 template std::basic_ostream<wchar_t>&
-ggg::operator<<(
-	std::basic_ostream<wchar_t>& out,
-	const
-	basic_entity<wchar_t>& rhs
-);
+ggg::operator<<(std::basic_ostream<wchar_t>&, const basic_entity<wchar_t>&);
+
+template sys::basic_bstream<char>&
+ggg::operator<<(sys::basic_bstream<char>&, const basic_entity<char>&);
+
+template sys::basic_bstream<wchar_t>&
+ggg::operator<<(sys::basic_bstream<wchar_t>&, const basic_entity<wchar_t>&);
+
+template sys::basic_bstream<char>&
+ggg::operator>>(sys::basic_bstream<char>&, basic_entity<char>&);
+
+template sys::basic_bstream<wchar_t>&
+ggg::operator>>(sys::basic_bstream<wchar_t>&, basic_entity<wchar_t>&);

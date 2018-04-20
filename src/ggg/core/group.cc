@@ -7,12 +7,43 @@
 #include <unistdx/it/intersperse_iterator>
 
 namespace {
+
 	union pointer {
 		char* ptr;
 		char bytes[sizeof(ptr)];
 	};
+
 	static_assert(sizeof(pointer) == sizeof(char*), "bad pointer size");
 	static_assert(sizeof(pointer) == alignof(pointer), "bad pointer size");
+
+}
+
+namespace ggg {
+
+	template <class Container, class Ch>
+	sys::basic_bstream<Ch>&
+	operator<<(sys::basic_bstream<Ch>& out, const Container& rhs) {
+		out << uint32_t(rhs.size());
+		for (const auto& elem : rhs) {
+			out << elem;
+		}
+		return out;
+	}
+
+	template <class Ch, class T>
+	sys::basic_bstream<Ch>&
+	operator>>(sys::basic_bstream<Ch>& in, std::unordered_set<T>& rhs) {
+		rhs.clear();
+		uint32_t n = 0;
+		in >> n;
+		for (uint32_t i=0; i<n; ++i) {
+			T elem;
+			in >> elem;
+			rhs.emplace(elem);
+		}
+		return in;
+	}
+
 }
 
 template <class Ch>
@@ -28,6 +59,25 @@ ggg::operator<<(std::basic_ostream<Ch>& out, const basic_group<Ch>& rhs) {
 		sys::intersperse_iterator<string_type,Ch,Ch>(out, Ch(','))
 	);
 	return out;
+}
+
+template <class Ch>
+sys::basic_bstream<Ch>&
+ggg::operator<<(sys::basic_bstream<Ch>& out, const basic_group<Ch>& rhs) {
+	return out << rhs._name
+	           << rhs._password
+	           << rhs._gid
+	           << rhs._members;
+}
+
+template <class Ch>
+sys::basic_bstream<Ch>&
+ggg::operator>>(sys::basic_bstream<Ch>& in, basic_group<Ch>& rhs) {
+	return in
+	       >> rhs._name
+	       >> rhs._password
+	       >> rhs._gid
+	       >> rhs._members;
 }
 
 template <class Ch>
@@ -84,7 +134,21 @@ ggg::operator<<(
 );
 
 template size_t
-ggg::buffer_size(const basic_group<char>&);
+ggg
+::buffer_size(const basic_group<char>&);
 
 template void
-ggg::copy_to(const basic_group<char>&, struct ::group*, char*);
+ggg
+::copy_to(const basic_group<char>&, struct ::group*, char*);
+
+template sys::basic_bstream<char>&
+ggg::operator<<(sys::basic_bstream<char>& out, const basic_group<char>& rhs);
+
+template sys::basic_bstream<wchar_t>&
+ggg::operator<<(sys::basic_bstream<wchar_t>& out, const basic_group<wchar_t>& rhs);
+
+template sys::basic_bstream<char>&
+ggg::operator>>(sys::basic_bstream<char>& in, basic_group<char>& rhs);
+
+template sys::basic_bstream<wchar_t>&
+ggg::operator>>(sys::basic_bstream<wchar_t>& in, basic_group<wchar_t>& rhs);

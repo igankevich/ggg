@@ -2,9 +2,12 @@
 #define GROUP_HH
 
 #include <grp.h>
-#include <string>
 #include <unistd.h>
+
+#include <string>
 #include <unordered_set>
+
+#include <unistdx/net/bstream>
 
 namespace sys {
 	typedef ::gid_t gid_type;
@@ -27,7 +30,8 @@ namespace ggg {
 		mutable container_type _members;
 
 	public:
-		explicit
+
+		inline explicit
 		basic_group(
 			const string_type& name,
 			const string_type& password,
@@ -38,7 +42,20 @@ namespace ggg {
 		_gid(gid)
 		{}
 
-		explicit
+		inline explicit
+		basic_group(
+			const string_type& name,
+			const string_type& password,
+			sys::gid_type gid,
+			const container_type& members
+		):
+		_name(name),
+		_password(password),
+		_gid(gid),
+		_members(members)
+		{}
+
+		inline explicit
 		basic_group(const string_type& name):
 		_name(name)
 		{}
@@ -77,6 +94,14 @@ namespace ggg {
 		template <class X>
 		friend std::basic_ostream<X>&
 		operator<<(std::basic_ostream<X>& out, const basic_group<X>& rhs);
+
+		template <class X>
+		friend sys::basic_bstream<X>&
+		operator<<(sys::basic_bstream<X>& out, const basic_group<X>& rhs);
+
+		template <class X>
+		friend sys::basic_bstream<X>&
+		operator>>(sys::basic_bstream<X>& in, basic_group<X>& rhs);
 
 		inline sys::gid_type
 		id() const noexcept {
@@ -126,6 +151,14 @@ namespace ggg {
 	template <class Ch>
 	std::basic_ostream<Ch>&
 	operator<<(std::basic_ostream<Ch>& out, const basic_group<Ch>& rhs);
+
+	template <class Ch>
+	sys::basic_bstream<Ch>&
+	operator<<(sys::basic_bstream<Ch>& out, const basic_group<Ch>& rhs);
+
+	template <class Ch>
+	sys::basic_bstream<Ch>&
+	operator>>(sys::basic_bstream<Ch>& in, basic_group<Ch>& rhs);
 
 	typedef basic_group<char> group;
 	typedef basic_group<wchar_t> wgroup;

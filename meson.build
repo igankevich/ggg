@@ -40,6 +40,7 @@ config.set('version', meson.project_version())
 config.set('file_editor', 'vi')
 config.set('directory_editor', 'vidir')
 config.set('catalog', 'ggg')
+config.set('cache_directory', join_paths(get_option('localstatedir'), 'cache'))
 
 unistdx = dependency('unistdx')
 gtest = dependency('gtest', main: true)

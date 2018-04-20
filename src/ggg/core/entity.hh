@@ -8,6 +8,7 @@
 #include <string>
 
 #include <unistdx/fs/path>
+#include <unistdx/net/bstream>
 #include <unistdx/util/user>
 
 #include <ggg/core/eq_traits.hh>
@@ -127,6 +128,14 @@ namespace ggg {
 		friend std::basic_ostream<X>&
 		operator<<(std::basic_ostream<X>& out, const basic_entity<X>& rhs);
 
+		template <class X>
+		friend sys::basic_bstream<X>&
+		operator>>(sys::basic_bstream<X>& in, basic_entity<X>& rhs);
+
+		template <class X>
+		friend sys::basic_bstream<X>&
+		operator<<(sys::basic_bstream<X>& out, const basic_entity<X>& rhs);
+
 		void
 		set(const form_field& field, const char_type* value);
 
@@ -235,6 +244,14 @@ namespace ggg {
 	template <class Ch>
 	std::basic_ostream<Ch>&
 	operator<<(std::basic_ostream<Ch>& out, const basic_entity<Ch>& rhs);
+
+	template <class Ch>
+	sys::basic_bstream<Ch>&
+	operator>>(sys::basic_bstream<Ch>& in, basic_entity<Ch>& rhs);
+
+	template <class Ch>
+	sys::basic_bstream<Ch>&
+	operator<<(sys::basic_bstream<Ch>& out, const basic_entity<Ch>& rhs);
 
 	typedef basic_entity<char> entity;
 	typedef basic_entity<wchar_t> wentity;
