@@ -10,7 +10,7 @@ rm --preserve-root --one-file-system -rf "$overlay"
 
 # install ggg
 cd "$MESON_BUILD_ROOT"
-meson configure -Dprefix=$myroot/usr -Dsysconfdir=/etc
+meson configure -Dprefix=$myroot/usr -Dsysconfdir=/etc -Dlocalstatedir=/var
 ninja install
 
 # install nsswitch

@@ -77,7 +77,8 @@ namespace ggg {
 		size_t _maxlinks = 100;
 		bool _isopen = false;
 		bool _verbose = false;
-		std::chrono::seconds _ttl = std::chrono::minutes(5);
+		bool _donotwritecache = false;
+		std::chrono::seconds _ttl = std::chrono::seconds(7);
 
 	public:
 		typedef stdx::field_iterator<typename map_type::iterator,0>
@@ -97,6 +98,8 @@ namespace ggg {
 		basic_hierarchy(const char* root)
 		{ this->open(root); }
 
+		~basic_hierarchy();
+
 		void
 		open(const char* root);
 
@@ -111,6 +114,9 @@ namespace ggg {
 				this->open(root);
 			}
 		}
+
+		void
+		remove_cache();
 
 		inline void
 		clear() {

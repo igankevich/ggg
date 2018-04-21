@@ -245,6 +245,17 @@ TEST_F(Commands, RemoveUnpriviledged) {
 	output_is("", "ggg find u3");
 }
 
+TEST_F(Commands, Cache) {
+	ok("mkdir -p /var/cache/ggg");
+	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+	ok("getent passwd u1");
+	ok("ls " GGG_CACHE_DIRECTORY "/ggg/*");
+	ASSERT_EQ(0, ::system("rm -rf " GGG_ENT_ROOT "/*"));
+	ok("getent passwd u1");
+	ok("rm -rf /var/cache/ggg");
+	fail("getent passwd u1");
+}
+
 int
 main(int argc, char* argv[]) {
 	::testing::InitGoogleTest(&argc, argv);

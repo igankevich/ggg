@@ -133,9 +133,6 @@ if unshare.found() and su.found()
 				dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
 			).full_path()
 		],
-		env: [
-			'GGG_OVERLAY=' + join_paths(meson.build_root(), 'overlay')
-		],
 		suite: 'integration'
 	)
 
@@ -149,9 +146,6 @@ if unshare.found() and su.found()
 				sources: ['ggg_dm_test.cc'] + test_src,
 				dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
 			).full_path()
-		],
-		env: [
-			'GGG_OVERLAY=' + join_paths(meson.build_root(), 'overlay')
 		],
 		suite: 'gui',
 		timeout: 600

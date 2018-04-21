@@ -7,6 +7,7 @@
 #include <iterator>
 #include <locale>
 #include <stdexcept>
+#include <type_traits>
 
 #include <unistdx/fs/idirtree>
 #include <unistdx/it/intersperse_iterator>
@@ -19,20 +20,23 @@ namespace {
 
 	template <class Ch>
 	inline sys::path
-	cache_file_path(sys::canonical_path root) {
+	cache_file_path(sys::canonical_path root, char suffix) {
 		for (char& ch : root) {
 			if (ch == '/') {
 				ch = '_';
 			}
 		}
-		if (std::is_same<char,Ch>::value) {
-			root += '.';
-			root += 'c';
-		} else {
-			root += '.';
-			root += 'w';
-		}
-		return sys::path(GGG_CACHE_DIRECTORY, root);
+		root += '.';
+		root += suffix;
+		return sys::path(GGG_CACHE_DIRECTORY, "ggg", root);
+	}
+
+	template <class Ch>
+	inline sys::path
+	cache_file_path(sys::canonical_path root) {
+		return std::is_same<char,Ch>::value
+		       ? cache_file_path<Ch>(root, 'c')
+			   : cache_file_path<Ch>(root, 'w');
 	}
 
 }
@@ -94,6 +98,21 @@ ggg::operator<<(std::basic_ostream<Ch>& out, const entity_pair<Ch>& rhs) {
 }
 
 template <class Ch>
+ggg::basic_hierarchy<Ch>::~basic_hierarchy() {
+	if (this->is_open() &&
+		!this->_donotwritecache &&
+	    sys::this_process::user() == 0 &&
+	    std::is_same<char,Ch>::value) {
+		sys::path cache = cache_file_path<Ch>(this->_root);
+		try {
+			this->write_cache(cache);
+		} catch (const std::exception& err) {
+			// ignore errors
+		}
+	}
+}
+
+template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
 ::open(const char* root) {
@@ -105,16 +124,25 @@ ggg::basic_hierarchy<Ch>
 	if (!this->open_cache(cache)) {
 		this->clear();
 		this->read();
-		if (sys::this_process::user() == 0) {
-			this->write_cache(cache);
-		}
 	}
+}
+
+template <class Ch>
+void
+ggg::basic_hierarchy<Ch>
+::remove_cache() {
+	std::remove(cache_file_path<char>(this->_root));
+	std::remove(cache_file_path<wchar_t>(this->_root));
+	this->_donotwritecache = true;
 }
 
 template <class Ch>
 bool
 ggg::basic_hierarchy<Ch>
 ::open_cache(sys::path cache) {
+	if (!std::is_same<char,Ch>::value) {
+		return false;
+	}
 	using std::chrono::seconds;
 	sys::file_stat st(cache);
 	const auto dt = clock_type::now() - time_point(seconds(st.st_mtime));
@@ -164,6 +192,7 @@ ggg::basic_hierarchy<Ch>
 	sys::basic_bstream<Ch> out(&buf);
 	out << *this;
 	out.flush();
+	buf.close();
 }
 
 template <class Ch>
@@ -434,6 +463,7 @@ ggg::basic_hierarchy<Ch>
 	if (ret == -1) {
 		throw std::system_error(errno, std::system_category());
 	}
+	this->remove_cache();
 }
 
 template <class Ch>
@@ -441,6 +471,7 @@ void
 ggg::basic_hierarchy<Ch>
 ::erase_regular(const entity_type& ent) {
 	bits::erase<entity_type,char_type>(ent, this->_verbose, 0644);
+	this->remove_cache();
 }
 
 template <class Ch>
@@ -501,6 +532,7 @@ ggg::basic_hierarchy<Ch>
 	entity_type tmp(ent);
 	tmp.origin(ent_origin);
 	bits::update<entity_type,char_type>(tmp, this->_verbose, 0644);
+	this->remove_cache();
 }
 
 template <class Ch>
@@ -579,6 +611,7 @@ ggg::basic_hierarchy<Ch>
 		    << std::endl;
 	}
 	bits::append(ent, dest, "unable to add entity", 0644);
+	this->remove_cache();
 }
 
 template <class Ch>
