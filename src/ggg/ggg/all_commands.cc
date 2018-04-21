@@ -20,6 +20,7 @@
 #include "show_help.hh"
 #include "show_members.hh"
 #include "show_version.hh"
+#include "test_lock.hh"
 
 #define MAKE_COMMAND(name, type) \
 	{name, [](){ return ::ggg::command_ptr(new ::ggg::type); }}
@@ -61,6 +62,8 @@ namespace {
 		MAKE_COMMAND("sanitise", Sanitise),
 		MAKE_COMMAND("sanitize", Sanitise),
 		MAKE_COMMAND("clean", Sanitise),
+		MAKE_COMMAND("test-lock", Test_lock),
+		MAKE_COMMAND("testlock", Test_lock),
 		MAKE_COMMAND("-v", Show_version),
 		MAKE_COMMAND("--version", Show_version),
 		MAKE_COMMAND("help", Show_help),
