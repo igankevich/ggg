@@ -231,10 +231,10 @@ namespace {
 	heal_entities_subdir(sys::path dir, sys::uid_type uid, sys::gid_type gid) {
 		sys::idirtree tree(dir);
 		std::for_each(
-			sys::idirtree_iterator<sys::pathentry>(tree),
-			sys::idirtree_iterator<sys::pathentry>(),
-			[uid,gid] (const sys::pathentry& entry) {
-			    sys::path f(entry.getpath());
+			sys::idirtree_iterator<sys::direntry>(tree),
+			sys::idirtree_iterator<sys::direntry>(),
+			[uid,gid,&tree] (const sys::direntry& entry) {
+			    sys::path f(tree.current_dir(), entry.name());
 			    sys::file_stat st(f);
 				change_owner(f, st, uid, gid);
 			    if (st.type() == sys::file_type::regular) {
@@ -250,10 +250,10 @@ namespace {
 	heal_entities(const ggg::Hierarchy& h) {
 		sys::idirectory dir(sys::path(GGG_ROOT, "ent"));
 		std::for_each(
-			sys::idirectory_iterator<sys::pathentry>(dir),
-			sys::idirectory_iterator<sys::pathentry>(),
-			[&h] (const sys::pathentry& entry) {
-			    sys::path f(entry.getpath());
+			sys::idirectory_iterator<sys::direntry>(dir),
+			sys::idirectory_iterator<sys::direntry>(),
+			[&h,&dir] (const sys::direntry& entry) {
+			    sys::path f(dir.getpath(), entry.name());
 			    sys::file_stat st(f);
 			    if (st.type() == sys::file_type::regular) {
 					change_owner(f, st, 0, 0);
@@ -278,10 +278,10 @@ namespace {
 	heal_forms(const ggg::Hierarchy& h) {
 		sys::idirtree tree(sys::path(GGG_ROOT, "reg"));
 		std::for_each(
-			sys::idirtree_iterator<sys::pathentry>(tree),
-			sys::idirtree_iterator<sys::pathentry>(),
-			[&h] (const sys::pathentry& entry) {
-			    sys::path f(entry.getpath());
+			sys::idirtree_iterator<sys::direntry>(tree),
+			sys::idirtree_iterator<sys::direntry>(),
+			[&h,&tree] (const sys::direntry& entry) {
+			    sys::path f(tree.current_dir(), entry.name());
 			    sys::file_stat st(f);
 			    if (st.type() == sys::file_type::regular) {
 			        auto result = h.find_by_name(entry.name());
@@ -338,10 +338,10 @@ namespace {
 	heal_accounts(const ggg::Hierarchy& h) {
 		sys::idirtree tree(sys::path(GGG_ROOT, "acc"));
 		std::for_each(
-			sys::idirtree_iterator<sys::pathentry>(tree),
-			sys::idirtree_iterator<sys::pathentry>(),
-			[&h] (const sys::pathentry& entry) {
-			    sys::path f(entry.getpath());
+			sys::idirtree_iterator<sys::direntry>(tree),
+			sys::idirtree_iterator<sys::direntry>(),
+			[&h,&tree] (const sys::direntry& entry) {
+			    sys::path f(tree.current_dir(), entry.name());
 			    sys::file_stat st(f);
 				std::string name;
 				sys::file_mode m;
@@ -349,7 +349,7 @@ namespace {
 					name = entry.name();
 					m = 0700;
 				} else if (st.type() == sys::file_type::regular) {
-					sys::canonical_path dir(entry.dirname());
+					sys::canonical_path dir(tree.current_dir());
 					name = dir.basename();
 					m = 0600;
 				}

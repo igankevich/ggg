@@ -32,28 +32,6 @@ namespace {
 		return p;
 	}
 
-	template <class Function>
-	inline void
-	for_each_account_file(Function func) {
-		ggg::iacctree tree(sys::path(GGG_ROOT, "acc"));
-		std::for_each(
-			ggg::iacctree_iterator<sys::pathentry>(tree),
-			ggg::iacctree_iterator<sys::pathentry>(),
-			func
-		);
-	}
-
-	template <class Function>
-	inline void
-	find_in_account_files(Function func) {
-		ggg::iacctree tree(sys::path(GGG_ROOT, "acc"));
-		std::find_if(
-			ggg::iacctree_iterator<sys::pathentry>(tree),
-			ggg::iacctree_iterator<sys::pathentry>(),
-			func
-		);
-	}
-
 }
 
 void
@@ -157,13 +135,13 @@ ggg::account_ctl
 	while (!tree.eof()) {
 		tree.clear();
 		std::for_each(
-			ggg::iacctree_iterator<sys::pathentry>(tree),
-			ggg::iacctree_iterator<sys::pathentry>(),
-			[this] (const sys::pathentry& entry) {
-				if (sys::get_file_type(entry) != sys::file_type::regular) {
+			ggg::iacctree_iterator<sys::direntry>(tree),
+			ggg::iacctree_iterator<sys::direntry>(),
+			[this,&tree] (const sys::direntry& entry) {
+				if (sys::get_file_type(tree.current_dir(), entry) != sys::file_type::regular) {
 					return;
 				}
-				sys::path f(entry.getpath());
+				sys::path f(tree.current_dir(), entry.name());
 				std::ifstream in;
 				try {
 					in.imbue(std::locale::classic());

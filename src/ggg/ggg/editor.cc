@@ -59,10 +59,13 @@ ggg::edit_directory(sys::path root) {
 	{
 		sys::ofdstream out(std::move(pipe.out()));
 		sys::idirtree tree(root);
-		std::copy(
-			sys::idirtree_iterator<sys::pathentry>(tree),
-			sys::idirtree_iterator<sys::pathentry>(),
-			std::ostream_iterator<sys::pathentry>(out, "\n")
+		std::transform(
+			sys::idirtree_iterator<sys::direntry>(tree),
+			sys::idirtree_iterator<sys::direntry>(),
+			std::ostream_iterator<sys::path>(out, "\n"),
+			[&tree] (const sys::direntry& entry) {
+				return sys::path(tree.current_dir(), entry.name());
+			}
 		);
 		out.flush();
 	}

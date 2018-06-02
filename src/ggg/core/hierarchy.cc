@@ -208,12 +208,12 @@ ggg::basic_hierarchy<Ch>
 	tree.open(sys::path(bits::to_bytes<char>(cv, this->_root)));
 	while (!tree.eof()) {
 		tree.clear();
-		sys::pathentry entry;
+		sys::direntry entry;
 		bool success = false;
 		while (!success) {
 			try {
 				if (tree >> entry) {
-					this->process_entry(entry, cv, success);
+					this->process_entry(tree.current_dir(), entry, cv, success);
 				} else {
 					if (tree.eof()) {
 						success = true;
@@ -223,7 +223,7 @@ ggg::basic_hierarchy<Ch>
 				#ifndef NDEBUG
 				bits::log_traits<Ch>::log()
 				    << "Skipping bad file "
-				    << bits::to_bytes<Ch>(cv, entry.getpath())
+				    << bits::to_bytes<Ch>(cv, sys::path(tree.current_dir(), entry.name()))
 				    << std::endl;
 				#endif
 			}
@@ -377,13 +377,15 @@ template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
 ::process_entry(
-	const sys::pathentry& entry,
+	const sys::path& dir,
+	const sys::direntry& entry,
 	entity::wcvt_type& cv,
 	bool& success
 ) {
-	canonical_path_type filepath(entry.getpath());
-	if (filepath.is_relative_to(_root)) {
-		switch (sys::get_file_type(entry)) {
+	sys::path filepath0(dir, entry.name());
+	canonical_path_type filepath(filepath0);
+	if (filepath.is_relative_to(this->_root)) {
+		switch (sys::get_file_type(dir, entry)) {
 		case sys::file_type::regular: {
 			std::basic_ifstream<Ch> in(
 				bits::to_bytes<char>(cv, filepath),
@@ -403,9 +405,9 @@ ggg::basic_hierarchy<Ch>
 		}
 		case sys::file_type::symbolic_link: {
 			entity byte_ent(entry.name());
-			byte_ent.origin(entry.getpath());
+			byte_ent.origin(filepath0);
 			entity_type ent(byte_ent, cv);
-			add_link(ent, canonical_path_type(entry.dirname()), cv);
+			add_link(ent, filepath.dirname(), cv);
 			break;
 		}
 		default: break;

@@ -16,12 +16,6 @@ namespace ggg {
 			       can_read(sys::path(prefix, rhs.name()));
 		}
 
-		inline bool
-		operator()(const sys::path& prefix, const sys::pathentry& rhs) const {
-			return sys::ignore_hidden_files::operator()(prefix, rhs) &&
-			       can_read(rhs.getpath());
-		}
-
 	};
 
 	struct ignore_hidden_and_inaccessible_dirs: public sys::ignore_hidden_dirs {
@@ -30,12 +24,6 @@ namespace ggg {
 		operator()(const sys::path& prefix, const sys::direntry& rhs) {
 			return sys::ignore_hidden_dirs::operator()(prefix, rhs) &&
 			       can_read(sys::path(prefix, rhs.name()));
-		}
-
-		inline bool
-		operator()(const sys::path& prefix, const sys::pathentry& rhs) {
-			return sys::ignore_hidden_dirs::operator()(prefix, rhs) &&
-			       can_read(rhs.getpath());
 		}
 
 	};
