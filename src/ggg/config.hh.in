@@ -1,5 +1,5 @@
-#ifndef CONFIG_HH
-#define CONFIG_HH
+#ifndef GGG_CONFIG_HH
+#define GGG_CONFIG_HH
 
 #define MODULE_NAME @module_name@
 
@@ -19,4 +19,4 @@
 #define GGG_CATALOG "@catalog@"
 #define GGG_CACHE_DIRECTORY "@cache_directory@"
 
-#endif // CONFIG_HH
+#endif // vim:filetype=cpp
