@@ -22,6 +22,7 @@ ChrootEnvironment::SetUp() {
 		::mount("overlay", newroot, "overlay", 0, opts.str().data())
 	);
 	UNISTDX_CHECK(::chroot(newroot));
+	UNISTDX_CHECK(::chdir("/"));
 	UNISTDX_CHECK(::mount("devtmpfs", "/dev", "devtmpfs", 0, nullptr));
 	UNISTDX_CHECK(::mount("devpts", "/dev/pts", "devpts", 0, nullptr));
 	UNISTDX_CHECK(::mount("proc", "/proc", "proc", 0, nullptr));

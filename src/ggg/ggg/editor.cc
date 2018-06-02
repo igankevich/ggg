@@ -25,7 +25,10 @@ sys::proc_status
 ggg::edit_file(std::string path) {
 	std::string editor = find_file_editor();
 	sys::process child([&editor,&path] () {
-		return sys::this_process::execute_command(editor, path);
+		sys::argstream args;
+		args.append(editor);
+		args.append(path);
+		return sys::this_process::execute_command(args);
 	});
 	return child.wait();
 }
@@ -47,7 +50,10 @@ ggg::edit_directory(sys::path root) {
 		pipe.in().remap(STDIN_FILENO);
 		pipe.out().close();
 		using namespace sys::this_process;
-		return execute_command(GGG_DIRECTORY_EDITOR, '-');
+		sys::argstream args;
+		args.append(GGG_DIRECTORY_EDITOR);
+		args.append('-');
+		return execute_command(args);
 	});
 	pipe.in().close();
 	{

@@ -47,32 +47,39 @@ ggg::file_lock
 ::unlock() {
 //	sys::log_message("lck", "unlocking " GGG_LOCK_FILE);
 	if (this->_write) {
-		sys::file_stat st(GGG_GIT_ROOT);
-		if (st.exists() && st.is_directory() && can_write(GGG_GIT_ROOT)) {
-			sys::process p {
-				[] () {
-					if (-1 == ::chdir(GGG_ROOT)) {
-						return 1;
+		try {
+			sys::file_stat st(GGG_GIT_ROOT);
+			if (st.is_directory() && can_write(GGG_GIT_ROOT)) {
+				sys::process p {
+					[] () {
+						if (-1 == ::chdir(GGG_ROOT)) {
+							return 1;
+						}
+						char host[4096] = {0};
+						::gethostname(host, sizeof(host));
+						const size_t n = std::char_traits<char>::length(host);
+						const sys::uid_type uid = sys::this_process::user();
+						sys::argstream line;
+						line.append("/bin/sh");
+						line.append("-c");
+						line << "git add --all && git -c user.name="
+						     << uid << " -c user.email=" << uid << "@'";
+						for (size_t i=0; i<n; ++i) {
+							const char ch = host[i];
+							line << (!std::isalnum(ch) ? '_' : ch);
+						}
+						line << "' commit -m 'updated'" << '\0';
+						return sys::this_process::execute(line);
 					}
-					char host[4096] = {0};
-					::gethostname(host, sizeof(host));
-					const size_t n = std::char_traits<char>::length(host);
-					const sys::uid_type uid = sys::this_process::user();
-					std::stringstream line;
-					line << "git add --all && git -c user.name="
-					     << uid << " -c user.email=" << uid << "@'";
-					for (size_t i=0; i<n; ++i) {
-						const char ch = host[i];
-						line << (!std::isalnum(ch) ? '_' : ch);
-					}
-					line << "' commit -m 'updated'";
-					using namespace sys::this_process;
-					return exec("/bin/sh", "-c", line.str());
+				};
+				sys::proc_status status = p.wait();
+				if (status.exited() && status.exit_code() != 0) {
+					sys::log_message("lck", "git status=_", status);
 				}
-			};
-			sys::proc_status status = p.wait();
-			if (status.exited() && status.exit_code() != 0) {
-				sys::log_message("lck", "git status=_", status);
+			}
+		} catch (const sys::bad_call& err) {
+			if (err.errc() != std::errc::no_such_file_or_directory) {
+				throw;
 			}
 		}
 	}

@@ -14,7 +14,11 @@ execute_command(const char* cmd) {
 		[cmd,&pipe] () {
 			pipe.in().close();
 			pipe.out().remap(STDOUT_FILENO);
-			return sys::this_process::execute_command("/bin/sh", "-c", cmd);
+			sys::argstream args;
+			args.append("/bin/sh");
+			args.append("-c");
+			args.append(cmd);
+			return sys::this_process::execute_command(args);
 		}
 	};
 	pipe.out().close();

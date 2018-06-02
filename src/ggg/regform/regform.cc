@@ -407,11 +407,11 @@ do_pam(const char* username, ConverseFunc func) {
 	try {
 		ggg::pam::call(::pam_authenticate(pamh, 0));
 	} catch (const std::system_error& err) {
-		if (err.code().value() == PAM_NEW_AUTHTOK_REQD) {
-			ggg::pam::call(::pam_chauthtok(pamh, 0));
-		} else {
+		if (ggg::pam_errc(err.code().value()) !=
+			ggg::pam_errc::new_password_required) {
 			throw;
 		}
+		ggg::pam::call(::pam_chauthtok(pamh, 0));
 	}
 	ggg::pam::call(::pam_acct_mgmt(pamh, 0));
 	ggg::pam::call(::pam_open_session(pamh, 0));

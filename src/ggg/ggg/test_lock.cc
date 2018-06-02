@@ -1,6 +1,7 @@
 #include "test_lock.hh"
 
 #include <iostream>
+#include <mutex>
 #include <thread>
 
 #include <unistdx/fs/file_mutex>

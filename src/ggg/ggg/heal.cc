@@ -21,13 +21,13 @@ namespace {
 	ggg::bits::wcvt_type cv;
 
 	void
-	change_permissions(
+	change_permissions_priv(
 		const char* filename,
 		const sys::file_stat& st,
 		sys::file_mode m
 	) {
 		try {
-			if (st.exists() && st.mode() != m) {
+			if (st.mode() != m) {
 				ggg::native_message(
 					std::wclog,
 					"Changing permissions of _ to _.",
@@ -50,15 +50,53 @@ namespace {
 	}
 
 	void
-	change_permissions(const char* filename, sys::file_mode m) {
+	change_permissions_priv(const char* filename, sys::file_mode m) {
 		sys::file_stat st(filename);
-		change_permissions(filename, st, m);
+		change_permissions_priv(filename, st, m);
+	}
+
+	void
+	change_permissions(
+		const char* filename,
+		const sys::file_stat& st,
+		sys::file_mode m
+	) {
+		try {
+			change_permissions_priv(filename, st, m);
+		} catch (const sys::bad_call& err) {
+			++num_errors;
+			ggg::native_sentence(
+				std::wcerr,
+				cv,
+				"Failed to change permissions of _ to _. ",
+				cv.from_bytes(filename),
+				m
+			);
+			ggg::error_message(std::wcerr, cv, err);
+		}
+	}
+
+	void
+	change_permissions(const char* filename, sys::file_mode m) {
+		try {
+			change_permissions_priv(filename, m);
+		} catch (const sys::bad_call& err) {
+			++num_errors;
+			ggg::native_sentence(
+				std::wcerr,
+				cv,
+				"Failed to change permissions of _ to _. ",
+				cv.from_bytes(filename),
+				m
+			);
+			ggg::error_message(std::wcerr, cv, err);
+		}
 	}
 
 	void
 	change_owner(
 		const char* filename,
-		sys::file_stat st,
+		const sys::file_stat& st,
 		sys::uid_type uid,
 		sys::gid_type gid
 	) {
@@ -88,7 +126,7 @@ namespace {
 	}
 
 	void
-	make_file(
+	make_file_priv(
 		const char* filename,
 		sys::uid_type uid,
 		sys::gid_type gid,
@@ -100,17 +138,69 @@ namespace {
 			m
 		);
 		sys::file_stat st(filename);
-		if (st.exists()) {
-			if (!st.is_regular()) {
-				ggg::native_message(
-					std::wcerr,
-					"_ is not a regular file.",
-					cv.from_bytes(filename)
-				);
-			} else {
-				change_owner(filename, st, uid, gid);
-				change_permissions(filename, st, m);
+		if (!st.is_regular()) {
+			ggg::native_message(
+				std::wcerr,
+				"_ is not a regular file.",
+				cv.from_bytes(filename)
+			);
+		} else {
+			change_owner(filename, st, uid, gid);
+			change_permissions(filename, st, m);
+		}
+	}
+
+	void
+	make_file(
+		const char* filename,
+		sys::uid_type uid,
+		sys::gid_type gid,
+		sys::file_mode m
+	) {
+		try {
+			make_file_priv(filename, uid, gid, m);
+		} catch (const sys::bad_call& err) {
+			++num_errors;
+			ggg::native_sentence(
+				std::wcerr,
+				cv,
+				"Failed to create _. ",
+				cv.from_bytes(filename)
+			);
+			ggg::error_message(std::wcerr, cv, err);
+		}
+	}
+
+	void
+	make_directory_priv(
+		const char* root,
+		std::string name,
+		sys::uid_type uid,
+		sys::gid_type gid,
+		sys::file_mode m
+	) {
+		sys::path p(root, name);
+		sys::file_stat st;
+		try {
+			st.update(p);
+		} catch (const sys::bad_call& err) {
+			if (err.errc() != std::errc::no_such_file_or_directory) {
+				throw;
 			}
+			name += '/';
+			ggg::native_message(std::wclog, "Creating _.", cv.from_bytes(p));
+			sys::mkdirs(p);
+			st.update(p);
+		}
+		if (!st.is_directory()) {
+			ggg::native_message(
+				std::wcerr,
+				"_ is not a directory.",
+				cv.from_bytes(p)
+			);
+		} else {
+			change_owner(p, st, uid, gid);
+			change_permissions(p, st, m);
 		}
 	}
 
@@ -122,36 +212,18 @@ namespace {
 		sys::gid_type gid,
 		sys::file_mode m
 	) {
-		sys::path p(root, name);
-		sys::file_stat st(p);
-		if (!st.exists()) {
-			try {
-				name += '/';
-				ggg::native_message(std::wclog, "Creating _.", cv.from_bytes(p));
-				sys::mkdirs(sys::path(root), sys::path(name));
-				st.update(p);
-			} catch (const std::exception& err) {
-				++num_errors;
-				ggg::native_sentence(
-					std::wcerr,
-					cv,
-					"Failed to create _. ",
-					cv.from_bytes(p)
-				);
-				ggg::error_message(std::wcerr, cv, err);
-			}
-		}
-		if (st.exists()) {
-			if (!st.is_directory()) {
-				ggg::native_message(
-					std::wcerr,
-					"_ is not a directory.",
-					cv.from_bytes(p)
-				);
-			} else {
-				change_owner(p, st, uid, gid);
-				change_permissions(p, st, m);
-			}
+		try {
+			make_directory_priv(root, name, uid, gid, m);
+		} catch (const sys::bad_call& err) {
+			sys::path p(root, name);
+			++num_errors;
+			ggg::native_sentence(
+				std::wcerr,
+				cv,
+				"Failed to create _. ",
+				cv.from_bytes(p)
+			);
+			ggg::error_message(std::wcerr, cv, err);
 		}
 	}
 

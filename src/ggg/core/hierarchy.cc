@@ -144,19 +144,22 @@ ggg::basic_hierarchy<Ch>
 		return false;
 	}
 	using std::chrono::seconds;
-	sys::file_stat st(cache);
-	const auto dt = clock_type::now() - time_point(seconds(st.st_mtime));
 	bool success = false;
-	if (st.exists() &&
-	    st.is_regular() &&
-	    dt > duration::zero() &&
-	    dt < this->_ttl) {
-		try {
-			this->read_cache(cache);
-			success = true;
-		} catch (...) {
-			success = false;
+	try {
+		sys::file_stat st(cache);
+		const auto dt = clock_type::now() - time_point(seconds(st.st_mtime));
+		if (st.is_regular() &&
+		    dt > duration::zero() &&
+		    dt < this->_ttl) {
+			try {
+				this->read_cache(cache);
+				success = true;
+			} catch (...) {
+				success = false;
+			}
 		}
+	} catch (...) {
+		success = false;
 	}
 	return success;
 }
@@ -207,21 +210,21 @@ ggg::basic_hierarchy<Ch>
 		sys::pathentry entry;
 		bool success = false;
 		while (!success) {
-			if (tree >> entry) {
-				try {
+			try {
+				if (tree >> entry) {
 					this->process_entry(entry, cv, success);
-				} catch (...) {
-					#ifndef NDEBUG
-					bits::log_traits<Ch>::log()
-					    << "Skipping bad file "
-					    << bits::to_bytes<Ch>(cv, entry.getpath())
-					    << std::endl;
-					#endif
+				} else {
+					if (tree.eof()) {
+						success = true;
+					}
 				}
-			} else {
-				if (tree.eof()) {
-					success = true;
-				}
+			} catch (...) {
+				#ifndef NDEBUG
+				bits::log_traits<Ch>::log()
+				    << "Skipping bad file "
+				    << bits::to_bytes<Ch>(cv, entry.getpath())
+				    << std::endl;
+				#endif
 			}
 		}
 	}

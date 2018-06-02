@@ -20,7 +20,7 @@ protected:
 
 	void
 	SetUp() override {
-		ASSERT_EQ(0, ::system("rm -rf " GGG_ROOT));
+		ASSERT_EQ(0, ::system("pwd; rm -rfv " GGG_ROOT));
 		ASSERT_EQ(0, ::system("ggg init"));
 	}
 
