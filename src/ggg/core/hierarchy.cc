@@ -14,6 +14,7 @@
 
 #include <ggg/bits/io.hh>
 #include <ggg/bits/to_bytes.hh>
+#include <ggg/config.hh>
 #include <ggg/core/sets.hh>
 
 namespace {
