@@ -124,47 +124,32 @@ if unshare.found() and su.found()
 
 	test(
 		'commands-test',
-		unshare,
-		args: [
-			'--mount',
-			executable(
-				'commands-test',
-				sources: ['commands_test.cc'] + test_src,
-				dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
-			).full_path()
-		],
+		executable(
+			'commands-test',
+			sources: ['commands_test.cc'] + test_src,
+			dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+		),
 		suite: 'integration'
 	)
 
 	test(
 		'ggg-dm-test',
-		unshare,
-		args: [
-			'--mount',
-			executable(
-				'ggg-dm-test',
-				sources: ['ggg_dm_test.cc'] + test_src,
-				dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
-			).full_path()
-		],
+		executable(
+			'ggg-dm-test',
+			sources: ['ggg_dm_test.cc'] + test_src,
+			dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+		),
 		suite: 'gui',
 		timeout: 600
 	)
 
 	test(
 		'ggg-form-test',
-		unshare,
-		args: [
-			'--mount',
-			executable(
-				'ggg-form-test',
-				sources: ['ggg_form_test.cc'] + test_src,
-				dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
-			).full_path()
-		],
-		env: [
-			'GGG_OVERLAY=' + join_paths(meson.build_root(), 'overlay')
-		],
+		executable(
+			'ggg-form-test',
+			sources: ['ggg_form_test.cc'] + test_src,
+			dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+		),
 		suite: 'cli',
 		timeout: 600
 	)

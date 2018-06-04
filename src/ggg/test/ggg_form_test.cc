@@ -30,6 +30,7 @@ set_secure:account.password:4
 
 int
 main(int argc, char* argv[]) {
+	skip_test_if_unpriviledged();
 	::testing::InitGoogleTest(&argc, argv);
 	::testing::AddGlobalTestEnvironment(new ChrootEnvironment);
 	return RUN_ALL_TESTS();
