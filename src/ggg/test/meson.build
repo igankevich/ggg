@@ -120,38 +120,34 @@ test(
 	suite: 'unit'
 )
 
-if unshare.found() and su.found()
-
-	test(
+test(
+	'commands-test',
+	executable(
 		'commands-test',
-		executable(
-			'commands-test',
-			sources: ['commands_test.cc'] + test_src,
-			dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
-		),
-		suite: 'integration'
-	)
+		sources: ['commands_test.cc'] + test_src,
+		dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+	),
+	suite: 'integration'
+)
 
-	test(
+test(
+	'ggg-dm-test',
+	executable(
 		'ggg-dm-test',
-		executable(
-			'ggg-dm-test',
-			sources: ['ggg_dm_test.cc'] + test_src,
-			dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
-		),
-		suite: 'gui',
-		timeout: 600
-	)
+		sources: ['ggg_dm_test.cc'] + test_src,
+		dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+	),
+	suite: 'gui',
+	timeout: 600
+)
 
-	test(
+test(
+	'ggg-form-test',
+	executable(
 		'ggg-form-test',
-		executable(
-			'ggg-form-test',
-			sources: ['ggg_form_test.cc'] + test_src,
-			dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
-		),
-		suite: 'cli',
-		timeout: 600
-	)
-
-endif
+		sources: ['ggg_form_test.cc'] + test_src,
+		dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+	),
+	suite: 'cli',
+	timeout: 600
+)

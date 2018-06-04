@@ -52,21 +52,6 @@ zxcvbn = dependency('zxcvbn')
 pam = cpp.find_library('pam')
 libcrypt = cpp.find_library('crypt')
 
-# integration tests {{{
-unshare = find_program('unshare', required: false)
-su = find_program('su', required: false)
-if unshare.found() and su.found()
-	run_target(
-		'init-integration-tests',
-		command: join_paths(
-			meson.source_root(),
-			'scripts',
-			'init-integration-tests'
-		)
-	)
-endif
-# }}}
-
 subdir('src')
 subdir('po')
 subdir('pkg')
