@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '0.6.1',
+	version: '0.6.2',
 	meson_version: '>=0.31',
 	default_options: ['cpp_std=c++14'],
 	license: ['GPLv2']
@@ -69,22 +69,8 @@ endif
 
 subdir('src')
 subdir('po')
+subdir('pkg')
 
-# archive {{{
-archive_name = meson.project_name() + '-' + meson.project_version()
-run_target(
-	'archive',
-	command: [
-		'git',
-		'archive',
-		'-o',
-		join_paths(meson.build_root(), archive_name + '.tar.xz'),
-		'--prefix',
-		archive_name + '/',
-		'HEAD'
-	]
-)
-# }}}
 # cppcheck {{{
 cppcheck = find_program('cppcheck', required: false)
 if cppcheck.found()

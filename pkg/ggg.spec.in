@@ -1,0 +1,73 @@
+Name:           @name@
+Version:        @version@
+Release:        1%{?dist}
+Summary:        Groups of groups of groups NSS and PAM modules
+License:        @license@
+URL:            http://igankevich.com/
+Source0:        @name@-%{version}.tar.xz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+Requires: zxcvbn-c
+Requires: unistdx
+
+BuildRequires: gcc-c++
+BuildRequires: gettext
+BuildRequires: gtest-devel
+BuildRequires: gtk3-devel
+BuildRequires: meson
+BuildRequires: nss_wrapper
+BuildRequires: pam-devel
+BuildRequires: unistdx-devel
+BuildRequires: zxcvbn-c-devel
+
+%description
+NSS and PAM modules that support arbitrary nesting of users and groups
+
+%package        gtk3
+Summary:        GGG registration form
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+
+%description gtk3
+GTK-based GGG registration form.
+
+%global debug_package %{nil}
+
+%prep
+%autosetup
+
+%build
+%meson
+%meson_build
+
+%install
+%meson_install
+
+%check
+%meson_test
+
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
+%files
+%defattr(0755,root,root,0755)
+%{_bindir}/ggg
+%{_bindir}/ggg-form
+%{_libdir}/libnss_ggg.so*
+%{_libdir}/libggg_core.so*
+%{_libdir}/security/pam_ggg.so
+%defattr(0644,root,root,0755)
+%{_datadir}/locale/ru/LC_MESSAGES/ggg.mo
+%{_datadir}/locale/en/LC_MESSAGES/ggg.mo
+
+%files gtk3
+%defattr(0755,root,root,0755)
+%{_bindir}/ggg-regform
+
+%changelog
+* Mon Jun 4 2018 Ivan Gankevich <igankevich@ya.ru> 0.6.2-1
+Update to the newest version.
+* Tue Apr 10 2018 Ivan Gankevich <igankevich@ya.ru> 0.2-1
+Update to the newest version.
+* Thu Aug 31 2017 Ivan Gankevich <igankevich@ya.ru> 0.1-1
+Packaged everything.
