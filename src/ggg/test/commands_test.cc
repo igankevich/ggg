@@ -256,6 +256,14 @@ TEST_F(Commands, Cache) {
 	fail("getent passwd u1");
 }
 
+TEST_F(Commands, Locale) {
+	ok("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+	ok("echo 'u2:2002:Ю2:/home/u2:/bin/sh' | ggg add -");
+	ok("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -");
+	ok("ggg lock u1 u2 u3");
+	output_is("u1\nu2\nu3\n", "env -i LC_ALL=C ggg locked");
+}
+
 int
 main(int argc, char* argv[]) {
 	skip_test_if_unpriviledged();

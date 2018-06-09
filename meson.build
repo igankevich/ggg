@@ -56,6 +56,10 @@ subdir('src')
 subdir('po')
 subdir('pkg')
 
+run_target(
+	'init-integration-tests',
+	command: join_paths(meson.source_root(), 'scripts', 'init-integration-tests')
+)
 # cppcheck {{{
 cppcheck = find_program('cppcheck', required: false)
 if cppcheck.found()
