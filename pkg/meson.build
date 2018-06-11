@@ -1,8 +1,8 @@
-# archive {{{
+# RPM archive {{{
 archive_name = meson.project_name() + '-' + meson.project_version()
 full_archive_name = archive_name + '.tar.xz'
 run_target(
-	'archive',
+	'rpm-archive',
 	command: [
 		'git',
 		'-C',
@@ -31,11 +31,6 @@ configure_file(
 )
 # }}}
 # RPM build {{{
-configure_file(
-	input: 'rpm.in',
-	output: 'rpm',
-	configuration: rpm_spec
-)
 rpm_setup_tree = find_program('rpmdev-setuptree', required: false)
 if not rpm_setup_tree.found()
 	rpm_setup_tree = find_program('rpmsetuptree', required: false)
@@ -50,12 +45,26 @@ if rpm_build.found()
 		command: [
 			rpm_build,
 			'-ba',
-			join_paths(meson.current_build_dir(), meson.project_name() + '.spec')
+			join_paths(meson.current_build_dir(), meson.project_name() + '.spec'),
+			'--define',
+			'_sourcedir ' + meson.build_root()
 		]
 	)
 endif
-run_target(
-	'rpm',
-	command: join_paths(meson.current_build_dir(), 'rpm')
-)
+# }}}
+# RPM target {{{
+ninja = find_program('ninja')
+if ninja.found()
+	run_target(
+		'rpm',
+		command: [
+			ninja,
+			'-C',
+			meson.build_root(),
+			'rpm-setup-tree',
+			'rpm-archive',
+			'rpm-build'
+		]
+	)
+endif
 # }}}
