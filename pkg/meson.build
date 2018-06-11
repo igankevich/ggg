@@ -23,7 +23,7 @@ rpm_spec.set('version', meson.project_version())
 rpm_spec.set('release', '1')
 rpm_spec.set('archive_name', full_archive_name)
 rpm_spec.set('arch', build_machine.cpu_family())
-rpm_spec.set('license', meson.project_license())
+rpm_spec.set('license', ' '.join(meson.project_license()))
 configure_file(
 	input: meson.project_name() + '.spec.in',
 	output: meson.project_name() + '.spec',
