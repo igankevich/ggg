@@ -90,6 +90,24 @@ namespace ggg {
 			return permission_type(perms);
 		}
 
+		inline std::vector<std::string>
+		to_sorted_lines(const char* rhs) {
+			std::stringstream str;
+			str << rhs;
+			std::string line;
+			std::vector<std::string> lines;
+			while (std::getline(str, line, '\n')) {
+				lines.push_back(line);
+			}
+			std::sort(lines.begin(), lines.end());
+			return lines;
+		}
+
+		inline bool
+		equal_sort_lines(const char* str1, const char* str2) {
+			return to_sorted_lines(str1) == to_sorted_lines(str2);
+		}
+
 		class permission_set {
 
 		private:
@@ -583,7 +601,9 @@ namespace ggg {
 					}
 					throw;
 				}
-				return len1 == len2 && std::strncmp(str1, str2, len1) == 0;
+				return len1 == len2 &&
+					(std::strncmp(str1, str2, len1) == 0 ||
+					 equal_sort_lines(str1, str2));
 			}
 
 			inline bool
