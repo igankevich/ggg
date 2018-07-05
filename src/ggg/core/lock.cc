@@ -17,7 +17,6 @@ ggg::file_lock
 ::file_lock(bool write):
 _mutex(),
 _write(write) {
-	const sys::uid_type uid = sys::this_process::user();
 	const sys::open_flag flags =
 		write ? sys::open_flag::read_write : sys::open_flag::read_only;
 	this->_mutex.open(GGG_LOCK_FILE, flags, 0644);
