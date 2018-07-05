@@ -22,6 +22,7 @@ namespace {
 	ggg::bits::wcvt_type cv;
 
 	const sys::file_mode lock_file_mode(0644);
+	sys::gid_type auth_gid = 0;
 
 	void
 	change_permissions_priv(
@@ -167,7 +168,8 @@ namespace {
 		const char* filename,
 		sys::uid_type uid,
 		sys::gid_type gid,
-		sys::file_mode m
+		sys::file_mode m,
+		bool change_mode_and_owner = true
 	) {
 		sys::fildes tmp(
 			filename,
@@ -181,7 +183,7 @@ namespace {
 				"_ is not a regular file.",
 				cv.from_bytes(filename)
 			);
-		} else {
+		} else if (change_mode_and_owner) {
 			change_owner(filename, st, uid, gid);
 			change_permissions(filename, st, m);
 		}
@@ -192,10 +194,11 @@ namespace {
 		const char* filename,
 		sys::uid_type uid,
 		sys::gid_type gid,
-		sys::file_mode m
+		sys::file_mode m,
+		bool change_mode_and_owner = true
 	) {
 		try {
-			make_file_priv(filename, uid, gid, m);
+			make_file_priv(filename, uid, gid, m, change_mode_and_owner);
 		} catch (const sys::bad_call& err) {
 			++num_errors;
 			ggg::native_sentence(
@@ -214,7 +217,8 @@ namespace {
 		std::string name,
 		sys::uid_type uid,
 		sys::gid_type gid,
-		sys::file_mode m
+		sys::file_mode m,
+		bool change_mode_and_owner = true
 	) {
 		sys::path p(root, name);
 		sys::file_status st;
@@ -235,7 +239,7 @@ namespace {
 				"_ is not a directory.",
 				cv.from_bytes(p)
 			);
-		} else {
+		} else if (change_mode_and_owner) {
 			change_owner(p, st, uid, gid);
 			change_permissions(p, st, m);
 		}
@@ -247,10 +251,11 @@ namespace {
 		std::string name,
 		sys::uid_type uid,
 		sys::gid_type gid,
-		sys::file_mode m
+		sys::file_mode m,
+		bool change_mode_and_owner = true
 	) {
 		try {
-			make_directory_priv(root, name, uid, gid, m);
+			make_directory_priv(root, name, uid, gid, m, change_mode_and_owner);
 		} catch (const sys::bad_call& err) {
 			sys::path p(root, name);
 			++num_errors;
@@ -344,13 +349,15 @@ namespace {
 						entry.name(),
 						uid,
 						gid,
-						0700
+						0700,
+						false
 					);
 					make_file(
 						sys::path(GGG_ROOT, "acc", entry.name(), "shadow"),
 						uid,
 						gid,
-						m
+						m,
+						false
 					);
 					make_directory(
 						sys::path(GGG_ROOT, "ent"),
@@ -402,12 +409,6 @@ namespace {
 			        uid = result->id();
 			        gid = result->gid();
 				}
-			    result = h.find_by_name(GGG_AUTH_GROUP);
-				sys::gid_type auth_gid = 0;
-				if (result != h.end()) {
-					// replace with ggg group
-			        auth_gid = result->gid();
-				}
 				if (uid == 0) {
 					m = 0;
 				}
@@ -440,7 +441,7 @@ ggg::Heal
 	make_directory(GGG_ROOT, "acc", 0, 0, 0755);
 	change_owner(GGG_ROOT, sys::file_status(GGG_ROOT), 0, 0);
 	change_permissions(GGG_ROOT, 0755);
-	make_file(GGG_LOCK_FILE, 0, 0, lock_file_mode);
+	make_file(GGG_LOCK_FILE, 0, 0, lock_file_mode, false);
 	ggg::Hierarchy h;
 	try {
 		h.open(sys::path(GGG_ROOT, "ent"));
@@ -448,6 +449,10 @@ ggg::Heal
 		++num_errors;
 		native_sentence(std::wcerr, cv, "Entities are broken.");
 		error_message(std::wcerr, cv, err);
+	}
+	auto result = h.find_by_name(GGG_AUTH_GROUP);
+	if (result != h.end()) {
+	    auth_gid = result->gid();
 	}
 	heal_entities(h);
 	heal_forms(h);
