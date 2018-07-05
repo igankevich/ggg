@@ -161,7 +161,7 @@ ggg::Edit_entity::update_objects(GGG& g, const std::string& filename) {
 
 void
 ggg::Edit_entity::edit_directory() {
-	sys::proc_status status;
+	sys::process_status status;
 	bool success;
 	do {
 		status = ::ggg::edit_directory(sys::path(GGG_ENT_ROOT));

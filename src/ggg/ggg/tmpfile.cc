@@ -5,7 +5,7 @@
 #include <vector>
 #include <stdexcept>
 
-#include <unistdx/fs/file_stat>
+#include <unistdx/fs/file_status>
 
 #include <ggg/config.hh>
 #include <ggg/core/fs.hh>
@@ -45,7 +45,7 @@ sys::find_temporary_directory() {
 		possible_dirs.begin(),
 		possible_dirs.end(),
 		[] (const std::string& rhs) {
-			sys::file_stat st(rhs.data());
+			sys::file_status st(rhs.data());
 			return st.is_directory() && ggg::can_write(sys::path(rhs));
 		}
 	);

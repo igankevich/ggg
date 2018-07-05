@@ -135,9 +135,9 @@ ggg::account_ctl
 	while (!tree.eof()) {
 		tree.clear();
 		std::for_each(
-			ggg::iacctree_iterator<sys::direntry>(tree),
-			ggg::iacctree_iterator<sys::direntry>(),
-			[this,&tree] (const sys::direntry& entry) {
+			ggg::iacctree_iterator<sys::directory_entry>(tree),
+			ggg::iacctree_iterator<sys::directory_entry>(),
+			[this,&tree] (const sys::directory_entry& entry) {
 				if (sys::get_file_type(tree.current_dir(), entry) != sys::file_type::regular) {
 					return;
 				}

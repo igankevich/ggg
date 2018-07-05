@@ -29,7 +29,7 @@ executable(
 	executable_name,
 	sources: ggg_src,
 	include_directories: inc,
-	dependencies: [unistdx,libcrypt,ggg_core],
+	dependencies: [unistdx,libcrypt,ggg_core,libacl],
 	install: true
 )
 

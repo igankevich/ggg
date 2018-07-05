@@ -14,6 +14,8 @@ endif
 
 if not get_option('buildtype').contains('debug')
 	add_global_arguments('-DNDEBUG', language: 'cpp')
+else
+	add_global_link_arguments('-rdynamic', language: 'cpp')
 endif
 
 datadir = join_paths(
@@ -34,7 +36,6 @@ config.set('git_root_directory', join_paths(etc, module_name, '.git'))
 config.set('shadow_file', join_paths(etc, module_name, 'acc', 'shadow'))
 config.set('shadow_file_new', join_paths(etc, module_name, 'acc', '.shadow.new'))
 config.set('lock_file', join_paths(etc, module_name, '.lock'))
-config.set('lock_directory', join_paths(etc, module_name, 'lck'))
 config.set('salt_length', '16')
 config.set('executable_name', executable_name)
 config.set('version', meson.project_version())
@@ -42,6 +43,7 @@ config.set('file_editor', 'vi')
 config.set('directory_editor', 'vidir')
 config.set('catalog', 'ggg')
 config.set('cache_directory', join_paths(get_option('localstatedir'), 'cache'))
+config.set('auth_group', 'ggg.auth')
 
 unistdx = dependency('unistdx')
 gtest = dependency('gtest', main: true)
@@ -51,6 +53,7 @@ threads = dependency('threads')
 zxcvbn = dependency('zxcvbn')
 pam = cpp.find_library('pam')
 libcrypt = cpp.find_library('crypt')
+libacl = cpp.find_library('acl')
 
 subdir('src')
 subdir('po')

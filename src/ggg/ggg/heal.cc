@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include <unistdx/fs/canonical_path>
-#include <unistdx/fs/file_stat>
+#include <unistdx/fs/file_status>
 #include <unistdx/fs/idirtree>
 #include <unistdx/fs/mkdirs>
 #include <unistdx/fs/path>
@@ -14,16 +14,19 @@
 #include <ggg/config.hh>
 #include <ggg/core/native.hh>
 #include <ggg/ggg/quiet_error.hh>
+#include <ggg/ggg/access_control_list.hh>
 
 namespace {
 
 	size_t num_errors = 0;
 	ggg::bits::wcvt_type cv;
 
+	const sys::file_mode lock_file_mode(0644);
+
 	void
 	change_permissions_priv(
 		const char* filename,
-		const sys::file_stat& st,
+		const sys::file_status& st,
 		sys::file_mode m
 	) {
 		try {
@@ -51,14 +54,14 @@ namespace {
 
 	void
 	change_permissions_priv(const char* filename, sys::file_mode m) {
-		sys::file_stat st(filename);
+		sys::file_status st(filename);
 		change_permissions_priv(filename, st, m);
 	}
 
 	void
 	change_permissions(
 		const char* filename,
-		const sys::file_stat& st,
+		const sys::file_status& st,
 		sys::file_mode m
 	) {
 		try {
@@ -96,7 +99,7 @@ namespace {
 	void
 	change_owner(
 		const char* filename,
-		const sys::file_stat& st,
+		const sys::file_status& st,
 		sys::uid_type uid,
 		sys::gid_type gid
 	) {
@@ -126,6 +129,40 @@ namespace {
 	}
 
 	void
+	change_acl_priv(
+		const char* filename,
+		ggg::acl::access_control_list& acl,
+		ggg::acl::acl_type tp = ggg::acl::default_acl
+	) {
+		using namespace ggg::acl;
+		access_control_list old_acl(filename, tp);
+		if (old_acl != acl) {
+			acl.write(filename, tp);
+		}
+	}
+
+	void
+	change_acl(
+		const char* filename,
+		ggg::acl::access_control_list& acl,
+		ggg::acl::acl_type tp
+	) {
+		ggg::native_message(std::wclog, "Changing ACLs of _.", filename);
+		try {
+			change_acl_priv(filename, acl, tp);
+		} catch (const std::exception& err) {
+			++num_errors;
+			ggg::native_sentence(
+				std::wcerr,
+				cv,
+				"Failed to change ACLs of _. ",
+				cv.from_bytes(filename)
+			);
+			ggg::error_message(std::wcerr, cv, err);
+		}
+	}
+
+	void
 	make_file_priv(
 		const char* filename,
 		sys::uid_type uid,
@@ -137,7 +174,7 @@ namespace {
 			sys::open_flag::create | sys::open_flag::read_only,
 			m
 		);
-		sys::file_stat st(filename);
+		sys::file_status st(filename);
 		if (!st.is_regular()) {
 			ggg::native_message(
 				std::wcerr,
@@ -180,7 +217,7 @@ namespace {
 		sys::file_mode m
 	) {
 		sys::path p(root, name);
-		sys::file_stat st;
+		sys::file_status st;
 		try {
 			st.update(p);
 		} catch (const sys::bad_call& err) {
@@ -231,11 +268,11 @@ namespace {
 	heal_entities_subdir(sys::path dir, sys::uid_type uid, sys::gid_type gid) {
 		sys::idirtree tree(dir);
 		std::for_each(
-			sys::idirtree_iterator<sys::direntry>(tree),
-			sys::idirtree_iterator<sys::direntry>(),
-			[uid,gid,&tree] (const sys::direntry& entry) {
+			sys::idirtree_iterator<sys::directory_entry>(tree),
+			sys::idirtree_iterator<sys::directory_entry>(),
+			[uid,gid,&tree] (const sys::directory_entry& entry) {
 			    sys::path f(tree.current_dir(), entry.name());
-			    sys::file_stat st(f);
+			    sys::file_status st(f);
 				change_owner(f, st, uid, gid);
 			    if (st.type() == sys::file_type::regular) {
 			        change_permissions(f, 0644);
@@ -250,11 +287,11 @@ namespace {
 	heal_entities(const ggg::Hierarchy& h) {
 		sys::idirectory dir(sys::path(GGG_ROOT, "ent"));
 		std::for_each(
-			sys::idirectory_iterator<sys::direntry>(dir),
-			sys::idirectory_iterator<sys::direntry>(),
-			[&h,&dir] (const sys::direntry& entry) {
+			sys::idirectory_iterator<sys::directory_entry>(dir),
+			sys::idirectory_iterator<sys::directory_entry>(),
+			[&h,&dir] (const sys::directory_entry& entry) {
 			    sys::path f(dir.getpath(), entry.name());
-			    sys::file_stat st(f);
+			    sys::file_status st(f);
 			    if (st.type() == sys::file_type::regular) {
 					change_owner(f, st, 0, 0);
 			        change_permissions(f, 0644);
@@ -276,13 +313,14 @@ namespace {
 
 	void
 	heal_forms(const ggg::Hierarchy& h) {
+		std::vector<sys::gid_type> form_entities;
 		sys::idirtree tree(sys::path(GGG_ROOT, "reg"));
 		std::for_each(
-			sys::idirtree_iterator<sys::direntry>(tree),
-			sys::idirtree_iterator<sys::direntry>(),
-			[&h,&tree] (const sys::direntry& entry) {
+			sys::idirtree_iterator<sys::directory_entry>(tree),
+			sys::idirtree_iterator<sys::directory_entry>(),
+			[&h,&tree,&form_entities] (const sys::directory_entry& entry) {
 			    sys::path f(tree.current_dir(), entry.name());
-			    sys::file_stat st(f);
+			    sys::file_status st(f);
 			    if (st.type() == sys::file_type::regular) {
 			        auto result = h.find_by_name(entry.name());
 			        sys::uid_type uid = 0;
@@ -296,6 +334,7 @@ namespace {
 					} else {
 			            uid = result->id();
 			            gid = result->gid();
+						form_entities.push_back(gid);
 					}
 					change_owner(f, st, uid, gid);
 			        change_permissions(f, 0600);
@@ -306,12 +345,6 @@ namespace {
 						uid,
 						gid,
 						0700
-					);
-					make_file(
-						sys::path(GGG_ROOT, "lck", std::to_string(uid)),
-						uid,
-						gid,
-						m
 					);
 					make_file(
 						sys::path(GGG_ROOT, "acc", entry.name(), "shadow"),
@@ -332,17 +365,26 @@ namespace {
 				}
 			}
 		);
+		{
+			using namespace ggg::acl;
+			access_control_list acl(lock_file_mode);
+			for (sys::gid_type gid : form_entities) {
+				acl.add_group(gid, permission_type::read_write);
+			}
+			acl.add_mask();
+			change_acl(GGG_LOCK_FILE, acl, access_acl);
+		}
 	}
 
 	void
 	heal_accounts(const ggg::Hierarchy& h) {
 		sys::idirtree tree(sys::path(GGG_ROOT, "acc"));
 		std::for_each(
-			sys::idirtree_iterator<sys::direntry>(tree),
-			sys::idirtree_iterator<sys::direntry>(),
-			[&h,&tree] (const sys::direntry& entry) {
+			sys::idirtree_iterator<sys::directory_entry>(tree),
+			sys::idirtree_iterator<sys::directory_entry>(),
+			[&h,&tree] (const sys::directory_entry& entry) {
 			    sys::path f(tree.current_dir(), entry.name());
-			    sys::file_stat st(f);
+			    sys::file_status st(f);
 				std::string name;
 				sys::file_mode m;
 			    if (st.type() == sys::file_type::directory) {
@@ -355,16 +397,33 @@ namespace {
 				}
 			    auto result = h.find_by_name(name.data());
 			    sys::uid_type uid = 0;
-			    sys::uid_type gid = 0;
+			    sys::gid_type gid = 0;
 			    if (result != h.end()) {
 			        uid = result->id();
 			        gid = result->gid();
+				}
+			    result = h.find_by_name(GGG_AUTH_GROUP);
+				sys::gid_type auth_gid = 0;
+				if (result != h.end()) {
+					// replace with ggg group
+			        auth_gid = result->gid();
 				}
 				if (uid == 0) {
 					m = 0;
 				}
 				change_owner(f, st, uid, gid);
-			    change_permissions(f, m);
+				if (auth_gid == 0) {
+					change_permissions(f, m);
+				} else {
+					using namespace ggg::acl;
+					access_control_list acl(m);
+					acl.add_group(auth_gid, permission_type::read);
+					acl.add_mask();
+					change_acl(f, acl, access_acl);
+					if (st.is_directory()) {
+						change_acl(f, acl, default_acl);
+					}
+				}
 			}
 		);
 	}
@@ -379,10 +438,9 @@ ggg::Heal
 	make_directory(GGG_ROOT, "ent", 0, 0, 0755);
 	make_directory(GGG_ROOT, "reg", 0, 0, 0755);
 	make_directory(GGG_ROOT, "acc", 0, 0, 0755);
-	make_directory(GGG_ROOT, "lck", 0, 0, 01777);
-	change_owner(GGG_ROOT, sys::file_stat(GGG_ROOT), 0, 0);
+	change_owner(GGG_ROOT, sys::file_status(GGG_ROOT), 0, 0);
 	change_permissions(GGG_ROOT, 0755);
-	make_file(GGG_LOCK_FILE, 0, 0, 0644);
+	make_file(GGG_LOCK_FILE, 0, 0, lock_file_mode);
 	ggg::Hierarchy h;
 	try {
 		h.open(sys::path(GGG_ROOT, "ent"));

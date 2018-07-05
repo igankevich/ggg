@@ -147,7 +147,7 @@ ggg::basic_hierarchy<Ch>
 	using std::chrono::seconds;
 	bool success = false;
 	try {
-		sys::file_stat st(cache);
+		sys::file_status st(cache);
 		const auto dt = clock_type::now() - time_point(seconds(st.st_mtime));
 		if (st.is_regular() &&
 		    dt > duration::zero() &&
@@ -208,7 +208,7 @@ ggg::basic_hierarchy<Ch>
 	tree.open(sys::path(bits::to_bytes<char>(cv, this->_root)));
 	while (!tree.eof()) {
 		tree.clear();
-		sys::direntry entry;
+		sys::directory_entry entry;
 		bool success = false;
 		while (!success) {
 			try {
@@ -378,7 +378,7 @@ void
 ggg::basic_hierarchy<Ch>
 ::process_entry(
 	const sys::path& dir,
-	const sys::direntry& entry,
+	const sys::directory_entry& entry,
 	entity::wcvt_type& cv,
 	bool& success
 ) {

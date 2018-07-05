@@ -142,7 +142,7 @@ ggg::basic_ggg<Ch>
 	size_t i0 = 0, i1 = 0;
 	while ((i1 = relative_path.find('/', i0)) != std::string::npos) {
 		sys::path p(this->_hierarchy.root(), relative_path.substr(0, i1));
-		sys::file_stat st(p);
+		sys::file_status st(p);
 		if (!st.exists()) {
 			if (this->verbose()) {
 				native_message(std::wclog, "Creating _.", cv.from_bytes(p));

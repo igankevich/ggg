@@ -3,12 +3,12 @@
 
 #include <string>
 
-#include <unistdx/ipc/proc_status>
+#include <unistdx/ipc/process_status>
 
 #include <gtest/gtest.h>
 
 
-std::pair<sys::proc_status,std::string>
+std::pair<sys::process_status,std::string>
 execute_command(const char* cmd);
 
 

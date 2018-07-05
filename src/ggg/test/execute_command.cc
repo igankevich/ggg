@@ -5,7 +5,7 @@
 #include <unistdx/ipc/execute>
 #include <unistdx/ipc/process>
 
-std::pair<sys::proc_status,std::string>
+std::pair<sys::process_status,std::string>
 execute_command(const char* cmd) {
 	sys::pipe pipe;
 	pipe.in().unsetf(sys::open_flag::non_blocking);

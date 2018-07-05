@@ -4,7 +4,7 @@
 #include <string>
 
 #include <unistdx/base/log_message>
-#include <unistdx/fs/file_stat>
+#include <unistdx/fs/file_status>
 #include <unistdx/fs/path>
 #include <unistdx/ipc/execute>
 #include <unistdx/ipc/identity>
@@ -20,15 +20,7 @@ _write(write) {
 	const sys::uid_type uid = sys::this_process::user();
 	const sys::open_flag flags =
 		write ? sys::open_flag::read_write : sys::open_flag::read_only;
-	if (uid == 0) {
-		this->_mutex.open(GGG_LOCK_FILE, flags, 0644);
-	} else {
-		this->_mutex.open(
-			sys::path(GGG_LOCK_DIR, std::to_string(uid)),
-			flags,
-			0600
-		);
-	}
+	this->_mutex.open(GGG_LOCK_FILE, flags, 0644);
 	this->lock();
 }
 
@@ -48,7 +40,7 @@ ggg::file_lock
 //	sys::log_message("lck", "unlocking " GGG_LOCK_FILE);
 	if (this->_write) {
 		try {
-			sys::file_stat st(GGG_GIT_ROOT);
+			sys::file_status st(GGG_GIT_ROOT);
 			if (st.is_directory() && can_write(GGG_GIT_ROOT)) {
 				sys::process p {
 					[] () {
@@ -69,10 +61,11 @@ ggg::file_lock
 							line << (!std::isalnum(ch) ? '_' : ch);
 						}
 						line << "' commit -m 'updated'" << '\0';
-						return sys::this_process::execute(line);
+						sys::this_process::execute(line);
+						return 0;
 					}
 				};
-				sys::proc_status status = p.wait();
+				sys::process_status status = p.wait();
 				if (status.exited() && status.exit_code() != 0) {
 					sys::log_message("lck", "git status=_", status);
 				}

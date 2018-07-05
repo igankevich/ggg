@@ -16,7 +16,7 @@
 #include <sstream>
 
 #include <unistdx/fs/canonical_path>
-#include <unistdx/fs/direntry>
+#include <unistdx/fs/directory_entry>
 #include <unistdx/net/bstream>
 
 #include <ggg/bits/field_iterator.hh>
@@ -324,7 +324,7 @@ namespace ggg {
 		void
 		process_entry(
 			const sys::path& dir,
-			const sys::direntry& entry,
+			const sys::directory_entry& entry,
 			entity::wcvt_type& cv,
 			bool& success
 		);

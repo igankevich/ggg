@@ -2,7 +2,7 @@
 #define GGG_EDITOR_HH
 
 #include <string>
-#include <unistdx/ipc/proc_status>
+#include <unistdx/ipc/process_status>
 #include <unistdx/fs/path>
 
 namespace ggg {
@@ -10,13 +10,13 @@ namespace ggg {
 	std::string
 	find_file_editor();
 
-	sys::proc_status
+	sys::process_status
 	edit_file(std::string path);
 
 	void
 	edit_file_or_throw(std::string path);
 
-	sys::proc_status
+	sys::process_status
 	edit_directory(sys::path root);
 
 }

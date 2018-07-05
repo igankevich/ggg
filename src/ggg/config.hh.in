@@ -5,7 +5,6 @@
 
 #define GGG_ROOT "@root_directory@"
 #define GGG_ENT_ROOT "@ent_root_directory@"
-#define GGG_LOCK_DIR "@lock_directory@"
 #define GGG_LOCK_FILE "@lock_file@"
 #define GGG_REG_ROOT "@reg_root_directory@"
 #define GGG_GIT_ROOT "@git_root_directory@"
@@ -18,5 +17,6 @@
 #define GGG_DIRECTORY_EDITOR "@directory_editor@"
 #define GGG_CATALOG "@catalog@"
 #define GGG_CACHE_DIRECTORY "@cache_directory@"
+#define GGG_AUTH_GROUP "@auth_group@"
 
 #endif // vim:filetype=cpp

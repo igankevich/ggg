@@ -5,7 +5,7 @@
 #include <iostream>
 #include <sstream>
 
-#include <unistdx/fs/file_stat>
+#include <unistdx/fs/file_status>
 
 #include <ggg/config.hh>
 
@@ -28,7 +28,7 @@ protected:
 
 TEST(CommandsBase, Init) {
 	ok("ggg init");
-	sys::file_stat root(GGG_ROOT);
+	sys::file_status root(GGG_ROOT);
 	EXPECT_TRUE(root.exists());
 	EXPECT_TRUE(root.is_directory());
 }

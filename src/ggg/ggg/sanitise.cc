@@ -19,11 +19,11 @@ namespace {
 		std::vector<sys::path> empty_files;
 		sys::idirtree tree(dir);
 		std::for_each(
-			sys::idirtree_iterator<sys::direntry>(tree),
-			sys::idirtree_iterator<sys::direntry>(),
-			[&empty_files,&tree] (const sys::direntry& entry) {
+			sys::idirtree_iterator<sys::directory_entry>(tree),
+			sys::idirtree_iterator<sys::directory_entry>(),
+			[&empty_files,&tree] (const sys::directory_entry& entry) {
 				sys::path p(tree.current_dir(), entry.name());
-				sys::file_stat st(p);
+				sys::file_status st(p);
 				if (st.is_regular() && st.size() == 0 && st.owner() == 0) {
 					empty_files.emplace_back(std::move(p));
 				}

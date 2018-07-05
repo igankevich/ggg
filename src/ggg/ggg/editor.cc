@@ -21,7 +21,7 @@ ggg::find_file_editor() {
 	return result;
 }
 
-sys::proc_status
+sys::process_status
 ggg::edit_file(std::string path) {
 	std::string editor = find_file_editor();
 	sys::process child([&editor,&path] () {
@@ -35,13 +35,13 @@ ggg::edit_file(std::string path) {
 
 void
 ggg::edit_file_or_throw(std::string path) {
-	sys::proc_status status = ::ggg::edit_file(path);
+	sys::process_status status = ::ggg::edit_file(path);
 	if (!(status.exited() && status.exit_code() == 0)) {
 		throw std::runtime_error("bad exit code from editor");
 	}
 }
 
-sys::proc_status
+sys::process_status
 ggg::edit_directory(sys::path root) {
 	sys::pipe pipe;
 	pipe.in().unsetf(sys::open_flag::non_blocking);
@@ -60,10 +60,10 @@ ggg::edit_directory(sys::path root) {
 		sys::ofdstream out(std::move(pipe.out()));
 		sys::idirtree tree(root);
 		std::transform(
-			sys::idirtree_iterator<sys::direntry>(tree),
-			sys::idirtree_iterator<sys::direntry>(),
+			sys::idirtree_iterator<sys::directory_entry>(tree),
+			sys::idirtree_iterator<sys::directory_entry>(),
 			std::ostream_iterator<sys::path>(out, "\n"),
-			[&tree] (const sys::direntry& entry) {
+			[&tree] (const sys::directory_entry& entry) {
 				return sys::path(tree.current_dir(), entry.name());
 			}
 		);
