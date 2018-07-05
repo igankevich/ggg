@@ -138,6 +138,7 @@ namespace {
 		using namespace ggg::acl;
 		access_control_list old_acl(filename, tp);
 		if (old_acl != acl) {
+			ggg::native_message(std::wclog, "Changing ACLs of _.", filename);
 			acl.write(filename, tp);
 		}
 	}
@@ -148,7 +149,6 @@ namespace {
 		ggg::acl::access_control_list& acl,
 		ggg::acl::acl_type tp
 	) {
-		ggg::native_message(std::wclog, "Changing ACLs of _.", filename);
 		try {
 			change_acl_priv(filename, acl, tp);
 		} catch (const std::exception& err) {

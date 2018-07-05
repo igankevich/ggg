@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '0.7.3',
+	version: '0.7.4',
 	meson_version: '>=0.31',
 	default_options: ['cpp_std=c++14'],
 	license: ['GPLv2']
@@ -12,7 +12,8 @@ if not cpp.has_header('nss.h')
 	error('Header nss.h is required to compile the module.')
 endif
 
-if not get_option('buildtype').contains('debug')
+debug_build = get_option('buildtype').contains('debug')
+if not debug_build
 	add_global_arguments('-DNDEBUG', language: 'cpp')
 else
 	add_global_link_arguments('-rdynamic', language: 'cpp')
@@ -38,7 +39,7 @@ config.set('shadow_file_new', join_paths(etc, module_name, 'acc', '.shadow.new')
 config.set('lock_file', join_paths(etc, module_name, '.lock'))
 config.set('salt_length', '16')
 config.set('executable_name', executable_name)
-config.set('version', meson.project_version())
+config.set('version', debug_build ? 'debug' : meson.project_version())
 config.set('file_editor', 'vi')
 config.set('directory_editor', 'vidir')
 config.set('catalog', 'ggg')
