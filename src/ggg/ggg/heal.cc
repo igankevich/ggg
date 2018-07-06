@@ -430,6 +430,13 @@ namespace {
 				}
 			}
 		}
+		if (auth_gid != 0) {
+			using namespace ggg::acl;
+			access_control_list acl(sys::file_mode(0755));
+			acl.add_group(auth_gid, permission_type::read);
+			acl.add_mask();
+			change_acl(sys::path(GGG_ROOT, "acc"), acl, default_acl);
+		}
 	}
 
 }
