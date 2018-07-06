@@ -385,48 +385,51 @@ namespace {
 
 	void
 	heal_accounts(const ggg::Hierarchy& h) {
+		const sys::file_mode file_perms(0600), dir_perms(0700);
 		sys::idirtree tree(sys::path(GGG_ROOT, "acc"));
-		std::for_each(
-			sys::idirtree_iterator<sys::directory_entry>(tree),
-			sys::idirtree_iterator<sys::directory_entry>(),
-			[&h,&tree] (const sys::directory_entry& entry) {
-			    sys::path f(tree.current_dir(), entry.name());
-			    sys::file_status st(f);
-				std::string name;
-				sys::file_mode m;
-			    if (st.type() == sys::file_type::directory) {
-					name = entry.name();
-					m = 0700;
-				} else if (st.type() == sys::file_type::regular) {
-					sys::canonical_path dir(tree.current_dir());
-					name = dir.basename();
-					m = 0600;
-				}
-			    auto result = h.find_by_name(name.data());
-			    sys::uid_type uid = 0;
-			    sys::gid_type gid = 0;
-			    if (result != h.end()) {
-			        uid = result->id();
-			        gid = result->gid();
-				}
-				if (uid == 0) {
-					m = 0;
-				}
-				change_owner(f, st, uid, gid);
-				if (auth_gid == 0) {
-					change_permissions(f, m);
-				} else {
-					using namespace ggg::acl;
-					access_control_list acl(m);
-					acl.add_group(auth_gid, permission_type::read);
-					acl.add_mask();
-					change_acl(f, acl, access_acl);
-					if (st.is_directory()) {
-						change_acl(f, acl, default_acl);
-					}
+		for (const sys::directory_entry entry : tree.entries<sys::directory_entry>()) {
+		    sys::path f(tree.current_dir(), entry.name());
+		    sys::file_status st(f);
+			std::string name;
+			sys::file_mode m;
+		    if (st.type() == sys::file_type::directory) {
+				name = entry.name();
+				m = dir_perms;
+			} else if (st.type() == sys::file_type::regular) {
+				sys::canonical_path dir(tree.current_dir());
+				name = dir.basename();
+				m = file_perms;
+			}
+		    auto result = h.find_by_name(name.data());
+		    sys::uid_type uid = 0;
+		    sys::gid_type gid = 0;
+		    if (result != h.end()) {
+		        uid = result->id();
+		        gid = result->gid();
+			}
+			if (uid == 0) {
+				m = 0;
+			}
+			change_owner(f, st, uid, gid);
+			if (auth_gid == 0) {
+				change_permissions(f, m);
+			} else {
+				using namespace ggg::acl;
+				access_control_list acl(m);
+				acl.add_group(
+					auth_gid,
+					permission_type::read | permission_type::execute
+				);
+				acl.add_mask();
+				change_acl(f, acl, access_acl);
+				if (st.is_directory()) {
+					access_control_list acl0(file_perms);
+					acl0.add_group(auth_gid, permission_type::read);
+					acl0.add_mask();
+					change_acl(f, acl0, default_acl);
 				}
 			}
-		);
+		}
 	}
 
 }

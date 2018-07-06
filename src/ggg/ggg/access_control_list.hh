@@ -46,6 +46,12 @@ namespace ggg {
 		};
 
 		inline permission_type
+		operator|(permission_type lhs, permission_type rhs) {
+			typedef ::acl_perm_t tp;
+			return permission_type(tp(lhs) | tp(rhs));
+		}
+
+		inline permission_type
 		user_permissions(sys::file_mode m) {
 			::acl_perm_t perms = 0;
 			if (m.user() & sys::file_mode::user_r) {
