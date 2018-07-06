@@ -54,7 +54,7 @@ namespace {
 
 	inline ggg::account
 	find_account(ggg::account_ctl& all_accounts, const char* user) {
-		ggg::file_lock lock(true);
+		ggg::file_lock lock;
 		auto result = all_accounts.find(user);
 		if (result == all_accounts.end()) {
 			throw_pam_error(ggg::pam_errc::unknown_user);
