@@ -16,11 +16,11 @@ ggg
 void
 ggg
 ::init_locale(std::locale rhs) {
-	// enforce UTF-8 encoding
-	typedef std::codecvt_utf8<wchar_t> codecvt_facet;
-	if (!std::has_facet<codecvt_facet>(rhs)) {
-		rhs = std::locale(rhs, new codecvt_facet);
-	}
+//	// enforce UTF-8 encoding
+//	typedef std::codecvt_utf8<wchar_t> codecvt_facet;
+//	if (!std::has_facet<codecvt_facet>(rhs)) {
+//		rhs = std::locale(rhs, new codecvt_facet);
+//	}
 	std::locale::global(rhs);
 	std::cout.imbue(std::locale::classic());
 	std::wcout.imbue(std::locale::classic());
