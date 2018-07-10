@@ -12,7 +12,7 @@ ggg_core_lib = shared_library(
 	'ggg_core',
 	sources: hierarchy_src,
 	include_directories: inc,
-	dependencies: [unistdx],
+	dependencies: [unistdx,libacl],
 	version: meson.project_version(),
 	install: true
 )

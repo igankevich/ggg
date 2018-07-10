@@ -392,13 +392,17 @@ namespace {
 		    sys::file_status st(f);
 			std::string name;
 			sys::file_mode m;
+			ggg::acl::permission_type acl_perms;
 		    if (st.type() == sys::file_type::directory) {
 				name = entry.name();
 				m = dir_perms;
+				acl_perms = ggg::acl::permission_type::read |
+					ggg::acl::permission_type::execute;
 			} else if (st.type() == sys::file_type::regular) {
 				sys::canonical_path dir(tree.current_dir());
 				name = dir.basename();
 				m = file_perms;
+				acl_perms = ggg::acl::permission_type::read;
 			}
 		    auto result = h.find_by_name(name.data());
 		    sys::uid_type uid = 0;
@@ -416,10 +420,7 @@ namespace {
 			} else {
 				using namespace ggg::acl;
 				access_control_list acl(m);
-				acl.add_group(
-					auth_gid,
-					permission_type::read | permission_type::execute
-				);
+				acl.add_group(auth_gid, acl_perms);
 				acl.add_mask();
 				change_acl(f, acl, access_acl);
 				if (st.is_directory()) {

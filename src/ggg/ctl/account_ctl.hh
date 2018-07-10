@@ -23,6 +23,8 @@ namespace ggg {
 	private:
 		container_type _accounts;
 		bool _verbose = false;
+		/// GID of ggg.auth group.
+		sys::gid_type _authgid = 0;
 
 	public:
 
@@ -117,6 +119,11 @@ namespace ggg {
 		inline void
 		clear() {
 			this->_accounts.clear();
+		}
+
+		inline void
+		set_auth_group(sys::gid_type rhs) noexcept {
+			this->_authgid = rhs;
 		}
 
 	private:

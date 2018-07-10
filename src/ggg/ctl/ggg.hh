@@ -5,10 +5,34 @@
 #include <set>
 #include <string>
 
+#include <ggg/config.hh>
 #include <ggg/core/hierarchy.hh>
 #include <ggg/ctl/account_ctl.hh>
 
 namespace ggg {
+
+	template <class Ch>
+	struct strings {};
+
+	template <>
+	struct strings<char> {
+		typedef char char_type;
+		inline static const char_type*
+		auth_group_name() noexcept {
+			return GGG_AUTH_GROUP;
+		}
+	};
+
+	template <>
+	struct strings<wchar_t> {
+		typedef wchar_t char_type;
+		inline static const char_type*
+		auth_group_name() noexcept {
+			return GGG_AUTH_GROUP_W;
+		}
+	};
+
+
 
 	template <class Ch>
 	class basic_ggg {
@@ -41,11 +65,13 @@ namespace ggg {
 		_verbose(verbose) {
 			this->_hierarchy.verbose(verbose);
 			this->_accounts.verbose(verbose);
+			this->_accounts.set_auth_group(this->find_auth_group());
 		}
 
 		inline void
 		open(const sys::path& root) {
 			this->_hierarchy.open(root);
+			this->_accounts.set_auth_group(this->find_auth_group());
 		}
 
 		void
@@ -137,6 +163,18 @@ namespace ggg {
 
 		sys::path
 		account_origin(sys::uid_type uid);
+
+		inline sys::gid_type
+		find_auth_group() const {
+			sys::gid_type auth_gid = 0;
+			auto result = this->_hierarchy.find_by_name(
+				strings<char_type>::auth_group_name()
+			);
+			if (result != this->_hierarchy.end()) {
+				auth_gid = result->gid();
+			}
+			return auth_gid;
+		}
 
 	private:
 

@@ -15,6 +15,7 @@
 #include <unistdx/ipc/identity>
 
 #include <ggg/bits/to_bytes.hh>
+#include <ggg/core/acl.hh>
 #include <ggg/core/eq_traits.hh>
 
 namespace ggg {
@@ -38,6 +39,12 @@ namespace ggg {
 	) {
 		set_owner(filename, uid, gid);
 		set_mode(filename, m);
+	}
+
+	inline void
+	set_acl(const char* filename, const ggg::acl::access_control_list& acl) {
+		acl.add_mask();
+		acl.write(filename, ggg::acl::access_acl);
 	}
 
 	namespace bits {
@@ -154,6 +161,21 @@ namespace ggg {
 			Stream& file,
 			std::ios_base::openmode mode,
 			sys::path origin,
+			sys::uid_type uid,
+			const ggg::acl::access_control_list& acl
+		) {
+			file.exceptions(std::ios::badbit);
+			file.imbue(std::locale::classic());
+			file.open(origin, mode | std::ios_base::binary);
+			set_acl(origin, acl);
+		}
+
+		template <class Stream>
+		inline void
+		open(
+			Stream& file,
+			std::ios_base::openmode mode,
+			sys::path origin,
 			sys::uid_type uid
 		) {
 			open<Stream>(file, mode, origin, uid, uid == 0 ? 0 : 0600);
@@ -185,17 +207,28 @@ namespace ggg {
 			const T& ent,
 			const char* dest,
 			const char* msg,
-			sys::file_mode m
+			const ggg::acl::access_control_list& acl
 		) {
 			typedef typename T::char_type char_type;
 			std::basic_ofstream<char_type> out;
 			try {
 				const sys::uid_type uid = sys::this_process::user();
-				open(out, std::ios::out | std::ios::app, sys::path(dest), uid, m);
+				open(out, std::ios::out | std::ios::app, sys::path(dest), uid, acl);
 				out << ent << '\n';
 			} catch (...) {
 				throw_io_error(out, msg);
 			}
+		}
+
+		template <class T>
+		void
+		append(
+			const T& ent,
+			const char* dest,
+			const char* msg,
+			sys::file_mode m
+		) {
+			return append<T>(ent, dest, msg, ggg::acl::access_control_list(m));
 		}
 
 		template <class T, class Ch>

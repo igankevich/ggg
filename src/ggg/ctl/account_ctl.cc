@@ -11,11 +11,11 @@
 
 #include <unistdx/base/check>
 #include <unistdx/fs/canonical_path>
+#include <unistdx/fs/idirtree>
 #include <unistdx/fs/path>
 
 #include <ggg/bits/io.hh>
 #include <ggg/config.hh>
-#include <ggg/core/iacctree.hh>
 #include <ggg/core/native.hh>
 
 namespace {
@@ -131,15 +131,13 @@ void
 ggg::account_ctl
 ::open() {
 	this->_accounts.clear();
-	ggg::iacctree tree(sys::path(GGG_ROOT, "acc"));
+	sys::idirtree tree(sys::path(GGG_ROOT, "acc"));
 	while (!tree.eof()) {
 		tree.clear();
-		std::for_each(
-			ggg::iacctree_iterator<sys::directory_entry>(tree),
-			ggg::iacctree_iterator<sys::directory_entry>(),
-			[this,&tree] (const sys::directory_entry& entry) {
+		try {
+			for (const sys::directory_entry& entry : tree.entries<sys::directory_entry>()) {
 				if (sys::get_file_type(tree.current_dir(), entry) != sys::file_type::regular) {
-					return;
+					continue;
 				}
 				sys::path f(tree.current_dir(), entry.name());
 				std::ifstream in;
@@ -162,7 +160,11 @@ ggg::account_ctl
 					bits::throw_io_error(in, msg.str());
 				}
 			}
-		);
+		} catch (...) {
+			if (!tree.is_open()) {
+				tree.next_directory();
+			}
+		}
 	}
 }
 

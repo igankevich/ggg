@@ -443,7 +443,7 @@ namespace ggg {
 			typedef ::acl_t pointer;
 
 		private:
-			pointer _acl = nullptr;
+			mutable pointer _acl = nullptr;
 
 		public:
 
@@ -504,7 +504,7 @@ namespace ggg {
 			}
 
 			inline void
-			add_mask() {
+			add_mask() const {
 				UNISTDX_CHECK(::acl_calc_mask(&this->_acl));
 			}
 

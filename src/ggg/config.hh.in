@@ -18,5 +18,6 @@
 #define GGG_CATALOG "@catalog@"
 #define GGG_CACHE_DIRECTORY "@cache_directory@"
 #define GGG_AUTH_GROUP "@auth_group@"
+#define GGG_AUTH_GROUP_W L"@auth_group@"
 
 #endif // vim:filetype=cpp
