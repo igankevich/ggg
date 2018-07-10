@@ -9,6 +9,7 @@
 #include <unistdx/ipc/identity>
 
 #include <ggg/core/account.hh>
+#include <ggg/core/acl.hh>
 
 namespace ggg {
 
@@ -128,9 +129,13 @@ namespace ggg {
 
 	private:
 
-		inline static sys::file_mode
+		inline acl::access_control_list
 		getperms(sys::uid_type uid) noexcept {
-			return uid == 0 ? 0 : 0600;
+			acl::access_control_list acl(sys::file_mode(uid == 0 ? 0 : 0600));
+			if (this->_authgid != 0) {
+				acl.add_group(this->_authgid, acl::permission_type::read);
+			}
+			return acl;
 		}
 
 	};

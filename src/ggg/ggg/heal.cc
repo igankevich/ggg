@@ -12,9 +12,9 @@
 #include <unistdx/io/fildes>
 
 #include <ggg/config.hh>
+#include <ggg/core/acl.hh>
 #include <ggg/core/native.hh>
 #include <ggg/ggg/quiet_error.hh>
-#include <ggg/ggg/access_control_list.hh>
 
 namespace {
 

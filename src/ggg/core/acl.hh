@@ -5,10 +5,12 @@
 #include <sys/acl.h>
 #include <sys/types.h>
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <iterator>
 #include <ostream>
+#include <sstream>
 #include <type_traits>
 #include <vector>
 

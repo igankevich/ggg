@@ -187,7 +187,7 @@ namespace ggg {
 			std::basic_ifstream<Ch>& in,
 			std::basic_ofstream<Ch>& out,
 			sys::path orig,
-			sys::file_mode m
+			const ggg::acl::access_control_list& acl
 		) {
 			sys::canonical_path origin(orig);
 			sys::path new_origin;
@@ -196,9 +196,20 @@ namespace ggg {
 			check(origin, R_OK | W_OK);
 			check(new_origin, R_OK | W_OK, false);
 			const sys::uid_type uid = sys::this_process::user();
-			open(in, std::ios_base::in, origin, uid, m);
-			open(out, std::ios_base::out, new_origin, uid, m);
+			open(in, std::ios_base::in, origin, uid, acl);
+			open(out, std::ios_base::out, new_origin, uid, acl);
 			return std::make_pair(std::move(origin), std::move(new_origin));
+		}
+
+		template <class Ch>
+		inline std::pair<sys::canonical_path,sys::path>
+		open_both(
+			std::basic_ifstream<Ch>& in,
+			std::basic_ofstream<Ch>& out,
+			sys::path orig,
+			sys::file_mode m
+		) {
+			return open_both<Ch>(in, out, orig, ggg::acl::access_control_list(m));
 		}
 
 		template <class T>
@@ -233,13 +244,17 @@ namespace ggg {
 
 		template <class T, class Ch>
 		void
-		erase(const T& ent, bool verbose, sys::file_mode m) {
+		erase(
+			const T& ent,
+			bool verbose,
+			const ggg::acl::access_control_list& acl
+		) {
 			typedef std::istream_iterator<T,Ch> iterator;
 			typedef std::ostream_iterator<T,Ch> oiterator;
 			std::basic_ifstream<Ch> file;
 			std::basic_ofstream<Ch> file_new;
 			try {
-				auto files = open_both(file, file_new, ent.origin(), m);
+				auto files = open_both(file, file_new, ent.origin(), acl);
 				std::copy_if(
 					iterator(file),
 					iterator(),
@@ -268,14 +283,24 @@ namespace ggg {
 
 		template <class T, class Ch>
 		void
-		update(const T& ent, bool verbose, sys::file_mode m) {
+		erase(const T& ent, bool verbose, sys::file_mode m) {
+			erase<T,Ch>(ent, verbose, ggg::acl::access_control_list(m));
+		}
+
+		template <class T, class Ch>
+		void
+		update(
+			const T& ent,
+			bool verbose,
+			const ggg::acl::access_control_list& acl
+		) {
 			typedef std::istream_iterator<T,Ch> iterator;
 			typedef std::ostream_iterator<T,Ch> oiterator;
 			typedef ::ggg::eq_traits<T> traits_type;
 			std::basic_ifstream<Ch> file;
 			std::basic_ofstream<Ch> file_new;
 			try {
-				auto files = open_both(file, file_new, ent.origin(), m);
+				auto files = open_both(file, file_new, ent.origin(), acl);
 				std::transform(
 					iterator(file),
 					iterator(),
@@ -300,6 +325,12 @@ namespace ggg {
 				msg << "unable to modify " << to_bytes<char>(cv, ent.name());
 				throw_io_error(file, msg.str());
 			}
+		}
+
+		template <class T, class Ch>
+		void
+		update(const T& ent, bool verbose, sys::file_mode m) {
+			update<T,Ch>(ent, verbose, ggg::acl::access_control_list(m));
 		}
 
 	}
