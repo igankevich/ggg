@@ -21,8 +21,8 @@ ggg::Find_entities::parse_arguments(int argc, char* argv[]) {
 void
 ggg::Find_entities::execute() {
 	file_lock lock;
-	WGGG g(GGG_ENT_ROOT, this->verbose());
-	const auto& h = g.hierarchy();
+	WGGG::hierarchy_type h(GGG_ENT_ROOT);
+	h.verbose(this->verbose());
 	if (this->_args.empty()) {
 		std::copy(
 			h.begin(),

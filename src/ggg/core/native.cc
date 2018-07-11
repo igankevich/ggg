@@ -17,10 +17,25 @@ void
 ggg
 ::init_locale(std::locale rhs) {
 	// enforce UTF-8 encoding
-//	typedef std::codecvt_utf8<wchar_t> codecvt_facet;
-//	if (!std::has_facet<codecvt_facet>(rhs)) {
-//		rhs = std::locale(rhs, new codecvt_facet);
-//	}
+	{
+		bool change = false;
+		std::string name(rhs.name());
+		auto idx = name.find('.');
+		if (idx == std::string::npos) {
+			change = true;
+		} else {
+			std::string suffix(name.substr(idx+1));
+			for (char& ch : suffix) {
+				ch = std::tolower(ch);
+			}
+			if (suffix != "utf8" && suffix != "utf-8") {
+				change = true;
+			}
+		}
+		if (change) {
+			rhs = std::locale(name + ".UTF-8");
+		}
+	}
 	std::locale::global(rhs);
 	std::cout.imbue(std::locale::classic());
 	std::wcout.imbue(std::locale::classic());

@@ -43,8 +43,12 @@ namespace ggg {
 
 	inline void
 	set_acl(const char* filename, const ggg::acl::access_control_list& acl) {
-		acl.add_mask();
-		acl.write(filename, ggg::acl::access_acl);
+		try {
+			acl.add_mask();
+			acl.write(filename, ggg::acl::access_acl);
+		} catch (...) {
+			// ignore
+		}
 	}
 
 	namespace bits {

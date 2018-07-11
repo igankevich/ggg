@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '0.7.10',
+	version: '0.7.11',
 	meson_version: '>=0.31',
 	default_options: ['cpp_std=c++14'],
 	license: ['GPLv2']
@@ -46,7 +46,7 @@ config.set('catalog', 'ggg')
 config.set('cache_directory', join_paths(get_option('localstatedir'), 'cache'))
 config.set('auth_group', 'ggg.auth')
 
-unistdx = dependency('unistdx')
+unistdx = dependency('unistdx', version: '>=0.4.5')
 gtest = dependency('gtest', main: true)
 gtest_nomain = dependency('gtest', main: false)
 nss_wrapper = dependency('nss_wrapper')

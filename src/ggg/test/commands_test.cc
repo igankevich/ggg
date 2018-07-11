@@ -224,6 +224,7 @@ TEST_F(Commands, EditUnpriviledged) {
 		"u4::2004:2004:REALNAME:/:/bin/sh\n",
 		"su - u2 -c 'ggg find -t u4'"
 	);
+	ok("getfacl -R /etc/ggg/ent/");
 	output_is(
 		"u4::2004:2004:REALNAME:/:/bin/sh\n",
 		"su - u3 -c 'ggg find -t u4'"

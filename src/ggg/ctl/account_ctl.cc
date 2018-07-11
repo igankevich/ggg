@@ -154,6 +154,10 @@ ggg::account_ctl
 							this->_accounts.insert(acc);
 						}
 					);
+				} catch (const std::system_error& err) {
+					if (std::errc(err.code().value()) != std::errc::permission_denied) {
+						throw;
+					}
 				} catch (...) {
 					std::stringstream msg;
 					msg << "unable to read accounts from " << f;
