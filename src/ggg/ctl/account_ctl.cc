@@ -165,9 +165,7 @@ ggg::account_ctl
 				}
 			}
 		} catch (...) {
-			if (!tree.is_open()) {
-				tree.next_directory();
-			}
+
 		}
 	}
 }
