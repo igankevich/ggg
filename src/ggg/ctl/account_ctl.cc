@@ -135,7 +135,8 @@ ggg::account_ctl
 	while (!tree.eof()) {
 		tree.clear();
 		try {
-			for (const sys::directory_entry& entry : tree.entries<sys::directory_entry>()) {
+			sys::directory_entry entry;
+			while (tree >> entry) {
 				if (sys::get_file_type(tree.current_dir(), entry) != sys::file_type::regular) {
 					continue;
 				}
@@ -154,18 +155,12 @@ ggg::account_ctl
 							this->_accounts.insert(acc);
 						}
 					);
-				} catch (const std::system_error& err) {
-					if (std::errc(err.code().value()) != std::errc::permission_denied) {
-						throw;
-					}
 				} catch (...) {
-					std::stringstream msg;
-					msg << "unable to read accounts from " << f;
-					bits::throw_io_error(in, msg.str());
+					// skip unreadable files
 				}
 			}
 		} catch (...) {
-
+			// skip unreadable directories
 		}
 	}
 }

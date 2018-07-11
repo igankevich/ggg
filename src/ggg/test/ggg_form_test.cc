@@ -6,6 +6,7 @@
 TEST(Form, Run) {
 	ASSERT_EQ(0, ::system("rm -rf " GGG_ROOT));
 	ASSERT_EQ(0, ::system("ggg init"));
+	ok("echo 'u0:2000:U0:/:/bin/sh' | ggg add -");
 	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
 	ok(
 		R"(echo '
@@ -24,6 +25,7 @@ set_secure:account.password:4
 		')"
 		"> " GGG_ROOT "/reg/u1"
 	);
+	ok("echo > " GGG_ROOT "/reg/u0");
 	ok("ggg init");
 	ok("su - u1 -c ggg-form");
 }
