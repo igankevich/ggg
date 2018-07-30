@@ -54,48 +54,6 @@ namespace ggg {
 	namespace bits {
 
 		template <class Ch>
-		struct delimiter_traits;
-
-		template <>
-		struct delimiter_traits<char> {
-
-			inline static const char*
-			newline() noexcept {
-				return "\n";
-			}
-
-		};
-
-		template <>
-		struct delimiter_traits<wchar_t> {
-
-			inline static const wchar_t*
-			newline() noexcept {
-				return L"\n";
-			}
-
-		};
-
-		template <class Ch>
-		struct log_traits;
-
-		template <>
-		struct log_traits<char> {
-			inline static std::ostream&
-			log() noexcept {
-				return std::clog;
-			}
-		};
-
-		template <>
-		struct log_traits<wchar_t> {
-			inline static std::wostream&
-			log() noexcept {
-				return std::wclog;
-			}
-		};
-
-		template <class Ch>
 		inline void
 		throw_io_error(std::basic_istream<Ch>& in, const char* msg) {
 			if (!in.eof()) {
@@ -262,14 +220,13 @@ namespace ggg {
 				std::copy_if(
 					iterator(file),
 					iterator(),
-					oiterator(file_new, delimiter_traits<Ch>::newline()),
+					oiterator(file_new, "\n"),
 					[&ent,verbose] (const T& rhs) {
 						const bool match = rhs.name() == ent.name();
 						if (match && verbose) {
-							log_traits<Ch>::log()
-							<< "removing " << rhs.name()
-							<< " from " << ent.origin()
-							<< std::endl;
+							std::clog << "removing " << rhs.name()
+								<< " from " << ent.origin()
+								<< std::endl;
 						}
 						return !match;
 					}
@@ -278,9 +235,8 @@ namespace ggg {
 			} catch (const std::exception& err) {
 				throw_io_error(file, err.what());
 			} catch (...) {
-				wcvt_type cv;
 				std::stringstream msg;
-				msg << "unable to remove " << to_bytes<char>(cv, ent.name());
+				msg << "unable to remove " << ent.name();
 				throw_io_error(file, msg.str());
 			}
 		}
@@ -308,14 +264,14 @@ namespace ggg {
 				std::transform(
 					iterator(file),
 					iterator(),
-					oiterator(file_new, bits::delimiter_traits<Ch>::newline()),
+					oiterator(file_new, "\n"),
 					[&ent,verbose] (const T& rhs) {
 						const bool match = traits_type::eq(rhs, ent);
 						if (match && verbose) {
-							log_traits<Ch>::log()
-							<< "modifying " << rhs.name()
-							<< " from " << ent.origin()
-							<< std::endl;
+							std::clog
+								<< "modifying " << rhs.name()
+								<< " from " << ent.origin()
+								<< std::endl;
 						}
 						return match ? ent : rhs;
 					}
@@ -324,9 +280,8 @@ namespace ggg {
 			} catch (const std::exception& err) {
 				throw_io_error(file, err.what());
 			} catch (...) {
-				wcvt_type cv;
 				std::stringstream msg;
-				msg << "unable to modify " << to_bytes<char>(cv, ent.name());
+				msg << "unable to modify " << ent.name();
 				throw_io_error(file, msg.str());
 			}
 		}

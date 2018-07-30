@@ -21,7 +21,7 @@ ggg::Find_entities::parse_arguments(int argc, char* argv[]) {
 void
 ggg::Find_entities::execute() {
 	file_lock lock;
-	WGGG::hierarchy_type h(GGG_ENT_ROOT);
+	GGG::hierarchy_type h(GGG_ENT_ROOT);
 	h.verbose(this->verbose());
 	if (this->_args.empty()) {
 		std::copy(
@@ -30,7 +30,7 @@ ggg::Find_entities::execute() {
 			std::inserter(this->_result, this->_result.begin())
 		);
 	} else {
-		wentity::wcvt_type cv;
+		bits::wcvt_type cv;
 		for (const std::string& a : this->args()) {
 			using namespace std::regex_constants;
 			std::wregex wexpr(cv.from_bytes(a), ECMAScript | optimize | icase);
@@ -38,9 +38,11 @@ ggg::Find_entities::execute() {
 				h.begin(),
 				h.end(),
 				std::inserter(this->_result, this->_result.begin()),
-				[&] (const wentity& ent) {
-				    return std::regex_search(ent.name(), wexpr) ||
-				           std::regex_search(ent.real_name(), wexpr);
+				[&] (const entity& ent) {
+					std::wstring name = cv.from_bytes(ent.name());
+					std::wstring real_name = cv.from_bytes(ent.real_name());
+				    return std::regex_search(name, wexpr) ||
+				           std::regex_search(real_name, wexpr);
 				}
 			);
 		}

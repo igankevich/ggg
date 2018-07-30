@@ -26,19 +26,19 @@ ggg::Show_base::parse_arguments(int argc, char* argv[]) {
 void
 ggg::Show_base::execute() {
 	if (this->_table) {
-		for (const wentity& ent : this->_result) {
-			std::wcout << ent << '\n';
+		for (const entity& ent : this->_result) {
+			std::cout << ent << '\n';
 		}
 	} else if (this->_long) {
-		align_columns(this->_result, std::wcout, wentity::delimiter, L' ', true);
+		align_columns(this->_result, std::cout, entity::delimiter, ' ', true);
 		const size_t nentities = this->_result.size();
 		if (nentities > 7) {
-			std::wcout << std::endl;
-			native_message_n(std::wcout, nentities, "_ entities.", nentities);
+			std::cout << std::endl;
+			native_message_n(std::cout, nentities, "_ entities.", nentities);
 		}
 	} else {
-		for (const wentity& ent : this->_result) {
-			std::wcout << ent.name() << '\n';
+		for (const entity& ent : this->_result) {
+			std::cout << ent.name() << '\n';
 		}
 	}
 }

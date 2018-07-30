@@ -82,8 +82,8 @@ ggg::Edit_entity::edit_interactive(GGG& g) {
 		edit_file_or_throw(tmp.filename());
 		this->update_objects<T>(g, tmp.filename());
 		if (!this->_args.empty()) {
-			native_message(std::wclog, "Press any key to continue...");
-			std::wcin.get();
+			native_message(std::clog, "Press any key to continue...");
+			std::cin.get();
 		}
 	}
 }
@@ -142,16 +142,7 @@ ggg::Edit_entity::update_objects(GGG& g, const std::string& filename) {
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
 			++nerrors;
-			bits::wcvt_type cv;
-			std::stringstream tmp;
-			tmp.imbue(std::locale::classic());
-			tmp << ent;
-			native_message(
-				std::wcerr,
-				"error updating _: _",
-				cv.from_bytes(tmp.str()),
-				wnative(err.what(), cv)
-			);
+			native_message(std::cerr, "error updating _: _", ent, native(err.what()));
 		}
 	}
 	if (nerrors > 0) {
@@ -167,9 +158,9 @@ ggg::Edit_entity::edit_directory() {
 		status = ::ggg::edit_directory(sys::path(GGG_ENT_ROOT));
 		success = status.exited() && status.exit_code() == 0;
 		if (!success) {
-			native_message(std::wcerr, "bad exit code from editor");
-			native_message(std::wcerr, "Press any key to continue...");
-			std::wcin.get();
+			native_message(std::cerr, "bad exit code from editor");
+			native_message(std::cerr, "Press any key to continue...");
+			std::cin.get();
 		}
 	} while (!success);
 }

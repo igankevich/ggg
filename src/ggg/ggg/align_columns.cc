@@ -1,21 +1,22 @@
 #include "align_columns.hh"
 
-#include <codecvt>
-#include <locale>
+#include <ggg/bits/to_bytes.hh>
 
-template <class Ch>
+template <>
 std::vector<size_t>
-ggg::align_columns(std::basic_istream<Ch>& str, Ch delimiter) {
-	// calculate column widths
+ggg::align_columns<char>(std::basic_istream<char>& str, char delimiter) {
+	bits::wcvt_type cv;
 	std::vector<size_t> width;
-	std::basic_string<Ch> line;
-	while (std::getline(str, line, Ch('\n'))) {
+	std::string line;
+	while (std::getline(str, line, '\n')) {
+		const size_t line_size = line.size();
 		size_t i0 = 0;
 		size_t column_no = 0;
-		const size_t line_size = line.size();
 		for (size_t i=0; i<line_size; ++i) {
 			if (line[i] == delimiter || i == line_size-1) {
-				const size_t new_w = i-i0;
+				const char* first = line.data()+i0;
+				const size_t new_w =
+					cv.from_bytes(first, line.data() + i).size();
 				if (column_no >= width.size()) {
 					width.emplace_back(new_w);
 				} else {
@@ -34,6 +35,3 @@ ggg::align_columns(std::basic_istream<Ch>& str, Ch delimiter) {
 
 template std::vector<size_t>
 ggg::align_columns(std::basic_istream<char>& str, char delim);
-
-template std::vector<size_t>
-ggg::align_columns(std::basic_istream<wchar_t>& str, wchar_t delim);

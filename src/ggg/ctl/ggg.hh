@@ -12,29 +12,6 @@
 namespace ggg {
 
 	template <class Ch>
-	struct strings {};
-
-	template <>
-	struct strings<char> {
-		typedef char char_type;
-		inline static const char_type*
-		auth_group_name() noexcept {
-			return GGG_AUTH_GROUP;
-		}
-	};
-
-	template <>
-	struct strings<wchar_t> {
-		typedef wchar_t char_type;
-		inline static const char_type*
-		auth_group_name() noexcept {
-			return GGG_AUTH_GROUP_W;
-		}
-	};
-
-
-
-	template <class Ch>
 	class basic_ggg {
 
 	public:
@@ -167,9 +144,7 @@ namespace ggg {
 		inline sys::gid_type
 		find_auth_group() const {
 			sys::gid_type auth_gid = 0;
-			auto result = this->_hierarchy.find_by_name(
-				strings<char_type>::auth_group_name()
-			);
+			auto result = this->_hierarchy.find_by_name(GGG_AUTH_GROUP);
 			if (result != this->_hierarchy.end()) {
 				auth_gid = result->gid();
 			}
@@ -187,7 +162,6 @@ namespace ggg {
 	};
 
 	typedef basic_ggg<char> GGG;
-	typedef basic_ggg<wchar_t> WGGG;
 
 }
 

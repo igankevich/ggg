@@ -161,7 +161,6 @@ namespace ggg {
 	operator>>(sys::basic_bstream<Ch>& in, basic_group<Ch>& rhs);
 
 	typedef basic_group<char> group;
-	typedef basic_group<wchar_t> wgroup;
 
 }
 

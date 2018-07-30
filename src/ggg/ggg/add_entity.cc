@@ -63,12 +63,7 @@ ggg::Add_entity
 			success = false;
 			std::stringstream tmp;
 			tmp << ent;
-			bits::wcvt_type cv;
-			native_message(
-				std::wcerr,
-				"Entity _ already exists.",
-				cv.from_bytes(tmp.str())
-			);
+			native_message(std::cerr, "Entity _ already exists.", tmp.str());
 		}
 	}
 	if (!success) {
@@ -85,8 +80,8 @@ ggg::Add_entity
 			// ignore quiet error
 		}
 		if (!this->_args.empty()) {
-			native_message(std::wclog, "Press any key to continue...");
-			std::wcin.get();
+			native_message(std::clog, "Press any key to continue...");
+			std::cin.get();
 		}
 	}
 }
@@ -134,16 +129,8 @@ ggg::Add_entity
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
 			++nerrors;
-			bits::wcvt_type cv;
-			std::stringstream tmp;
-			tmp << ent;
-			native_sentence(
-				std::wcerr,
-				cv,
-				"Error adding _. ",
-				cv.from_bytes(tmp.str())
-			);
-			error_message(std::wcerr, cv, err);
+			native_sentence(std::cerr, "Error adding _. ", ent);
+			error_message(std::cerr, err);
 		}
 	}
 	if (nerrors > 0) {

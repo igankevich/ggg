@@ -15,7 +15,7 @@ namespace ggg {
 	protected:
 		bool _long = false;
 		bool _table = false;
-		std::set<wentity> _result;
+		std::set<entity> _result;
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;

@@ -122,16 +122,9 @@ ggg
 }
 
 template class ggg::basic_group<char>;
-template class ggg::basic_group<wchar_t>;
 
 template std::basic_ostream<char>&
 ggg::operator<<(std::basic_ostream<char>& out, const basic_group<char>& rhs);
-
-template std::basic_ostream<wchar_t>&
-ggg::operator<<(
-	std::basic_ostream<wchar_t>& out,
-	const basic_group<wchar_t>& rhs
-);
 
 template size_t
 ggg
@@ -144,11 +137,5 @@ ggg
 template sys::basic_bstream<char>&
 ggg::operator<<(sys::basic_bstream<char>& out, const basic_group<char>& rhs);
 
-template sys::basic_bstream<wchar_t>&
-ggg::operator<<(sys::basic_bstream<wchar_t>& out, const basic_group<wchar_t>& rhs);
-
 template sys::basic_bstream<char>&
 ggg::operator>>(sys::basic_bstream<char>& in, basic_group<char>& rhs);
-
-template sys::basic_bstream<wchar_t>&
-ggg::operator>>(sys::basic_bstream<wchar_t>& in, basic_group<wchar_t>& rhs);

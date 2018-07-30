@@ -325,34 +325,30 @@ namespace ggg {
 		process_entry(
 			const sys::path& dir,
 			const sys::directory_entry& entry,
-			entity::wcvt_type& cv,
 			bool& success
 		);
 
 		inline void
 		add_entity(
 			const entity_type& ent,
-			const canonical_path_type& filepath,
-			entity::wcvt_type& cv
+			const canonical_path_type& filepath
 		) {
-			this->add(this->_entities, ent, filepath, cv);
+			this->add(this->_entities, ent, filepath);
 		}
 
 		inline void
 		add_link(
 			const entity_type& ent,
-			const canonical_path_type& filepath,
-			entity::wcvt_type& cv
+			const canonical_path_type& filepath
 		) {
-			this->add(this->_links, ent, filepath, cv);
+			this->add(this->_links, ent, filepath);
 		}
 
 		void
 		add(
 			map_type& container,
 			const entity_type& ent,
-			const canonical_path_type& filepath,
-			entity::wcvt_type& cv
+			const canonical_path_type& filepath
 		);
 
 		void

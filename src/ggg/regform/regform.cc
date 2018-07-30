@@ -17,6 +17,7 @@
 #include <sstream>
 #include <vector>
 
+#include <ggg/bits/to_bytes.hh>
 #include <ggg/config.hh>
 #include <ggg/core/hierarchy.hh>
 #include <ggg/core/lock.hh>
@@ -55,7 +56,7 @@ volatile bool form_loaded = false;
 
 bool
 regex_match(const char* string, const std::string& expr) {
-	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
+	ggg::bits::wcvt_type cv;
 	std::wregex reg(cv.from_bytes(expr));
 	std::wstring value(cv.from_bytes(string));
 	return std::regex_match(value, reg);
@@ -457,12 +458,7 @@ void
 launch_desktop(const char* username) {
 	struct ::passwd* pw = ::getpwnam(username);
 	if (!pw) {
-		ggg::bits::wcvt_type cv;
-		ggg::native_message(
-			std::wcerr,
-			"User _ not found via NSS.",
-			cv.from_bytes(username)
-		);
+		ggg::native_message(std::cerr, "User _ not found via NSS.", username);
 		std::exit(1);
 	}
 	const char* pwd = change_directory(pw->pw_dir);
@@ -624,7 +620,7 @@ main(int argc, char* argv[]) {
 		g_object_unref(app);
 	} catch (const std::exception& err) {
 		ret = EXIT_FAILURE;
-		ggg::error_message(std::wcerr, err);
+		ggg::error_message(std::cerr, err);
 	}
 	return ret;
 }

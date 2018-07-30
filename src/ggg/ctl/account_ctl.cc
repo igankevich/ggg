@@ -66,12 +66,7 @@ ggg::account_ctl
 		account new_acc(old);
 		new_acc.copy_from(acc);
 		if (this->verbose()) {
-			bits::wcvt_type cv;
-			native_message(
-				std::wclog,
-				"Updating _.",
-				cv.from_bytes(new_acc.login())
-			);
+			native_message(std::clog, "Updating _.", new_acc.login());
 		}
 		const sys::uid_type uid = sys::this_process::user();
 		bits::update<account,char_type>(
@@ -116,13 +111,7 @@ ggg::account_ctl
 		throw std::invalid_argument("bad origin");
 	}
 	if (this->verbose()) {
-		bits::wcvt_type cv;
-		native_message(
-			std::wclog,
-			"Appeding _ to _.",
-			cv.from_bytes(acc.login()),
-			cv.from_bytes(dest)
-		);
+		native_message(std::clog, "Appeding _ to _.", acc.login(), dest);
 	}
 	bits::append(acc, dest, "unable to add account", this->getperms(uid));
 }
@@ -175,12 +164,7 @@ ggg::account_ctl
 	if (!result->has_expired()) {
 		account tmp(*result);
 		if (this->verbose()) {
-			bits::wcvt_type cv;
-			native_message(
-				std::wclog,
-				"Deactivating _.",
-				cv.from_bytes(tmp.login())
-			);
+			native_message(std::clog, "Deactivating _.", tmp.login());
 		}
 		tmp.make_expired();
 		this->update(tmp);
@@ -197,12 +181,7 @@ ggg::account_ctl
 	if (result->has_expired()) {
 		account tmp(*result);
 		if (this->verbose()) {
-			bits::wcvt_type cv;
-			native_message(
-				std::wclog,
-				"Activating _.",
-				cv.from_bytes(tmp.login())
-			);
+			native_message(std::clog, "Activating _.", tmp.login());
 		}
 		tmp.make_active();
 		this->update(tmp);
@@ -219,12 +198,7 @@ ggg::account_ctl
 	if (!result->password_has_expired()) {
 		account tmp(*result);
 		if (this->verbose()) {
-			bits::wcvt_type cv;
-			native_message(
-				std::wclog,
-				"Resetting password for _.",
-				cv.from_bytes(tmp.login())
-			);
+			native_message(std::clog, "Resetting password for _.", tmp.login());
 		}
 		tmp.reset_password();
 		this->update(tmp);

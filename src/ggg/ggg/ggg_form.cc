@@ -17,21 +17,20 @@ namespace ggg {
 
 	const int max_iterations = 100;
 
-	std::wstring
+	std::string
 	input_field(const form_field& ff, bits::wcvt_type& cv) {
-		std::wstring name = cv.from_bytes(ff.name());
 		std::wregex expr(cv.from_bytes(ff.regex()));
-		std::wstring value;
+		std::string value;
 		bool valid = false;
 		int i = 0;
 		do {
 			value.clear();
-			std::wcout << name << L": " << std::flush;
-			std::getline(std::wcin, value, L'\n');
-			if (std::wcin) {
-				valid = std::regex_match(value, expr);
+			std::cout << ff.name() << ": " << std::flush;
+			std::getline(std::cin, value, '\n');
+			if (std::cin) {
+				valid = std::regex_match(cv.from_bytes(value), expr);
 			} else {
-				std::wcin.clear();
+				std::cin.clear();
 			}
 		} while (!valid && ++i < max_iterations);
 		if (!valid) {
@@ -40,7 +39,7 @@ namespace ggg {
 		return value;
 	}
 
-	std::wstring
+	std::string
 	input_password(
 		const form_field& ff,
 		bits::wcvt_type& cv,
@@ -48,43 +47,42 @@ namespace ggg {
 	) {
 		std::wstring name = cv.from_bytes(ff.name());
 		std::wregex expr(cv.from_bytes(ff.regex()));
-		std::wstring value;
-		std::wstring rep;
+		std::string value;
+		std::string rep;
 		bool success = false;
 		int i = 0;
 		do {
 			value.clear();
 			rep.clear();
 			{
-				std::wcout << name << L": " << std::flush;
+				std::cout << ff.name() << ": " << std::flush;
 				echo_guard g(STDIN_FILENO);
-				std::getline(std::wcin, value, L'\n');
+				std::getline(std::cin, value, '\n');
 			}
 			{
-				std::wcout << std::endl;
-				std::wcout << name
-				           << L" (" << wnative("repeat", cv) << L"): "
-				           << std::flush;
+				std::cout << std::endl;
+				std::cout << ff.name()
+				          << " (" << native("repeat") << "): "
+				          << std::flush;
 				echo_guard g(STDIN_FILENO);
-				std::getline(std::wcin, rep, L'\n');
+				std::getline(std::cin, rep, '\n');
 			}
 			bool valid = false;
-			if (std::wcin) {
-				std::string p = cv.to_bytes(value);
+			if (std::cin) {
 				try {
-					ggg::validate_password(p.data(), min_entropy);
-					valid = std::regex_match(value, expr);
+					ggg::validate_password(value.data(), min_entropy);
+					valid = std::regex_match(cv.from_bytes(value), expr);
 				} catch (const std::exception& err) {
-					std::wcerr << std::endl;
-					error_message(std::wcerr, cv, err);
+					std::cerr << std::endl;
+					error_message(std::cerr, err);
 					valid = false;
 				}
 			} else {
-				std::wcin.clear();
+				std::cin.clear();
 			}
 			success = valid && rep == value;
 			if (!success) {
-				native_message(std::wcerr, "Passwords do not match.");
+				native_message(std::cerr, "Passwords do not match.");
 			}
 		} while (!success && ++i < max_iterations);
 		if (!success) {
@@ -101,13 +99,13 @@ namespace ggg {
 		bits::wcvt_type cv;
 		for (const form_field& ff : f.fields()) {
 			if (ff.is_input()) {
-				std::wstring value;
+				std::string value;
 				if (ff.type() == field_type::password) {
 					value = input_password(ff, cv, f.min_entropy());
 				} else {
 					value = input_field(ff, cv);
 				}
-				responses.emplace_back(cv.to_bytes(value));
+				responses.emplace_back(value);
 			}
 		}
 		std::tie(ent, acc) = f.make_entity_and_account(responses);
@@ -153,16 +151,15 @@ namespace ggg {
 				}
 			} catch (const std::exception& err) {
 				success = false;
-				bits::wcvt_type cv;
-				std::wcerr << std::endl;
-				error_message(std::wcerr, cv, err);
+				std::cerr << std::endl;
+				error_message(std::cerr, err);
 			}
 		} while (!success && ++i < max_iterations);
 		if (!success) {
 			throw std::runtime_error("reached maximum number of attempts");
 		}
-		std::wcout << std::endl;
-		native_message(std::wcout, "Registered successfully!");
+		std::cout << std::endl;
+		native_message(std::cout, "Registered successfully!");
 	}
 
 }
@@ -189,12 +186,11 @@ main() {
 		register_user(f, origin);
 	} catch (const std::exception& err) {
 		ret = 1;
-		bits::wcvt_type cv;
-		error_message(std::wcerr, cv, err);
+		error_message(std::cerr, err);
 	}
 	if (::isatty(STDIN_FILENO)) {
-		native_message(std::wcout, "Press any key to continue...");
-		std::wcin.get();
+		native_message(std::cout, "Press any key to continue...");
+		std::cin.get();
 	}
 	return ret;
 }

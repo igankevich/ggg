@@ -34,14 +34,14 @@ int main(int argc, char* argv[]) {
 	} catch (const ggg::quiet_error& err) {
 		// info has been already printed
 	} catch (const std::bad_alloc& err) {
-		ggg::native_message(std::wcerr, "memory allocation error");
+		ggg::native_message(std::cerr, "memory allocation error");
 	} catch (const std::invalid_argument& err) {
-		ggg::error_message(std::wcerr, err);
+		ggg::error_message(std::cerr, err);
 		if (cmd && !parse_success) {
 			cmd->print_usage();
 		}
 	} catch (const std::exception& err) {
-		ggg::error_message(std::wcerr, err);
+		ggg::error_message(std::cerr, err);
 	}
 	return ret;
 }

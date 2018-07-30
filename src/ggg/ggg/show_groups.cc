@@ -24,24 +24,22 @@ ggg::Show_groups::parse_arguments(int argc, char* argv[]) {
 void
 ggg::Show_groups::execute() {
 	file_lock lock;
-	WGGG g(GGG_ENT_ROOT, this->verbose());
+	GGG g(GGG_ENT_ROOT, this->verbose());
 	const auto& h = g.hierarchy();
-	wentity::wcvt_type cv;
 	int nerrors = 0;
 	for (const std::string& a : this->args()) {
-		std::wstring wa = cv.from_bytes(a);
-		auto it0 = h.find_by_name(wa.data());
+		auto it0 = h.find_by_name(a.data());
 		if (it0 == h.end()) {
 			++nerrors;
-			native_message(std::wcerr, "Unable to find _.", wa);
+			native_message(std::cerr, "Unable to find _.", a);
 		} else {
-			const wentity& ent = *it0;
+			const entity& ent = *it0;
 			auto groups = h.find_supplementary_groups(ent.name());
-			for (const std::wstring& g : groups) {
+			for (const std::string& g : groups) {
 				auto it1 = h.find_by_name(g.data());
 				if (it1 == h.end()) {
 					++nerrors;
-					native_message(std::wcerr, "Unable to find _.", g);
+					native_message(std::cerr, "Unable to find _.", g);
 				} else {
 					this->_result.insert(*it1);
 				}

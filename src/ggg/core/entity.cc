@@ -66,94 +66,7 @@ namespace {
 
 	};
 
-	template <>
-	struct entity_headers<wchar_t> {
-
-		typedef wchar_t char_type;
-
-		inline static const char_type*
-		name() noexcept {
-			return L"USERNAME";
-		}
-
-		inline static const char_type*
-		id() noexcept {
-			return L"ID";
-		}
-
-		inline static const char_type*
-		real_name() noexcept {
-			return L"REALNAME";
-		}
-
-		inline static const char_type*
-		home() noexcept {
-			return L"HOME";
-		}
-
-		inline static const char_type*
-		shell() noexcept {
-			return L"SHELL";
-		}
-
-		inline static const char_type*
-		all() noexcept {
-			return L"USERNAME:unused:ID:unused:REALNAME:HOME:SHELL";
-		}
-
-	};
-
 }
-
-namespace ggg {
-
-	sys::basic_bstream<wchar_t>&
-	operator<<(sys::basic_bstream<wchar_t>& out, const std::string& rhs) {
-		out << uint32_t(rhs.size());
-		for (const auto& elem : rhs) {
-			out << elem;
-		}
-		return out;
-	}
-
-	sys::basic_bstream<wchar_t>&
-	operator>>(sys::basic_bstream<wchar_t>& in, std::string& rhs) {
-		uint32_t n = 0;
-		in >> n;
-		rhs.resize(n);
-		for (auto& elem : rhs) {
-			in >> elem;
-		}
-		return in;
-	}
-
-}
-
-template <class Ch>
-ggg::basic_entity<Ch>
-::basic_entity(const basic_entity<wchar_t>& rhs, wcvt_type& cv):
-_name(bits::to_bytes<Ch>(cv, rhs.name())),
-_password(bits::to_bytes<Ch>(cv, rhs.password())),
-_realname(bits::to_bytes<Ch>(cv, rhs.real_name())),
-_homedir(bits::to_bytes<Ch>(cv, rhs.home())),
-_shell(bits::to_bytes<Ch>(cv, rhs.shell())),
-_uid(rhs.id()),
-_gid(rhs.gid()),
-_origin(rhs.origin())
-{}
-
-template <class Ch>
-ggg::basic_entity<Ch>
-::basic_entity(const basic_entity<char>& rhs, wcvt_type& cv):
-_name(bits::to_bytes<Ch>(cv, rhs.name())),
-_password(bits::to_bytes<Ch>(cv, rhs.password())),
-_realname(bits::to_bytes<Ch>(cv, rhs.real_name())),
-_homedir(bits::to_bytes<Ch>(cv, rhs.home())),
-_shell(bits::to_bytes<Ch>(cv, rhs.shell())),
-_uid(rhs.id()),
-_gid(rhs.gid()),
-_origin(rhs.origin())
-{}
 
 template <class Ch>
 std::basic_istream<Ch>&
@@ -389,8 +302,7 @@ ggg::basic_entity<Ch>
 			throw std::invalid_argument("bad gid");
 		}
 	} else if (t == "entity.origin") {
-		bits::wcvt_type cv;
-		this->_origin = bits::to_bytes<char>(cv, value);
+		this->_origin = value;
 	} else {
 		std::stringstream msg;
 		msg << "bad field target: \"" << t << "\"";
@@ -432,7 +344,6 @@ ggg
 }
 
 template class ggg::basic_entity<char>;
-template class ggg::basic_entity<wchar_t>;
 
 template void
 ggg
@@ -449,23 +360,11 @@ ggg
 template std::basic_istream<char>&
 ggg::operator>>(std::basic_istream<char>&, basic_entity<char>&);
 
-template std::basic_istream<wchar_t>&
-ggg::operator>>(std::basic_istream<wchar_t>&, basic_entity<wchar_t>&);
-
 template std::basic_ostream<char>&
 ggg::operator<<(std::basic_ostream<char>&, const basic_entity<char>&);
-
-template std::basic_ostream<wchar_t>&
-ggg::operator<<(std::basic_ostream<wchar_t>&, const basic_entity<wchar_t>&);
 
 template sys::basic_bstream<char>&
 ggg::operator<<(sys::basic_bstream<char>&, const basic_entity<char>&);
 
-template sys::basic_bstream<wchar_t>&
-ggg::operator<<(sys::basic_bstream<wchar_t>&, const basic_entity<wchar_t>&);
-
 template sys::basic_bstream<char>&
 ggg::operator>>(sys::basic_bstream<char>&, basic_entity<char>&);
-
-template sys::basic_bstream<wchar_t>&
-ggg::operator>>(sys::basic_bstream<wchar_t>&, basic_entity<wchar_t>&);

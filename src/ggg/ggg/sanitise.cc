@@ -29,13 +29,12 @@ namespace {
 				}
 			}
 		);
-		ggg::bits::wcvt_type cv;
 		for (const sys::path& p : empty_files) {
 			try {
-				ggg::native_message(std::wclog, "Removing empty file _.", cv.from_bytes(p));
+				ggg::native_message(std::clog, "Removing empty file _.", p);
 				UNISTDX_CHECK(::unlink(p));
 			} catch (const std::exception& err) {
-				ggg::error_message(std::wcerr, cv, err);
+				ggg::error_message(std::cerr, err);
 			}
 		}
 	}

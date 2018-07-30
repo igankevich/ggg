@@ -118,28 +118,22 @@ namespace ggg {
 		return text_domain(GGG_CATALOG).text(id);
 	}
 
-	inline std::wstring
-	wnative(const char* id, bits::wcvt_type& cv) {
-		return cv.from_bytes(native(id));
-	}
-
 	inline const char*
 	native_n(const char* id, unsigned long n) {
 		return text_domain(GGG_CATALOG).text_n(id, id, n);
 	}
 
-	template <class Ch>
-	std::basic_ostream<Ch>&
-	format_message(std::basic_ostream<Ch>& out, Ch, const Ch* s) {
+	inline std::ostream&
+	format_message(std::ostream& out, char, const char* s) {
 		return out << s;
 	}
 
-	template<class Ch, class T, class ... Args>
-	std::basic_ostream<Ch>&
+	template<class T, class ... Args>
+	inline std::ostream&
 	format_message(
-		std::basic_ostream<Ch>& out,
-		Ch ch,
-		const Ch* s,
+		std::ostream& out,
+		char ch,
+		const char* s,
 		const T& value,
 		const Args& ... args
 	) {
@@ -150,52 +144,30 @@ namespace ggg {
 		return format_message(out, ch, ++s, args ...);
 	}
 
-	template<class Ch, class ... Args>
-	std::basic_ostream<Ch>&
-	format_message(
-		std::basic_ostream<Ch>& out,
-		const Ch* s,
-		const Args& ... args
-	) {
-		return format_message<Ch>(out, Ch('_'), s, args ...);
+	template<class ... Args>
+	inline std::ostream&
+	format_message(std::ostream& out, const char* s, const Args& ... args) {
+		return format_message(out, '_', s, args ...);
 	}
 
-	template<class Ch, class ... Args>
-	std::basic_ostream<Ch>&
-	native_message(
-		std::basic_ostream<Ch>& out,
-		const char* s,
-		const Args& ... args
-	) {
-		bits::wcvt_type cv;
-		std::basic_string<Ch> str = bits::to_bytes<Ch>(cv, native(s));
-		str.push_back('\n');
-		return format_message(out, str.data(), args ...);
-	}
-
-	template<class Ch, class ... Args>
-	std::basic_ostream<Ch>&
-	native_message_n(
-		std::basic_ostream<Ch>& out,
-		unsigned long n,
-		const char* s,
-		const Args& ... args
-	) {
-		bits::wcvt_type cv;
-		std::basic_string<Ch> str = bits::to_bytes<Ch>(cv, native_n(s, n));
+	template<class ... Args>
+	inline std::ostream&
+	native_message(std::ostream& out, const char* s, const Args& ... args) {
+		std::string str = native(s);
 		str.push_back('\n');
 		return format_message(out, str.data(), args ...);
 	}
 
 	template<class ... Args>
-	std::wostream&
-	native_sentence(
-		std::wostream& out,
-		bits::wcvt_type& cv,
+	inline std::ostream&
+	native_message_n(
+		std::ostream& out,
+		unsigned long n,
 		const char* s,
 		const Args& ... args
 	) {
-		std::wstring str = bits::to_bytes<wchar_t>(cv, native(s));
+		std::string str = native_n(s, n);
+		str.push_back('\n');
 		return format_message(out, str.data(), args ...);
 	}
 
@@ -210,25 +182,9 @@ namespace ggg {
 		return out << native(err.what());
 	}
 
-	inline std::wostream&
-	error_sentence(std::wostream& out, bits::wcvt_type& cv, const std::exception& err) {
-		return out << cv.from_bytes(native(err.what()));
-	}
-
 	inline std::ostream&
 	error_message(std::ostream& out, const std::exception& err) {
 		return error_sentence(out, err) << std::endl;
-	}
-
-	inline std::wostream&
-	error_message(std::wostream& out, const std::exception& err) {
-		bits::wcvt_type cv;
-		return error_sentence(out, cv, err) << std::endl;
-	}
-
-	inline std::wostream&
-	error_message(std::wostream& out, bits::wcvt_type& cv, const std::exception& err) {
-		return error_sentence(out, cv, err) << std::endl;
 	}
 
 }

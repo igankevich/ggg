@@ -26,8 +26,6 @@ namespace ggg {
 		typedef std::char_traits<Ch> traits_type;
 		typedef std::basic_string<Ch, traits_type> string_type;
 		typedef sys::path path_type;
-		typedef std::codecvt_utf8<wchar_t> ccvt_type;
-		typedef std::wstring_convert<ccvt_type, wchar_t> wcvt_type;
 
 	private:
 		typedef std::basic_ostream<Ch, traits_type> ostream_type;
@@ -61,9 +59,6 @@ namespace ggg {
 		_uid(uid),
 		_gid(gid)
 		{ this->_homedir.append(_name); }
-
-		basic_entity(const basic_entity<wchar_t>& rhs, wcvt_type& cv);
-		basic_entity(const basic_entity<char>& rhs, wcvt_type& cv);
 
 		basic_entity() = default;
 		basic_entity(const basic_entity& rhs) = default;
@@ -254,7 +249,6 @@ namespace ggg {
 	operator<<(sys::basic_bstream<Ch>& out, const basic_entity<Ch>& rhs);
 
 	typedef basic_entity<char> entity;
-	typedef basic_entity<wchar_t> wentity;
 
 	template <class Ch>
 	struct eq_traits<basic_entity<Ch>> {

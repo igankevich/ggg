@@ -133,7 +133,6 @@ void
 ggg::basic_hierarchy<Ch>
 ::remove_cache() {
 	std::remove(cache_file_path<char>(this->_root));
-	std::remove(cache_file_path<wchar_t>(this->_root));
 	this->_donotwritecache = true;
 }
 
@@ -203,9 +202,8 @@ template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
 ::read() {
-	bits::wcvt_type cv;
 	sys::idirtree tree;
-	tree.open(sys::path(bits::to_bytes<char>(cv, this->_root)));
+	tree.open(sys::path(this->_root));
 	while (!tree.eof()) {
 		tree.clear();
 		sys::directory_entry entry;
@@ -213,7 +211,7 @@ ggg::basic_hierarchy<Ch>
 		while (!success) {
 			try {
 				if (tree >> entry) {
-					this->process_entry(tree.current_dir(), entry, cv, success);
+					this->process_entry(tree.current_dir(), entry, success);
 				} else {
 					if (tree.eof()) {
 						success = true;
@@ -221,9 +219,9 @@ ggg::basic_hierarchy<Ch>
 				}
 			} catch (...) {
 				#ifndef NDEBUG
-				bits::log_traits<Ch>::log()
+				std::clog
 				    << "Skipping bad file "
-				    << bits::to_bytes<Ch>(cv, sys::path(tree.current_dir(), entry.name()))
+				    << sys::path(tree.current_dir(), entry.name())
 				    << std::endl;
 				#endif
 			}
@@ -302,9 +300,8 @@ ggg::basic_hierarchy<Ch>
 						const auto& s = result->members();
 						if (!s.empty()) {
 							#ifndef NDEBUG
-							bits::log_traits<Ch>::log() << "Nest "
-							                            << group.name() <<
-							    " and " << member << std::endl;
+							std::clog << "Nest " << group.name()
+								<< " and " << member << std::endl;
 							#endif
 							set_union(add, s);
 							sub.insert(member);
@@ -379,7 +376,6 @@ ggg::basic_hierarchy<Ch>
 ::process_entry(
 	const sys::path& dir,
 	const sys::directory_entry& entry,
-	entity::wcvt_type& cv,
 	bool& success
 ) {
 	sys::path filepath0(dir, entry.name());
@@ -388,26 +384,25 @@ ggg::basic_hierarchy<Ch>
 		switch (sys::get_file_type(dir, entry)) {
 		case sys::file_type::regular: {
 			std::basic_ifstream<Ch> in(
-				bits::to_bytes<char>(cv, filepath),
+				filepath,
 				std::ios_base::in | std::ios_base::binary
 			);
 			if (in.is_open()) {
 				entity_type ent;
 				while (in >> ent) {
 					ent.origin(filepath);
-					add_entity(ent, filepath, cv);
+					add_entity(ent, filepath);
 				}
 				entity byte_ent(entry.name());
-				add_entity(entity_type(byte_ent, cv), filepath.dirname(), cv);
+				add_entity(entity_type(byte_ent), filepath.dirname());
 				success = true;
 			}
 			break;
 		}
 		case sys::file_type::symbolic_link: {
-			entity byte_ent(entry.name());
-			byte_ent.origin(filepath0);
-			entity_type ent(byte_ent, cv);
-			add_link(ent, filepath.dirname(), cv);
+			entity ent(entry.name());
+			ent.origin(filepath0);
+			add_link(ent, filepath.dirname());
 			break;
 		}
 		default: break;
@@ -421,8 +416,7 @@ ggg::basic_hierarchy<Ch>
 ::add(
 	map_type& container,
 	const entity_type& ent,
-	const canonical_path_type& filepath,
-	entity::wcvt_type& cv
+	const canonical_path_type& filepath
 ) {
 	std::string dirs(
 		filepath,
@@ -439,7 +433,7 @@ ggg::basic_hierarchy<Ch>
 	}
 	std::string group;
 	while (std::getline(tmp, group, sys::file_separator)) {
-		result->second.emplace(bits::to_bytes<Ch>(cv, group));
+		result->second.emplace(group);
 	}
 }
 
@@ -462,8 +456,7 @@ void
 ggg::basic_hierarchy<Ch>
 ::erase_link(const entity_type& ent) {
 	if (this->_verbose) {
-		bits::log_traits<Ch>::log() << "unlinking " << ent.origin() <<
-		    std::endl;
+		std::clog << "unlinking " << ent.origin() << std::endl;
 	}
 	int ret = ::unlink(ent.origin());
 	if (ret == -1) {
@@ -521,9 +514,7 @@ ggg::basic_hierarchy<Ch>
 	if (!result->has_origin()) {
 		throw std::invalid_argument("bad origin");
 	}
-	typename entity_type::wcvt_type cv;
-	entity byte_ent(ent, cv);
-	if (struct ::passwd* pw = ::getpwnam(byte_ent.name().data())) {
+	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {
 		if (pw->pw_uid < this->_minuid || pw->pw_gid < this->_mingid) {
 			throw std::invalid_argument("conflicting system user");
 		}
@@ -594,9 +585,7 @@ ggg::basic_hierarchy<Ch>
 				  "entity with the same name/uid already exists"
 		);
 	}
-	typename entity_type::wcvt_type cv;
-	entity byte_ent(ent, cv);
-	if (::getpwnam(byte_ent.name().data())) {
+	if (::getpwnam(ent.name().data())) {
 		throw std::invalid_argument("conflicting system user");
 	}
 	this->append_entity(ent, ent.origin());
@@ -611,7 +600,7 @@ ggg::basic_hierarchy<Ch>
 ) {
 	sys::path dest(this->_root, filename);
 	if (this->verbose()) {
-		bits::log_traits<Ch>::log()
+		std::clog
 		    << "appending " << ent.name() << ':' << ent.id()
 		    << " to " << dest
 		    << std::endl;
@@ -639,7 +628,6 @@ ggg::operator>>(sys::basic_bstream<Ch>& in, basic_hierarchy<Ch>& rhs) {
 }
 
 template class ggg::basic_hierarchy<char>;
-template class ggg::basic_hierarchy<wchar_t>;
 
 template std::basic_ostream<char>&
 ggg::operator<<(

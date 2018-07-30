@@ -25,15 +25,14 @@ ggg::Show_expired::parse_arguments(int argc, char* argv[]) {
 void
 ggg::Show_expired::execute() {
 	file_lock lock;
-	wentity::wcvt_type cv;
-	WGGG g(GGG_ENT_ROOT, this->verbose());
+	GGG g(GGG_ENT_ROOT, this->verbose());
 	const auto& h = g.hierarchy();
 	for (const account& acc : g.accounts()) {
 		if (acc.has_expired()) {
-			std::wstring wlogin = cv.from_bytes(acc.login().data());
-			auto it = h.find_by_name(wlogin.data());
+			std::string login = acc.login();
+			auto it = h.find_by_name(login.data());
 			if (it == h.end()) {
-				native_message(std::wcerr, "Unable to find _.", wlogin);
+				native_message(std::cerr, "Unable to find _.", login);
 			} else {
 				this->_result.insert(*it);
 			}

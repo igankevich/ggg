@@ -19,7 +19,6 @@
 namespace {
 
 	size_t num_errors = 0;
-	ggg::bits::wcvt_type cv;
 
 	const sys::file_mode lock_file_mode(0644);
 	sys::gid_type auth_gid = 0;
@@ -33,7 +32,7 @@ namespace {
 		try {
 			if (st.mode() != m) {
 				ggg::native_message(
-					std::wclog,
+					std::clog,
 					"Changing permissions of _ to _.",
 					filename,
 					m
@@ -43,13 +42,12 @@ namespace {
 		} catch (const std::exception& err) {
 			++num_errors;
 			ggg::native_sentence(
-				std::wcerr,
-				cv,
+				std::cerr,
 				"Failed to change permissions of _ to _. ",
-				cv.from_bytes(filename),
+				filename,
 				m
 			);
-			ggg::error_message(std::wcerr, cv, err);
+			ggg::error_message(std::cerr, err);
 		}
 	}
 
@@ -70,13 +68,12 @@ namespace {
 		} catch (const sys::bad_call& err) {
 			++num_errors;
 			ggg::native_sentence(
-				std::wcerr,
-				cv,
+				std::cerr,
 				"Failed to change permissions of _ to _. ",
-				cv.from_bytes(filename),
+				filename,
 				m
 			);
-			ggg::error_message(std::wcerr, cv, err);
+			ggg::error_message(std::cerr, err);
 		}
 	}
 
@@ -87,13 +84,12 @@ namespace {
 		} catch (const sys::bad_call& err) {
 			++num_errors;
 			ggg::native_sentence(
-				std::wcerr,
-				cv,
+				std::cerr,
 				"Failed to change permissions of _ to _. ",
-				cv.from_bytes(filename),
+				filename,
 				m
 			);
-			ggg::error_message(std::wcerr, cv, err);
+			ggg::error_message(std::cerr, err);
 		}
 	}
 
@@ -107,7 +103,7 @@ namespace {
 		if (st.owner() != uid || st.group() != gid) {
 			try {
 				ggg::native_message(
-					std::wclog,
+					std::clog,
 					"Changing owner of _ to _:_.",
 					filename,
 					uid,
@@ -117,14 +113,13 @@ namespace {
 			} catch (const std::exception& err) {
 				++num_errors;
 				ggg::native_sentence(
-					std::wcerr,
-					cv,
+					std::cerr,
 					"Failed to change owner of _ to _:_. ",
-					cv.from_bytes(filename),
+					filename,
 					uid,
 					gid
 				);
-				ggg::error_message(std::wcerr, cv, err);
+				ggg::error_message(std::cerr, err);
 			}
 		}
 	}
@@ -138,7 +133,7 @@ namespace {
 		using namespace ggg::acl;
 		access_control_list old_acl(filename, tp);
 		if (old_acl != acl) {
-			ggg::native_message(std::wclog, "Changing ACLs of _.", filename);
+			ggg::native_message(std::clog, "Changing ACLs of _.", filename);
 			acl.write(filename, tp);
 		}
 	}
@@ -153,13 +148,8 @@ namespace {
 			change_acl_priv(filename, acl, tp);
 		} catch (const std::exception& err) {
 			++num_errors;
-			ggg::native_sentence(
-				std::wcerr,
-				cv,
-				"Failed to change ACLs of _. ",
-				cv.from_bytes(filename)
-			);
-			ggg::error_message(std::wcerr, cv, err);
+			ggg::native_sentence(std::cerr, "Failed to change ACLs of _. ", filename);
+			ggg::error_message(std::cerr, err);
 		}
 	}
 
@@ -178,11 +168,7 @@ namespace {
 		);
 		sys::file_status st(filename);
 		if (!st.is_regular()) {
-			ggg::native_message(
-				std::wcerr,
-				"_ is not a regular file.",
-				cv.from_bytes(filename)
-			);
+			ggg::native_message(std::cerr, "_ is not a regular file.", filename);
 		} else if (change_mode_and_owner) {
 			change_owner(filename, st, uid, gid);
 			change_permissions(filename, st, m);
@@ -201,13 +187,8 @@ namespace {
 			make_file_priv(filename, uid, gid, m, change_mode_and_owner);
 		} catch (const sys::bad_call& err) {
 			++num_errors;
-			ggg::native_sentence(
-				std::wcerr,
-				cv,
-				"Failed to create _. ",
-				cv.from_bytes(filename)
-			);
-			ggg::error_message(std::wcerr, cv, err);
+			ggg::native_sentence(std::cerr, "Failed to create _. ", filename);
+			ggg::error_message(std::cerr, err);
 		}
 	}
 
@@ -229,16 +210,12 @@ namespace {
 				throw;
 			}
 			name += '/';
-			ggg::native_message(std::wclog, "Creating _.", cv.from_bytes(p));
+			ggg::native_message(std::clog, "Creating _.", p);
 			sys::mkdirs(p);
 			st.update(p);
 		}
 		if (!st.is_directory()) {
-			ggg::native_message(
-				std::wcerr,
-				"_ is not a directory.",
-				cv.from_bytes(p)
-			);
+			ggg::native_message(std::cerr, "_ is not a directory.", p);
 		} else if (change_mode_and_owner) {
 			change_owner(p, st, uid, gid);
 			change_permissions(p, st, m);
@@ -259,13 +236,8 @@ namespace {
 		} catch (const sys::bad_call& err) {
 			sys::path p(root, name);
 			++num_errors;
-			ggg::native_sentence(
-				std::wcerr,
-				cv,
-				"Failed to create _. ",
-				cv.from_bytes(p)
-			);
-			ggg::error_message(std::wcerr, cv, err);
+			ggg::native_sentence(std::cerr, "Failed to create _. ", p);
+			ggg::error_message(std::cerr, err);
 		}
 	}
 
@@ -332,9 +304,9 @@ namespace {
 			        sys::gid_type gid = 0;
 			        if (result == h.end()) {
 						ggg::native_message(
-							std::wcerr,
+							std::cerr,
 							"Unable to find form entity _.",
-							cv.from_bytes(entry.name())
+							entry.name()
 						);
 					} else {
 			            uid = result->id();
@@ -458,8 +430,8 @@ ggg::Heal
 		h.open(sys::path(GGG_ROOT, "ent"));
 	} catch (const std::exception& err) {
 		++num_errors;
-		native_sentence(std::wcerr, cv, "Entities are broken.");
-		error_message(std::wcerr, cv, err);
+		native_sentence(std::cerr, "Entities are broken.");
+		error_message(std::cerr, err);
 	}
 	auto result = h.find_by_name(GGG_AUTH_GROUP);
 	if (result != h.end()) {
