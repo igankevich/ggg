@@ -7,6 +7,7 @@
 #include "add_entity.hh"
 #include "edit_entity.hh"
 #include "expire_entity.hh"
+#include "expunge.hh"
 #include "find_entities.hh"
 #include "heal.hh"
 #include "remove_entity.hh"
@@ -64,6 +65,8 @@ namespace {
 		MAKE_COMMAND("clean", Sanitise),
 		MAKE_COMMAND("test-lock", Test_lock),
 		MAKE_COMMAND("testlock", Test_lock),
+		MAKE_COMMAND("expunge", Expunge),
+		MAKE_COMMAND("purge", Expunge),
 		MAKE_COMMAND("-v", Show_version),
 		MAKE_COMMAND("--version", Show_version),
 		MAKE_COMMAND("help", Show_help),

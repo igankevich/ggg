@@ -271,6 +271,11 @@ namespace ggg {
 			_minuid = rhs;
 		}
 
+		inline sys::uid_type
+		minuid() const noexcept {
+			return this->_minuid;
+		}
+
 		inline void
 		verbose(bool rhs) noexcept {
 			this->_verbose = rhs;
