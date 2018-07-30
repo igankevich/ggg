@@ -1,6 +1,7 @@
 #include "expunge.hh"
 
 #include <chrono>
+#include <iostream>
 #include <thread>
 
 #include <unistdx/fs/idirectory>
