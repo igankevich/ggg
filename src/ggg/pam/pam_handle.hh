@@ -124,11 +124,6 @@ namespace ggg {
 		}
 
 	private:
-		template<class T>
-		static const void**
-		void_ptr(const T** ptr) {
-			return reinterpret_cast<const void**>(ptr);
-		}
 
 		inline void
 		print_error(const std::system_error& e) const {

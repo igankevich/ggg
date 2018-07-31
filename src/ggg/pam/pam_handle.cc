@@ -24,6 +24,12 @@ namespace {
 
 	const char* key_account = "ggg_account";
 
+	template<class T>
+	static const void**
+	void_ptr(const T** ptr) {
+		return reinterpret_cast<const void**>(ptr);
+	}
+
 }
 
 void
@@ -76,9 +82,9 @@ ggg::pam_handle::get_account() const {
 	if (pam_get_data(
 		*this,
 		key_account,
-		void_ptr(&acc)
+		void_ptr<account>(&acc)
 	) != PAM_SUCCESS || !acc) {
-		throw_pam_error(pam_errc::auth_error);
+		throw_pam_error(pam_errc::service_error);
 	}
 	return acc;
 }
@@ -91,7 +97,7 @@ ggg::pam_handle::set_account(const ggg::account& acc) {
 		new ggg::account(acc),
 		delete_account
 	) != PAM_SUCCESS) {
-		throw_pam_error(pam_errc::auth_error);
+		throw_pam_error(pam_errc::service_error);
 	}
 }
 

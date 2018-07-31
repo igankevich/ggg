@@ -52,7 +52,7 @@ namespace {
 		return duration_cast<days>(tmp).count();
 	}
 
-	inline ggg::account
+	ggg::account
 	find_account(ggg::account_ctl& all_accounts, const char* user) {
 		ggg::file_lock lock;
 		auto result = all_accounts.find(user);
@@ -119,9 +119,18 @@ int pam_sm_acct_mgmt(
 	ggg::pam_handle pamh(orig);
 	pam_errc ret = pam_errc::ignore;
 	pamh.parse_args(argc, argv);
+	ggg::account other;
 	try {
+		const char* user = pamh.get_user();
 		const ggg::account* acc = pamh.get_account();
-		const char* user = acc->login().c_str();
+		try {
+			acc = pamh.get_account();
+		} catch (const std::system_error& err) {
+			ggg::account_ctl all_accounts;
+			other = find_account(all_accounts, user);
+			acc = &other;
+			all_accounts.clear();
+		}
 		pamh.debug("checking account \"%s\"", user);
 		const ggg::account::time_point now = ggg::account::clock_type::now();
 		if (acc->has_expired(now)) {
