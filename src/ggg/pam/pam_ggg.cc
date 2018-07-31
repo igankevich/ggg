@@ -122,7 +122,8 @@ int pam_sm_acct_mgmt(
 	ggg::account other;
 	try {
 		const char* user = pamh.get_user();
-		const ggg::account* acc = pamh.get_account();
+		pamh.debug("checking account \"%s\"", user);
+		const ggg::account* acc = nullptr;
 		try {
 			acc = pamh.get_account();
 		} catch (const std::system_error& err) {
@@ -131,7 +132,6 @@ int pam_sm_acct_mgmt(
 			acc = &other;
 			all_accounts.clear();
 		}
-		pamh.debug("checking account \"%s\"", user);
 		const ggg::account::time_point now = ggg::account::clock_type::now();
 		if (acc->has_expired(now)) {
 			pamh.debug(
