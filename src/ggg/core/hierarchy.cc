@@ -24,7 +24,7 @@ namespace {
 	inline sys::path
 	cache_file_path(sys::canonical_path root, char suffix) {
 		for (char& ch : root) {
-			if (ch == '/') {
+			if (ch == sys::file_separator) {
 				ch = '_';
 			}
 		}
@@ -165,7 +165,11 @@ ggg::basic_hierarchy<Ch>
 	if (!st.is_regular()) {
 		throw std::runtime_error("cache is not a regular file");
 	}
-	const auto dt = clock_type::now() - time_point(seconds(st.st_mtime));
+	const auto dt = clock_type::now() - st.last_modified();
+	if (this->_verbose) {
+		using namespace std::chrono;
+		std::clog << "dt=" << duration_cast<seconds>(dt).count() << "s\n";
+	}
 	if (dt >= duration::zero() && dt <= this->_ttl) {
 		this->read_cache(cache);
 		this->_cachestate = cache_state::ok;

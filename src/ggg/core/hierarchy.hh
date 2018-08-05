@@ -113,7 +113,8 @@ namespace ggg {
 		basic_hierarchy() = default;
 
 		inline explicit
-		basic_hierarchy(const char* root)
+		basic_hierarchy(const char* root, bool verbose=false):
+		_verbose(verbose)
 		{ this->open(root); }
 
 		~basic_hierarchy();
