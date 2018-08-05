@@ -2,7 +2,6 @@
 
 #include <pwd.h>
 
-#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <locale>
@@ -11,11 +10,13 @@
 
 #include <unistdx/fs/idirtree>
 #include <unistdx/it/intersperse_iterator>
+#include <unistdx/io/fdstream>
 
 #include <ggg/bits/io.hh>
 #include <ggg/bits/to_bytes.hh>
 #include <ggg/config.hh>
 #include <ggg/core/sets.hh>
+#include <ggg/core/timed_fildes.hh>
 
 namespace {
 
@@ -100,17 +101,7 @@ ggg::operator<<(std::basic_ostream<Ch>& out, const entity_pair<Ch>& rhs) {
 
 template <class Ch>
 ggg::basic_hierarchy<Ch>::~basic_hierarchy() {
-	if (this->is_open() &&
-		!this->_donotwritecache &&
-	    sys::this_process::user() == 0 &&
-	    std::is_same<char,Ch>::value) {
-		sys::path cache = cache_file_path<Ch>(this->_root);
-		try {
-			this->write_cache(cache);
-		} catch (const std::exception& err) {
-			// ignore errors
-		}
-	}
+	this->write_cache();
 }
 
 template <class Ch>
@@ -121,10 +112,38 @@ ggg::basic_hierarchy<Ch>
 	assert(sys::path(root) != sys::path(GGG_ROOT));
 	#endif
 	this->_root = canonical_path_type(root);
-	sys::path cache = cache_file_path<Ch>(this->_root);
-	if (!this->open_cache(cache)) {
+	this->read_from_local_cache();
+}
+
+template <class Ch>
+void
+ggg::basic_hierarchy<Ch>
+::read_from_local_cache() {
+	try {
+		this->open_cache();
+	} catch (const std::exception& err) {
+		this->_cachestate = cache_state::error;
+	}
+	if (this->_cachestate == cache_state::expired &&
+		this->_fsstate == fs_state::timed_out)
+	{
+		if (this->_verbose) {
+			std::clog << "using expired cache" << std::endl;
+		}
+	} else if (this->_cachestate == cache_state::ok) {
+		if (this->_verbose) {
+			std::clog << "using cache" << std::endl;
+		}
+	} else if (this->_cachestate == cache_state::error ||
+			   this->_cachestate == cache_state::expired)
+	{
+		if (this->_verbose) {
+			std::clog << "update cache from file system" << std::endl;
+		}
 		this->clear();
-		this->read();
+		// read with infinite timeout
+		this->_timeout = -std::chrono::milliseconds(1);
+		this->read_from_file_system();
 	}
 }
 
@@ -137,31 +156,22 @@ ggg::basic_hierarchy<Ch>
 }
 
 template <class Ch>
-bool
+void
 ggg::basic_hierarchy<Ch>
-::open_cache(sys::path cache) {
-	if (!std::is_same<char,Ch>::value) {
-		return false;
-	}
+::open_cache() {
 	using std::chrono::seconds;
-	bool success = false;
-	try {
-		sys::file_status st(cache);
-		const auto dt = clock_type::now() - time_point(seconds(st.st_mtime));
-		if (st.is_regular() &&
-		    dt > duration::zero() &&
-		    dt < this->_ttl) {
-			try {
-				this->read_cache(cache);
-				success = true;
-			} catch (...) {
-				success = false;
-			}
-		}
-	} catch (...) {
-		success = false;
+	sys::path cache = cache_file_path<Ch>(this->_root);
+	sys::file_status st(cache);
+	if (!st.is_regular()) {
+		throw std::runtime_error("cache is not a regular file");
 	}
-	return success;
+	const auto dt = clock_type::now() - time_point(seconds(st.st_mtime));
+	if (dt >= duration::zero() && dt <= this->_ttl) {
+		this->read_cache(cache);
+		this->_cachestate = cache_state::ok;
+	} else {
+		this->_cachestate = cache_state::expired;
+	}
 }
 
 template <class Ch>
@@ -176,6 +186,22 @@ ggg::basic_hierarchy<Ch>
 	sys::basic_bstream<Ch> in(&buf);
 	in >> *this;
 	this->_isopen = true;
+}
+
+template <class Ch>
+void
+ggg::basic_hierarchy<Ch>
+::write_cache() {
+	if (this->is_open() &&
+		!this->_donotwritecache &&
+	    sys::this_process::user() == 0) {
+		sys::path cache = cache_file_path<Ch>(this->_root);
+		try {
+			this->write_cache(cache);
+		} catch (const std::exception& err) {
+			// ignore errors
+		}
+	}
 }
 
 template <class Ch>
@@ -201,7 +227,7 @@ ggg::basic_hierarchy<Ch>
 template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
-::read() {
+::read_from_file_system() {
 	sys::idirtree tree;
 	tree.open(sys::path(this->_root));
 	while (!tree.eof()) {
@@ -217,6 +243,10 @@ ggg::basic_hierarchy<Ch>
 						success = true;
 					}
 				}
+			} catch (const core::timed_out& err) {
+				this->_fsstate = fs_state::timed_out;
+				this->clear();
+				this->read_from_local_cache();
 			} catch (...) {
 				#ifndef NDEBUG
 				std::clog
@@ -233,6 +263,8 @@ ggg::basic_hierarchy<Ch>
 	this->process_nested_groups();
 	this->filter_groups();
 	this->_isopen = true;
+	this->_fsstate = fs_state::ok;
+	this->write_cache();
 }
 
 template <class Ch>
@@ -378,25 +410,24 @@ ggg::basic_hierarchy<Ch>
 	const sys::directory_entry& entry,
 	bool& success
 ) {
+	using core::timed_fildes;
+	using core::timed_ifdstream;
 	sys::path filepath0(dir, entry.name());
 	canonical_path_type filepath(filepath0);
 	if (filepath.is_relative_to(this->_root)) {
 		switch (sys::get_file_type(dir, entry)) {
 		case sys::file_type::regular: {
-			std::basic_ifstream<Ch> in(
-				filepath,
-				std::ios_base::in | std::ios_base::binary
-			);
-			if (in.is_open()) {
-				entity_type ent;
-				while (in >> ent) {
-					ent.origin(filepath);
-					add_entity(ent, filepath);
-				}
-				entity byte_ent(entry.name());
-				add_entity(entity_type(byte_ent), filepath.dirname());
-				success = true;
+			timed_fildes fd(filepath, sys::open_flag::read_only);
+			fd.timeout(this->_timeout);
+			timed_ifdstream in(std::move(fd));
+			entity_type ent;
+			while (in >> ent) {
+				ent.origin(filepath);
+				add_entity(ent, filepath);
 			}
+			entity byte_ent(entry.name());
+			add_entity(entity_type(byte_ent), filepath.dirname());
+			success = true;
 			break;
 		}
 		case sys::file_type::symbolic_link: {

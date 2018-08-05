@@ -68,6 +68,21 @@ namespace ggg {
 		typedef clock_type::time_point time_point;
 
 	private:
+		enum class cache_state {
+			ok,
+			unknown,
+			error,
+			expired
+		};
+
+		enum class fs_state {
+			ok,
+			unknown,
+			error,
+			timed_out
+		};
+
+	private:
 		map_type _entities;
 		map_type _links;
 		std::set<group_type> _groups;
@@ -79,6 +94,9 @@ namespace ggg {
 		bool _verbose = false;
 		bool _donotwritecache = false;
 		std::chrono::seconds _ttl = std::chrono::seconds(7);
+		duration _timeout = std::chrono::milliseconds(100);
+		cache_state _cachestate = cache_state::unknown;
+		fs_state _fsstate = fs_state::unknown;
 
 	public:
 		typedef stdx::field_iterator<typename map_type::iterator,0>
@@ -300,16 +318,22 @@ namespace ggg {
 
 	private:
 		void
-		read();
+		read_from_file_system();
 
-		bool
-		open_cache(sys::path cache);
+		void
+		read_from_local_cache();
+
+		void
+		open_cache();
 
 		void
 		read_cache(sys::path cache);
 
 		void
 		write_cache(sys::path cache);
+
+		void
+		write_cache();
 
 		void
 		process_links();
