@@ -21,6 +21,7 @@ set:entity.shell:/bin/bash
 set:entity.homedir:/
 set:entity.origin:u1/entities
 set:account.login:$3
+set:account.expire:2018-01-01
 set_secure:account.password:4
 		')"
 		"> " GGG_ROOT "/reg/u1"

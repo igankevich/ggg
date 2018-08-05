@@ -399,7 +399,8 @@ ggg::account::set(const form_field& field, const char* value) {
 	} else if (t == "account.maxinactive") {
 		read_field(this->_maxinactive, value, "bad maxinactive");
 	} else if (t == "account.expire") {
-		read_field(this->_expire, value, "bad expire");
+		auto fmt_expire = make_formatted(&this->_expire);
+		read_field(fmt_expire, value, "bad expire");
 	} else if (t == "account.flags") {
 		read_field(this->_flags, value, "bad flags");
 	} else if (t == "account.origin") {
