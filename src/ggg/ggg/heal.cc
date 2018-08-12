@@ -440,10 +440,26 @@ namespace {
 		}
 		if (has_ggg_groups()) {
 			using namespace ggg::acl;
-			access_control_list acl(sys::file_mode(0755));
-			add_directory_acl(acl);
-			acl.add_mask();
-			change_acl(sys::path(GGG_ROOT, "acc"), acl, default_acl);
+			sys::path f(GGG_ROOT, "acc");
+			{
+				permission_type acl_perms =
+					permission_type::read | permission_type::execute;
+				access_control_list acl(sys::file_mode(0755));
+				if (read_gid != 0) {
+					acl.add_group(read_gid, acl_perms);
+				}
+				if (write_gid != 0) {
+					acl.add_group(write_gid, acl_perms | permission_type::write);
+				}
+				acl.add_mask();
+				change_acl(f, acl, access_acl);
+			}
+			{
+				access_control_list acl(sys::file_mode(0755));
+				add_directory_acl(acl);
+				acl.add_mask();
+				change_acl(f, acl, default_acl);
+			}
 		}
 	}
 

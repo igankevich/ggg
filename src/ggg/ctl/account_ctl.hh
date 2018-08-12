@@ -141,6 +141,8 @@ namespace ggg {
 			acl::access_control_list acl(sys::file_mode(uid == 0 ? 0 : 0600));
 			if (this->_readgid != 0) {
 				acl.add_group(this->_readgid, acl::permission_type::read);
+			}
+			if (this->_writegid != 0) {
 				acl.add_group(this->_writegid, acl::permission_type::write);
 			}
 			return acl;

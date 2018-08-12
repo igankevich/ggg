@@ -188,6 +188,8 @@ namespace ggg {
 				const sys::uid_type uid = sys::this_process::user();
 				open(out, std::ios::out | std::ios::app, sys::path(dest), uid, acl);
 				out << ent << '\n';
+				out.close();
+				set_acl(dest, acl);
 			} catch (...) {
 				throw_io_error(out, msg);
 			}
@@ -232,6 +234,7 @@ namespace ggg {
 					}
 				);
 				rename(files.second, files.first);
+				set_acl(files.first, acl);
 			} catch (const std::exception& err) {
 				throw_io_error(file, err.what());
 			} catch (...) {
@@ -277,6 +280,7 @@ namespace ggg {
 					}
 				);
 				rename(files.second, files.first);
+				set_acl(files.first, acl);
 			} catch (const std::exception& err) {
 				throw_io_error(file, err.what());
 			} catch (...) {
