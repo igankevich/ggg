@@ -229,7 +229,8 @@ namespace {
 		sys::uid_type uid,
 		sys::gid_type gid,
 		sys::file_mode m,
-		bool change_mode_and_owner = true
+		bool b_change_mode = true,
+		bool b_change_owner = true
 	) {
 		sys::path p(root, name);
 		sys::file_status st;
@@ -246,8 +247,12 @@ namespace {
 		}
 		if (!st.is_directory()) {
 			ggg::native_message(std::cerr, "_ is not a directory.", p);
-		} else if (change_mode_and_owner) {
+			return;
+		}
+		if (b_change_owner) {
 			change_owner(p, st, uid, gid);
+		}
+		if (b_change_mode) {
 			change_permissions(p, st, m);
 		}
 	}
@@ -259,16 +264,43 @@ namespace {
 		sys::uid_type uid,
 		sys::gid_type gid,
 		sys::file_mode m,
-		bool change_mode_and_owner = true
+		bool b_change_mode,
+		bool b_change_owner
 	) {
 		try {
-			make_directory_priv(root, name, uid, gid, m, change_mode_and_owner);
+			make_directory_priv(root, name, uid, gid, m, b_change_mode, b_change_owner);
 		} catch (const sys::bad_call& err) {
 			sys::path p(root, name);
 			++num_errors;
 			ggg::native_sentence(std::cerr, "Failed to create _. ", p);
 			ggg::error_message(std::cerr, err);
 		}
+	}
+
+	void
+	make_directory(
+		const char* root,
+		std::string name,
+		sys::uid_type uid,
+		sys::gid_type gid,
+		sys::file_mode m
+	) {
+		make_directory(root, name, uid, gid, m, true, true);
+	}
+
+	void
+	make_directory(
+		const char* root,
+		std::string name,
+		sys::uid_type uid,
+		sys::gid_type gid
+	) {
+		make_directory(root, name, uid, gid, sys::file_mode{0755}, false, true);
+	}
+
+	void
+	make_directory(const char* root, std::string name) {
+		make_directory(root, name, 0, 0, sys::file_mode{0755}, false, false);
 	}
 
 	void
@@ -346,14 +378,7 @@ namespace {
 					change_owner(f, st, uid, gid);
 			        change_permissions(f, 0600);
 					sys::file_mode m = (uid == 0) ? 0 : 0600;
-					make_directory(
-						sys::path(GGG_ROOT, "acc"),
-						entry.name(),
-						uid,
-						gid,
-						0700,
-						false
-					);
+					make_directory(sys::path(GGG_ROOT, "acc"), entry.name());
 					make_file(
 						sys::path(GGG_ROOT, "acc", entry.name(), "shadow"),
 						uid,
@@ -475,7 +500,7 @@ ggg::Heal
 	make_directory("/", GGG_ROOT, 0, 0, 0755);
 	make_directory(GGG_ROOT, "ent", 0, 0, 0755);
 	make_directory(GGG_ROOT, "reg", 0, 0, 0755);
-	make_directory(GGG_ROOT, "acc", 0, 0, 0755);
+	make_directory(GGG_ROOT, "acc", 0, 0);
 	change_owner(GGG_ROOT, sys::file_status(GGG_ROOT), 0, 0);
 	change_permissions(GGG_ROOT, 0755);
 	make_file(GGG_LOCK_FILE, 0, 0, lock_file_mode, false);

@@ -143,7 +143,7 @@ namespace ggg {
 				acl.add_group(this->_readgid, acl::permission_type::read);
 			}
 			if (this->_writegid != 0) {
-				acl.add_group(this->_writegid, acl::permission_type::write);
+				acl.add_group(this->_writegid, acl::permission_type::read_write);
 			}
 			return acl;
 		}
