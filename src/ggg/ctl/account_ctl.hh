@@ -24,8 +24,10 @@ namespace ggg {
 	private:
 		container_type _accounts;
 		bool _verbose = false;
-		/// GID of ggg.auth group.
-		sys::gid_type _authgid = 0;
+		/// Group with read access to accounts.
+		sys::gid_type _readgid = 0;
+		/// Group with write access to accounts.
+		sys::gid_type _writegid = 0;
 
 	public:
 
@@ -123,8 +125,13 @@ namespace ggg {
 		}
 
 		inline void
-		set_auth_group(sys::gid_type rhs) noexcept {
-			this->_authgid = rhs;
+		set_read_group(sys::gid_type rhs) noexcept {
+			this->_readgid = rhs;
+		}
+
+		inline void
+		set_write_group(sys::gid_type rhs) noexcept {
+			this->_writegid = rhs;
 		}
 
 	private:
@@ -132,8 +139,9 @@ namespace ggg {
 		inline acl::access_control_list
 		getperms(sys::uid_type uid) noexcept {
 			acl::access_control_list acl(sys::file_mode(uid == 0 ? 0 : 0600));
-			if (this->_authgid != 0) {
-				acl.add_group(this->_authgid, acl::permission_type::read);
+			if (this->_readgid != 0) {
+				acl.add_group(this->_readgid, acl::permission_type::read);
+				acl.add_group(this->_writegid, acl::permission_type::write);
 			}
 			return acl;
 		}

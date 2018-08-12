@@ -42,13 +42,13 @@ namespace ggg {
 		_verbose(verbose) {
 			this->_hierarchy.verbose(verbose);
 			this->_accounts.verbose(verbose);
-			this->_accounts.set_auth_group(this->find_auth_group());
+			this->init();
 		}
 
 		inline void
 		open(const sys::path& root) {
 			this->_hierarchy.open(root);
-			this->_accounts.set_auth_group(this->find_auth_group());
+			this->init();
 		}
 
 		void
@@ -144,11 +144,21 @@ namespace ggg {
 		inline sys::gid_type
 		find_auth_group() const {
 			sys::gid_type auth_gid = 0;
-			auto result = this->_hierarchy.find_by_name(GGG_AUTH_GROUP);
+			auto result = this->_hierarchy.find_by_name(GGG_READ_GROUP);
 			if (result != this->_hierarchy.end()) {
 				auth_gid = result->gid();
 			}
 			return auth_gid;
+		}
+
+		inline sys::gid_type
+		find_write_group() const {
+			sys::gid_type gid = 0;
+			auto result = this->_hierarchy.find_by_name(GGG_WRITE_GROUP);
+			if (result != this->_hierarchy.end()) {
+				gid = result->gid();
+			}
+			return gid;
 		}
 
 	private:
@@ -158,6 +168,12 @@ namespace ggg {
 
 		void
 		mkdirs(std::string relative_path);
+
+		inline void
+		init() {
+			this->_accounts.set_read_group(this->find_auth_group());
+			this->_accounts.set_write_group(this->find_write_group());
+		}
 
 	};
 

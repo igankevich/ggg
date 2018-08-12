@@ -21,7 +21,37 @@ namespace {
 	size_t num_errors = 0;
 
 	const sys::file_mode lock_file_mode(0644);
-	sys::gid_type auth_gid = 0;
+	sys::gid_type read_gid = 0;
+	sys::gid_type write_gid = 0;
+
+
+	bool
+	has_ggg_groups() {
+		return read_gid != 0 || write_gid != 0;
+	}
+
+	void
+	add_directory_acl(ggg::acl::access_control_list& acl) {
+		using namespace ggg::acl;
+		if (read_gid != 0) {
+			acl.add_group(read_gid, permission_type::read);
+		}
+		if (write_gid != 0) {
+			acl.add_group(write_gid, permission_type::read_write);
+		}
+	}
+
+	void
+	find_group(
+		const ggg::Hierarchy& h,
+		const char* name,
+		sys::gid_type& gid
+	) {
+		auto result = h.find_by_name(name);
+		if (result != h.end()) {
+		    gid = result->gid();
+		}
+	}
 
 	void
 	change_permissions_priv(
@@ -387,26 +417,31 @@ namespace {
 				m = 0;
 			}
 			change_owner(f, st, uid, gid);
-			if (auth_gid == 0) {
+			if (!has_ggg_groups()) {
 				change_permissions(f, m);
 			} else {
 				using namespace ggg::acl;
 				access_control_list acl(m);
-				acl.add_group(auth_gid, acl_perms);
+				if (read_gid != 0) {
+					acl.add_group(read_gid, acl_perms);
+				}
+				if (write_gid != 0) {
+					acl.add_group(write_gid, acl_perms | permission_type::write);
+				}
 				acl.add_mask();
 				change_acl(f, acl, access_acl);
 				if (st.is_directory()) {
 					access_control_list acl0(file_perms);
-					acl0.add_group(auth_gid, permission_type::read);
+					add_directory_acl(acl0);
 					acl0.add_mask();
 					change_acl(f, acl0, default_acl);
 				}
 			}
 		}
-		if (auth_gid != 0) {
+		if (has_ggg_groups()) {
 			using namespace ggg::acl;
 			access_control_list acl(sys::file_mode(0755));
-			acl.add_group(auth_gid, permission_type::read);
+			add_directory_acl(acl);
 			acl.add_mask();
 			change_acl(sys::path(GGG_ROOT, "acc"), acl, default_acl);
 		}
@@ -433,10 +468,8 @@ ggg::Heal
 		native_sentence(std::cerr, "Entities are broken.");
 		error_message(std::cerr, err);
 	}
-	auto result = h.find_by_name(GGG_AUTH_GROUP);
-	if (result != h.end()) {
-	    auth_gid = result->gid();
-	}
+	find_group(h, GGG_READ_GROUP, read_gid);
+	find_group(h, GGG_WRITE_GROUP, write_gid);
 	heal_entities(h);
 	heal_forms(h);
 	heal_accounts(h);

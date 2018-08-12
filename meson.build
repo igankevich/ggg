@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '0.10.1',
+	version: '0.10.2',
 	meson_version: '>=0.31',
 	default_options: ['cpp_std=c++14'],
 	license: ['GPLv2']
@@ -44,7 +44,8 @@ config.set('file_editor', 'vi')
 config.set('directory_editor', 'vidir')
 config.set('catalog', 'ggg')
 config.set('cache_directory', join_paths(get_option('localstatedir'), 'cache'))
-config.set('auth_group', 'ggg.auth')
+config.set('read_group', 'ggg.auth')
+config.set('write_group', 'ggg.write')
 
 unistdx = dependency('unistdx', version: '>=0.4.6')
 gtest = dependency('gtest', main: true)
