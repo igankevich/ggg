@@ -380,6 +380,9 @@ namespace {
 			for (sys::gid_type gid : form_entities) {
 				acl.add_group(gid, permission_type::read_write);
 			}
+			if (write_gid != 0) {
+				acl.add_group(write_gid, permission_type::read_write);
+			}
 			acl.add_mask();
 			change_acl(GGG_LOCK_FILE, acl, access_acl);
 		}
