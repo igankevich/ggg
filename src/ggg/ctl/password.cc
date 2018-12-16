@@ -35,7 +35,7 @@ ggg::generate_salt() {
 
 ggg::secure_string
 ggg::encrypt(const char* password, const std::string& prefix) {
-	crypt_data data;
+	crypt_data data{};
 	char* encrypted = ::crypt_r(
 		password,
 		prefix.data(),

@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '0.10.8',
+	version: '0.10.9',
 	meson_version: '>=0.46',
 	default_options: ['cpp_std=c++14'],
 	license: ['GPLv2']
@@ -54,7 +54,7 @@ nss_wrapper = dependency('nss_wrapper')
 threads = dependency('threads')
 zxcvbn = dependency('zxcvbn')
 pam = cpp.find_library('pam')
-libcrypt = cpp.find_library('crypt')
+libcrypt = dependency('ggg-libxcrypt')
 libacl = cpp.find_library('acl')
 
 subdir('src')
