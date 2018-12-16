@@ -6,12 +6,9 @@
 #include <random>
 #include <sstream>
 #include <stdexcept>
-#include <iostream>
 
 #include <ggg/config.hh>
 #include <ggg/core/account.hh>
-
-#include <unistdx/base/base64>
 
 namespace {
 	typedef std::independent_bits_engine<std::random_device, 8, unsigned char>
@@ -22,9 +19,8 @@ std::string
 ggg::generate_salt() {
 	std::string salt;
 	engine_type engine;
-	size_t i = 0;
-	size_t n = sys::base64_max_decoded_size(GGG_SALT_LENGTH);
-	while (i < n) {
+	int i = 0;
+	while (i < GGG_SALT_LENGTH) {
 		const char ch = engine();
 		if (std::isgraph(ch)
 			&& ch != ggg::account::separator
@@ -34,14 +30,12 @@ ggg::generate_salt() {
 			++i;
 		}
 	}
-	std::string salt64(sys::base64_encoded_size(salt.size()), ' ');
-	sys::base64_encode(salt.data(), salt.size(), &salt64[0]);
-	return salt64;
+	return salt;
 }
 
 ggg::secure_string
 ggg::encrypt(const char* password, const std::string& prefix) {
-	crypt_data data{};
+	crypt_data data;
 	char* encrypted = ::crypt_r(
 		password,
 		prefix.data(),
