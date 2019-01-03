@@ -11,6 +11,8 @@
 #include <unistdx/net/bstream>
 #include <unistdx/util/user>
 
+#include <sqlitex/rstream.hh>
+
 #include <ggg/core/eq_traits.hh>
 #include <ggg/core/form_field.hh>
 
@@ -131,6 +133,9 @@ namespace ggg {
 		friend sys::basic_bstream<X>&
 		operator<<(sys::basic_bstream<X>& out, const basic_entity<X>& rhs);
 
+		friend sqlite::rstream&
+		operator>>(sqlite::rstream& in, basic_entity<char>& rhs);
+
 		void
 		set(const form_field& field, const char_type* value);
 
@@ -247,6 +252,9 @@ namespace ggg {
 	template <class Ch>
 	sys::basic_bstream<Ch>&
 	operator<<(sys::basic_bstream<Ch>& out, const basic_entity<Ch>& rhs);
+
+	sqlite::rstream&
+	operator>>(sqlite::rstream& in, basic_entity<char>& rhs);
 
 	typedef basic_entity<char> entity;
 

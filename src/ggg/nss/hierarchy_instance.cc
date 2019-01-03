@@ -1,8 +1,7 @@
-#include "hierarchy_instance.hh"
-#include <ggg/config.hh>
+#include <ggg/nss/hierarchy_instance.hh>
 
 namespace ggg {
 
-	Hierarchy hierarchy{};
+	Database database{};
 
 }

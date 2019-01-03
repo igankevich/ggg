@@ -1,11 +1,11 @@
 #ifndef GGG_INSTANCE_HH
 #define GGG_INSTANCE_HH
 
-#include <ggg/core/hierarchy.hh>
+#include <ggg/core/database.hh>
 
 namespace ggg {
 
-	extern Hierarchy hierarchy;
+	extern Database database;
 
 }
 

@@ -343,6 +343,23 @@ ggg
 	lhs._gid = rhs.pw_gid;
 }
 
+sqlite::rstream&
+ggg::operator>>(sqlite::rstream& in, basic_entity<char>& rhs) {
+	rhs.clear();
+	sqlite::cstream cstr(in);
+	if (in >> cstr) {
+		int64_t id = -1;
+		cstr >> id;
+		cstr >> rhs._name;
+		cstr >> rhs._realname;
+		cstr >> rhs._homedir;
+		cstr >> rhs._shell;
+		rhs._uid = static_cast<sys::uid_type>(id);
+		rhs._gid = static_cast<sys::gid_type>(id);
+	}
+	return in;
+}
+
 template class ggg::basic_entity<char>;
 
 template void

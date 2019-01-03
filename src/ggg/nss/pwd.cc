@@ -1,21 +1,20 @@
-#include "pwd.hh"
-#include "hierarchy_instance.hh"
-#include <iostream>
+#include <ggg/nss/hierarchy_instance.hh>
+#include <ggg/nss/pwd.hh>
 
-using ggg::hierarchy;
+using ggg::database;
 
 namespace {
 
-	ggg::Hierarchy::iterator first, last;
-	volatile bool initialised = false;
+	typedef sqlite::rstream_iterator<ggg::entity> user_iterator;
+	ggg::Database::row_stream_t rstr;
+	ggg::entity current;
 
-	void
-	init(bool force=false) {
-		if (!initialised) {
-			hierarchy.open(GGG_ENT_ROOT);
-			first = hierarchy.begin();
-			last = hierarchy.end();
-			initialised = true;
+	inline void
+	init() {
+		if (!database.is_open()) {
+			database.open(GGG_DATABASE_PATH);
+			rstr = database.users();
+			rstr >> current;
 		}
 	}
 
@@ -34,11 +33,16 @@ NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, pw) {
 }
 
 NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, pw) {
-	hierarchy.clear();
-	first = hierarchy.begin();
-	last = hierarchy.end();
-	initialised = false;
-	return NSS_STATUS_SUCCESS;
+	enum nss_status ret;
+	try {
+		rstr.close();
+		database.close();
+		ret = NSS_STATUS_SUCCESS;
+	} catch (...) {
+		ret = NSS_STATUS_UNAVAIL;
+		errno = ENOENT;
+	}
+	return ret;
 }
 
 NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, pw)(
@@ -48,18 +52,23 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, pw)(
 	int* errnop
 ) {
 	nss_status ret = NSS_STATUS_NOTFOUND;
-	int err = 0;
-	if (first != last) {
-		if (buflen < buffer_size(*first)) {
+	try {
+		if (!rstr.good()) {
+			ret = NSS_STATUS_NOTFOUND;
+			*errnop = ENOENT;
+		} else if (buflen < buffer_size(current)) {
 			ret = NSS_STATUS_TRYAGAIN;
-			err = ERANGE;
+			*errnop = ERANGE;
 		} else {
-			copy_to(*first, result, buffer);
-			++first;
+			copy_to(current, result, buffer);
+			rstr >> current;
 			ret = NSS_STATUS_SUCCESS;
+			*errnop = 0;
 		}
+	} catch (...) {
+		ret = NSS_STATUS_UNAVAIL;
+		errno = ENOENT;
 	}
-	*errnop = err;
 	return ret;
 }
 
@@ -72,14 +81,15 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, uid)(
 ) {
 	nss_status ret;
 	try {
-		ggg::Hierarchy h(GGG_ENT_ROOT);
-		auto it = h.find_by_uid(uid);
-		if (it != h.end()) {
-			if (buflen < buffer_size(*it)) {
+		ggg::Database db(GGG_DATABASE_PATH);
+		auto rstr = db.find_user(uid);
+		user_iterator first(rstr), last;
+		if (first != last) {
+			if (buflen < buffer_size(*first)) {
 				ret = NSS_STATUS_TRYAGAIN;
 				*errnop = ERANGE;
 			} else {
-				copy_to(*it, result, buffer);
+				copy_to(*first, result, buffer);
 				ret = NSS_STATUS_SUCCESS;
 				*errnop = 0;
 			}
@@ -103,14 +113,15 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, nam)(
 ) {
 	nss_status ret;
 	try {
-		ggg::Hierarchy h(GGG_ENT_ROOT);
-		auto it = h.find_by_name(name);
-		if (it != h.end()) {
-			if (buflen < buffer_size(*it)) {
+		ggg::Database db(GGG_DATABASE_PATH);
+		auto rstr = db.find_user(name);
+		user_iterator first(rstr), last;
+		if (first != last) {
+			if (buflen < buffer_size(*first)) {
 				ret = NSS_STATUS_TRYAGAIN;
 				*errnop = ERANGE;
 			} else {
-				copy_to(*it, result, buffer);
+				copy_to(*first, result, buffer);
 				ret = NSS_STATUS_SUCCESS;
 				*errnop = 0;
 			}

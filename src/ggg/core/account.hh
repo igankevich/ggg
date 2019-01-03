@@ -15,6 +15,8 @@
 #include <ggg/core/form_field.hh>
 #include <ggg/sec/secure_string.hh>
 
+#include <sqlitex/rstream.hh>
+
 namespace ggg {
 
 	namespace chrono {
@@ -123,6 +125,9 @@ namespace ggg {
 
 		friend std::istream&
 		operator>>(std::istream& in, account& rhs);
+
+		friend sqlite::rstream&
+		operator>>(sqlite::rstream& in, account& rhs);
 
 		static void
 		write_header(
@@ -324,6 +329,9 @@ namespace ggg {
 
 	std::istream&
 	operator>>(std::istream& in, account& rhs);
+
+	sqlite::rstream&
+	operator>>(sqlite::rstream& in, account& rhs);
 
 	template <>
 	struct eq_traits<account> {

@@ -14,6 +14,7 @@
 #include <ostream>
 #include <set>
 #include <sstream>
+#include <vector>
 
 #include <unistdx/fs/canonical_path>
 #include <unistdx/fs/directory_entry>
@@ -66,6 +67,7 @@ namespace ggg {
 		typedef std::chrono::system_clock clock_type;
 		typedef clock_type::duration duration;
 		typedef clock_type::time_point time_point;
+		typedef std::vector<std::pair<sys::uid_type,sys::gid_type>> ties_type;
 
 	private:
 		enum class cache_state {
@@ -97,6 +99,7 @@ namespace ggg {
 		duration _timeout = std::chrono::milliseconds(100);
 		cache_state _cachestate = cache_state::unknown;
 		fs_state _fsstate = fs_state::unknown;
+		ties_type _ties;
 
 	public:
 		typedef stdx::field_iterator<typename map_type::iterator,0>
@@ -132,6 +135,11 @@ namespace ggg {
 			if (!is_open()) {
 				this->open(root);
 			}
+		}
+
+		inline const ties_type&
+		ties() const {
+			return this->_ties;
 		}
 
 		void

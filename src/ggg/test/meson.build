@@ -72,7 +72,8 @@ if not etc.startswith('/')
 			'NSS_WRAPPER_PASSWD=passwd',
 			'NSS_WRAPPER_GROUP=group',
 		],
-		suite: 'unit'
+		suite: 'unit',
+		is_parallel: false
 	)
 	
 	test(
@@ -91,7 +92,8 @@ if not etc.startswith('/')
 			'NSS_WRAPPER_PASSWD=passwd',
 			'NSS_WRAPPER_GROUP=group',
 		],
-		suite: 'unit'
+		suite: 'unit',
+		is_parallel: false
 	)
 
 endif

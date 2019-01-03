@@ -121,6 +121,17 @@ ggg
 	lhs->gr_gid = gr.id();
 }
 
+sqlite::rstream&
+ggg::operator>>(sqlite::rstream& in, basic_group<char>& rhs) {
+	rhs._name.clear();
+	rhs._gid = -1;
+	sqlite::cstream cstr(in);
+	if (in >> cstr) {
+		cstr >> rhs._gid >> rhs._name;
+	}
+	return in;
+}
+
 template class ggg::basic_group<char>;
 
 template std::basic_ostream<char>&

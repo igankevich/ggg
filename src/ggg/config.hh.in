@@ -19,5 +19,10 @@
 #define GGG_CACHE_DIRECTORY "@cache_directory@"
 #define GGG_READ_GROUP "@read_group@"
 #define GGG_WRITE_GROUP "@write_group@"
+#define GGG_MAX_DEPTH @max_depth@
+#define GGG_DATABASE_PATH "@database_path@"
+#define GGG_MIN_ID @min_id@
+#define GGG_MIN_UID @min_id@
+#define GGG_MIN_GID @min_id@
 
 #endif // vim:filetype=cpp

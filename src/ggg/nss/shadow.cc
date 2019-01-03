@@ -1,22 +1,22 @@
-#include "shadow.hh"
-#include <ggg/core/account.hh>
-#include <fstream>
-#include <algorithm>
-#include <iterator>
-#include <unistdx/fs/path>
-
 #include <ggg/config.hh>
+#include <ggg/nss/hierarchy_instance.hh>
+#include <ggg/nss/shadow.hh>
+
+using ggg::database;
 
 namespace {
 
-	std::ifstream accfile;
+	typedef sqlite::rstream_iterator<ggg::account> account_iterator;
+	ggg::Database::row_stream_t rstr;
+	account_iterator first;
 
-	void
-	ensure_open() {
-		if (accfile.is_open()) {
-			accfile.clear();
+	inline void
+	init() {
+		if (!database.is_open()) {
+			database.open(GGG_DATABASE_PATH);
+			rstr = database.accounts();
+			first = account_iterator(rstr);
 		}
-		accfile.open(GGG_SHADOW);
 	}
 
 }
@@ -24,7 +24,7 @@ namespace {
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, sp) {
 	enum nss_status ret;
 	try {
-		ensure_open();
+		init();
 		ret = NSS_STATUS_SUCCESS;
 	} catch (...) {
 		ret = NSS_STATUS_UNAVAIL;
@@ -34,8 +34,16 @@ NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, sp) {
 }
 
 NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, sp) {
-	accfile.close();
-	return NSS_STATUS_SUCCESS;
+	enum nss_status ret;
+	try {
+		rstr.close();
+		database.close();
+		ret = NSS_STATUS_SUCCESS;
+	} catch (...) {
+		ret = NSS_STATUS_UNAVAIL;
+		errno = ENOENT;
+	}
+	return ret;
 }
 
 NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, sp)(
@@ -45,18 +53,24 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, sp)(
 	int* errnop
 ) {
 	enum nss_status ret = NSS_STATUS_NOTFOUND;
-	int err = 0;
-	ggg::account acc;
-	if (accfile >> acc) {
-		if (buflen < acc.buffer_size()) {
-			err = ERANGE;
+	try {
+		account_iterator last;
+		if (first == last) {
+			ret = NSS_STATUS_NOTFOUND;
+			*errnop = ENOENT;
+		} else if (buflen < first->buffer_size()) {
 			ret = NSS_STATUS_TRYAGAIN;
+			*errnop = ERANGE;
 		} else {
-			acc.copy_to(result, buffer);
+			first->copy_to(result, buffer);
+			++first;
 			ret = NSS_STATUS_SUCCESS;
+			*errnop = 0;
 		}
+	} catch (...) {
+		ret = NSS_STATUS_UNAVAIL;
+		errno = ENOENT;
 	}
-	*errnop = err;
 	return ret;
 }
 
@@ -68,26 +82,24 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, sp, nam)(
 	int* errnop
 ) {
 	enum nss_status ret;
-	ensure_open();
-	std::istream_iterator<ggg::account> last;
-	auto it = std::find_if(
-		std::istream_iterator<ggg::account>(accfile),
-		last,
-		[name] (const ggg::account& rhs) {
-			return rhs.login().compare(name) == 0;
+	try {
+		ggg::Database db(GGG_DATABASE_PATH);
+		auto rstr = db.find_account(name);
+		account_iterator first(rstr), last;
+		if (first == last) {
+			ret = NSS_STATUS_NOTFOUND;
+			*errnop = ENOENT;
+		} else if (buflen < first->buffer_size()) {
+			ret = NSS_STATUS_TRYAGAIN;
+			*errnop = ERANGE;
+		} else {
+			first->copy_to(result, buffer);
+			ret = NSS_STATUS_SUCCESS;
+			*errnop = 0;
 		}
-	);
-	int err = 0;
-	if (it == last) {
-		ret = NSS_STATUS_NOTFOUND;
-		err = ENOENT;
-	} else if (buflen < it->buffer_size()) {
-		ret = NSS_STATUS_TRYAGAIN;
-		err = ERANGE;
-	} else {
-		it->copy_to(result, buffer);
-		ret = NSS_STATUS_SUCCESS;
+	} catch (...) {
+		ret = NSS_STATUS_UNAVAIL;
+		errno = ENOENT;
 	}
-	*errnop = err;
 	return ret;
 }

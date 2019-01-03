@@ -1,60 +1,32 @@
+#include <ggg/nss/pw_guard.hh>
+#include <ggg/test/clean_database.hh>
 #include <gtest/gtest.h>
 
-#include <pwd.h>
-
-#include <ggg/config.hh>
-#include <ggg/nss/pw_guard.hh>
-
-#include "string_replace.hh"
-
-void
-init_root(const char* script) {
-	ASSERT_EQ(0, run_script(script, GGG_ENT_ROOT));
-}
-
-class PwdTest: public ::testing::Test {};
-
-class PwdParamTest:
-public PwdTest,
-public ::testing::WithParamInterface<const char*>
-{};
-
-TEST(Pwd, Empty) {
-	init_root(R"(
-	rm -f passwd group
-	touch passwd group
-	rm -rf %
-	mkdir -p %
-	)");
+TEST(pwd, Empty) {
+	{ Clean_database db; }
 	pw_guard g;
 	struct ::passwd* ent = ::getpwent();
 	ASSERT_EQ(nullptr, ent) << ent->pw_name;
 }
 
-TEST(Pwd, SingleEntry) {
-	init_root(R"(
-	rm -f passwd group
-	touch passwd group
-	rm -rf %
-	mkdir -p %
-	echo 'testuser:x:2000:2000:halt:/sbin:/sbin/halt' > %/file
-	)");
+TEST(pwd, getpwent) {
+	{
+		Clean_database db;
+		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
+	}
 	pw_guard g;
 	struct ::passwd* ent = ::getpwent();
 	ASSERT_NE(nullptr, ent);
 	EXPECT_STREQ("testuser", ent->pw_name);
 }
 
-TEST(Pwd, GetByName) {
-	init_root(R"(
-	rm -f passwd group
-	touch passwd group
-	rm -rf %
-	mkdir -p %
-	echo 'testuser:x:2000:2000:halt:/sbin:/sbin/halt' >> %/file
-	echo 'user2:x:2001:2001:halt:/sbin:/sbin/halt' >> %/file
-	echo 'user3:x:2002:2002:halt:/sbin:/sbin/halt' >> %/file
-	)");
+TEST(pwd, getpwnam) {
+	{
+		Clean_database db;
+		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
+		db.insert("user2:x:2001:2001:halt:/sbin:/sbin/halt");
+		db.insert("user3:x:2002:2002:halt:/sbin:/sbin/halt");
+	}
 	struct passwd* user1 = getpwnam("testuser");
 	ASSERT_NE(nullptr, user1);
 	EXPECT_STREQ("testuser", user1->pw_name);
@@ -71,16 +43,13 @@ TEST(Pwd, GetByName) {
 	ASSERT_EQ(nullptr, user4);
 }
 
-TEST(Pwd, GetByUid) {
-	init_root(R"(
-	rm -f passwd group
-	touch passwd group
-	rm -rf %
-	mkdir -p %
-	echo 'testuser:x:2000:2000:halt:/sbin:/sbin/halt' >> %/file
-	echo 'user2:x:2001:2001:halt:/sbin:/sbin/halt' >> %/file
-	echo 'user3:x:2002:2002:halt:/sbin:/sbin/halt' >> %/file
-	)");
+TEST(pwd, getpwuid) {
+	{
+		Clean_database db;
+		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
+		db.insert("user2:x:2001:2001:halt:/sbin:/sbin/halt");
+		db.insert("user3:x:2002:2002:halt:/sbin:/sbin/halt");
+	}
 	struct passwd* user1 = getpwuid(2000);
 	ASSERT_NE(nullptr, user1);
 	EXPECT_STREQ("testuser", user1->pw_name);

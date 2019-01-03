@@ -6,7 +6,7 @@
 
 namespace ggg {
 
-	enum account_flags: unsigned char {
+	enum account_flags: uint64_t {
 		recruiter = 1,
 		password_has_expired = 2
 	};

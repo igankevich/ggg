@@ -3,6 +3,7 @@ ggg_src = files([
 	'align_columns.cc',
 	'all_commands.cc',
 	'command.cc',
+	'copy.cc',
 	'edit_entity.cc',
 	'editor.cc',
 	'expire_entity.cc',

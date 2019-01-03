@@ -9,6 +9,8 @@
 
 #include <unistdx/net/bstream>
 
+#include <sqlitex/rstream.hh>
+
 namespace sys {
 	typedef ::gid_t gid_type;
 }
@@ -71,6 +73,9 @@ namespace ggg {
 		basic_group&
 		operator=(const basic_group& rhs) = default;
 
+		basic_group&
+		operator=(basic_group&& rhs) = default;
+
 		inline bool
 		has_id() const noexcept {
 			return this->_gid != sys::gid_type(-1);
@@ -103,6 +108,9 @@ namespace ggg {
 		friend sys::basic_bstream<X>&
 		operator>>(sys::basic_bstream<X>& in, basic_group<X>& rhs);
 
+		friend sqlite::rstream&
+		operator>>(sqlite::rstream& in, basic_group<char>& rhs);
+
 		inline sys::gid_type
 		id() const noexcept {
 			return this->_gid;
@@ -121,6 +129,11 @@ namespace ggg {
 		inline container_type&
 		members() const noexcept {
 			return this->_members;
+		}
+
+		inline void
+		members(container_type&& rhs) {
+			this->_members = std::move(rhs);
 		}
 
 		inline void
@@ -160,7 +173,27 @@ namespace ggg {
 	sys::basic_bstream<Ch>&
 	operator>>(sys::basic_bstream<Ch>& in, basic_group<Ch>& rhs);
 
+	sqlite::rstream&
+	operator>>(sqlite::rstream& in, basic_group<char>& rhs);
+
 	typedef basic_group<char> group;
+
+}
+
+namespace std {
+
+	template<class Ch>
+	struct hash<ggg::basic_group<Ch>>: public hash<sys::gid_type> {
+
+		typedef size_t result_type;
+		typedef ggg::basic_group<Ch> argument_type;
+
+		inline result_type
+		operator()(const argument_type& rhs) const noexcept {
+			return hash<sys::gid_type>::operator()(rhs.id());
+		}
+
+	};
 
 }
 

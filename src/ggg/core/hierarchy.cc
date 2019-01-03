@@ -373,6 +373,7 @@ template <class Ch>
 void
 ggg::basic_hierarchy<Ch>
 ::generate_groups() {
+	this->_ties.clear();
 	// add groups
 	for (const entity_pair_type& pair : _entities) {
 		const entity_type& ent = pair.first;
@@ -384,6 +385,7 @@ ggg::basic_hierarchy<Ch>
 		for (const string_type& grname : pair.second) {
 			auto result = _groups.find(group_type(grname));
 			if (result != _groups.end()) {
+				_ties.emplace_back(member.id(), result->id());
 				result->push(member.name());
 			}
 		}

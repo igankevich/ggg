@@ -4,24 +4,25 @@
 #include <functional>
 #include <unordered_map>
 
-#include "add_entity.hh"
-#include "edit_entity.hh"
-#include "expire_entity.hh"
-#include "expunge.hh"
-#include "find_entities.hh"
-#include "heal.hh"
-#include "remove_entity.hh"
-#include "reset_password.hh"
-#include "restore_entity.hh"
-#include "sanitise.hh"
-#include "show_duplicates.hh"
-#include "show_entity.hh"
-#include "show_expired.hh"
-#include "show_groups.hh"
-#include "show_help.hh"
-#include "show_members.hh"
-#include "show_version.hh"
-#include "test_lock.hh"
+#include <ggg/ggg/add_entity.hh>
+#include <ggg/ggg/copy.hh>
+#include <ggg/ggg/edit_entity.hh>
+#include <ggg/ggg/expire_entity.hh>
+#include <ggg/ggg/expunge.hh>
+#include <ggg/ggg/find_entities.hh>
+#include <ggg/ggg/heal.hh>
+#include <ggg/ggg/remove_entity.hh>
+#include <ggg/ggg/reset_password.hh>
+#include <ggg/ggg/restore_entity.hh>
+#include <ggg/ggg/sanitise.hh>
+#include <ggg/ggg/show_duplicates.hh>
+#include <ggg/ggg/show_entity.hh>
+#include <ggg/ggg/show_expired.hh>
+#include <ggg/ggg/show_groups.hh>
+#include <ggg/ggg/show_help.hh>
+#include <ggg/ggg/show_members.hh>
+#include <ggg/ggg/show_version.hh>
+#include <ggg/ggg/test_lock.hh>
 
 #define MAKE_COMMAND(name, type) \
 	{name, [](){ return ::ggg::command_ptr(new ::ggg::type); }}
@@ -49,6 +50,7 @@ namespace {
 		MAKE_COMMAND("insert", Add_entity),
 		MAKE_COMMAND("new", Add_entity),
 		MAKE_COMMAND("version", Show_version),
+		MAKE_COMMAND("copy", Copy),
 		MAKE_COMMAND("heal", Heal),
 		MAKE_COMMAND("init", Heal),
 		MAKE_COMMAND("show", Show_entity),

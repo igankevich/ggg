@@ -12,6 +12,12 @@ if not cpp.has_header('nss.h')
 	error('Header nss.h is required to compile the module.')
 endif
 
+foreach arg : ['-Werror=return-type']
+	if cpp.has_argument(arg)
+		add_global_arguments(arg, language: 'cpp')
+	endif
+endforeach
+
 debug_build = get_option('buildtype').contains('debug')
 if not debug_build
 	add_global_arguments('-DNDEBUG', language: 'cpp')
@@ -46,6 +52,9 @@ config.set('catalog', 'ggg')
 config.set('cache_directory', join_paths(get_option('localstatedir'), 'cache'))
 config.set('read_group', 'ggg.auth')
 config.set('write_group', 'ggg.write')
+config.set('max_depth', 1000)
+config.set('database_path', join_paths(etc, module_name, 'ggg.sqlite3'))
+config.set('min_id', 1000)
 
 unistdx = dependency('unistdx', version: '>=0.4.6')
 gtest = dependency('gtest', main: true)
@@ -56,10 +65,23 @@ zxcvbn = dependency('zxcvbn')
 pam = cpp.find_library('pam')
 libcrypt = dependency('ggg-libxcrypt')
 libacl = cpp.find_library('acl')
+sqlite = dependency('sqlite3')
+sqlitex = dependency('sqlitex')
 
 subdir('src')
 subdir('po')
 subdir('pkg')
+
+# generate empty files for nss_wrapper
+if nss_wrapper.found()
+	foreach file : ['passwd', 'group']
+		configure_file(
+			output: file,
+			capture: true,
+			command: ['true']
+		)
+	endforeach
+endif
 
 run_target(
 	'init-integration-tests',
