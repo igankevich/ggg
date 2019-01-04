@@ -4,8 +4,7 @@
 #include <ostream>
 #include <string>
 
-#include "command.hh"
-#include <ggg/ctl/ggg.hh>
+#include <ggg/ggg/command.hh>
 
 namespace ggg {
 

@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <set>
 #include <unistd.h>
 #include <vector>
 
@@ -15,6 +16,13 @@
 #include <ggg/config.hh>
 #include <ggg/core/lock.hh>
 #include <ggg/core/native.hh>
+
+namespace {
+
+	const char* default_home = "/home";
+	const char* default_shell = "/bin/sh";
+
+}
 
 void
 ggg::Add_entity
@@ -44,22 +52,20 @@ ggg::Add_entity
 void
 ggg::Add_entity
 ::execute() {
-	file_lock lock;
-	GGG g(GGG_ENT_ROOT, this->verbose());
-	lock.unlock();
+	Database db(GGG_DATABASE_PATH, false);
 	if (this->is_batch()) {
-		this->add_batch(g);
+		this->add_batch(db);
 	} else {
-		this->add_interactive(g);
+		this->add_interactive(db);
 	}
 }
 
 void
 ggg::Add_entity
-::add_interactive(GGG& g) {
+::add_interactive(Database& db) {
 	bool success = true;
 	for (const std::string& ent : this->args()) {
-		if (g.contains(ent)) {
+		if (db.contains(ent.data())) {
 			success = false;
 			std::stringstream tmp;
 			tmp << ent;
@@ -72,10 +78,10 @@ ggg::Add_entity
 	while (!this->_args.empty()) {
 		sys::tmpfile tmp;
 		tmp.out().imbue(std::locale::classic());
-		this->generate_entities(g, tmp.out());
+		this->generate_entities(db, tmp.out());
 		edit_file_or_throw(tmp.filename());
 		try {
-			this->add_entities(g, sys::path(tmp.filename()));
+			this->add_entities(db, sys::path(tmp.filename()));
 		} catch (const quiet_error& err) {
 			// ignore quiet error
 		}
@@ -88,26 +94,32 @@ ggg::Add_entity
 
 void
 ggg::Add_entity
-::add_batch(GGG& g) {
+::add_batch(Database& db) {
 	sys::tmpfile tmp;
 	tmp.out().imbue(std::locale::classic());
 	tmp.out() << std::cin.rdbuf();
 	tmp.out().flush();
-	this->add_entities(g, sys::path(tmp.filename()));
+	this->add_entities(db, sys::path(tmp.filename()));
 }
 
 void
 ggg::Add_entity
-::generate_entities(GGG& g, std::ostream& out) {
+::generate_entities(Database& db, std::ostream& out) {
 	file_lock lock;
-	std::set<entity> cnt = g.generate(this->args());
+	std::set<entity> cnt;
+	for (const auto& name : this->args()) {
+		entity tmp(name.data());
+		tmp.home(sys::path(default_home, name));
+		tmp.shell(default_shell);
+		cnt.emplace(std::move(tmp));
+	}
 	align_columns(cnt, out, entity::delimiter, entity::delimiter, false);
 	out.flush();
 }
 
 void
 ggg::Add_entity
-::add_entities(GGG& g, sys::path filename) {
+::add_entities(Database& db, sys::path filename) {
 	file_lock lock(true);
 	typedef Object_traits<entity> traits_type;
 	std::vector<entity> ents;
@@ -120,8 +132,7 @@ ggg::Add_entity
 	int nerrors = 0;
 	for (entity& ent : ents) {
 		try {
-			ent.origin(this->get_filename(ent, g));
-			g.add(ent);
+			db.insert(ent);
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
 			++nerrors;
@@ -132,36 +143,6 @@ ggg::Add_entity
 	if (nerrors > 0) {
 		throw quiet_error();
 	}
-}
-
-sys::path
-ggg::Add_entity
-::get_filename(const entity& ent, GGG& g) const {
-	sys::path filename;
-	if (this->_type == Type::Directory) {
-		if (this->_path.empty()) {
-			const sys::uid_type uid = sys::this_process::user();
-			if (uid == 0) {
-				filename = "entities";
-			} else {
-				auto rstr = g.find_user(uid);
-				user_iterator first(rstr), last;
-				if (first == last) {
-					throw std::runtime_error(
-						"the user is not allowed to add new entities"
-					);
-				}
-				filename = sys::path(first->name(), "entities");
-			}
-		} else {
-			filename.append(this->_path);
-			filename.push_back(sys::file_separator);
-			filename.append(ent.name());
-		}
-	} else {
-		filename = this->_path;
-	}
-	return filename;
 }
 
 void

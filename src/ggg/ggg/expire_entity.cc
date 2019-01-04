@@ -1,12 +1,8 @@
-#include "expire_entity.hh"
-
 #include <iostream>
-#include <algorithm>
-#include <string>
 
 #include <ggg/config.hh>
-#include <ggg/ctl/ggg.hh>
-#include <ggg/core/lock.hh>
+#include <ggg/core/database.hh>
+#include <ggg/ggg/expire_entity.hh>
 
 void
 ggg::Expire_entity::execute()  {

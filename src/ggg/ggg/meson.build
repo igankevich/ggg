@@ -15,6 +15,7 @@ ggg_src = files([
 	'remove_entity.cc',
 	'reset_password.cc',
 	'sanitise.cc',
+	'search.cc',
 	'show_base.cc',
 	'show_duplicates.cc',
 	'show_entity.cc',
@@ -29,7 +30,7 @@ ggg_src = files([
 	'unlock_entity.cc',
 ])
 
-executable(
+ggg_exe = executable(
 	executable_name,
 	sources: ggg_src,
 	include_directories: inc,

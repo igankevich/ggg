@@ -1,18 +1,9 @@
-#include "show_members.hh"
-
-#include <algorithm>
 #include <iostream>
-#include <iterator>
-#include <set>
-#include <string>
 
 #include <ggg/config.hh>
-#include <ggg/core/lock.hh>
+#include <ggg/core/database.hh>
 #include <ggg/core/native.hh>
-#include <ggg/ctl/ggg.hh>
-#include <ggg/ggg/quiet_error.hh>
-
-#include "object_traits.hh"
+#include <ggg/ggg/show_members.hh>
 
 void
 ggg::Show_members::parse_arguments(int argc, char* argv[]) {

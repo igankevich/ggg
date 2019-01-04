@@ -1,15 +1,12 @@
-#include "expunge.hh"
-
 #include <chrono>
 #include <iostream>
-#include <thread>
 
 #include <unistdx/fs/idirectory>
 
 #include <ggg/config.hh>
-#include <ggg/core/lock.hh>
+#include <ggg/core/database.hh>
 #include <ggg/core/native.hh>
-#include <ggg/ctl/ggg.hh>
+#include <ggg/ggg/expunge.hh>
 
 namespace {
 

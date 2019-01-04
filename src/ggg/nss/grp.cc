@@ -5,21 +5,19 @@ using ggg::database;
 
 namespace {
 
-	typedef sqlite::rstream_iterator<ggg::group> group_iterator;
 	ggg::Database::row_stream_t rstr;
-	group_iterator first;
+	ggg::group_iterator first;
 
 	inline void
 	init() {
 		if (!database.is_open()) {
 			database.open(GGG_DATABASE_PATH);
 			rstr = database.users();
-			first = group_iterator(rstr);
+			first = ggg::group_iterator(rstr);
 		}
 	}
 
 }
-
 
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, gr) {
 	enum nss_status ret;
@@ -54,7 +52,7 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, gr)(
 ) {
 	nss_status ret = NSS_STATUS_NOTFOUND;
 	try {
-		group_iterator last;
+		ggg::group_iterator last;
 		if (first == last) {
 			ret = NSS_STATUS_NOTFOUND;
 			*errnop = ENOENT;

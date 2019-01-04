@@ -1,5 +1,3 @@
-#include "show_entity.hh"
-
 #include <chrono>
 #include <iostream>
 #include <set>
@@ -10,11 +8,10 @@
 
 #include <ggg/config.hh>
 #include <ggg/core/account.hh>
+#include <ggg/core/database.hh>
 #include <ggg/core/entity.hh>
-#include <ggg/core/lock.hh>
-#include <ggg/ctl/ggg.hh>
-
-#include "object_traits.hh"
+#include <ggg/ggg/object_traits.hh>
+#include <ggg/ggg/show_entity.hh>
 
 namespace {
 
@@ -116,11 +113,11 @@ namespace {
 
 	template <class T, class Container>
 	void
-	show_entities(ggg::GGG& g, const Container& args) {
+	show_entities(ggg::Database& db, const Container& args) {
 		using namespace ggg;
 		typedef Object_traits<T> traits_type;
 		std::set<T> cnt;
-		traits_type::find(g, args, std::inserter(cnt, cnt.begin()));
+		traits_type::find(db, args, std::inserter(cnt, cnt.begin()));
 		if (cnt.empty()) {
 			throw std::runtime_error("not found");
 		}
@@ -156,11 +153,10 @@ ggg::Show_entity::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Show_entity::execute() {
-	file_lock lock;
-	GGG g(GGG_ENT_ROOT, this->verbose());
+	Database db(GGG_DATABASE_PATH);
 	switch (this->_type) {
-		case Type::Entity: show_entities<entity>(g, this->args()); break;
-		case Type::Account: show_entities<account>(g, this->args()); break;
+		case Type::Entity: show_entities<entity>(db, this->args()); break;
+		case Type::Account: show_entities<account>(db, this->args()); break;
 	}
 }
 

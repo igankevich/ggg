@@ -1,8 +1,8 @@
 #ifndef GGG_EDIT_ENTITY_HH
 #define GGG_EDIT_ENTITY_HH
 
-#include "command.hh"
-#include <ggg/ctl/ggg.hh>
+#include <ggg/core/database.hh>
+#include <ggg/ggg/command.hh>
 
 namespace ggg {
 
@@ -26,19 +26,19 @@ namespace ggg {
 	private:
 
 		template <class T>
-		void print_objects(GGG& g, std::ostream& out);
+		void print_objects(Database& db, std::ostream& out);
 
 		template <class T>
-		void update_objects(GGG& g, const std::string& filename);
+		void update_objects(Database& db, const std::string& filename);
 
 		template <class T>
-		void edit_objects(GGG& g);
+		void edit_objects(Database& db);
 
 		template <class T>
-		void edit_interactive(GGG& g);
+		void edit_interactive(Database& db);
 
 		template <class T>
-		void edit_batch(GGG& g);
+		void edit_batch(Database& db);
 
 		void edit_directory();
 

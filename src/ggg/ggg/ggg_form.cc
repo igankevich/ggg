@@ -2,11 +2,10 @@
 #include <regex>
 
 #include <ggg/config.hh>
-#include <ggg/core/hierarchy.hh>
+#include <ggg/core/database.hh>
 #include <ggg/core/lock.hh>
 #include <ggg/core/native.hh>
 #include <ggg/ctl/form.hh>
-#include <ggg/ctl/ggg.hh>
 #include <ggg/ctl/password.hh>
 #include <ggg/sec/echo_guard.hh>
 #include <ggg/sec/secure_string.hh>
@@ -113,8 +112,7 @@ namespace ggg {
 	}
 
 	void
-	register_user(form& f, sys::path origin) {
-		const bool debug = false;
+	register_user(form& f) {
 		const int max_iterations = 7;
 		bool success;
 		int i = 0;
@@ -123,29 +121,12 @@ namespace ggg {
 				entity ent;
 				account acc;
 				std::tie(ent, acc) = input_entity_and_account(f);
-				file_lock lock;
-				GGG g(GGG_ENT_ROOT, debug);
-				lock.unlock();
-				/*
-				bool has_uid = ent.has_id();
-				bool has_gid = ent.has_gid();
-				if (!has_uid || !has_gid) {
-					sys::uid_type id = g.next_uid();
-					if (!has_uid) {
-						ent.set_uid(id);
-					}
-					if (!has_gid) {
-						ent.set_gid(id);
-					}
-				}
-				*/
-				{
-					file_lock lock(true);
-					acc.origin(origin);
-					g.add(ent);
-				}
+				Database db(GGG_DATABASE_PATH, false);
+				db.insert(ent);
+				db.update(acc);
 				success = true;
 			} catch (const std::system_error& err) {
+				std::clog << "err.what()=" << err.what() << std::endl;
 				success = false;
 				if (std::errc(err.code().value()) ==
 				    std::errc::permission_denied) {
@@ -173,19 +154,16 @@ main() {
 	try {
 		form f;
 		f.set_type(form_type::console);
-		sys::path origin;
 		{
-			file_lock lock;
-			Hierarchy h(GGG_ENT_ROOT);
-			auto result = h.find_by_uid(sys::this_process::user());
-			if (result == h.end()) {
+			Database db(GGG_DATABASE_PATH);
+			auto name = db.find_name(sys::this_process::user());
+			if (name.empty()) {
 				throw std::invalid_argument("unable to find form");
 			}
-			f.open(result->name().data());
-			origin = sys::path(GGG_ROOT, "acc", result->name(), "shadow");
+			f.open(name.data());
 		}
 		init_locale(f.locale());
-		register_user(f, origin);
+		register_user(f);
 	} catch (const std::exception& err) {
 		ret = 1;
 		error_message(std::cerr, err);

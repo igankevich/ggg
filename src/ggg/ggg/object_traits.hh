@@ -7,9 +7,9 @@
 #include <stdexcept>
 
 #include <ggg/bits/io.hh>
-#include <ggg/core/entity.hh>
 #include <ggg/core/account.hh>
-#include <ggg/ctl/ggg.hh>
+#include <ggg/core/database.hh>
+#include <ggg/core/entity.hh>
 
 namespace ggg {
 
@@ -41,8 +41,8 @@ namespace ggg {
 
 		template <class Container, class Result>
 		inline static void
-		find(ggg::GGG& g, const Container& args, Result result) {
-			g.find_entities(args.begin(), args.end(), result);
+		find(ggg::Database& db, const Container& args, Result result) {
+			db.find_users(args.begin(), args.end(), result);
 		}
 
 	};
@@ -72,8 +72,8 @@ namespace ggg {
 
 		template <class Container, class Result>
 		inline static void
-		find(ggg::GGG& g, const Container& args, Result result) {
-			g.find_accounts(args, result);
+		find(ggg::Database& db, const Container& args, Result result) {
+			db.find_accounts(args.begin(), args.end(), result);
 		}
 
 	};

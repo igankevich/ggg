@@ -1,4 +1,4 @@
-#include "show_duplicates.hh"
+#include <ggg/ggg/show_duplicates.hh>
 
 #include <algorithm>
 #include <iostream>
@@ -32,7 +32,7 @@ namespace {
 void
 ggg::Show_duplicates::execute() {
 	std::multiset<entity, compare_uid> set1;
-	std::multiset<entity, compare_uid> set2;
+	std::multiset<entity, compare_name> set2;
 	sys::userstream users;
 	std::for_each(
 		sys::user_iterator(users),

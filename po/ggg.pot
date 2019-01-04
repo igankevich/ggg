@@ -113,22 +113,6 @@ msgstr ""
 msgid "Bad locale \"_\"."
 msgstr ""
 
-#: src/ggg/ctl/ggg.cc:107
-msgid "entity name does not match account name"
-msgstr ""
-
-#: src/ggg/ctl/ggg.cc:124
-msgid "file path must be relative to hierarchy root"
-msgstr ""
-
-#: src/ggg/ctl/ggg.cc:148 src/ggg/ggg/heal.cc:130
-msgid "Creating _."
-msgstr ""
-
-#: src/ggg/ctl/ggg.cc:167 src/ggg/ggg/add_entity.cc:167
-msgid "the user is not allowed to add new entities"
-msgstr ""
-
 #: src/ggg/ggg/add_entity.cc:40 src/ggg/ggg/edit_entity.cc:48
 #: src/ggg/ggg/show_entity.cc:153 src/ggg/ggg/show_groups.cc:20
 #: src/ggg/ggg/show_members.cc:21

@@ -7,12 +7,8 @@
 #include <string>
 
 #include <ggg/config.hh>
-#include <ggg/core/lock.hh>
 #include <ggg/core/native.hh>
-#include <ggg/ctl/ggg.hh>
-
-#include "align_columns.hh"
-#include "object_traits.hh"
+#include <ggg/core/database.hh>
 
 void
 ggg::Show_expired::parse_arguments(int argc, char* argv[]) {

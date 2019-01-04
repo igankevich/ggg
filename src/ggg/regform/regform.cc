@@ -19,12 +19,10 @@
 
 #include <ggg/bits/to_bytes.hh>
 #include <ggg/config.hh>
-#include <ggg/core/hierarchy.hh>
+#include <ggg/core/database.hh>
 #include <ggg/core/lock.hh>
 #include <ggg/core/native.hh>
-#include <ggg/ctl/account_ctl.hh>
 #include <ggg/ctl/form.hh>
-#include <ggg/ctl/ggg.hh>
 #include <ggg/ctl/password.hh>
 #include <ggg/pam/conversation.hh>
 #include <ggg/pam/pam_call.hh>
@@ -38,7 +36,6 @@
 std::string form_user;
 ggg::form::container_type fields;
 ggg::form form;
-sys::path origin;
 ggg::field_values values;
 std::vector<std::string> all_values;
 GtkWidget* registerPageGrid = nullptr;
@@ -94,27 +91,9 @@ register_user(GtkButton*, gpointer) {
 		entity ent;
 		account acc;
 		std::tie(ent, acc) = ::form.make_entity_and_account(all_values);
-		file_lock lock;
-		GGG g(GGG_ENT_ROOT, true);
-		lock.unlock();
-		/*
-		bool has_uid = ent.has_id();
-		bool has_gid = ent.has_gid();
-		if (!has_uid || !has_gid) {
-			sys::uid_type id = g.next_uid();
-			if (!has_uid) {
-				ent.set_uid(id);
-			}
-			if (!has_gid) {
-				ent.set_gid(id);
-			}
-		}
-		*/
-		{
-			file_lock lock(true);
-			acc.origin(origin);
-			g.add(ent);
-		}
+		Database db(GGG_DATABASE_PATH, false);
+		db.insert(ent);
+		db.update(acc);
 		show_message_box(ggg::native("Registered successfully!"), GTK_MESSAGE_INFO);
 		for (GtkWidget* entry : all_entries) {
 			gtk_entry_set_text(GTK_ENTRY(entry), "");
@@ -384,14 +363,12 @@ void
 load_form() {
 	form.clear();
 	form.set_type(ggg::form_type::graphical);
-	ggg::file_lock lock;
-	ggg::Hierarchy h(GGG_ENT_ROOT);
-	auto result = h.find_by_name(form_user.data());
-	if (result == h.end()) {
+	ggg::Database db(GGG_DATABASE_PATH);
+	auto name = db.find_name(sys::this_process::user());
+	if (name.empty()) {
 		throw std::invalid_argument("unable to find form");
 	}
-	form.open(result->name().data());
-	origin = sys::path(GGG_ROOT, "acc", result->name());
+	form.open(name.data());
 	fields = form.fields();
 }
 

@@ -2,6 +2,7 @@
 #define GGG_CORE_DATABASE_HH
 
 #include <ostream>
+#include <string>
 #include <unordered_map>
 
 #include <ggg/core/account.hh>
@@ -21,6 +22,7 @@ namespace ggg {
 
 	private:
 		bool _readonly = true;
+		bool _regex = false;
 		database_t _db;
 
 	public:
@@ -55,6 +57,16 @@ namespace ggg {
 			this->_db.close();
 		}
 
+		inline database_t*
+		db() {
+			return &this->_db;
+		}
+
+		inline const database_t*
+		db() const {
+			return &this->_db;
+		}
+
 		row_stream_t
 		find_entity(int64_t id);
 
@@ -63,6 +75,9 @@ namespace ggg {
 
 		row_stream_t
 		entities();
+
+		row_stream_t
+		search_entities();
 
 		inline row_stream_t
 		find_user(sys::uid_type uid) {
@@ -129,6 +144,14 @@ namespace ggg {
 
 		sys::uid_type
 		find_id(const char* name);
+
+		inline bool
+		contains(const char* name) {
+			return this->find_id(name) != bad_uid;
+		}
+
+		std::string
+		find_name(sys::uid_type id);
 
 		void
 		dot(std::ostream& out);

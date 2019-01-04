@@ -6,8 +6,8 @@
 
 #include <unistdx/fs/path>
 
-#include "command.hh"
-#include <ggg/ctl/ggg.hh>
+#include <ggg/core/database.hh>
+#include <ggg/ggg/command.hh>
 
 namespace ggg {
 
@@ -28,11 +28,10 @@ namespace ggg {
 		void print_usage() override;
 
 	private:
-		void generate_entities(GGG& g, std::ostream& out);
-		void add_entities(GGG& g, sys::path filename);
-		void add_interactive(GGG& g);
-		void add_batch(GGG& g);
-		sys::path get_filename(const entity& ent, GGG& g) const;
+		void generate_entities(Database& db, std::ostream& out);
+		void add_entities(Database& db, sys::path filename);
+		void add_interactive(Database& db);
+		void add_batch(Database& db);
 
 	};
 

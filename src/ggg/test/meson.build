@@ -47,6 +47,28 @@ test(
 	suite: 'unit'
 )
 
+test(
+	'conversation-test',
+	executable(
+		'conversation-test',
+		sources: ['conversation_test.cc'],
+		include_directories: inc,
+		dependencies: [unistdx, gtest, libcrypt, pam, ggg_core, ggg_pam]
+	),
+	suite: 'unit'
+)
+
+test(
+	'form-field-test',
+	executable(
+		'form-field-test',
+		sources: ['form_field_test.cc'],
+		include_directories: inc,
+		dependencies: [unistdx, gtest, pam, libcrypt, ggg_core, ggg_pam]
+	),
+	suite: 'unit'
+)
+
 if nss_wrapper.found() and not etc.startswith('/')
 	ld_preload = ''
 	if get_option('sanitize') == 'address'
@@ -103,37 +125,21 @@ if pam_wrapper.found() and not etc.startswith('/')
 	subdir('pam.d')
 endif
 
-test(
-	'conversation-test',
-	executable(
-		'conversation-test',
-		sources: ['conversation_test.cc'],
-		include_directories: inc,
-		dependencies: [unistdx, gtest, libcrypt, pam, ggg_core, ggg_pam]
-	),
-	suite: 'unit'
-)
-
-test(
-	'form-field-test',
-	executable(
-		'form-field-test',
-		sources: ['form_field_test.cc'],
-		include_directories: inc,
-		dependencies: [unistdx, gtest, pam, libcrypt, ggg_core, ggg_pam]
-	),
-	suite: 'unit'
-)
-
-test(
-	'commands-test',
-	executable(
-		'commands-test',
-		sources: ['commands_test.cc'] + test_src,
-		dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
-	),
-	suite: 'integration'
-)
+if not etc.startswith('/')
+	test(
+		'cli-test',
+		executable(
+			'cli-test',
+			sources: ['cli_test.cc'] + test_src,
+			dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+		),
+		env: [
+			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
+			'GGG_UNPRIVILEDGED=1'
+		],
+		suite: 'unit'
+	)
+endif
 
 test(
 	'ggg-dm-test',

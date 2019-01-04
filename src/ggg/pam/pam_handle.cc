@@ -18,7 +18,6 @@
 #include <ggg/core/form_field.hh>
 #include <ggg/core/lock.hh>
 #include <ggg/ctl/form.hh>
-#include <ggg/ctl/ggg.hh>
 
 namespace {
 

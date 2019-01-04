@@ -1,5 +1,7 @@
 #include <type_traits>
+#include <regex>
 
+#include <ggg/bits/to_bytes.hh>
 #include <ggg/config.hh>
 #include <ggg/core/database.hh>
 
@@ -76,6 +78,12 @@ SELECT id,name,description,home,shell
 FROM entities
 )";
 
+const char* sql_search_entities = R"(
+SELECT id,name,description,home,shell
+FROM entities
+WHERE search(name) OR search(description)
+)";
+
 const char* sql_update_user_by_id = R"(
 UPDATE entities
 SET name=?,description=?,home=?,shell=?
@@ -98,6 +106,12 @@ const char* sql_select_id_by_name = R"(
 SELECT id
 FROM entities
 WHERE name = ?
+)";
+
+const char* sql_select_name_by_id = R"(
+SELECT name
+FROM entities
+WHERE id = ?
 )";
 
 const char* sql_select_users_by_multiple_names = R"(
@@ -251,6 +265,64 @@ WITH RECURSIVE
 		SELECT ties.child_id, ties.parent_id, ties_subgraph.depth+1
 		FROM ties_subgraph, ties
 		WHERE ties_subgraph.parent_id = ties.child_id
+		  AND ties_subgraph.child_id <> ties_subgraph.parent_id
+		  AND ties_subgraph.depth < $depth
+	),
+	-- remove duplicate entities
+	unique_ids(id) AS (
+		SELECT DISTINCT child_id FROM hierarchy_path
+		UNION
+		SELECT DISTINCT parent_id FROM hierarchy_path
+		UNION
+		SELECT DISTINCT child_id FROM ties_subgraph
+		UNION
+		SELECT DISTINCT parent_id FROM ties_subgraph
+	),
+	clean_ids(id) AS (
+		SELECT id
+		FROM unique_ids
+		WHERE id NOT IN (SELECT id FROM entity_ids)
+	)
+SELECT id,name,description
+FROM entities
+WHERE id IN (SELECT id FROM clean_ids)
+)";
+
+const char* sql_select_child_entities_by_name = R"(
+WITH RECURSIVE
+	-- find entity id by entity name
+	entity_ids(id) AS (
+		SELECT id FROM entities WHERE name = $name
+	),
+	-- find all entities higher in the hierarchy
+	hierarchy_path(child_id,parent_id,depth) AS (
+		SELECT child_id,parent_id,1 FROM hierarchy
+		WHERE child_id IN (SELECT id FROM entity_ids)
+		UNION ALL
+		SELECT hierarchy.child_id, hierarchy.parent_id, hierarchy_path.depth+1
+		FROM hierarchy_path, hierarchy
+		WHERE hierarchy_path.parent_id = hierarchy.child_id
+		  AND hierarchy_path.child_id <> hierarchy_path.parent_id
+		  AND hierarchy_path.depth < $depth
+	),
+	-- remove duplicate entities (include this entity in case there is no
+	-- entity higher in the hierarchy)
+	unique_hierarchy_path(id) AS (
+		SELECT id FROM entity_ids
+		UNION
+		SELECT DISTINCT child_id FROM hierarchy_path
+		UNION
+		SELECT DISTINCT parent_id FROM hierarchy_path
+	),
+	-- find all ties between entities in the hiearachy and other entities
+	ties_subgraph(child_id,parent_id,depth) AS (
+		SELECT child_id,parent_id,1
+		FROM ties
+		WHERE child_id IN (SELECT id FROM unique_hierarchy_path)
+		UNION ALL
+		SELECT ties.child_id, ties.parent_id, ties_subgraph.depth+1
+		FROM ties_subgraph, ties
+		WHERE ties_subgraph.child_id = ties.parent_id
 		  AND ties_subgraph.child_id <> ties_subgraph.parent_id
 		  AND ties_subgraph.depth < $depth
 	),
@@ -449,6 +521,11 @@ ggg::Database::entities() -> row_stream_t {
 	return this->_db.prepare(sql_select_all_users);
 }
 
+auto
+ggg::Database::search_entities() -> row_stream_t {
+	return this->_db.prepare(sql_search_entities);
+}
+
 bool
 ggg::Database::find_group(sys::gid_type gid, ggg::group& result) {
 	row_stream_t rstr =
@@ -489,6 +566,9 @@ ggg::Database::find_group(const char* name, ggg::group& result) {
 
 auto
 ggg::Database::find_parent_entities(const char* name) -> row_stream_t {
+	if (!this->contains(name)) {
+		throw std::invalid_argument("bad entity");
+	}
 	return this->_db.prepare(
 		sql_select_parent_entities_by_name,
 		name,
@@ -498,8 +578,11 @@ ggg::Database::find_parent_entities(const char* name) -> row_stream_t {
 
 auto
 ggg::Database::find_child_entities(const char* name) -> row_stream_t {
+	if (!this->contains(name)) {
+		throw std::invalid_argument("bad entity");
+	}
 	return this->_db.prepare(
-		sql_select_group_by_name,
+		sql_select_child_entities_by_name,
 		name,
 		GGG_MAX_DEPTH
 	);
@@ -588,6 +671,17 @@ ggg::Database::find_id(const char* name) {
 		cstr >> id;
 	}
 	return id;
+}
+
+std::string
+ggg::Database::find_name(sys::uid_type id) {
+	std::string name;
+	auto rstr = this->_db.prepare(sql_select_name_by_id, id);
+	sqlite::cstream cstr(rstr);
+	if (rstr >> cstr) {
+		cstr >> name;
+	}
+	return name;
 }
 
 auto

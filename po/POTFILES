@@ -29,8 +29,6 @@ src/ggg/ctl/account_ctl.cc
 src/ggg/ctl/account_ctl.hh
 src/ggg/ctl/form.cc
 src/ggg/ctl/form.hh
-src/ggg/ctl/ggg.cc
-src/ggg/ctl/ggg.hh
 src/ggg/ctl/password.cc
 src/ggg/ctl/password.hh
 src/ggg/ggg/add_entity.cc

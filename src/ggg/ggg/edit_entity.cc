@@ -1,5 +1,3 @@
-#include "edit_entity.hh"
-
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -14,14 +12,13 @@
 #include <unistdx/io/fdstream>
 
 #include <ggg/config.hh>
-#include <ggg/ctl/ggg.hh>
-#include "editor.hh"
-#include "tmpfile.hh"
-#include "align_columns.hh"
-#include "object_traits.hh"
-#include <ggg/core/lock.hh>
 #include <ggg/core/native.hh>
+#include <ggg/ggg/align_columns.hh>
+#include <ggg/ggg/edit_entity.hh>
+#include <ggg/ggg/editor.hh>
+#include <ggg/ggg/object_traits.hh>
 #include <ggg/ggg/quiet_error.hh>
+#include <ggg/ggg/tmpfile.hh>
 
 void
 ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
@@ -52,35 +49,33 @@ ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Edit_entity::execute()  {
-	file_lock lock;
-	GGG g(GGG_ENT_ROOT, this->verbose());
-	lock.unlock();
+	Database db(GGG_DATABASE_PATH, false);
 	switch (this->_type) {
-		case Type::Entity: this->edit_objects<entity>(g); break;
-		case Type::Account: this->edit_objects<account>(g); break;
+		case Type::Entity: this->edit_objects<entity>(db); break;
+		case Type::Account: this->edit_objects<account>(db); break;
 		case Type::Directory: this->edit_directory(); break;
 	}
 }
 
 template <class T>
 void
-ggg::Edit_entity::edit_objects(GGG& g) {
+ggg::Edit_entity::edit_objects(Database& db) {
 	if (this->is_batch()) {
-		this->edit_batch<T>(g);
+		this->edit_batch<T>(db);
 	} else {
-		this->edit_interactive<T>(g);
+		this->edit_interactive<T>(db);
 	}
 }
 
 template <class T>
 void
-ggg::Edit_entity::edit_interactive(GGG& g) {
+ggg::Edit_entity::edit_interactive(Database& db) {
 	while (!this->_args.empty()) {
 		sys::tmpfile tmp;
 		tmp.out().imbue(std::locale::classic());
-		this->print_objects<T>(g, tmp.out());
+		this->print_objects<T>(db, tmp.out());
 		edit_file_or_throw(tmp.filename());
-		this->update_objects<T>(g, tmp.filename());
+		this->update_objects<T>(db, tmp.filename());
 		if (!this->_args.empty()) {
 			native_message(std::clog, "Press any key to continue...");
 			std::cin.get();
@@ -90,21 +85,20 @@ ggg::Edit_entity::edit_interactive(GGG& g) {
 
 template <class T>
 void
-ggg::Edit_entity::edit_batch(GGG& g) {
+ggg::Edit_entity::edit_batch(Database& db) {
 	sys::tmpfile tmp;
 	tmp.out().imbue(std::locale::classic());
 	tmp.out() << std::cin.rdbuf();
 	tmp.out().flush();
-	this->update_objects<T>(g, tmp.filename());
+	this->update_objects<T>(db, tmp.filename());
 }
 
 template <class T>
 void
-ggg::Edit_entity::print_objects(GGG& g, std::ostream& out) {
-	file_lock lock;
+ggg::Edit_entity::print_objects(Database& db, std::ostream& out) {
 	typedef Object_traits<T> traits_type;
 	std::set<T> cnt;
-	traits_type::find(g, this->args(), std::inserter(cnt, cnt.begin()));
+	traits_type::find(db, this->args(), std::inserter(cnt, cnt.begin()));
 	if (cnt.empty()) {
 		throw std::runtime_error("not found");
 	}
@@ -125,8 +119,7 @@ ggg::Edit_entity::print_usage() {
 
 template <class T>
 void
-ggg::Edit_entity::update_objects(GGG& g, const std::string& filename) {
-	file_lock lock(true);
+ggg::Edit_entity::update_objects(Database& db, const std::string& filename) {
 	typedef Object_traits<T> traits_type;
 	std::vector<T> ents;
 	read_objects<T>(
@@ -138,7 +131,7 @@ ggg::Edit_entity::update_objects(GGG& g, const std::string& filename) {
 	int nerrors = 0;
 	for (const T& ent : ents) {
 		try {
-			g.update(ent);
+			db.update(ent);
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
 			++nerrors;
@@ -166,22 +159,22 @@ ggg::Edit_entity::edit_directory() {
 }
 
 template void
-ggg::Edit_entity::print_objects<ggg::entity>(GGG& g, std::ostream& out);
+ggg::Edit_entity::print_objects<ggg::entity>(Database& db, std::ostream& out);
 template void
-ggg::Edit_entity::print_objects<ggg::account>(GGG& g, std::ostream& out);
+ggg::Edit_entity::print_objects<ggg::account>(Database& db, std::ostream& out);
 template void
-ggg::Edit_entity::update_objects<ggg::entity>(GGG& g, const std::string& filename);
+ggg::Edit_entity::update_objects<ggg::entity>(Database& db, const std::string& filename);
 template void
-ggg::Edit_entity::update_objects<ggg::account>(GGG& g, const std::string& filename);
+ggg::Edit_entity::update_objects<ggg::account>(Database& db, const std::string& filename);
 template void
-ggg::Edit_entity::edit_objects<ggg::entity>(GGG& g);
+ggg::Edit_entity::edit_objects<ggg::entity>(Database& db);
 template void
-ggg::Edit_entity::edit_objects<ggg::account>(GGG& g);
+ggg::Edit_entity::edit_objects<ggg::account>(Database& db);
 template void
-ggg::Edit_entity::edit_batch<ggg::entity>(GGG& g);
+ggg::Edit_entity::edit_batch<ggg::entity>(Database& db);
 template void
-ggg::Edit_entity::edit_batch<ggg::account>(GGG& g);
+ggg::Edit_entity::edit_batch<ggg::account>(Database& db);
 template void
-ggg::Edit_entity::edit_interactive<ggg::entity>(GGG& g);
+ggg::Edit_entity::edit_interactive<ggg::entity>(Database& db);
 template void
-ggg::Edit_entity::edit_interactive<ggg::account>(GGG& g);
+ggg::Edit_entity::edit_interactive<ggg::account>(Database& db);

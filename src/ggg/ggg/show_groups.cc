@@ -1,17 +1,9 @@
-#include "show_groups.hh"
-
 #include <iostream>
-#include <set>
-#include <string>
 
 #include <ggg/config.hh>
-#include <ggg/core/lock.hh>
+#include <ggg/core/database.hh>
 #include <ggg/core/native.hh>
-#include <ggg/ctl/ggg.hh>
-#include <ggg/ggg/quiet_error.hh>
-
-#include "align_columns.hh"
-#include "object_traits.hh"
+#include <ggg/ggg/show_groups.hh>
 
 void
 ggg::Show_groups::parse_arguments(int argc, char* argv[]) {

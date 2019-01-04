@@ -1,24 +1,20 @@
-#include "reset_password.hh"
-
 #include <iostream>
-#include <algorithm>
-#include <string>
 
 #include <ggg/config.hh>
-#include <ggg/ctl/ggg.hh>
-#include <ggg/core/lock.hh>
+#include <ggg/core/database.hh>
+#include <ggg/core/native.hh>
+#include <ggg/ggg/reset_password.hh>
 
 void
 ggg::Reset_password::execute()  {
-	file_lock lock(true);
-	GGG g(GGG_ENT_ROOT, this->verbose());
-	std::for_each(
-		this->args_begin(),
-		this->args_end(),
-		[&] (const std::string& user) {
-			g.reset(user);
+	Database db(GGG_DATABASE_PATH, false);
+	for (const auto& name : this->args()) {
+		try {
+			db.expire_password(name.data());
+		} catch (const std::exception& err) {
+			ggg::native_message(std::cerr, "Failed to expire password for _: _", name, err.what());
 		}
-	);
+	}
 }
 
 void
