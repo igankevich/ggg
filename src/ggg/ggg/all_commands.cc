@@ -11,18 +11,20 @@
 #include <ggg/ggg/expunge.hh>
 #include <ggg/ggg/find_entities.hh>
 #include <ggg/ggg/heal.hh>
+#include <ggg/ggg/lock_entity.hh>
 #include <ggg/ggg/remove_entity.hh>
 #include <ggg/ggg/reset_password.hh>
-#include <ggg/ggg/restore_entity.hh>
 #include <ggg/ggg/sanitise.hh>
 #include <ggg/ggg/show_duplicates.hh>
 #include <ggg/ggg/show_entity.hh>
 #include <ggg/ggg/show_expired.hh>
 #include <ggg/ggg/show_groups.hh>
 #include <ggg/ggg/show_help.hh>
+#include <ggg/ggg/show_locked.hh>
 #include <ggg/ggg/show_members.hh>
 #include <ggg/ggg/show_version.hh>
 #include <ggg/ggg/test_lock.hh>
+#include <ggg/ggg/unlock_entity.hh>
 
 #define MAKE_COMMAND(name, type) \
 	{name, [](){ return ::ggg::command_ptr(new ::ggg::type); }}
@@ -36,11 +38,12 @@ namespace {
 		MAKE_COMMAND("remove", Remove_entity),
 		MAKE_COMMAND("rm", Remove_entity),
 		MAKE_COMMAND("expire", Expire_entity),
-		MAKE_COMMAND("lock", Expire_entity),
-		MAKE_COMMAND("deactivate", Expire_entity),
-		MAKE_COMMAND("restore", Restore_entity),
-		MAKE_COMMAND("activate", Restore_entity),
-		MAKE_COMMAND("unlock", Restore_entity),
+		MAKE_COMMAND("lock", Lock_entity),
+		MAKE_COMMAND("suspend", Lock_entity),
+		MAKE_COMMAND("deactivate", Lock_entity),
+		MAKE_COMMAND("unlock", Unlock_entity),
+		MAKE_COMMAND("resume", Unlock_entity),
+		MAKE_COMMAND("activate", Unlock_entity),
 		MAKE_COMMAND("reset", Reset_password),
 		MAKE_COMMAND("duplicates", Show_duplicates),
 		MAKE_COMMAND("edit", Edit_entity),
@@ -61,7 +64,8 @@ namespace {
 		MAKE_COMMAND("search", Find_entities),
 		MAKE_COMMAND("groups", Show_groups),
 		MAKE_COMMAND("expired", Show_expired),
-		MAKE_COMMAND("locked", Show_expired),
+		MAKE_COMMAND("locked", Show_locked),
+		MAKE_COMMAND("inactive", Show_locked),
 		MAKE_COMMAND("sanitise", Sanitise),
 		MAKE_COMMAND("sanitize", Sanitise),
 		MAKE_COMMAND("clean", Sanitise),

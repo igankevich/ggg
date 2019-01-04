@@ -14,7 +14,7 @@ namespace ggg {
 		system_error=PAM_SYSTEM_ERR,
 		buf_error=PAM_BUF_ERR,
 		permission_denied=PAM_PERM_DENIED,
-		auth_error=PAM_AUTH_ERR,
+		authentication_error=PAM_AUTH_ERR,
 		insufficient_credentials=PAM_CRED_INSUFFICIENT,
 		authinfo_unavail=PAM_AUTHINFO_UNAVAIL,
 		unknown_user=PAM_USER_UNKNOWN,

@@ -18,6 +18,9 @@
 
 namespace ggg {
 
+	constexpr const sys::uid_type bad_uid = -1;
+	constexpr const sys::gid_type bad_gid = -1;
+
 	class form_field;
 
 	template <class Ch>

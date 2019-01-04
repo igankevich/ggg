@@ -23,32 +23,15 @@ ggg::Show_groups::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Show_groups::execute() {
-	file_lock lock;
-	GGG g(GGG_ENT_ROOT, this->verbose());
-	const auto& h = g.hierarchy();
-	int nerrors = 0;
+	Database db(GGG_DATABASE_PATH);
 	for (const std::string& a : this->args()) {
-		auto it0 = h.find_by_name(a.data());
-		if (it0 == h.end()) {
-			++nerrors;
-			native_message(std::cerr, "Unable to find _.", a);
-		} else {
-			const entity& ent = *it0;
-			auto groups = h.find_supplementary_groups(ent.name());
-			for (const std::string& g : groups) {
-				auto it1 = h.find_by_name(g.data());
-				if (it1 == h.end()) {
-					++nerrors;
-					native_message(std::cerr, "Unable to find _.", g);
-				} else {
-					this->_result.insert(*it1);
-				}
-			}
+		auto rstr = db.find_parent_entities(a.data());
+		user_iterator first(rstr), last;
+		while (first != last) {
+			this->_result.insert(*first);
+			++first;
 		}
 	}
 	Show_base::execute();
-	if (nerrors > 0) {
-		throw quiet_error();
-	}
 }
 

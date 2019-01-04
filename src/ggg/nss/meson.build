@@ -5,7 +5,7 @@ nss_src = files([
 	'hierarchy_instance.cc'
 ])
 
-libnss_hierarchy = shared_library(
+libnss_ggg = shared_library(
 	'nss_' + module_name,
 	sources: nss_src,
 	include_directories: inc,

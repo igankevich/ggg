@@ -64,19 +64,13 @@ ggg::Expunge::execute() {
 void
 ggg::Expunge::find_expired_entities() {
 	this->_uids.clear();
-	file_lock lock;
-	GGG g(GGG_ENT_ROOT, this->verbose());
-	const auto& h = g.hierarchy();
-	for (const account& acc : g.accounts()) {
-		if (acc.has_expired()) {
-			std::string login = acc.login();
-			auto it = h.find_by_name(login.data());
-			if (it == h.end()) {
-				native_message(std::cerr, "Unable to find _.", login);
-			} else {
-				this->_uids.insert(it->id());
-			}
-		}
+	Database db(GGG_DATABASE_PATH);
+	auto rstr = db.expired_ids();
+	sqlite::cstream cstr(rstr);
+	while (rstr >> cstr) {
+		sys::uid_type id = bad_uid;
+		cstr >> id;
+		this->_uids.insert(id);
 	}
 }
 

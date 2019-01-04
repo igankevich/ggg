@@ -24,29 +24,14 @@ ggg::Show_members::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Show_members::execute() {
-	file_lock lock;
-	GGG g(GGG_ENT_ROOT, this->verbose());
-	const auto& h = g.hierarchy();
-	int nerrors = 0;
+	Database db(GGG_DATABASE_PATH);
 	for (const std::string& a : this->args()) {
-		auto it0 = h.find_group_by_name(a.data());
-		if (it0 == h.group_end()) {
-			++nerrors;
-			native_message(std::cerr, "Unable to find _.", a);
-		} else {
-			for (const std::string& m : it0->members()) {
-				auto it = h.find_by_name(m.data());
-				if (it == h.end()) {
-					++nerrors;
-					native_message(std::cerr, "Unable to find _.", m);
-				} else {
-					this->_result.insert(*it);
-				}
-			}
+		auto rstr = db.find_child_entities(a.data());
+		user_iterator first(rstr), last;
+		while (first != last) {
+			this->_result.insert(*first);
+			++first;
 		}
 	}
 	Show_base::execute();
-	if (nerrors > 0) {
-		throw quiet_error();
-	}
 }

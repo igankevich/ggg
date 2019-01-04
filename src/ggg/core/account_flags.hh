@@ -7,7 +7,7 @@
 namespace ggg {
 
 	enum account_flags: uint64_t {
-		recruiter = 1,
+		suspended = 1,
 		password_has_expired = 2
 	};
 

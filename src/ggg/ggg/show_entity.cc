@@ -92,8 +92,8 @@ namespace {
 		put_days(out, acc.max_inactive());
 		out << '\n';
 		std::vector<std::string> flags;
-		if (acc.is_recruiter()) {
-			flags.push_back("RECRUITER");
+		if (acc.is_active()) {
+			flags.push_back("ACTIVE");
 		}
 		if (flags.empty()) {
 			flags.push_back("-");

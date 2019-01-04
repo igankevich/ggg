@@ -97,6 +97,7 @@ register_user(GtkButton*, gpointer) {
 		file_lock lock;
 		GGG g(GGG_ENT_ROOT, true);
 		lock.unlock();
+		/*
 		bool has_uid = ent.has_id();
 		bool has_gid = ent.has_gid();
 		if (!has_uid || !has_gid) {
@@ -108,10 +109,11 @@ register_user(GtkButton*, gpointer) {
 				ent.set_gid(id);
 			}
 		}
+		*/
 		{
 			file_lock lock(true);
 			acc.origin(origin);
-			g.add(ent, acc);
+			g.add(ent);
 		}
 		show_message_box(ggg::native("Registered successfully!"), GTK_MESSAGE_INFO);
 		for (GtkWidget* entry : all_entries) {

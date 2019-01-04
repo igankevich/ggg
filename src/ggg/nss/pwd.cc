@@ -5,7 +5,6 @@ using ggg::database;
 
 namespace {
 
-	typedef sqlite::rstream_iterator<ggg::entity> user_iterator;
 	ggg::Database::row_stream_t rstr;
 	ggg::entity current;
 
@@ -83,7 +82,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, uid)(
 	try {
 		ggg::Database db(GGG_DATABASE_PATH);
 		auto rstr = db.find_user(uid);
-		user_iterator first(rstr), last;
+		ggg::user_iterator first(rstr), last;
 		if (first != last) {
 			if (buflen < buffer_size(*first)) {
 				ret = NSS_STATUS_TRYAGAIN;
@@ -115,7 +114,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, nam)(
 	try {
 		ggg::Database db(GGG_DATABASE_PATH);
 		auto rstr = db.find_user(name);
-		user_iterator first(rstr), last;
+		ggg::user_iterator first(rstr), last;
 		if (first != last) {
 			if (buflen < buffer_size(*first)) {
 				ret = NSS_STATUS_TRYAGAIN;

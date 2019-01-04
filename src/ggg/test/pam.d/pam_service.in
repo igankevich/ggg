@@ -1,0 +1,5 @@
+#%PAM-1.0
+auth      required  @lib@ debug entropy=0
+account   required  @lib@ debug entropy=0
+password  required  @lib@ debug entropy=0
+session   optional  @lib@ debug entropy=0

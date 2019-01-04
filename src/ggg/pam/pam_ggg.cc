@@ -16,12 +16,11 @@
 
 #include <unistdx/base/check>
 
-#include "pam_handle.hh"
 #include <ggg/config.hh>
 #include <ggg/core/account.hh>
-#include <ggg/core/lock.hh>
-#include <ggg/ctl/account_ctl.hh>
+#include <ggg/core/database.hh>
 #include <ggg/ctl/password.hh>
+#include <ggg/pam/pam_handle.hh>
 #include <ggg/sec/secure_string.hh>
 
 using ggg::throw_pam_error;
@@ -53,19 +52,13 @@ namespace {
 	}
 
 	ggg::account
-	find_account(ggg::account_ctl& all_accounts, const char* user) {
-		ggg::file_lock lock;
-		auto result = all_accounts.find(user);
-		if (result == all_accounts.end()) {
+	find_account(ggg::Database& db, const char* user) {
+		auto rstr = db.find_account(user);
+		ggg::account_iterator first(rstr), last;
+		if (first == last) {
 			throw_pam_error(ggg::pam_errc::unknown_user);
 		}
-		return *result;
-	}
-
-	inline void
-	update_account(ggg::account_ctl& all_accounts, const ggg::account& acc) {
-		ggg::file_lock lock(true);
-		all_accounts.update_password(acc);
+		return *first;
 	}
 
 	void
@@ -93,18 +86,18 @@ int pam_sm_authenticate(
 	try {
 		const char* user = pamh.get_user();
 		pamh.debug("authenticating user \"%s\"", user);
-		const char* password = pamh.get_password(pam_errc::auth_error);
-		ggg::account_ctl all_accounts;
-		ggg::account acc = find_account(all_accounts, user);
-		all_accounts.clear();
+		const char* password = pamh.get_password(pam_errc::authentication_error);
+		ggg::Database db(GGG_DATABASE_PATH);
+		ggg::account acc = find_account(db, user);
+		db.close();
 		check_password(password, acc);
 		pamh.set_account(acc);
 		pamh.debug("successfully authenticated user \"%s\"", user);
 		ret = pam_errc::success;
 	} catch (const std::system_error& e) {
-		ret = pamh.handle_error(e, pam_errc::auth_error);
+		ret = pamh.handle_error(e, pam_errc::authentication_error);
 	} catch (const std::bad_alloc& e) {
-		ret = pam_errc::auth_error;
+		ret = pam_errc::authentication_error;
 		pam_syslog(pamh, LOG_CRIT, "memory allocation error");
 	}
 	return std::make_error_condition(ret).value();
@@ -127,10 +120,9 @@ int pam_sm_acct_mgmt(
 		try {
 			acc = pamh.get_account();
 		} catch (const std::system_error& err) {
-			ggg::account_ctl all_accounts;
-			other = find_account(all_accounts, user);
+			ggg::Database db(GGG_DATABASE_PATH);
+			other = find_account(db, user);
 			acc = &other;
-			all_accounts.clear();
 		}
 		const ggg::account::time_point now = ggg::account::clock_type::now();
 		if (acc->has_expired(now)) {
@@ -175,9 +167,8 @@ int pam_sm_chauthtok(
 			pamh.set_password_type("GGG");
 			const char* user = pamh.get_user();
 			pamh.debug("changing password for user \"%s\"", user);
-			ggg::account_ctl all_accounts;
-			ggg::account acc = find_account(all_accounts, user);
-			all_accounts.clear();
+			ggg::Database db(GGG_DATABASE_PATH, false);
+			ggg::account acc = find_account(db, user);
 			const ggg::account::time_point now = ggg::account::clock_type::now();
 			if (acc.has_expired(now)) {
 				pamh.debug(
@@ -215,7 +206,7 @@ int pam_sm_chauthtok(
 				)
 			);
 			acc.set_password(encrypted);
-			update_account(all_accounts, acc);
+			db.set_password(acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = pam_errc::success;
 		} catch (const std::system_error& e) {

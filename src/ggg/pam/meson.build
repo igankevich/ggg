@@ -5,16 +5,24 @@ pam_src = files([
 	'conversation.cc',
 ]) + forms_src
 
-pam_ggg = shared_library(
-	'pam_' + module_name,
+ggg_pam_deps = [pam, unistdx, ggg_core, libcrypt, zxcvbn]
+
+ggg_pam_lib = shared_library(
+	'pam_ggg',
 	sources: pam_src,
 	include_directories: inc,
-	dependencies: [pam, unistdx, ggg_core, libcrypt, zxcvbn],
+	dependencies: ggg_pam_deps
+)
+
+ggg_pam = declare_dependency(
+	link_with: [ggg_pam_lib],
+	include_directories: inc,
+	dependencies: ggg_pam_deps
 )
 
 meson.add_install_script(
 	join_paths(meson.source_root(), 'scripts', 'install-pam-ggg'),
-	join_paths(meson.current_build_dir(), pam_ggg.full_path()),
+	join_paths(meson.current_build_dir(), ggg_pam_lib.full_path()),
 	join_paths(get_option('libdir'), 'security'),
 	'pam_' + module_name + '.so'
 )

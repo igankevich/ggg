@@ -43,7 +43,7 @@ const char*
 ggg::pam_handle::get_user() const {
 	const char* user = nullptr;
 	if (pam_get_user(*this, &user, nullptr) != PAM_SUCCESS) {
-		throw_pam_error(pam_errc::auth_error);
+		throw_pam_error(pam_errc::authentication_error);
 	}
 	return user;
 }

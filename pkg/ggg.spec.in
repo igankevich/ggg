@@ -20,6 +20,7 @@ BuildRequires: libacl-devel
 BuildRequires: meson
 BuildRequires: nss_wrapper
 BuildRequires: pam-devel
+BuildRequires: pam_wrapper
 BuildRequires: unistdx-devel >= 0.4.6
 BuildRequires: zxcvbn-c-devel
 

@@ -10,15 +10,10 @@
 
 void
 ggg::Expire_entity::execute()  {
-	file_lock lock(true);
-	GGG g(GGG_ENT_ROOT, this->verbose());
-	std::for_each(
-		this->args_begin(),
-		this->args_end(),
-		[&] (const std::string& user) {
-			g.expire(user);
-		}
-	);
+	Database db(GGG_DATABASE_PATH, false);
+	for (const auto& name : this->args()) {
+		db.expire(name.data());
+	}
 }
 
 void

@@ -1,21 +1,13 @@
-#include "show_expired.hh"
+#include <ggg/ggg/show_locked.hh>
 
-#include <algorithm>
 #include <iostream>
-#include <iterator>
-#include <set>
-#include <string>
 
 #include <ggg/config.hh>
-#include <ggg/core/lock.hh>
+#include <ggg/core/database.hh>
 #include <ggg/core/native.hh>
-#include <ggg/ctl/ggg.hh>
-
-#include "align_columns.hh"
-#include "object_traits.hh"
 
 void
-ggg::Show_expired::parse_arguments(int argc, char* argv[]) {
+ggg::Show_locked::parse_arguments(int argc, char* argv[]) {
 	Show_base::parse_arguments(argc, argv);
 	if (!this->_args.empty()) {
 		throw std::invalid_argument("please, do not specify entity names");
@@ -23,9 +15,9 @@ ggg::Show_expired::parse_arguments(int argc, char* argv[]) {
 }
 
 void
-ggg::Show_expired::execute() {
+ggg::Show_locked::execute() {
 	Database db(GGG_DATABASE_PATH);
-	auto rstr = db.expired_entities();
+	auto rstr = db.locked_entities();
 	user_iterator first(rstr), last;
 	while (first != last) {
 		this->_result.insert(*first);
@@ -33,3 +25,4 @@ ggg::Show_expired::execute() {
 	}
 	Show_base::execute();
 }
+

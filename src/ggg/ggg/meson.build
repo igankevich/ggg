@@ -11,9 +11,9 @@ ggg_src = files([
 	'find_entities.cc',
 	'ggg_main.cc',
 	'heal.cc',
+	'lock_entity.cc',
 	'remove_entity.cc',
 	'reset_password.cc',
-	'restore_entity.cc',
 	'sanitise.cc',
 	'show_base.cc',
 	'show_duplicates.cc',
@@ -21,10 +21,12 @@ ggg_src = files([
 	'show_expired.cc',
 	'show_groups.cc',
 	'show_help.cc',
+	'show_locked.cc',
 	'show_members.cc',
 	'show_version.cc',
 	'test_lock.cc',
 	'tmpfile.cc',
+	'unlock_entity.cc',
 ])
 
 executable(

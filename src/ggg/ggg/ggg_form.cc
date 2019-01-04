@@ -126,6 +126,7 @@ namespace ggg {
 				file_lock lock;
 				GGG g(GGG_ENT_ROOT, debug);
 				lock.unlock();
+				/*
 				bool has_uid = ent.has_id();
 				bool has_gid = ent.has_gid();
 				if (!has_uid || !has_gid) {
@@ -137,10 +138,11 @@ namespace ggg {
 						ent.set_gid(id);
 					}
 				}
+				*/
 				{
 					file_lock lock(true);
 					acc.origin(origin);
-					g.add(ent, acc);
+					g.add(ent);
 				}
 				success = true;
 			} catch (const std::system_error& err) {

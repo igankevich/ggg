@@ -288,8 +288,8 @@ namespace ggg {
 		}
 
 		inline bool
-		is_recruiter() const noexcept {
-			return this->_flags & account_flags::recruiter;
+		is_active() const noexcept {
+			return this->_flags & account_flags::suspended;
 		}
 
 		inline void

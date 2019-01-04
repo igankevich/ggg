@@ -47,55 +47,60 @@ test(
 	suite: 'unit'
 )
 
-if not etc.startswith('/')
-
+if nss_wrapper.found() and not etc.startswith('/')
 	ld_preload = ''
 	if get_option('sanitize') == 'address'
 		ld_preload += 'LD_PRELOAD=libasan.so.3 libnss_wrapper.so'
 	elif get_option('sanitize') == 'none'
 		ld_preload += 'LD_PRELOAD=libnss_wrapper.so'
 	endif
-	
-	test(
-		'pwd-test',
-		executable(
-			'pwd-test',
-			sources: ['pwd_test.cc'],
-			include_directories: inc,
-			dependencies: [unistdx, gtest, ggg_core],
-		),
-		env: [
-			ld_preload,
-			'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy.full_path(),
-			'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
-			'NSS_WRAPPER_DEBUGLEVEL=3',
-			'NSS_WRAPPER_PASSWD=passwd',
-			'NSS_WRAPPER_GROUP=group',
-		],
-		suite: 'unit',
-		is_parallel: false
-	)
-	
-	test(
-		'grp-test',
-		executable(
-			'grp-test',
-			sources: ['grp_test.cc'],
-			include_directories: inc,
-			dependencies: [unistdx, gtest, ggg_core],
-		),
-		env: [
-			ld_preload,
-			'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_hierarchy.full_path(),
-			'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
-			'NSS_WRAPPER_DEBUGLEVEL=3',
-			'NSS_WRAPPER_PASSWD=passwd',
-			'NSS_WRAPPER_GROUP=group',
-		],
-		suite: 'unit',
-		is_parallel: false
-	)
+	foreach service : ['pwd', 'grp']
+		test(
+			'-'.join(['nss', service, 'test']),
+			executable(
+				service + '-test',
+				sources: [service + '_test.cc'],
+				include_directories: inc,
+				dependencies: [unistdx, gtest, ggg_core],
+			),
+			env: [
+				ld_preload,
+				'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_ggg.full_path(),
+				'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
+				'NSS_WRAPPER_DEBUGLEVEL=3',
+				'NSS_WRAPPER_PASSWD=passwd',
+				'NSS_WRAPPER_GROUP=group',
+			],
+			suite: 'unit',
+			is_parallel: false
+		)
+	endforeach
+endif
 
+if pam_wrapper.found() and not etc.startswith('/')
+	ld_preload_items = ['libpam_wrapper.so']
+	if get_option('sanitize') == 'address'
+		ld_preload_items = ['libasan.so.3'] + ld_preload_items
+	endif
+	ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
+	test(
+		'pam-test',
+		executable(
+			'pam-test',
+			sources: ['pam_test.cc'],
+			include_directories: inc,
+			dependencies: [unistdx, gtest, ggg_pam]
+		),
+		env: [
+			ld_preload,
+			'PAM_WRAPPER=1',
+			'PAM_WRAPPER_DEBUGLEVEL=3',
+			'PAM_WRAPPER_SERVICE_DIR=' + join_paths(meson.current_build_dir(), 'pam.d')
+		],
+		suite: 'unit',
+		is_parallel: false
+	)
+	subdir('pam.d')
 endif
 
 test(
@@ -104,8 +109,7 @@ test(
 		'conversation-test',
 		sources: ['conversation_test.cc'],
 		include_directories: inc,
-		link_with: pam_ggg,
-		dependencies: [unistdx, gtest, libcrypt, pam, ggg_core]
+		dependencies: [unistdx, gtest, libcrypt, pam, ggg_core, ggg_pam]
 	),
 	suite: 'unit'
 )
@@ -116,8 +120,7 @@ test(
 		'form-field-test',
 		sources: ['form_field_test.cc'],
 		include_directories: inc,
-		link_with: pam_ggg,
-		dependencies: [unistdx, gtest, pam, libcrypt, ggg_core]
+		dependencies: [unistdx, gtest, pam, libcrypt, ggg_core, ggg_pam]
 	),
 	suite: 'unit'
 )

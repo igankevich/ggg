@@ -109,8 +109,6 @@ void
 ggg::Add_entity
 ::add_entities(GGG& g, sys::path filename) {
 	file_lock lock(true);
-	const sys::uid_type uid = sys::this_process::user();
-	sys::path acc_origin = g.account_origin(uid);
 	typedef Object_traits<entity> traits_type;
 	std::vector<entity> ents;
 	read_objects<entity>(
@@ -123,9 +121,7 @@ ggg::Add_entity
 	for (entity& ent : ents) {
 		try {
 			ent.origin(this->get_filename(ent, g));
-			account acc(ent.name().data());
-			acc.origin(acc_origin);
-			g.add(ent, acc);
+			g.add(ent);
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
 			++nerrors;
@@ -148,13 +144,14 @@ ggg::Add_entity
 			if (uid == 0) {
 				filename = "entities";
 			} else {
-				auto result = g.hierarchy().find_by_uid(uid);
-				if (result == g.hierarchy().end()) {
+				auto rstr = g.find_user(uid);
+				user_iterator first(rstr), last;
+				if (first == last) {
 					throw std::runtime_error(
 						"the user is not allowed to add new entities"
 					);
 				}
-				filename = sys::path(result->name(), "entities");
+				filename = sys::path(first->name(), "entities");
 			}
 		} else {
 			filename.append(this->_path);

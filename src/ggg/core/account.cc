@@ -420,6 +420,7 @@ ggg::operator>>(sqlite::rstream& in, account& rhs) {
 		uint64_t flags = 0;
 		cstr >> rhs._login >> rhs._password >> rhs._expire >> flags;
 		rhs._flags = static_cast<account_flags>(flags);
+		rhs.parse_password();
 	}
 	return in;
 }

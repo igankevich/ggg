@@ -18,7 +18,7 @@ CREATE TABLE entities (
 	shell TEXT,
 	password TEXT,
 	expiration_date INTEGER,
-	flags INTEGER
+	flags INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE UNIQUE INDEX entities_name_index ON entities (name);
@@ -76,16 +76,46 @@ SELECT id,name,description,home,shell
 FROM entities
 )";
 
+const char* sql_update_user_by_id = R"(
+UPDATE entities
+SET name=?,description=?,home=?,shell=?
+WHERE id = ?
+)";
+
 const char* sql_insert_user = R"(
 INSERT INTO entities
 	(id,name,description,home,shell)
 VALUES (?,?,?,?,?)
 )";
 
+const char* sql_insert_user_without_id = R"(
+INSERT INTO entities
+	(name,description,home,shell)
+VALUES (?,?,?,?)
+)";
+
 const char* sql_select_id_by_name = R"(
 SELECT id
 FROM entities
 WHERE name = ?
+)";
+
+const char* sql_select_users_by_multiple_names = R"(
+SELECT id,name,description,home,shell
+FROM entities
+WHERE name IN (
+)";
+
+const char* sql_select_expired_entities = R"(
+SELECT id,name,description,home,shell
+FROM entities
+WHERE expiration_date IS NOT NULL
+  AND 0 < expiration_date
+  AND expiration_date < strftime('%s', 'now')
+)";
+
+const char* sql_delete_entity_by_name = R"(
+DELETE FROM entities WHERE name = ?
 )";
 
 const char* sql_select_group_by_id = R"(
@@ -186,6 +216,64 @@ FROM entities
 WHERE id IN (SELECT id FROM unique_ids)
 )";
 
+const char* sql_select_parent_entities_by_name = R"(
+WITH RECURSIVE
+	-- find entity id by entity name
+	entity_ids(id) AS (
+		SELECT id FROM entities WHERE name = $name
+	),
+	-- find all entities higher in the hierarchy
+	hierarchy_path(child_id,parent_id,depth) AS (
+		SELECT child_id,parent_id,1 FROM hierarchy
+		WHERE child_id IN (SELECT id FROM entity_ids)
+		UNION ALL
+		SELECT hierarchy.child_id, hierarchy.parent_id, hierarchy_path.depth+1
+		FROM hierarchy_path, hierarchy
+		WHERE hierarchy_path.parent_id = hierarchy.child_id
+		  AND hierarchy_path.child_id <> hierarchy_path.parent_id
+		  AND hierarchy_path.depth < $depth
+	),
+	-- remove duplicate entities (include this entity in case there is no
+	-- entity higher in the hierarchy)
+	unique_hierarchy_path(id) AS (
+		SELECT id FROM entity_ids
+		UNION
+		SELECT DISTINCT child_id FROM hierarchy_path
+		UNION
+		SELECT DISTINCT parent_id FROM hierarchy_path
+	),
+	-- find all ties between entities in the hiearachy and other entities
+	ties_subgraph(child_id,parent_id,depth) AS (
+		SELECT child_id,parent_id,1
+		FROM ties
+		WHERE child_id IN (SELECT id FROM unique_hierarchy_path)
+		UNION ALL
+		SELECT ties.child_id, ties.parent_id, ties_subgraph.depth+1
+		FROM ties_subgraph, ties
+		WHERE ties_subgraph.parent_id = ties.child_id
+		  AND ties_subgraph.child_id <> ties_subgraph.parent_id
+		  AND ties_subgraph.depth < $depth
+	),
+	-- remove duplicate entities
+	unique_ids(id) AS (
+		SELECT DISTINCT child_id FROM hierarchy_path
+		UNION
+		SELECT DISTINCT parent_id FROM hierarchy_path
+		UNION
+		SELECT DISTINCT child_id FROM ties_subgraph
+		UNION
+		SELECT DISTINCT parent_id FROM ties_subgraph
+	),
+	clean_ids(id) AS (
+		SELECT id
+		FROM unique_ids
+		WHERE id NOT IN (SELECT id FROM entity_ids)
+	)
+SELECT id,name,description
+FROM entities
+WHERE id IN (SELECT id FROM clean_ids)
+)";
+
 const char* sql_select_all_group_members = R"(
 WITH RECURSIVE
 	hierarchy_path(child_id,parent_id,depth,initial_id) AS (
@@ -248,6 +336,12 @@ FROM entities
 WHERE name = ?
 )";
 
+const char* sql_select_accounts_by_multiple_names = R"(
+SELECT name,password,expiration_date,flags
+FROM entities
+WHERE name IN (
+)";
+
 const char* sql_select_all_accounts = R"(
 SELECT name,password,expiration_date,flags
 FROM entities
@@ -257,6 +351,52 @@ const char* sql_update_account_by_name = R"(
 UPDATE entities
 SET password=?,expiration_date=?,flags=?
 WHERE name = ?
+)";
+
+const char* sql_expire_account_by_name = R"(
+UPDATE entities
+SET expiration_date=strftime('%s', 'now')-1
+WHERE name = ?
+)";
+
+const char* sql_set_password_by_name = R"(
+UPDATE entities
+SET password=$password,flags=flags&(~$flag)
+WHERE name = $name
+)";
+
+const char* sql_set_flag_by_name = R"(
+UPDATE entities
+SET flags = flags | $flag
+WHERE name = $name
+)";
+
+const char* sql_unset_flag_by_name = R"(
+UPDATE entities
+SET flags = flags & (~$flag)
+WHERE name = $name
+)";
+
+const char* sql_select_entities_by_flag = R"(
+SELECT id,name,description,home,shell
+FROM entities
+WHERE (flags & $flag) = $value
+)";
+
+const char* sql_select_expired_ids = R"(
+SELECT id
+FROM entities
+WHERE expiration_date IS NOT NULL
+  AND 0 < expiration_date
+  AND expiration_date < strftime('%s', 'now')
+)";
+
+const char* sql_select_expired_names = R"(
+SELECT name
+FROM entities
+WHERE expiration_date IS NOT NULL
+  AND 0 < expiration_date
+  AND expiration_date < strftime('%s', 'now')
 )";
 
 	struct Tie {
@@ -347,6 +487,23 @@ ggg::Database::find_group(const char* name, ggg::group& result) {
 	return found && !rstr.fail() && !rstr.bad();
 }
 
+auto
+ggg::Database::find_parent_entities(const char* name) -> row_stream_t {
+	return this->_db.prepare(
+		sql_select_parent_entities_by_name,
+		name,
+		GGG_MAX_DEPTH
+	);
+}
+
+auto
+ggg::Database::find_child_entities(const char* name) -> row_stream_t {
+	return this->_db.prepare(
+		sql_select_group_by_name,
+		name,
+		GGG_MAX_DEPTH
+	);
+}
 
 auto
 ggg::Database::groups() -> group_container_t {
@@ -382,19 +539,39 @@ ggg::Database::insert(const entity& ent) {
 	if (!ent.has_valid_name()) {
 		throw std::invalid_argument("bad name");
 	}
-//	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {
-//		if (pw->pw_uid < GGG_MIN_UID || pw->pw_gid < GGG_MIN_GID) {
-//			throw std::invalid_argument("conflicting system user");
-//		}
-//	}
-	this->_db.execute(
-		sql_insert_user,
-		ent.id(),
-		ent.name(),
-		ent.real_name(),
-		ent.home().empty() ? nullptr : ent.home().data(),
-		ent.shell().empty() ? nullptr : ent.shell().data()
-	);
+	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {
+		if (pw->pw_uid < GGG_MIN_UID || pw->pw_gid < GGG_MIN_GID) {
+			throw std::invalid_argument("conflicting system user");
+		}
+	}
+	auto home = ent.home().empty() ? nullptr : ent.home().data();
+	auto shell = ent.shell().empty() ? nullptr : ent.shell().data();
+	if (ent.has_id()) {
+		this->_db.execute(
+			sql_insert_user,
+			ent.id(),
+			ent.name(),
+			ent.real_name(),
+			home,
+			shell
+		);
+	} else {
+		this->_db.execute(
+			sql_insert_user_without_id,
+			ent.name(),
+			ent.real_name(),
+			home,
+			shell
+		);
+	}
+}
+
+void
+ggg::Database::erase(const char* name) {
+	this->_db.execute(sql_delete_entity_by_name, name);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("erase: bad entity");
+	}
 }
 
 void
@@ -404,13 +581,13 @@ ggg::Database::tie(sys::uid_type uid, sys::gid_type gid) {
 
 sys::uid_type
 ggg::Database::find_id(const char* name) {
-	int64_t id = -1;
+	sys::uid_type id = -1;
 	auto rstr = this->_db.prepare(sql_select_id_by_name, name);
 	sqlite::cstream cstr(rstr);
 	if (rstr >> cstr) {
 		cstr >> id;
 	}
-	return static_cast<sys::uid_type>(id);
+	return id;
 }
 
 auto
@@ -464,7 +641,118 @@ ggg::Database::update(const account& acc) {
 		acc.name()
 	);
 	if (this->_db.num_rows_modified() == 0) {
-		std::clog << "bad account: " << acc << std::endl;
+		throw std::invalid_argument("update: bad account");
 	}
+}
+
+void
+ggg::Database::set_password(const account& acc) {
+	typedef std::underlying_type<account_flags>::type int_t;
+	this->_db.execute(
+		sql_set_password_by_name,
+		acc.password().data(),
+		static_cast<int_t>(account_flags::password_has_expired),
+		acc.login().data()
+	);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("set_password: bad account");
+	}
+}
+
+void
+ggg::Database::expire(const char* name) {
+	this->_db.execute(sql_expire_account_by_name, name);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("expire: bad account name");
+	}
+}
+
+void
+ggg::Database::set_flag(const char* name, account_flags flag) {
+	typedef std::underlying_type<account_flags>::type int_t;
+	this->_db.execute(
+		sql_set_flag_by_name,
+		static_cast<int_t>(flag),
+		name
+	);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("set_flag: bad account name");
+	}
+}
+
+void
+ggg::Database::unset_flag(const char* name, account_flags flag) {
+	typedef std::underlying_type<account_flags>::type int_t;
+	this->_db.execute(
+		sql_unset_flag_by_name,
+		static_cast<int_t>(flag),
+		name
+	);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("unset_flag: bad account name");
+	}
+}
+
+std::string
+ggg::Database::select_users_by_names(int n) {
+	std::string sql(sql_select_users_by_multiple_names);
+	for (int i=0; i<n; ++i) {
+		sql += '?';
+		sql += ',';
+	}
+	sql.back() = ')';
+	return sql;
+}
+
+
+std::string
+ggg::Database::select_accounts_by_names(int n) {
+	std::string sql(sql_select_accounts_by_multiple_names);
+	for (int i=0; i<n; ++i) {
+		sql += '?';
+		sql += ',';
+	}
+	sql.back() = ')';
+	return sql;
+}
+
+void
+ggg::Database::update(const entity& ent) {
+	this->_db.execute(
+		sql_update_user_by_id,
+		ent.name(),
+		ent.real_name(),
+		ent.home(),
+		ent.shell(),
+		ent.id()
+	);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("update: bad entity");
+	}
+}
+
+auto
+ggg::Database::expired_entities() -> row_stream_t {
+	return this->_db.prepare(sql_select_expired_entities);
+}
+
+auto
+ggg::Database::expired_ids() -> row_stream_t {
+	return this->_db.prepare(sql_select_expired_ids);
+}
+
+auto
+ggg::Database::expired_names() -> row_stream_t {
+	return this->_db.prepare(sql_select_expired_names);
+}
+
+auto
+ggg::Database::find_entities_by_flag(
+	account_flags flag,
+	bool set
+) -> row_stream_t {
+	typedef std::underlying_type<account_flags>::type int_t;
+	int_t v = static_cast<int_t>(flag);
+	return this->_db.prepare(sql_select_entities_by_flag, v, set ? v : 0);
 }
 
