@@ -1,13 +1,27 @@
 option(
-	'sanitize',
-	type: 'combo',
-	choices: ['address', 'none'],
-	value: 'none'
+	'with_nss',
+	type: 'boolean',
+	value: true,
+	description: 'build NSS module'
 )
 
 option(
-	'gui',
+	'with_pam',
 	type: 'boolean',
 	value: true,
-	description: 'build registration form GUI'
+	description: 'build PAM module'
+)
+
+option(
+	'with_gtk3',
+	type: 'boolean',
+	value: true,
+	description: 'build GTK3 registration form'
+)
+
+option(
+	'with_tests',
+	type: 'boolean',
+	value: true,
+	description: 'build unit tests'
 )

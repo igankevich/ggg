@@ -87,7 +87,7 @@ int pam_sm_authenticate(
 		const char* user = pamh.get_user();
 		pamh.debug("authenticating user \"%s\"", user);
 		const char* password = pamh.get_password(pam_errc::authentication_error);
-		ggg::Database db(GGG_DATABASE_PATH);
+		ggg::Database db(GGG_ENTITIES_PATH);
 		ggg::account acc = find_account(db, user);
 		db.close();
 		check_password(password, acc);
@@ -120,7 +120,7 @@ int pam_sm_acct_mgmt(
 		try {
 			acc = pamh.get_account();
 		} catch (const std::system_error& err) {
-			ggg::Database db(GGG_DATABASE_PATH);
+			ggg::Database db(GGG_ENTITIES_PATH);
 			other = find_account(db, user);
 			acc = &other;
 		}
@@ -167,7 +167,7 @@ int pam_sm_chauthtok(
 			pamh.set_password_type("GGG");
 			const char* user = pamh.get_user();
 			pamh.debug("changing password for user \"%s\"", user);
-			ggg::Database db(GGG_DATABASE_PATH, false);
+			ggg::Database db(GGG_ENTITIES_PATH, false);
 			ggg::account acc = find_account(db, user);
 			const ggg::account::time_point now = ggg::account::clock_type::now();
 			if (acc.has_expired(now)) {

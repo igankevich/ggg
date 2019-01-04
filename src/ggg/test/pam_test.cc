@@ -142,7 +142,7 @@ TEST(pam, start_end) {
 }
 
 TEST(pam, authenticate_without_database) {
-	std::remove(GGG_DATABASE_PATH);
+	std::remove(GGG_ENTITIES_PATH);
 	ggg::pam_handle pamh;
 	ggg::conversation conv(default_conversation);
 	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));

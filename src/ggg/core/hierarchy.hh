@@ -49,6 +49,7 @@ namespace ggg {
 	sys::basic_bstream<Ch>&
 	operator<<(sys::basic_bstream<Ch>& out, const entity_pair<Ch>& rhs);
 
+	/// \deprecated
 	template <class Ch>
 	class basic_hierarchy {
 

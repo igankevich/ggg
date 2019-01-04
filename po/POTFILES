@@ -20,8 +20,6 @@ src/ggg/core/group.hh
 src/ggg/core/hierarchy.cc
 src/ggg/core/hierarchy.hh
 src/ggg/core/iacctree.hh
-src/ggg/core/lock.cc
-src/ggg/core/lock.hh
 src/ggg/core/native.cc
 src/ggg/core/native.hh
 src/ggg/core/sets.hh

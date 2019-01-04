@@ -1,4 +1,5 @@
 gtk3 = dependency('gtk+-3.0')
+threads = dependency('threads')
 
 regform_cpp_args = ['-DGTK_DISABLE_DEPRECATED']
 if cpp.has_argument('-Wno-parentheses')

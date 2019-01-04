@@ -1,3 +1,6 @@
+gtest = dependency('gtest', main: true)
+gtest_nomain = dependency('gtest', main: false)
+
 test_src = files([
 	'chroot_environment.cc',
 	'execute_command.cc',
@@ -69,60 +72,69 @@ test(
 	suite: 'unit'
 )
 
-if nss_wrapper.found() and not etc.startswith('/')
-	ld_preload = ''
-	if get_option('sanitize') == 'address'
-		ld_preload += 'LD_PRELOAD=libasan.so.3 libnss_wrapper.so'
-	elif get_option('sanitize') == 'none'
-		ld_preload += 'LD_PRELOAD=libnss_wrapper.so'
+if with_nss
+	nss_wrapper = dependency('nss_wrapper', required: false)
+	if nss_wrapper.found() and not etc.startswith('/')
+		ld_preload = ''
+		if b_sanitize == 'address'
+			ld_preload += 'LD_PRELOAD=libasan.so.3 libnss_wrapper.so'
+		elif b_sanitize == 'none'
+			ld_preload += 'LD_PRELOAD=libnss_wrapper.so'
+		endif
+		foreach service : ['pwd', 'grp']
+			test(
+				'-'.join(['nss', service, 'test']),
+				executable(
+					service + '-test',
+					sources: [service + '_test.cc'],
+					include_directories: inc,
+					dependencies: [unistdx, gtest, ggg_core],
+				),
+				env: [
+					ld_preload,
+					'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_ggg.full_path(),
+					'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
+					'NSS_WRAPPER_DEBUGLEVEL=3',
+					'NSS_WRAPPER_PASSWD=passwd',
+					'NSS_WRAPPER_GROUP=group',
+				],
+				suite: 'unit',
+				is_parallel: false
+			)
+		endforeach
 	endif
-	foreach service : ['pwd', 'grp']
+endif
+
+if with_pam
+	pam_wrapper = dependency('pam_wrapper', required: false)
+	if pam_wrapper.found() and not etc.startswith('/')
+		ld_preload_items = ['libpam_wrapper.so']
+		if b_sanitize == 'address'
+			ld_preload_items = ['libasan.so.3'] + ld_preload_items
+		endif
+		ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
 		test(
-			'-'.join(['nss', service, 'test']),
+			'pam-test',
 			executable(
-				service + '-test',
-				sources: [service + '_test.cc'],
+				'pam-test',
+				sources: ['pam_test.cc'],
 				include_directories: inc,
-				dependencies: [unistdx, gtest, ggg_core],
+				dependencies: [unistdx, gtest, ggg_pam]
 			),
 			env: [
 				ld_preload,
-				'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_ggg.full_path(),
-				'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
-				'NSS_WRAPPER_DEBUGLEVEL=3',
-				'NSS_WRAPPER_PASSWD=passwd',
-				'NSS_WRAPPER_GROUP=group',
+				'PAM_WRAPPER=1',
+				'PAM_WRAPPER_DEBUGLEVEL=3',
+				'PAM_WRAPPER_SERVICE_DIR=' + join_paths(
+					meson.current_build_dir(),
+					'pam.d'
+				)
 			],
 			suite: 'unit',
 			is_parallel: false
 		)
-	endforeach
-endif
-
-if pam_wrapper.found() and not etc.startswith('/')
-	ld_preload_items = ['libpam_wrapper.so']
-	if get_option('sanitize') == 'address'
-		ld_preload_items = ['libasan.so.3'] + ld_preload_items
+		subdir('pam.d')
 	endif
-	ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
-	test(
-		'pam-test',
-		executable(
-			'pam-test',
-			sources: ['pam_test.cc'],
-			include_directories: inc,
-			dependencies: [unistdx, gtest, ggg_pam]
-		),
-		env: [
-			ld_preload,
-			'PAM_WRAPPER=1',
-			'PAM_WRAPPER_DEBUGLEVEL=3',
-			'PAM_WRAPPER_SERVICE_DIR=' + join_paths(meson.current_build_dir(), 'pam.d')
-		],
-		suite: 'unit',
-		is_parallel: false
-	)
-	subdir('pam.d')
 endif
 
 if not etc.startswith('/')

@@ -39,7 +39,7 @@ TEST(CommandsBase, Init) {
 	sys::file_status root(GGG_ROOT);
 	EXPECT_TRUE(root.exists());
 	EXPECT_TRUE(root.is_directory());
-	sys::file_status db(GGG_DATABASE_PATH);
+	sys::file_status db(GGG_ENTITIES_PATH);
 	EXPECT_TRUE(db.exists());
 	EXPECT_TRUE(db.is_regular());
 }

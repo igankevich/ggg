@@ -13,10 +13,21 @@ forms_src = files([
 subdir('core')
 subdir('sec')
 subdir('ctl')
-subdir('nss')
-subdir('pam')
-subdir('ggg')
-if get_option('gui')
+
+if with_nss
+	subdir('nss')
+endif
+
+if with_pam
+	subdir('pam')
+endif
+
+subdir('cli')
+
+if with_gtk3
 	subdir('regform')
 endif
-subdir('test')
+
+if with_tests
+	subdir('test')
+endif

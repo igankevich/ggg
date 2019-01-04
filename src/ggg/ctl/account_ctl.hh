@@ -13,6 +13,7 @@
 
 namespace ggg {
 
+	/// \deprecated
 	class account_ctl {
 
 	public:
