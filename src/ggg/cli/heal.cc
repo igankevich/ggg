@@ -22,13 +22,12 @@ namespace {
 
 	size_t num_errors = 0;
 
-	const sys::file_mode lock_file_mode(0644);
-	const sys::file_mode db_file_mode(0664);
+	sys::file_mode entities_file_mode(0664);
+	sys::file_mode accounts_file_mode(0000);
 
 	sys::gid_type write_gid = ggg::bad_gid;
 	sys::uid_type root_uid = 0;
 	sys::gid_type root_gid = 0;
-
 
 	void
 	change_permissions_priv(
@@ -132,6 +131,27 @@ namespace {
 	}
 
 	void
+	change_owner(
+		const char* filename,
+		sys::uid_type uid,
+		sys::gid_type gid
+	) {
+		try {
+			change_owner(filename, sys::file_status(filename), uid, gid);
+		} catch (const sys::bad_call& err) {
+			++num_errors;
+			ggg::native_sentence(
+				std::cerr,
+				"Failed to change owner of _ to _:_. ",
+				filename,
+				uid,
+				gid
+			);
+			ggg::error_message(std::cerr, err);
+		}
+	}
+
+	void
 	change_acl_priv(
 		const char* filename,
 		ggg::acl::access_control_list& acl,
@@ -140,7 +160,7 @@ namespace {
 		using namespace ggg::acl;
 		access_control_list old_acl(filename, tp);
 		if (old_acl != acl) {
-			ggg::native_message(std::clog, "Changing ACLs of _.", filename);
+			ggg::native_message(std::clog, "Changing access control lists of _.", filename);
 			acl.write(filename, tp);
 		}
 	}
@@ -155,7 +175,7 @@ namespace {
 			change_acl_priv(filename, acl, tp);
 		} catch (const std::exception& err) {
 			++num_errors;
-			ggg::native_sentence(std::cerr, "Failed to change ACLs of _. ", filename);
+			ggg::native_sentence(std::cerr, "Failed to change access control lists of _. ", filename);
 			ggg::error_message(std::cerr, err);
 		}
 	}
@@ -256,7 +276,7 @@ namespace {
 		);
 		{
 			using namespace ggg::acl;
-			access_control_list acl(db_file_mode);
+			access_control_list acl(entities_file_mode);
 			for (sys::gid_type gid : form_entities) {
 				acl.add_group(gid, permission_type::read_write);
 			}
@@ -266,6 +286,41 @@ namespace {
 			acl.add_mask();
 			change_acl(GGG_ENTITIES_PATH, acl, access_acl);
 		}
+		{
+			using namespace ggg::acl;
+			access_control_list acl(accounts_file_mode);
+			for (sys::gid_type gid : form_entities) {
+				acl.add_group(gid, permission_type::read_write);
+			}
+			if (write_gid != ggg::bad_gid) {
+				acl.add_group(write_gid, permission_type::read_write);
+			}
+			acl.add_mask();
+			change_acl(GGG_ACCOUNTS_PATH, acl, access_acl);
+		}
+	}
+
+	void
+	determine_root_user() {
+		root_uid = sys::this_process::user();
+		root_gid = sys::this_process::group();
+		if (root_uid != 0 && root_gid != 0) {
+			accounts_file_mode = sys::file_mode(0660);
+		}
+	}
+
+	void
+	heal_root_directory() {
+		make_directory(sys::path(GGG_ROOT), root_uid, root_gid, 0755);
+		make_directory(sys::path(GGG_ROOT, "reg"), root_uid, root_gid, 0755);
+		change_owner(GGG_ROOT, sys::file_status(GGG_ROOT), root_uid, root_gid);
+		change_permissions(GGG_ROOT, 0755);
+	}
+
+	void
+	heal_database() {
+		change_owner(GGG_ENTITIES_PATH, root_uid, root_gid);
+		change_owner(GGG_ACCOUNTS_PATH, root_uid, root_gid);
 	}
 
 }
@@ -274,24 +329,19 @@ void
 ggg::Heal
 ::execute() {
 	init_locale();
-	#if !defined(NDEBUG)
-	if (std::getenv("GGG_UNPRIVILEDGED")) {
-		root_uid = sys::this_process::user();
-		root_gid = sys::this_process::group();
-	}
-	#endif
-	make_directory(sys::path(GGG_ROOT), root_uid, root_gid, 0755);
-	make_directory(sys::path(GGG_ROOT, "reg"), root_uid, root_gid, 0755);
-	change_owner(GGG_ROOT, sys::file_status(GGG_ROOT), root_uid, root_gid);
-	change_permissions(GGG_ROOT, 0755);
-	ggg::Database db;
+	determine_root_user();
+	heal_root_directory();
+	Database db;
 	try {
-		db.open(GGG_ENTITIES_PATH, false);
+		{ Database(Database::File::Entities, Database::Flag::Read_write); }
+		{ Database(Database::File::Accounts, Database::Flag::Read_write); }
+		db.open(Database::File::All, Database::Flag::Read_write);
 	} catch (const std::exception& err) {
 		++num_errors;
 		native_sentence(std::cerr, "Entities are broken.");
 		error_message(std::cerr, err);
 	}
+	heal_database();
 	write_gid = db.find_id(GGG_WRITE_GROUP);
 	heal_forms(db);
 	if (num_errors > 0) {

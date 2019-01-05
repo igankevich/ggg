@@ -67,6 +67,9 @@ namespace {
 		if (acc.password_has_expired(now)) {
 			status.push_back("PASSWORD_EXPIRED");
 		}
+		if (acc.suspended()) {
+			status.push_back("SUSPENDED");
+		}
 		if (status.empty()) {
 			status.push_back("OK");
 		}
@@ -87,20 +90,6 @@ namespace {
 		out << '\n';
 		out << "Deactivate after: ";
 		put_days(out, acc.max_inactive());
-		out << '\n';
-		std::vector<std::string> flags;
-		if (acc.is_active()) {
-			flags.push_back("ACTIVE");
-		}
-		if (flags.empty()) {
-			flags.push_back("-");
-		}
-		out << "Flags: ";
-		std::copy(
-			flags.begin(),
-			flags.end(),
-			sys::intersperse_iterator<std::string,char>(out, ' ')
-		);
 		out << '\n';
 		out << "Status: ";
 		std::copy(
@@ -153,10 +142,16 @@ ggg::Show_entity::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Show_entity::execute() {
-	Database db(GGG_ENTITIES_PATH);
+	Database db;
 	switch (this->_type) {
-		case Type::Entity: show_entities<entity>(db, this->args()); break;
-		case Type::Account: show_entities<account>(db, this->args()); break;
+		case Type::Entity:
+			db.open(Database::File::Entities);
+			show_entities<entity>(db, this->args());
+			break;
+		case Type::Account:
+			db.open(Database::File::Accounts);
+			show_entities<account>(db, this->args());
+			break;
 	}
 }
 

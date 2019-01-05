@@ -1,4 +1,3 @@
-#include <ggg/config.hh>
 #include <ggg/nss/gr_guard.hh>
 #include <ggg/test/clean_database.hh>
 #include <gtest/gtest.h>

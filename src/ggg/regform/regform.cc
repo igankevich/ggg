@@ -18,7 +18,6 @@
 #include <vector>
 
 #include <ggg/bits/to_bytes.hh>
-#include <ggg/config.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/native.hh>
 #include <ggg/ctl/form.hh>
@@ -90,9 +89,12 @@ register_user(GtkButton*, gpointer) {
 		entity ent;
 		account acc;
 		std::tie(ent, acc) = ::form.make_entity_and_account(all_values);
-		Database db(GGG_ENTITIES_PATH, false);
-		db.insert(ent);
-		db.update(acc);
+		{
+			Database db(Database::File::All, Database::Flag::Read_write);
+			Transaction tr(db);
+			db.insert(ent);
+			db.update(acc);
+		}
 		show_message_box(ggg::native("Registered successfully!"), GTK_MESSAGE_INFO);
 		for (GtkWidget* entry : all_entries) {
 			gtk_entry_set_text(GTK_ENTRY(entry), "");
@@ -362,7 +364,7 @@ void
 load_form() {
 	form.clear();
 	form.set_type(ggg::form_type::graphical);
-	ggg::Database db(GGG_ENTITIES_PATH);
+	ggg::Database db(ggg::Database::File::Entities);
 	auto name = db.find_name(sys::this_process::user());
 	if (name.empty()) {
 		throw std::invalid_argument("unable to find form");

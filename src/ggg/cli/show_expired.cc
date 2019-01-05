@@ -6,7 +6,6 @@
 #include <set>
 #include <string>
 
-#include <ggg/config.hh>
 #include <ggg/core/native.hh>
 #include <ggg/core/database.hh>
 
@@ -20,7 +19,7 @@ ggg::Show_expired::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Show_expired::execute() {
-	Database db(GGG_ENTITIES_PATH);
+	Database db(Database::File::All);
 	auto rstr = db.expired_entities();
 	user_iterator first(rstr), last;
 	while (first != last) {

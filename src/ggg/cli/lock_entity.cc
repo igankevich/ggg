@@ -8,7 +8,7 @@
 
 void
 ggg::Lock_entity::execute()  {
-	Database db(GGG_ENTITIES_PATH, false);
+	Database db(Database::File::Accounts, Database::Flag::Read_write);
 	for (const auto& name : this->args()) {
 		try {
 			db.deactivate(name.data());

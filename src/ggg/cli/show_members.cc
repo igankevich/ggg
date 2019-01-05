@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include <ggg/config.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/native.hh>
 #include <ggg/cli/show_members.hh>
@@ -15,7 +14,7 @@ ggg::Show_members::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Show_members::execute() {
-	Database db(GGG_ENTITIES_PATH);
+	Database db(Database::File::Entities);
 	for (const std::string& a : this->args()) {
 		auto rstr = db.find_child_entities(a.data());
 		user_iterator first(rstr), last;

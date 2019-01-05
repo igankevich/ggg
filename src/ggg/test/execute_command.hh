@@ -11,21 +11,17 @@
 std::pair<sys::process_status,std::string>
 execute_command(const char* cmd);
 
-inline void
-ok(const char* cmdline) {
-	EXPECT_EQ(0, ::system(cmdline));
-}
+#define EXPECT_ZERO(cmdline) \
+	EXPECT_EQ(0, ::system(cmdline))
 
-inline auto
-fail(const char* cmdline) {
-	EXPECT_NE(0, ::system(cmdline));
-}
+#define EXPECT_NON_ZERO(cmdline) \
+	EXPECT_NE(0, ::system(cmdline))
 
-inline void
-output_is(const char* output, const char* cmdline) {
-	auto result = ::execute_command(cmdline);
-	EXPECT_EQ(0, result.first.exit_code());
-	EXPECT_EQ(output, result.second);
-}
+#define EXPECT_OUTPUT(output, cmdline) \
+	{ \
+		auto result = ::execute_command(cmdline); \
+		EXPECT_EQ(0, result.first.exit_code()); \
+		EXPECT_EQ(output, result.second); \
+	}
 
 #endif // vim:filetype=cpp

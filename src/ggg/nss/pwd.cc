@@ -1,5 +1,8 @@
+#include <ggg/config.hh>
 #include <ggg/nss/hierarchy_instance.hh>
 #include <ggg/nss/pwd.hh>
+
+#include <iostream>
 
 using ggg::database;
 
@@ -11,7 +14,7 @@ namespace {
 	inline void
 	init() {
 		if (!database.is_open()) {
-			database.open(GGG_ENTITIES_PATH);
+			database.open(ggg::Database::File::Entities);
 			rstr = database.users();
 			rstr >> current;
 		}
@@ -80,7 +83,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, uid)(
 ) {
 	nss_status ret;
 	try {
-		ggg::Database db(GGG_ENTITIES_PATH);
+		ggg::Database db(ggg::Database::File::Entities);
 		auto rstr = db.find_user(uid);
 		ggg::user_iterator first(rstr), last;
 		if (first != last) {
@@ -112,7 +115,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, nam)(
 ) {
 	nss_status ret;
 	try {
-		ggg::Database db(GGG_ENTITIES_PATH);
+		ggg::Database db(ggg::Database::File::Entities);
 		auto rstr = db.find_user(name);
 		ggg::user_iterator first(rstr), last;
 		if (first != last) {

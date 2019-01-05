@@ -1,7 +1,6 @@
 #include <iostream>
 #include <regex>
 
-#include <ggg/config.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/native.hh>
 #include <ggg/ctl/form.hh>
@@ -120,12 +119,12 @@ namespace ggg {
 				entity ent;
 				account acc;
 				std::tie(ent, acc) = input_entity_and_account(f);
-				Database db(GGG_ENTITIES_PATH, false);
+				Database db(Database::File::All, Database::Flag::Read_write);
+				Transaction tr(db);
 				db.insert(ent);
-				db.update(acc);
+				db.insert(acc);
 				success = true;
 			} catch (const std::system_error& err) {
-				std::clog << "err.what()=" << err.what() << std::endl;
 				success = false;
 				if (std::errc(err.code().value()) ==
 				    std::errc::permission_denied) {
@@ -154,7 +153,7 @@ main() {
 		form f;
 		f.set_type(form_type::console);
 		{
-			Database db(GGG_ENTITIES_PATH);
+			Database db(Database::File::Entities);
 			auto name = db.find_name(sys::this_process::user());
 			if (name.empty()) {
 				throw std::invalid_argument("unable to find form");

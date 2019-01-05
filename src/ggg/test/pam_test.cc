@@ -18,7 +18,7 @@ add_testuser_with_password(Clean_database& db, const char* password_id) {
 		ggg::account::password_prefix(ggg::generate_salt(), password_id, 0)
 	);
 	acc.set_password(encrypted);
-	db.update(acc);
+	db.ggg::Database::insert(acc);
 }
 
 void
@@ -143,6 +143,7 @@ TEST(pam, start_end) {
 
 TEST(pam, authenticate_without_database) {
 	std::remove(GGG_ENTITIES_PATH);
+	std::remove(GGG_ACCOUNTS_PATH);
 	ggg::pam_handle pamh;
 	ggg::conversation conv(default_conversation);
 	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
@@ -166,7 +167,7 @@ TEST(pam, authenticate_testuser_without_password) {
 		ggg::pam::call(::pam_authenticate(pamh, 0));
 	} catch (const std::system_error& err) {
 		EXPECT_EQ(
-			ggg::pam_errc::permission_denied,
+			ggg::pam_errc::unknown_user,
 			ggg::pam_errc(err.code().value())
 		) << err.what();
 	}

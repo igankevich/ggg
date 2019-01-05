@@ -34,6 +34,12 @@ namespace ggg {
 		_pamh(pamh)
 		{}
 
+		inline
+		pam_handle(::pam_handle_t* pamh, int argc, const char** argv):
+		_pamh(pamh) {
+			this->parse_args(argc, argv);
+		}
+
 		inline unsigned int
 		num_rounds() const noexcept {
 			return this->_nrounds;
@@ -87,6 +93,18 @@ namespace ggg {
 
 		pam_errc
 		handle_error(const std::system_error& e, pam_errc def) const;
+
+		inline pam_errc
+		handle_error(const std::exception& e) const {
+			pam_syslog(*this, LOG_ERR, "%s", e.what());
+			return pam_errc::service_error;
+		}
+
+		inline pam_errc
+		handle_error(const std::bad_alloc& e) const {
+			pam_syslog(*this, LOG_CRIT, "memory allocation error");
+			return pam_errc::system_error;
+		}
 
 		template <class ... Args>
 		inline void

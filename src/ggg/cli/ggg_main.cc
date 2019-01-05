@@ -2,7 +2,6 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <ggg/config.hh>
 #include <ggg/core/native.hh>
 #include <ggg/cli/all_commands.hh>
 #include <ggg/cli/quiet_error.hh>

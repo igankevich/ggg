@@ -9,18 +9,15 @@
 
 namespace {
 
-const int64_t schema_version = 1;
+const int64_t entities_schema_version = 1;
 
-const char* sql_schema = R"(
+const char* sql_entities_schema = R"(
 CREATE TABLE entities (
 	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL UNIQUE,
 	description TEXT,
 	home TEXT,
-	shell TEXT,
-	password TEXT,
-	expiration_date INTEGER,
-	flags INTEGER NOT NULL DEFAULT 0
+	shell TEXT
 );
 
 CREATE UNIQUE INDEX entities_name_index ON entities (name);
@@ -59,6 +56,17 @@ CREATE TABLE hierarchy (
 );
 
 CREATE UNIQUE INDEX hierarchy_index ON hierarchy (child_id,parent_id);
+)";
+
+const int64_t accounts_schema_version = 1;
+
+const char* sql_accounts_schema = R"(
+CREATE TABLE accounts (
+	name TEXT NOT NULL PRIMARY KEY,
+	password TEXT,
+	expiration_date INTEGER,
+	flags INTEGER NOT NULL DEFAULT 0
+);
 )";
 
 const char* sql_select_user_by_id = R"(
@@ -121,8 +129,8 @@ WHERE name IN (
 )";
 
 const char* sql_select_expired_entities = R"(
-SELECT id,name,description,home,shell
-FROM entities
+SELECT id,entities.name,description,home,shell
+FROM entities JOIN accounts ON entities.name=accounts.name
 WHERE expiration_date IS NOT NULL
   AND 0 < expiration_date
   AND expiration_date < strftime('%s', 'now')
@@ -404,60 +412,65 @@ INSERT INTO ties (child_id,parent_id) VALUES (?,?)
 
 const char* sql_select_account_by_name = R"(
 SELECT name,password,expiration_date,flags
-FROM entities
+FROM accounts
 WHERE name = ?
 )";
 
 const char* sql_select_accounts_by_multiple_names = R"(
 SELECT name,password,expiration_date,flags
-FROM entities
+FROM accounts
 WHERE name IN (
 )";
 
 const char* sql_select_all_accounts = R"(
 SELECT name,password,expiration_date,flags
-FROM entities
+FROM accounts
+)";
+
+const char* sql_insert_account = R"(
+INSERT INTO accounts (name,password,expiration_date,flags)
+VALUES (?,?,?,?)
 )";
 
 const char* sql_update_account_by_name = R"(
-UPDATE entities
+UPDATE accounts
 SET password=?,expiration_date=?,flags=?
 WHERE name = ?
 )";
 
 const char* sql_expire_account_by_name = R"(
-UPDATE entities
+UPDATE accounts
 SET expiration_date=strftime('%s', 'now')-1
 WHERE name = ?
 )";
 
 const char* sql_set_password_by_name = R"(
-UPDATE entities
+UPDATE accounts
 SET password=$password,flags=flags&(~$flag)
 WHERE name = $name
 )";
 
-const char* sql_set_flag_by_name = R"(
-UPDATE entities
+const char* sql_set_account_flag_by_name = R"(
+UPDATE accounts
 SET flags = flags | $flag
 WHERE name = $name
 )";
 
-const char* sql_unset_flag_by_name = R"(
-UPDATE entities
+const char* sql_unset_account_flag_by_name = R"(
+UPDATE accounts
 SET flags = flags & (~$flag)
 WHERE name = $name
 )";
 
 const char* sql_select_entities_by_flag = R"(
-SELECT id,name,description,home,shell
-FROM entities
+SELECT id,entities.name,description,home,shell
+FROM entities JOIN accounts ON entities.name = accounts.name
 WHERE (flags & $flag) = $value
 )";
 
 const char* sql_select_expired_ids = R"(
 SELECT id
-FROM entities
+FROM entities JOIN accounts ON entities.name = accounts.name
 WHERE expiration_date IS NOT NULL
   AND 0 < expiration_date
   AND expiration_date < strftime('%s', 'now')
@@ -487,23 +500,60 @@ WHERE expiration_date IS NOT NULL
 		return in;
 	}
 
+	struct database_parameters {
+		const char* filename;
+		const char* schema;
+		const int64_t schema_version;
+		const char* name;
+	};
+
+	const database_parameters configurations[] = {
+		{
+			GGG_ENTITIES_PATH,
+			sql_entities_schema,
+			entities_schema_version,
+			"entities"
+		},
+		{
+			GGG_ACCOUNTS_PATH,
+			sql_accounts_schema,
+			accounts_schema_version,
+			"accounts"
+		},
+	};
+
 }
 
 void
-ggg::Database::open(const char* filename, bool read) {
+ggg::Database::open(File file, Flag flag) {
 	this->close();
-	this->_readonly = read;
-	this->_db.open(
-		filename,
-		read
-		? sqlite::open_flag::read_only
-		: (sqlite::open_flag::read_write | sqlite::open_flag::create)
-	);
-	int64_t version = this->_db.user_version();
-	if (version < schema_version) {
-		this->_db.execute(sql_schema);
-		this->_db.user_version(schema_version);
+	if (file == File::All) {
+		this->open(File::Entities, flag);
+		this->attach(File::Accounts, flag);
+	} else {
+		const auto& params = configurations[static_cast<int>(file)];
+		sqlite::open_flag flags = sqlite::open_flag::read_only;
+		if (flag == Flag::Read_write) {
+			flags = sqlite::open_flag::read_write | sqlite::open_flag::create;
+		}
+		this->_db.open(params.filename, flags);
+		int64_t version = this->_db.user_version();
+		if (version < params.schema_version) {
+			if (flag == Flag::Read_only) {
+				throw std::invalid_argument(
+					"unable to update schema of read-only database"
+				);
+			}
+			this->_db.execute(params.schema);
+			this->_db.user_version(params.schema_version);
+		}
 	}
+}
+
+void
+ggg::Database::attach(File file, Flag flag) {
+	const auto& params = configurations[static_cast<int>(file)];
+	this->_db.attach(params.filename, params.name);
 }
 
 auto
@@ -725,6 +775,18 @@ ggg::Database::accounts() -> row_stream_t {
 }
 
 void
+ggg::Database::insert(const account& acc) {
+	typedef std::underlying_type<account_flags>::type int_t;
+	this->_db.execute(
+		sql_insert_account,
+		acc.name(),
+		acc.password().empty() ? nullptr : acc.password().data(),
+		acc.expire(),
+		static_cast<int_t>(acc.flags())
+	);
+}
+
+void
 ggg::Database::update(const account& acc) {
 	typedef std::underlying_type<account_flags>::type int_t;
 	this->_db.execute(
@@ -735,7 +797,7 @@ ggg::Database::update(const account& acc) {
 		acc.name()
 	);
 	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("update: bad account");
+		throw std::invalid_argument("bad account");
 	}
 }
 
@@ -762,28 +824,28 @@ ggg::Database::expire(const char* name) {
 }
 
 void
-ggg::Database::set_flag(const char* name, account_flags flag) {
+ggg::Database::set_account_flag(const char* name, account_flags flag) {
 	typedef std::underlying_type<account_flags>::type int_t;
 	this->_db.execute(
-		sql_set_flag_by_name,
+		sql_set_account_flag_by_name,
 		static_cast<int_t>(flag),
 		name
 	);
 	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("set_flag: bad account name");
+		throw std::invalid_argument("bad account name");
 	}
 }
 
 void
-ggg::Database::unset_flag(const char* name, account_flags flag) {
+ggg::Database::unset_account_flag(const char* name, account_flags flag) {
 	typedef std::underlying_type<account_flags>::type int_t;
 	this->_db.execute(
-		sql_unset_flag_by_name,
+		sql_unset_account_flag_by_name,
 		static_cast<int_t>(flag),
 		name
 	);
 	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("unset_flag: bad account name");
+		throw std::invalid_argument("bad account name");
 	}
 }
 

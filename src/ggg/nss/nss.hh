@@ -2,7 +2,6 @@
 #define NSS_HH
 
 #include <nss.h>
-#include <ggg/config.hh>
 
 #define NSS_MODULE_FUNCTION(module, prefix, db, suffix) \
 	extern "C" \

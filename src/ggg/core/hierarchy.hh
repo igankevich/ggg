@@ -22,10 +22,6 @@
 
 #include <ggg/bits/field_iterator.hh>
 
-#ifndef NDEBUG
-#include <ggg/config.hh>
-#endif
-
 namespace ggg {
 
 	template<class Container, class Pred>

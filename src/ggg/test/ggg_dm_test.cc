@@ -6,8 +6,8 @@
 TEST(DisplayManager, Run) {
 	ASSERT_EQ(0, ::system("rm -rf " GGG_ROOT));
 	ASSERT_EQ(0, ::system("ggg init"));
-	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
-	ok(
+	EXPECT_ZERO("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+	EXPECT_ZERO(
 		R"(echo '
 text:1:First name:^[A-Za-z ]+$
 text:2:Last name:^[A-Za-zА-Яа-я ]+$
@@ -24,8 +24,8 @@ set_secure:account.password:4
 		')"
 		"> " GGG_ROOT "/reg/u1"
 	);
-	ok("ggg init");
-	ok("DESKTOP_SESSION=/bin/env LC_ALL=C ggg-regform u1");
+	EXPECT_ZERO("ggg init");
+	EXPECT_ZERO("DESKTOP_SESSION=/bin/env LC_ALL=C ggg-regform u1");
 }
 
 int

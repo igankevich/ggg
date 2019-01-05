@@ -16,7 +16,6 @@
 
 #include <unistdx/base/check>
 
-#include <ggg/config.hh>
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
 #include <ggg/ctl/password.hh>
@@ -81,13 +80,15 @@ int pam_sm_authenticate(
 	const char **argv
 ) {
 	pam_errc ret = pam_errc::ignore;
-	ggg::pam_handle pamh(orig);
-	pamh.parse_args(argc, argv);
+	ggg::pam_handle pamh(orig, argc, argv);
 	try {
 		const char* user = pamh.get_user();
 		pamh.debug("authenticating user \"%s\"", user);
 		const char* password = pamh.get_password(pam_errc::authentication_error);
-		ggg::Database db(GGG_ENTITIES_PATH);
+		ggg::Database db(
+			ggg::Database::File::Accounts,
+			ggg::Database::Flag::Read_only
+		);
 		ggg::account acc = find_account(db, user);
 		db.close();
 		check_password(password, acc);
@@ -97,8 +98,9 @@ int pam_sm_authenticate(
 	} catch (const std::system_error& e) {
 		ret = pamh.handle_error(e, pam_errc::authentication_error);
 	} catch (const std::bad_alloc& e) {
-		ret = pam_errc::authentication_error;
-		pam_syslog(pamh, LOG_CRIT, "memory allocation error");
+		ret = pamh.handle_error(e);
+	} catch (const std::exception& e) {
+		ret = pamh.handle_error(e);
 	}
 	return std::make_error_condition(ret).value();
 }
@@ -109,9 +111,8 @@ int pam_sm_acct_mgmt(
 	int argc,
 	const char **argv
 ) {
-	ggg::pam_handle pamh(orig);
 	pam_errc ret = pam_errc::ignore;
-	pamh.parse_args(argc, argv);
+	ggg::pam_handle pamh(orig, argc, argv);
 	ggg::account other;
 	try {
 		const char* user = pamh.get_user();
@@ -120,7 +121,7 @@ int pam_sm_acct_mgmt(
 		try {
 			acc = pamh.get_account();
 		} catch (const std::system_error& err) {
-			ggg::Database db(GGG_ENTITIES_PATH);
+			ggg::Database db(ggg::Database::File::Accounts);
 			other = find_account(db, user);
 			acc = &other;
 		}
@@ -145,8 +146,9 @@ int pam_sm_acct_mgmt(
 	} catch (const std::system_error& e) {
 		ret = pamh.handle_error(e, pam_errc::authtok_error);
 	} catch (const std::bad_alloc& e) {
-		ret = pam_errc::authtok_error;
-		pam_syslog(pamh, LOG_CRIT, "memory allocation error");
+		ret = pamh.handle_error(e);
+	} catch (const std::exception& e) {
+		ret = pamh.handle_error(e);
 	}
 	return std::make_error_condition(ret).value();
 }
@@ -157,9 +159,8 @@ int pam_sm_chauthtok(
 	int argc,
 	const char **argv
 ) {
-	ggg::pam_handle pamh(orig);
 	pam_errc ret = pam_errc::ignore;
-	pamh.parse_args(argc, argv);
+	ggg::pam_handle pamh(orig, argc, argv);
 	if (flags & PAM_PRELIM_CHECK) {
 		ret = pam_errc::success;
 	} else if (flags & PAM_UPDATE_AUTHTOK) {
@@ -167,7 +168,10 @@ int pam_sm_chauthtok(
 			pamh.set_password_type("GGG");
 			const char* user = pamh.get_user();
 			pamh.debug("changing password for user \"%s\"", user);
-			ggg::Database db(GGG_ENTITIES_PATH, false);
+			ggg::Database db(
+				ggg::Database::File::Accounts,
+				ggg::Database::Flag::Read_write
+			);
 			ggg::account acc = find_account(db, user);
 			const ggg::account::time_point now = ggg::account::clock_type::now();
 			if (acc.has_expired(now)) {
@@ -212,8 +216,9 @@ int pam_sm_chauthtok(
 		} catch (const std::system_error& e) {
 			ret = pamh.handle_error(e, pam_errc::authtok_error);
 		} catch (const std::bad_alloc& e) {
-			ret = pam_errc::authtok_error;
-			pam_syslog(pamh, LOG_CRIT, "memory allocation error");
+			ret = pamh.handle_error(e);
+		} catch (const std::exception& e) {
+			ret = pamh.handle_error(e);
 		}
 	}
 	return std::make_error_condition(ret).value();

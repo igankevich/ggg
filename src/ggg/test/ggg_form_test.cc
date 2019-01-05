@@ -6,9 +6,9 @@
 TEST(Form, Run) {
 	ASSERT_EQ(0, ::system("rm -rf " GGG_ROOT));
 	ASSERT_EQ(0, ::system("ggg init"));
-	ok("echo 'u0:2000:U0:/:/bin/sh' | ggg add -");
-	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
-	ok(
+	EXPECT_ZERO("echo 'u0:2000:U0:/:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+	EXPECT_ZERO(
 		R"(echo '
 text:1:First name:^[A-Za-z ]+$
 text:2:Last name:^[A-Za-zА-Яа-я ]+$
@@ -26,9 +26,9 @@ set_secure:account.password:4
 		')"
 		"> " GGG_ROOT "/reg/u1"
 	);
-	ok("echo > " GGG_ROOT "/reg/u0");
-	ok("ggg init");
-	ok("su - u1 -c ggg-form");
+	EXPECT_ZERO("echo > " GGG_ROOT "/reg/u0");
+	EXPECT_ZERO("ggg init");
+	EXPECT_ZERO("su - u1 -c ggg-form");
 }
 
 int

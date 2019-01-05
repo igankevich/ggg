@@ -6,7 +6,7 @@
 
 void
 ggg::Expire_entity::execute()  {
-	Database db(GGG_ENTITIES_PATH, false);
+	Database db(Database::File::Entities, Database::Flag::Read_write);
 	for (const auto& name : this->args()) {
 		db.expire(name.data());
 	}

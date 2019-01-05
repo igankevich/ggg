@@ -9,11 +9,27 @@
 #include <ggg/core/entity.hh>
 #include <ggg/core/group.hh>
 #include <sqlitex/database.hh>
+#include <sqlitex/transaction.hh>
 #include <unistdx/ipc/identity>
 
 namespace ggg {
 
+	class Transaction;
+
 	class Database {
+
+	public:
+		enum class File: int {
+			Entities=0,
+			Accounts=1,
+			All=-1
+		};
+
+		enum class Flag {
+			Read_only,
+			Read_write
+		};
+
 
 	public:
 		typedef sqlite::database database_t;
@@ -21,7 +37,6 @@ namespace ggg {
 		typedef std::unordered_map<sys::gid_type,group> group_container_t;
 
 	private:
-		bool _readonly = true;
 		bool _regex = false;
 		database_t _db;
 
@@ -30,8 +45,8 @@ namespace ggg {
 		Database() = default;
 
 		inline explicit
-		Database(const char* filename, bool read=true) {
-			this->open(filename, read);
+		Database(File file, Flag flag=Flag::Read_only) {
+			this->open(file, flag);
 		}
 
 		inline
@@ -45,7 +60,10 @@ namespace ggg {
 		}
 
 		void
-		open(const char* filename, bool read=true);
+		open(File file, Flag flag=Flag::Read_only);
+
+		void
+		attach(File file, Flag flag=Flag::Read_only);
 
 		inline bool
 		is_open() const noexcept {
@@ -181,6 +199,9 @@ namespace ggg {
 		accounts();
 
 		void
+		insert(const account& acc);
+
+		void
 		update(const account& acc);
 
 		void
@@ -199,32 +220,32 @@ namespace ggg {
 		expired_names();
 
 		void
-		set_flag(const char* name, account_flags flag);
+		set_account_flag(const char* name, account_flags flag);
 
 		void
-		unset_flag(const char* name, account_flags flag);
+		unset_account_flag(const char* name, account_flags flag);
 
 		row_stream_t
 		find_entities_by_flag(account_flags flag, bool set);
 
 		inline void
 		expire_password(const char* name) {
-			this->set_flag(name, account_flags::password_has_expired);
+			this->set_account_flag(name, account_flags::password_has_expired);
 		}
 
 		inline void
 		reset_password(const char* name) {
-			this->unset_flag(name, account_flags::password_has_expired);
+			this->unset_account_flag(name, account_flags::password_has_expired);
 		}
 
 		inline void
 		activate(const char* name) {
-			this->unset_flag(name, account_flags::suspended);
+			this->unset_account_flag(name, account_flags::suspended);
 		}
 
 		inline void
 		deactivate(const char* name) {
-			this->set_flag(name, account_flags::suspended);
+			this->set_account_flag(name, account_flags::suspended);
 		}
 
 		inline row_stream_t
@@ -240,11 +261,23 @@ namespace ggg {
 		std::string
 		select_accounts_by_names(int n);
 
+		friend class Transaction;
+
 	};
 
 	typedef sqlite::rstream_iterator<ggg::entity> user_iterator;
 	typedef sqlite::rstream_iterator<ggg::group> group_iterator;
 	typedef sqlite::rstream_iterator<ggg::account> account_iterator;
+
+	class Transaction: public sqlite::immediate_transaction {
+
+	public:
+
+		inline explicit
+		Transaction(Database& db):
+		sqlite::immediate_transaction(db._db) {}
+
+	};
 
 }
 

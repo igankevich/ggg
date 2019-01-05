@@ -8,7 +8,7 @@
 
 void
 ggg::Remove_entity::execute()  {
-	Database db(GGG_ENTITIES_PATH, false);
+	Database db(Database::File::All, Database::Flag::Read_write);
 	for (const auto& name : this->args()) {
 		try {
 			db.erase(name.data());

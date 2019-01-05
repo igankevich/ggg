@@ -288,7 +288,7 @@ namespace ggg {
 		}
 
 		inline bool
-		is_active() const noexcept {
+		suspended() const noexcept {
 			return this->_flags & account_flags::suspended;
 		}
 

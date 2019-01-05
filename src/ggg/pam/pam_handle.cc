@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <ggg/config.hh>
 #include <ggg/core/entity.hh>
 #include <ggg/core/form_field.hh>
 #include <ggg/ctl/form.hh>

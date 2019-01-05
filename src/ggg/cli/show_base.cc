@@ -1,15 +1,14 @@
-#include "show_base.hh"
-
 #include <iostream>
 
+#include <ggg/cli/align_columns.hh>
+#include <ggg/cli/show_base.hh>
 #include <ggg/config.hh>
 #include <ggg/core/entity.hh>
 #include <ggg/core/native.hh>
 
-#include "align_columns.hh"
-
+template <class T>
 void
-ggg::Show_base::parse_arguments(int argc, char* argv[]) {
+ggg::Show_base<T>::parse_arguments(int argc, char* argv[]) {
 	int opt;
 	while ((opt = getopt(argc, argv, "qlt")) != -1) {
 		switch (opt) {
@@ -23,29 +22,33 @@ ggg::Show_base::parse_arguments(int argc, char* argv[]) {
 	}
 }
 
+template <class T>
 void
-ggg::Show_base::execute() {
+ggg::Show_base<T>::execute() {
 	if (this->_table) {
-		for (const entity& ent : this->_result) {
+		for (const auto& ent : this->_result) {
 			std::cout << ent << '\n';
 		}
 	} else if (this->_long) {
-		align_columns(this->_result, std::cout, entity::delimiter, ' ', true);
+		align_columns(this->_result, std::cout, value_type::delimiter, ' ', true);
 		const size_t nentities = this->_result.size();
 		if (nentities > 7) {
 			std::cout << std::endl;
 			native_message_n(std::cout, nentities, "_ entities.", nentities);
 		}
 	} else {
-		for (const entity& ent : this->_result) {
+		for (const auto& ent : this->_result) {
 			std::cout << ent.name() << '\n';
 		}
 	}
 }
 
+template <class T>
 void
-ggg::Show_base::print_usage() {
+ggg::Show_base<T>::print_usage() {
 	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
 	          << this->prefix() << " [-ql] ENTITY..." << '\n';
 }
 
+
+template class ggg::Show_base<ggg::entity>;

@@ -38,10 +38,16 @@ ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Edit_entity::execute()  {
-	Database db(GGG_ENTITIES_PATH, false);
+	Database db;
 	switch (this->_type) {
-		case Type::Entity: this->edit_objects<entity>(db); break;
-		case Type::Account: this->edit_objects<account>(db); break;
+		case Type::Entity:
+			db.open(Database::File::Entities, Database::Flag::Read_write);
+			this->edit_objects<entity>(db);
+			break;
+		case Type::Account:
+			db.open(Database::File::Accounts, Database::Flag::Read_write);
+			this->edit_objects<account>(db);
+			break;
 	}
 }
 

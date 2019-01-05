@@ -51,7 +51,8 @@ ggg::Add_entity
 void
 ggg::Add_entity
 ::execute() {
-	Database db(GGG_ENTITIES_PATH, false);
+	Database db(Database::File::Entities, Database::Flag::Read_write);
+	db.attach(Database::File::Accounts, Database::Flag::Read_write);
 	if (this->is_batch()) {
 		this->add_batch(db);
 	} else {
@@ -129,7 +130,9 @@ ggg::Add_entity
 	int nerrors = 0;
 	for (entity& ent : ents) {
 		try {
+			Transaction tr(db);
 			db.insert(ent);
+			db.insert(account(ent.name().data()));
 			this->_args.erase(traits_type::name(ent));
 		} catch (const std::exception& err) {
 			++nerrors;

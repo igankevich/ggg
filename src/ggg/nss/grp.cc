@@ -1,5 +1,6 @@
-#include <ggg/nss/hierarchy_instance.hh>
+#include <ggg/config.hh>
 #include <ggg/nss/grp.hh>
+#include <ggg/nss/hierarchy_instance.hh>
 
 using ggg::database;
 
@@ -11,7 +12,7 @@ namespace {
 	inline void
 	init() {
 		if (!database.is_open()) {
-			database.open(GGG_ENTITIES_PATH);
+			database.open(ggg::Database::File::Entities);
 			rstr = database.users();
 			first = ggg::group_iterator(rstr);
 		}
@@ -81,7 +82,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, gid)(
 ) {
 	nss_status ret;
 	try {
-		ggg::Database db(GGG_ENTITIES_PATH);
+		ggg::Database db(ggg::Database::File::Entities);
 		ggg::group gr;
 		if (!db.find_group(gid, gr)) {
 			ret = NSS_STATUS_NOTFOUND;
@@ -110,7 +111,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, nam)(
 ) {
 	nss_status ret;
 	try {
-		ggg::Database db(GGG_ENTITIES_PATH);
+		ggg::Database db(ggg::Database::File::Entities);
 		ggg::group gr;
 		if (!db.find_group(name, gr)) {
 			ret = NSS_STATUS_NOTFOUND;

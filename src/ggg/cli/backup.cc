@@ -67,7 +67,8 @@ ggg::Backup::execute() {
 	sys::path dir(*this->_args.begin());
 	sys::mkdirs(dir);
 	backup_parameters params[] = {
-		{GGG_ENTITIES_PATH, "entities"}
+		{GGG_ENTITIES_PATH, "entities"},
+		{GGG_ACCOUNTS_PATH, "accounts"}
 	};
 	for (const auto& param : params) {
 		sys::path dst_path(dir, destination_filename(param.dst_suffix, this->_format));
@@ -87,7 +88,7 @@ ggg::Backup::execute() {
 		sqlite::backup backup(src, dst);
 		do {
 			backup.step();
-		} while (backup.remaining() != 0);
+		} while (!backup.done());
 	}
 }
 

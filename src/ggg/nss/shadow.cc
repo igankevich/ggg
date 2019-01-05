@@ -13,7 +13,7 @@ namespace {
 	inline void
 	init() {
 		if (!database.is_open()) {
-			database.open(GGG_ENTITIES_PATH);
+			database.open(ggg::Database::File::Entities);
 			rstr = database.accounts();
 			first = account_iterator(rstr);
 		}
@@ -83,7 +83,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, sp, nam)(
 ) {
 	enum nss_status ret;
 	try {
-		ggg::Database db(GGG_ENTITIES_PATH);
+		ggg::Database db(ggg::Database::File::Accounts);
 		auto rstr = db.find_account(name);
 		account_iterator first(rstr), last;
 		if (first == last) {

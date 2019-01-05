@@ -11,7 +11,7 @@ void
 ggg::Copy::execute() {
 	Hierarchy h(GGG_ENT_ROOT);
 	account_ctl accounts;
-	Database db(GGG_ENTITIES_PATH, false);
+	Database db(Database::File::Entities, Database::Flag::Read_write);
 	for (const auto& ent : h) {
 		db.insert(ent);
 	}
@@ -20,7 +20,7 @@ ggg::Copy::execute() {
 	}
 	for (const auto& acc : accounts) {
 		try {
-			db.update(acc);
+			db.insert(acc);
 		} catch (const std::exception& err) {
 			std::clog << "bad account: " << acc << std::endl;
 		}

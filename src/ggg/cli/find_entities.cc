@@ -12,7 +12,7 @@ ggg::Find_entities::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Find_entities::execute() {
-	Database db(GGG_ENTITIES_PATH);
+	Database db(Database::File::Entities);
 	Search search(&db, this->args_begin(), this->args_end());
 	auto rstr = this->args().empty() ? db.entities() : db.search_entities();
 	user_iterator first(rstr), last;

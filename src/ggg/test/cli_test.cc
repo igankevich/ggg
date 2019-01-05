@@ -15,10 +15,8 @@
 
 #include <gtest/gtest.h>
 
-#include "chroot_environment.hh"
-#include "execute_command.hh"
-
 #include <ggg/test/clean_database.hh>
+#include <ggg/test/execute_command.hh>
 
 class Commands: public ::testing::Test {
 
@@ -26,91 +24,93 @@ protected:
 
 	void
 	SetUp() override {
-		EXPECT_EQ(0, ::system("rm -rf " GGG_ROOT));
-		EXPECT_EQ(0, ::system("ggg init"));
+		EXPECT_ZERO("rm -rf " GGG_ROOT);
+		EXPECT_ZERO("ggg init");
 		Clean_database db;
 	}
 
 };
 
 TEST(CommandsBase, Init) {
-	EXPECT_EQ(0, ::system("rm -rf " GGG_ROOT));
-	EXPECT_EQ(0, ::system("ggg init"));
+	EXPECT_ZERO("rm -rf " GGG_ROOT);
+	EXPECT_ZERO("ggg init");
 	sys::file_status root(GGG_ROOT);
 	EXPECT_TRUE(root.exists());
 	EXPECT_TRUE(root.is_directory());
-	sys::file_status db(GGG_ENTITIES_PATH);
-	EXPECT_TRUE(db.exists());
-	EXPECT_TRUE(db.is_regular());
+	for (const auto* path : {GGG_ENTITIES_PATH, GGG_ACCOUNTS_PATH}) {
+		sys::file_status db(path);
+		EXPECT_TRUE(db.exists());
+		EXPECT_TRUE(db.is_regular());
+	}
 }
 
 TEST_F(Commands, Add) {
-	ok("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
-	ok("echo 'u2:2002:U2:/home/u2:/bin/sh' | ggg add -");
-	ok("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -");
-	EXPECT_NE(0, ::system("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -"))
+	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'u2:2002:U2:/home/u2:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -");
+	EXPECT_NON_ZERO("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -")
 	    << "added the same user twice";
-	EXPECT_NE(0, ::system("echo 'uu:2001:U1:/home/u1:/bin/sh' | ggg add -"))
+	EXPECT_NON_ZERO("echo 'uu:2001:U1:/home/u1:/bin/sh' | ggg add -")
 	    << "added a user with the same UID twice";
-	EXPECT_NE(0, ::system("echo 'u1:2222:U1:/home/u1:/bin/sh' | ggg add -"))
+	EXPECT_NON_ZERO("echo 'u1:2222:U1:/home/u1:/bin/sh' | ggg add -")
 	    << "added a user with the same USERNAME twice";
 }
 
 TEST_F(Commands, Remove) {
-	output_is("", "ggg find u1");
-	ok("ggg rm u1");
-	ok("echo 'u1:3001:U1:/home/u1:/bin/sh' | ggg add -");
-	output_is("u1\n", "ggg find u1");
-	ok("ggg rm u1");
-	output_is("", "ggg find u1");
-	ok("ggg rm u1");
+	EXPECT_OUTPUT("", "ggg find u1");
+	EXPECT_ZERO("ggg rm u1");
+	EXPECT_ZERO("echo 'u1:3001:U1:/home/u1:/bin/sh' | ggg add -");
+	EXPECT_OUTPUT("u1\n", "ggg find u1");
+	EXPECT_ZERO("ggg rm u1");
+	EXPECT_OUTPUT("", "ggg find u1");
+	EXPECT_ZERO("ggg rm u1");
 }
 
 TEST_F(Commands, Info) {
-	fail("ggg info u1");
-	ok("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
-	ok("ggg info u1");
-	ok("ggg rm u1");
-	fail("ggg info u1");
-	fail("ggg info donotexist");
+	EXPECT_NON_ZERO("ggg info u1");
+	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+	EXPECT_ZERO("ggg info u1");
+	EXPECT_ZERO("ggg rm u1");
+	EXPECT_NON_ZERO("ggg info u1");
+	EXPECT_NON_ZERO("ggg info donotexist");
 }
 
 /*
 TEST_F(Commands, GetEnt) {
-	fail("getent passwd u1");
-	fail("getent group u1");
-	ok("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
-	output_is("u1::2001:2001:U1:/home/u1:/bin/sh\n", "getent passwd u1");
-	output_is("u1::2001:2001:U1:/home/u1:/bin/sh\n", "LANG=donotexist getent passwd u1");
-	output_is("u1::2001:\n", "getent group u1");
-	output_is("u1\n", "getent group u1 | cut -d: -f1");
-	output_is("2001\n", "getent group u1 | cut -d: -f3");
-	ok("ggg rm u1");
-	fail("getent passwd u1");
-	fail("getent group u1");
+	EXPECT_NON_ZERO("getent passwd u1");
+	EXPECT_NON_ZERO("getent group u1");
+	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+	EXPECT_OUTPUT("u1::2001:2001:U1:/home/u1:/bin/sh\n", "getent passwd u1");
+	EXPECT_OUTPUT("u1::2001:2001:U1:/home/u1:/bin/sh\n", "LANG=donotexist getent passwd u1");
+	EXPECT_OUTPUT("u1::2001:\n", "getent group u1");
+	EXPECT_OUTPUT("u1\n", "getent group u1 | cut -d: -f1");
+	EXPECT_OUTPUT("2001\n", "getent group u1 | cut -d: -f3");
+	EXPECT_ZERO("ggg rm u1");
+	EXPECT_NON_ZERO("getent passwd u1");
+	EXPECT_NON_ZERO("getent group u1");
 }
 */
 
 TEST_F(Commands, Find) {
-	output_is("", "ggg find");
-	ok("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
-	output_is("u1\n", "ggg find");
-	ok("echo 'u2:2002:U2:/home/u2:/bin/sh' | ggg add -");
-	ok("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -");
-	output_is("u1\n", "ggg find u1");
-	output_is("u1\n", "ggg find U1");
-	output_is("u2\n", "ggg find u2");
-	output_is("u3\n", "ggg find U3");
-	output_is("u1\nu2\nu3\n", "ggg find u | sort");
-	output_is("u1\nu2\n", "ggg find 'u[12]' | sort");
-	output_is("", "ggg find donotexist");
-	ok("ggg rm u1");
-	output_is("", "ggg find u1");
+	EXPECT_OUTPUT("", "ggg find");
+	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+	EXPECT_OUTPUT("u1\n", "ggg find");
+	EXPECT_ZERO("echo 'u2:2002:U2:/home/u2:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -");
+	EXPECT_OUTPUT("u1\n", "ggg find u1");
+	EXPECT_OUTPUT("u1\n", "ggg find U1");
+	EXPECT_OUTPUT("u2\n", "ggg find u2");
+	EXPECT_OUTPUT("u3\n", "ggg find U3");
+	EXPECT_OUTPUT("u1\nu2\nu3\n", "ggg find u | sort");
+	EXPECT_OUTPUT("u1\nu2\n", "ggg find 'u[12]' | sort");
+	EXPECT_OUTPUT("", "ggg find donotexist");
+	EXPECT_ZERO("ggg rm u1");
+	EXPECT_OUTPUT("", "ggg find u1");
 }
 
 /*
 TEST_F(Commands, FindOutputMatchesGetEntOutput) {
-	ok("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
 	auto result1 = execute_command("ggg find -t u1");
 	EXPECT_EQ(0, result1.first.exit_code());
 	auto result2 = execute_command("getent passwd u1");
@@ -126,9 +126,9 @@ TEST_F(Commands, Duplicates) {
 		tmp << "u1:" << uid << ":U1:/:/bin/sh";
 		tmp << "' | ggg add -";
 		std::clog << "tmp.str()=" << tmp.str() << std::endl;
-		ok(tmp.str().data());
+		EXPECT_ZERO(tmp.str().data());
 	}
-	ok("ggg duplicates");
+	EXPECT_ZERO("ggg duplicates");
 	auto result = execute_command("ggg duplicates");
 	EXPECT_EQ(0, result.first.exit_code());
 	EXPECT_TRUE(result.second.empty());
@@ -137,46 +137,46 @@ TEST_F(Commands, Duplicates) {
 
 
 TEST_F(Commands, GroupsAndMembers) {
-	ok("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
-	ok("echo 'g1:3001:G1:/:/sbin/nologin' | ggg add -");
-	output_is("", "ggg groups u1");
-	output_is("", "ggg members g1");
-//	ok("echo u1 > " GGG_ROOT "/ent/g1");
-//	output_is("g1\n", "ggg groups u1");
-//	output_is("u1\n", "ggg members g1");
-//	ok("rm -f " GGG_ROOT "/ent/g1");
-//	output_is("", "ggg groups u1");
-//	output_is("", "ggg members g1");
-	fail("ggg groups donotexist");
-	fail("ggg members donotexist");
+	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'g1:3001:G1:/:/sbin/nologin' | ggg add -");
+	EXPECT_OUTPUT("", "ggg groups u1");
+	EXPECT_OUTPUT("", "ggg members g1");
+//	EXPECT_ZERO("echo u1 > " GGG_ROOT "/ent/g1");
+//	EXPECT_OUTPUT("g1\n", "ggg groups u1");
+//	EXPECT_OUTPUT("u1\n", "ggg members g1");
+//	EXPECT_ZERO("rm -f " GGG_ROOT "/ent/g1");
+//	EXPECT_OUTPUT("", "ggg groups u1");
+//	EXPECT_OUTPUT("", "ggg members g1");
+	EXPECT_NON_ZERO("ggg groups donotexist");
+	EXPECT_NON_ZERO("ggg members donotexist");
 }
 
 TEST_F(Commands, Version) {
-	output_is(GGG_VERSION "\n", "ggg version");
-	output_is(GGG_VERSION "\n", "ggg --version");
-	output_is(GGG_VERSION "\n", "ggg -v");
+	EXPECT_OUTPUT(GGG_VERSION "\n", "ggg version");
+	EXPECT_OUTPUT(GGG_VERSION "\n", "ggg --version");
+	EXPECT_OUTPUT(GGG_VERSION "\n", "ggg -v");
 }
 
 TEST_F(Commands, Edit) {
-	ok("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
-	output_is("u1::2001:2001:U1:/home/u1:/bin/sh\n", "ggg find -t u1");
-	ok("echo 'u1:2001:REAL NAME:/home/u1:/bin/sh' | ggg edit -");
-	output_is("u1::2001:2001:REAL NAME:/home/u1:/bin/sh\n", "ggg find -t u1");
-	ok("echo 'u1:2001:REAL NAME:/home/HOME:/bin/sh' | ggg edit -");
-	output_is("u1::2001:2001:REAL NAME:/home/HOME:/bin/sh\n", "ggg find -t u1");
-	ok("echo 'u1:2001:REAL NAME:/home/HOME:/bin/SHELL' | ggg edit -");
-	output_is(
+	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+	EXPECT_OUTPUT("u1::2001:2001:U1:/home/u1:/bin/sh\n", "ggg find -t u1");
+	EXPECT_ZERO("echo 'u1:2001:REAL NAME:/home/u1:/bin/sh' | ggg edit -");
+	EXPECT_OUTPUT("u1::2001:2001:REAL NAME:/home/u1:/bin/sh\n", "ggg find -t u1");
+	EXPECT_ZERO("echo 'u1:2001:REAL NAME:/home/HOME:/bin/sh' | ggg edit -");
+	EXPECT_OUTPUT("u1::2001:2001:REAL NAME:/home/HOME:/bin/sh\n", "ggg find -t u1");
+	EXPECT_ZERO("echo 'u1:2001:REAL NAME:/home/HOME:/bin/SHELL' | ggg edit -");
+	EXPECT_OUTPUT(
 		"u1::2001:2001:REAL NAME:/home/HOME:/bin/SHELL\n",
 		"ggg find -t u1"
 	);
-	fail("echo 'u1:2222:REAL NAME:/home/HOME:/bin/SHELL' | ggg edit -");
-	output_is(
+	EXPECT_NON_ZERO("echo 'u1:2222:REAL NAME:/home/HOME:/bin/SHELL' | ggg edit -");
+	EXPECT_OUTPUT(
 		"u1::2001:2001:REAL NAME:/home/HOME:/bin/SHELL\n",
 		"ggg find -t u1"
 	);
-	ok("echo 'u2:2001:REAL NAME:/home/HOME:/bin/SHELL' | ggg edit -");
-	output_is("", "ggg find -t u1");
-	output_is(
+	EXPECT_ZERO("echo 'u2:2001:REAL NAME:/home/HOME:/bin/SHELL' | ggg edit -");
+	EXPECT_OUTPUT("", "ggg find -t u1");
+	EXPECT_OUTPUT(
 		"u2::2001:2001:REAL NAME:/home/HOME:/bin/SHELL\n",
 		"ggg find -t u2"
 	);
@@ -189,9 +189,9 @@ TEST_F(Commands, Form) {
 		tmp << "echo '";
 		tmp << "u1:" << uid << ":U1:/:/bin/sh";
 		tmp << "' | ggg add -";
-		ok(tmp.str().data());
+		EXPECT_ZERO(tmp.str().data());
 	}
-	ok(
+	EXPECT_ZERO(
 		R"(echo '
 text:1:First name:^[A-Za-z ]+$
 text:2:Last name:^[A-Za-zА-Яа-я ]+$
@@ -209,15 +209,15 @@ set_secure:account.password:4
 		')"
 		"> " GGG_ROOT "/reg/u1"
 	);
-	ok("ggg init");
-	ok("echo 'F\nL\nu2\nnXq2UYKUD5yZd32jeN8M\nnXq2UYKUD5yZd32jeN8M\n' | ggg-form");
+	EXPECT_ZERO("ggg init");
+	EXPECT_ZERO("echo 'F\nL\nu2\nnXq2UYKUD5yZd32jeN8M\nnXq2UYKUD5yZd32jeN8M\n' | ggg-form");
 	{
 		auto next_uid = uid+1;
 		std::stringstream tmp;
 		tmp << "u2::" << next_uid << ':' << next_uid << ":F L:/:/bin/bash\n";
-		output_is(tmp.str().data(), "ggg find -t u2");
+		EXPECT_OUTPUT(tmp.str().data(), "ggg find -t u2");
 	}
-//	output_is("u2::2002:2002:F L:/:/bin/bash\n", "getent passwd u2");
+//	EXPECT_OUTPUT("u2::2002:2002:F L:/:/bin/bash\n", "getent passwd u2");
 }
 
 TEST_F(Commands, EmptyForm) {
@@ -227,83 +227,83 @@ TEST_F(Commands, EmptyForm) {
 		tmp << "echo '";
 		tmp << "u1:" << uid << ":U1:/:/bin/sh";
 		tmp << "' | ggg add -";
-		ok(tmp.str().data());
+		EXPECT_ZERO(tmp.str().data());
 	}
-	ok("touch " GGG_ROOT "/reg/u1");
-	ok("ggg init");
-	fail("echo 'F\nL\nu2\nnXq2UYKUD5yZd32jeN8M\n' | ggg-form");
+	EXPECT_ZERO("touch " GGG_ROOT "/reg/u1");
+	EXPECT_ZERO("ggg init");
+	EXPECT_NON_ZERO("echo 'F\nL\nu2\nnXq2UYKUD5yZd32jeN8M\n' | ggg-form");
 }
 
 //TEST_F(Commands, AddUnpriviledged) {
-//	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
-//	ok("echo 'u2:2002:U2:/:/bin/sh' | ggg add -");
-//	ok("touch " GGG_ROOT "/reg/u1");
-//	ok("ggg init");
-//	ok("su - u1 -c 'echo u3:2003:U3:/:/bin/sh | ggg add -'");
-//	output_is("u3::2003:2003:U3:/:/bin/sh\n", "ggg find -t u3");
-//	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u1 -c 'ggg find -t u3'");
-//	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u2 -c 'ggg find -t u3'");
-//	output_is("u3::2003:2003:U3:/:/bin/sh\n", "su - u3 -c 'ggg find -t u3'");
-//	ok("ggg info u3");
-//	ok("ggg info -a u3");
+//	EXPECT_ZERO("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+//	EXPECT_ZERO("echo 'u2:2002:U2:/:/bin/sh' | ggg add -");
+//	EXPECT_ZERO("touch " GGG_ROOT "/reg/u1");
+//	EXPECT_ZERO("ggg init");
+//	EXPECT_ZERO("su - u1 -c 'echo u3:2003:U3:/:/bin/sh | ggg add -'");
+//	EXPECT_OUTPUT("u3::2003:2003:U3:/:/bin/sh\n", "ggg find -t u3");
+//	EXPECT_OUTPUT("u3::2003:2003:U3:/:/bin/sh\n", "su - u1 -c 'ggg find -t u3'");
+//	EXPECT_OUTPUT("u3::2003:2003:U3:/:/bin/sh\n", "su - u2 -c 'ggg find -t u3'");
+//	EXPECT_OUTPUT("u3::2003:2003:U3:/:/bin/sh\n", "su - u3 -c 'ggg find -t u3'");
+//	EXPECT_ZERO("ggg info u3");
+//	EXPECT_ZERO("ggg info -a u3");
 //}
 //
 //TEST_F(Commands, EditUnpriviledged) {
-//	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
-//	ok("echo 'u2:2002:U2:/:/bin/sh' | ggg add -");
-//	ok("echo 'u3:2003:U3:/:/bin/sh' | ggg add -");
-//	ok("touch " GGG_ROOT "/reg/u1");
-//	ok("touch " GGG_ROOT "/reg/u2");
-//	ok("ggg init");
-//	ok("su - u1 -c 'echo u4:2004:U4:/:/bin/sh | ggg add -'");
-//	ok("su - u1 -c 'echo u4:2004:REALNAME:/:/bin/sh | ggg edit -'");
-//	output_is("u4::2004:2004:REALNAME:/:/bin/sh\n", "ggg find -t u4");
-//	output_is(
+//	EXPECT_ZERO("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+//	EXPECT_ZERO("echo 'u2:2002:U2:/:/bin/sh' | ggg add -");
+//	EXPECT_ZERO("echo 'u3:2003:U3:/:/bin/sh' | ggg add -");
+//	EXPECT_ZERO("touch " GGG_ROOT "/reg/u1");
+//	EXPECT_ZERO("touch " GGG_ROOT "/reg/u2");
+//	EXPECT_ZERO("ggg init");
+//	EXPECT_ZERO("su - u1 -c 'echo u4:2004:U4:/:/bin/sh | ggg add -'");
+//	EXPECT_ZERO("su - u1 -c 'echo u4:2004:REALNAME:/:/bin/sh | ggg edit -'");
+//	EXPECT_OUTPUT("u4::2004:2004:REALNAME:/:/bin/sh\n", "ggg find -t u4");
+//	EXPECT_OUTPUT(
 //		"u4::2004:2004:REALNAME:/:/bin/sh\n",
 //		"su - u1 -c 'ggg find -t u4'"
 //	);
-//	output_is(
+//	EXPECT_OUTPUT(
 //		"u4::2004:2004:REALNAME:/:/bin/sh\n",
 //		"su - u2 -c 'ggg find -t u4'"
 //	);
-//	output_is(
+//	EXPECT_OUTPUT(
 //		"u4::2004:2004:REALNAME:/:/bin/sh\n",
 //		"su - u3 -c 'ggg find -t u4'"
 //	);
-//	fail("su - u2 -c 'echo u4:2004:NEWNAME:/:/bin/sh | ggg edit -'");
-//	fail("su - u3 -c 'echo u4:2004:NEWNAME:/:/bin/sh | ggg edit -'");
-//	fail("su - u4 -c 'echo u4:2004:NEWNAME:/:/bin/sh | ggg edit -'");
+//	EXPECT_NON_ZERO("su - u2 -c 'echo u4:2004:NEWNAME:/:/bin/sh | ggg edit -'");
+//	EXPECT_NON_ZERO("su - u3 -c 'echo u4:2004:NEWNAME:/:/bin/sh | ggg edit -'");
+//	EXPECT_NON_ZERO("su - u4 -c 'echo u4:2004:NEWNAME:/:/bin/sh | ggg edit -'");
 //}
 //
 //TEST_F(Commands, RemoveUnpriviledged) {
-//	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
-//	ok("echo 'u2:2002:U2:/:/bin/sh' | ggg add -");
-//	ok("touch " GGG_ROOT "/reg/u1");
-//	ok("ggg init");
-//	output_is("", "ggg find u3");
-//	ok("su - u1 -c 'echo u3:2003:U3:/:/bin/sh | ggg add -'");
-//	output_is("u3\n", "ggg find u3");
-//	ok("su - u1 -c 'ggg rm u3'");
-//	output_is("", "ggg find u3");
+//	EXPECT_ZERO("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+//	EXPECT_ZERO("echo 'u2:2002:U2:/:/bin/sh' | ggg add -");
+//	EXPECT_ZERO("touch " GGG_ROOT "/reg/u1");
+//	EXPECT_ZERO("ggg init");
+//	EXPECT_OUTPUT("", "ggg find u3");
+//	EXPECT_ZERO("su - u1 -c 'echo u3:2003:U3:/:/bin/sh | ggg add -'");
+//	EXPECT_OUTPUT("u3\n", "ggg find u3");
+//	EXPECT_ZERO("su - u1 -c 'ggg rm u3'");
+//	EXPECT_OUTPUT("", "ggg find u3");
 //}
 //
 //TEST_F(Commands, Cache) {
-//	ok("mkdir -p /var/cache/ggg");
-//	ok("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
-//	ok("getent passwd u1");
-//	ok("ls " GGG_CACHE_DIRECTORY "/ggg/*");
+//	EXPECT_ZERO("mkdir -p /var/cache/ggg");
+//	EXPECT_ZERO("echo 'u1:2001:U1:/:/bin/sh' | ggg add -");
+//	EXPECT_ZERO("getent passwd u1");
+//	EXPECT_ZERO("ls " GGG_CACHE_DIRECTORY "/ggg/*");
 //	ASSERT_EQ(0, ::system("rm -rf " GGG_ENT_ROOT "/*"));
-//	ok("getent passwd u1");
-//	ok("rm -rf /var/cache/ggg");
-//	fail("getent passwd u1");
+//	EXPECT_ZERO("getent passwd u1");
+//	EXPECT_ZERO("rm -rf /var/cache/ggg");
+//	EXPECT_NON_ZERO("getent passwd u1");
 //}
 
 TEST_F(Commands, Locale) {
-	ok("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
-	ok("echo 'u2:2002:Ю2:/home/u2:/bin/sh' | ggg add -");
-	ok("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -");
-	ok("ggg lock u1 u2 u3");
-	output_is("u1\nu2\nu3\n", "env -i LC_ALL=C PATH=$PATH ggg locked");
+	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'u2:2002:Ю2:/home/u2:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -");
+	EXPECT_ZERO("ggg lock u1 u2 u3");
+	EXPECT_OUTPUT("u1\nu2\nu3\n", "env -i LC_ALL=C PATH=$PATH ggg locked");
 }
 
 int

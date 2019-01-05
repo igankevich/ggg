@@ -3,7 +3,6 @@
 
 #include <unistdx/fs/idirectory>
 
-#include <ggg/config.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/native.hh>
 #include <ggg/cli/expunge.hh>
@@ -61,7 +60,7 @@ ggg::Expunge::execute() {
 void
 ggg::Expunge::find_expired_entities() {
 	this->_uids.clear();
-	Database db(GGG_ENTITIES_PATH);
+	Database db(Database::File::All);
 	auto rstr = db.expired_ids();
 	sqlite::cstream cstr(rstr);
 	while (rstr >> cstr) {
