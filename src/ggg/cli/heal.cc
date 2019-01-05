@@ -25,9 +25,21 @@ namespace {
 	sys::file_mode entities_file_mode(0644);
 	sys::file_mode accounts_file_mode(0000);
 
+	sys::gid_type read_gid = ggg::bad_gid;
 	sys::gid_type write_gid = ggg::bad_gid;
 	sys::uid_type root_uid = 0;
 	sys::gid_type root_gid = 0;
+
+	sys::gid_type
+	group_id(ggg::Database& db, const char* name) {
+		sys::gid_type gid = ggg::bad_gid;
+		try {
+			gid = db.find_id(name);
+		} catch (const std::exception& err) {
+			gid = ggg::bad_gid;
+		}
+		return gid;
+	}
 
 	void
 	change_permissions_priv(
@@ -280,6 +292,9 @@ namespace {
 			for (sys::gid_type gid : form_entities) {
 				acl.add_group(gid, permission_type::read_write);
 			}
+			if (read_gid != ggg::bad_gid) {
+				acl.add_group(read_gid, permission_type::read);
+			}
 			if (write_gid != ggg::bad_gid) {
 				acl.add_group(write_gid, permission_type::read_write);
 			}
@@ -291,6 +306,9 @@ namespace {
 			access_control_list acl(accounts_file_mode);
 			for (sys::gid_type gid : form_entities) {
 				acl.add_group(gid, permission_type::read_write);
+			}
+			if (read_gid != ggg::bad_gid) {
+				acl.add_group(read_gid, permission_type::read);
 			}
 			if (write_gid != ggg::bad_gid) {
 				acl.add_group(write_gid, permission_type::read_write);
@@ -342,11 +360,8 @@ ggg::Heal
 		error_message(std::cerr, err);
 	}
 	heal_database();
-	try {
-		write_gid = db.find_id(GGG_WRITE_GROUP);
-	} catch (const std::exception& err) {
-		write_gid = bad_gid;
-	}
+	read_gid = group_id(db, GGG_READ_GROUP);
+	write_gid = group_id(db, GGG_WRITE_GROUP);
 	heal_forms(db);
 	if (num_errors > 0) {
 		throw quiet_error();
