@@ -7,14 +7,16 @@ using ggg::database;
 namespace {
 
 	ggg::Database::row_stream_t rstr;
-	ggg::group_iterator first;
+	ggg::Database::group_container_t all_groups;
+	ggg::Database::group_container_t::iterator first, last;
 
 	inline void
 	init() {
 		if (!database.is_open()) {
 			database.open(ggg::Database::File::Entities);
-			rstr = database.users();
-			first = ggg::group_iterator(rstr);
+			all_groups = database.groups();
+			first = all_groups.begin();
+			last = all_groups.end();
 		}
 	}
 
@@ -53,15 +55,14 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, gr)(
 ) {
 	nss_status ret = NSS_STATUS_NOTFOUND;
 	try {
-		ggg::group_iterator last;
 		if (first == last) {
 			ret = NSS_STATUS_NOTFOUND;
 			*errnop = ENOENT;
-		} else if (buflen < ggg::buffer_size(*first)) {
+		} else if (buflen < ggg::buffer_size(first->second)) {
 			ret = NSS_STATUS_TRYAGAIN;
 			*errnop = ERANGE;
 		} else {
-			ggg::copy_to(*first, result, buffer);
+			ggg::copy_to(first->second, result, buffer);
 			++first;
 			ret = NSS_STATUS_SUCCESS;
 			*errnop = 0;

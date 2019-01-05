@@ -79,3 +79,25 @@ TEST(grp, getgrouplist) {
 	int ret = ::getgrouplist("testuser", 2000, groups, &ngroups);
 	ASSERT_EQ(1, ret);
 }
+
+TEST(grp, group_member_via_tie) {
+	{
+		Clean_database db;
+		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
+		db.insert("testgroup:x:2001:2001:halt:/sbin:/sbin/halt");
+		db.tie("testuser", "testgroup");
+	}
+	auto* testgroup = getgrnam("testgroup");
+	EXPECT_STREQ("testuser", *testgroup->gr_mem);
+	int ngroups = 4096 / sizeof(::gid_t);
+	::gid_t groups[ngroups];
+	int ret = ::getgrouplist("testuser", 2000, groups, &ngroups);
+	ASSERT_EQ(2, ret);
+	if (groups[0] == 2000) {
+		EXPECT_EQ(2001, groups[1]);
+	} else if (groups[0] == 2001) {
+		EXPECT_EQ(2000, groups[1]);
+	} else {
+		FAIL();
+	}
+}
