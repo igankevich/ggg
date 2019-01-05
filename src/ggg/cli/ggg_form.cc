@@ -126,11 +126,13 @@ namespace ggg {
 				tr.commit();
 				success = true;
 			} catch (const std::system_error& err) {
-				success = false;
 				if (std::errc(err.code().value()) ==
 				    std::errc::permission_denied) {
 					throw;
 				}
+				success = false;
+				std::cerr << std::endl;
+				error_message(std::cerr, err);
 			} catch (const std::exception& err) {
 				success = false;
 				std::cerr << std::endl;

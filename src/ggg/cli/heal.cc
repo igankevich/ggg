@@ -22,6 +22,7 @@ namespace {
 
 	size_t num_errors = 0;
 
+	sys::file_mode root_directory_mode(0755);
 	sys::file_mode entities_file_mode(0644);
 	sys::file_mode accounts_file_mode(0000);
 
@@ -292,9 +293,6 @@ namespace {
 			for (sys::gid_type gid : form_entities) {
 				acl.add_group(gid, permission_type::read_write);
 			}
-			if (read_gid != ggg::bad_gid) {
-				acl.add_group(read_gid, permission_type::read);
-			}
 			if (write_gid != ggg::bad_gid) {
 				acl.add_group(write_gid, permission_type::read_write);
 			}
@@ -316,6 +314,18 @@ namespace {
 			acl.add_mask();
 			change_acl(GGG_ACCOUNTS_PATH, acl, access_acl);
 		}
+		{
+			using namespace ggg::acl;
+			access_control_list acl(root_directory_mode);
+			for (sys::gid_type gid : form_entities) {
+				acl.add_group(gid, permission_type::read_write_execute);
+			}
+			if (write_gid != ggg::bad_gid) {
+				acl.add_group(write_gid, permission_type::read_write_execute);
+			}
+			acl.add_mask();
+			change_acl(GGG_ROOT, acl, access_acl);
+		}
 	}
 
 	void
@@ -329,10 +339,10 @@ namespace {
 
 	void
 	heal_root_directory() {
-		make_directory(sys::path(GGG_ROOT), root_uid, root_gid, 0755);
+		make_directory(sys::path(GGG_ROOT), root_uid, root_gid, root_directory_mode);
 		make_directory(sys::path(GGG_ROOT, "reg"), root_uid, root_gid, 0755);
 		change_owner(GGG_ROOT, sys::file_status(GGG_ROOT), root_uid, root_gid);
-		change_permissions(GGG_ROOT, 0755);
+		change_permissions(GGG_ROOT, root_directory_mode);
 	}
 
 	void

@@ -46,6 +46,8 @@ namespace ggg {
 			write = ACL_WRITE,
 			execute = ACL_EXECUTE,
 			read_write = ACL_READ | ACL_WRITE,
+			read_execute = ACL_READ | ACL_EXECUTE,
+			read_write_execute = ACL_READ | ACL_WRITE | ACL_EXECUTE,
 		};
 
 		inline permission_type
