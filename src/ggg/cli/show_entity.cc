@@ -15,21 +15,21 @@
 
 namespace {
 
-	long
-	to_days(ggg::account::duration d) {
-		using namespace std::chrono;
-		using namespace ggg::chrono;
-		return duration_cast<days>(d).count();
-	}
-
-	void
-	put_days(std::ostream& out, ggg::account::duration d) {
-		if (d > ggg::account::duration::zero()) {
-			out << to_days(d) << " days";
-		} else {
-			out << '-';
-		}
-	}
+//	long
+//	to_days(ggg::account::duration d) {
+//		using namespace std::chrono;
+//		using namespace ggg::chrono;
+//		return duration_cast<days>(d).count();
+//	}
+//
+//	void
+//	put_days(std::ostream& out, ggg::account::duration d) {
+//		if (d > ggg::account::duration::zero()) {
+//			out << to_days(d) << " days";
+//		} else {
+//			out << '-';
+//		}
+//	}
 
 	void
 	put_time_and_date(std::ostream& out, ggg::account::time_point tp) {
@@ -53,7 +53,6 @@ namespace {
 		out << "Full name: " << rhs.real_name() << '\n';
 		out << "Home: " << rhs.home() << '\n';
 		out << "Shell: " << rhs.shell() << '\n';
-		out << "Origin: " << rhs.origin() << '\n';
 	}
 
 	void
@@ -67,7 +66,7 @@ namespace {
 		if (acc.password_has_expired(now)) {
 			status.push_back("PASSWORD_EXPIRED");
 		}
-		if (acc.suspended()) {
+		if (acc.has_been_suspended()) {
 			status.push_back("SUSPENDED");
 		}
 		if (status.empty()) {
@@ -78,18 +77,6 @@ namespace {
 		out << '\n';
 		out << "Last change date: ";
 		put_time_and_date(out, acc.last_change());
-		out << '\n';
-		out << "Min change frequency: ";
-		put_days(out, acc.min_change());
-		out << '\n';
-		out << "Max change frequency: ";
-		put_days(out, acc.max_change());
-		out << '\n';
-		out << "Warn about change before: ";
-		put_days(out, acc.warn_change());
-		out << '\n';
-		out << "Deactivate after: ";
-		put_days(out, acc.max_inactive());
 		out << '\n';
 		out << "Status: ";
 		std::copy(
@@ -133,7 +120,7 @@ ggg::Show_entity::parse_arguments(int argc, char* argv[]) {
 		}
 	}
 	for (int i=::optind; i<argc; ++i) {
-		this->_args.emplace(argv[i]);
+		this->_args.emplace_back(argv[i]);
 	}
 	if (this->_args.empty()) {
 		throw std::invalid_argument("please, specify entity names");

@@ -1,8 +1,9 @@
 #ifndef GGG_EDIT_ENTITY_HH
 #define GGG_EDIT_ENTITY_HH
 
-#include <ggg/core/database.hh>
 #include <ggg/cli/command.hh>
+#include <ggg/core/database.hh>
+#include <ggg/core/entity_format.hh>
 
 namespace ggg {
 
@@ -25,7 +26,11 @@ namespace ggg {
 		void print_objects(Database& db, std::ostream& out);
 
 		template <class T>
-		void update_objects(Database& db, const std::string& filename);
+		void update_objects(
+			Database& db,
+			const std::string& filename,
+			entity_format format
+		);
 
 		template <class T>
 		void edit_objects(Database& db);

@@ -1,19 +1,28 @@
 #include <algorithm>
 #include <iostream>
 
+#include <ggg/cli/copy.hh>
+#include <ggg/cli/quiet_error.hh>
 #include <ggg/config.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/hierarchy.hh>
+#include <ggg/core/native.hh>
 #include <ggg/ctl/account_ctl.hh>
-#include <ggg/cli/copy.hh>
 
 void
 ggg::Copy::execute() {
 	Hierarchy h(GGG_ENT_ROOT);
 	account_ctl accounts;
-	Database db(Database::File::Entities, Database::Flag::Read_write);
+	Database db(Database::File::All, Database::Flag::Read_write);
+	int nerrors = 0;
 	for (const auto& ent : h) {
-		db.insert(ent);
+		try {
+			db.insert(ent);
+		} catch (const std::exception& err) {
+			++nerrors;
+			native_sentence(std::cerr, "Error adding _. ", ent);
+			error_message(std::cerr, err);
+		}
 	}
 	for (const auto& tie : h.ties()) {
 		db.tie(tie.first, tie.second);
@@ -22,8 +31,13 @@ ggg::Copy::execute() {
 		try {
 			db.insert(acc);
 		} catch (const std::exception& err) {
-			std::clog << "bad account: " << acc << std::endl;
+			++nerrors;
+			native_sentence(std::cerr, "Error adding _. ", acc);
+			error_message(std::cerr, err);
 		}
+	}
+	if (nerrors > 0) {
+		throw quiet_error();
 	}
 //	group gr;
 //	if (db.find_group("spc2018", gr)) {

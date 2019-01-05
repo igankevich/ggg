@@ -125,6 +125,10 @@ int pam_sm_acct_mgmt(
 			other = find_account(db, user);
 			acc = &other;
 		}
+		if (acc->has_been_suspended()) {
+			pamh.debug("account \"%s\" has been suspended", user);
+			throw_pam_error(pam_errc::permission_denied);
+		}
 		const ggg::account::time_point now = ggg::account::clock_type::now();
 		if (acc->has_expired(now)) {
 			pamh.debug(

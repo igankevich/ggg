@@ -11,8 +11,8 @@
 #include "align_columns.hh"
 #include "editor.hh"
 #include "object_traits.hh"
-#include "quiet_error.hh"
 #include "tmpfile.hh"
+#include <ggg/cli/quiet_error.hh>
 #include <ggg/config.hh>
 #include <ggg/core/native.hh>
 
@@ -41,7 +41,7 @@ ggg::Add_entity
 		}
 	}
 	for (int i=::optind; i<argc; ++i) {
-		this->_args.emplace(argv[i]);
+		this->_args.emplace_back(argv[i]);
 	}
 	if (this->_args.empty()) {
 		throw std::invalid_argument("please, specify entity names");
@@ -51,8 +51,7 @@ ggg::Add_entity
 void
 ggg::Add_entity
 ::execute() {
-	Database db(Database::File::Entities, Database::Flag::Read_write);
-	db.attach(Database::File::Accounts, Database::Flag::Read_write);
+	Database db(Database::File::All, Database::Flag::Read_write);
 	if (this->is_batch()) {
 		this->add_batch(db);
 	} else {
@@ -81,7 +80,7 @@ ggg::Add_entity
 		this->generate_entities(db, tmp.out());
 		edit_file_or_throw(tmp.filename());
 		try {
-			this->add_entities(db, sys::path(tmp.filename()));
+			this->add_entities(db, sys::path(tmp.filename()), entity_format::human);
 		} catch (const quiet_error& err) {
 			// ignore quiet error
 		}
@@ -99,7 +98,7 @@ ggg::Add_entity
 	tmp.out().imbue(std::locale::classic());
 	tmp.out() << std::cin.rdbuf();
 	tmp.out().flush();
-	this->add_entities(db, sys::path(tmp.filename()));
+	this->add_entities(db, sys::path(tmp.filename()), entity_format::batch);
 }
 
 void
@@ -112,17 +111,29 @@ ggg::Add_entity
 		tmp.shell(default_shell);
 		cnt.emplace(std::move(tmp));
 	}
-	align_columns(cnt, out, entity::delimiter, entity::delimiter, false);
+	align_columns(
+		cnt,
+		out,
+		entity::delimiter,
+		entity::delimiter,
+		false,
+		entity_format::human
+	);
 	out.flush();
 }
 
 void
 ggg::Add_entity
-::add_entities(Database& db, sys::path filename) {
+::add_entities(
+	Database& db,
+	sys::path filename,
+	entity_format format
+) {
 	typedef Object_traits<entity> traits_type;
 	std::vector<entity> ents;
 	read_objects<entity>(
 		filename,
+		format,
 		std::back_inserter(ents),
 		native("Unable to read entities.")
 	);
@@ -133,7 +144,17 @@ ggg::Add_entity
 			Transaction tr(db);
 			db.insert(ent);
 			db.insert(account(ent.name().data()));
-			this->_args.erase(traits_type::name(ent));
+			tr.commit();
+			auto result = std::find_if(
+				args().begin(),
+				args().end(),
+				[&ent] (const std::string& s) {
+					return s == traits_type::name(ent);
+				}
+			);
+			if (result != args().end()) {
+				this->_args.erase(result);
+			}
 		} catch (const std::exception& err) {
 			++nerrors;
 			native_sentence(std::cerr, "Error adding _. ", ent);

@@ -11,6 +11,7 @@
 #include <unistdx/fs/path>
 
 #include <ggg/core/account_flags.hh>
+#include <ggg/core/entity_format.hh>
 #include <ggg/core/eq_traits.hh>
 #include <ggg/core/form_field.hh>
 #include <ggg/sec/secure_string.hh>
@@ -140,11 +141,12 @@ namespace ggg {
 		write_human(
 			std::ostream& out,
 			columns_type width,
+			entity_format fmt,
 			char_type delim=delimiter
 		) const;
 
 		std::istream&
-		read_human(std::istream& in);
+		read_human(std::istream& in, entity_format fmt);
 
 		void
 		copy_from(const account& rhs);
@@ -288,7 +290,7 @@ namespace ggg {
 		}
 
 		inline bool
-		suspended() const noexcept {
+		has_been_suspended() const noexcept {
 			return this->_flags & account_flags::suspended;
 		}
 

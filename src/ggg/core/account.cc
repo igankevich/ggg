@@ -258,32 +258,43 @@ void
 ggg::account::write_human(
 	std::ostream& out,
 	columns_type width,
+	entity_format fmt,
 	char_type delim
 ) const {
 	const char_type d[4] = {' ', delim, ' ', 0};
-	out << std::left << std::setw(width[0]) << this->_login << d
-		<< std::left << std::setw(width[3]) << this->_minchange << d
-		<< std::left << std::setw(width[4]) << this->_maxchange << d
-		<< std::left << std::setw(width[5]) << this->_warnchange << d
-		<< std::left << std::setw(width[6]) << this->_maxinactive << d
-		<< std::left << std::setw(width[7]) << make_formatted(&this->_expire) << '\n';
+	out << std::left << std::setw(width[0]) << this->_login << d;
+	if (fmt == entity_format::batch) {
+		out << std::left << std::setw(width[3]) << this->_minchange << d
+			<< std::left << std::setw(width[4]) << this->_maxchange << d
+			<< std::left << std::setw(width[5]) << this->_warnchange << d
+			<< std::left << std::setw(width[6]) << this->_maxinactive << d;
+	}
+	out << std::left << std::setw(width[7]) << make_formatted(&this->_expire) << '\n';
 }
 
 std::istream&
-ggg::account::read_human(std::istream& in) {
+ggg::account::read_human(std::istream& in, entity_format fmt) {
 	std::istream::sentry s(in);
 	if (s) {
 		this->clear();
 		auto fmt_expire = make_formatted(&this->_expire);
-		bits::read_all_fields(
-			in, account::delimiter,
-			this->_login,
-			this->_minchange,
-			this->_maxchange,
-			this->_warnchange,
-			this->_maxinactive,
-			fmt_expire
-		);
+		if (fmt == entity_format::batch) {
+			bits::read_all_fields(
+				in, account::delimiter,
+				this->_login,
+				this->_minchange,
+				this->_maxchange,
+				this->_warnchange,
+				this->_maxinactive,
+				fmt_expire
+			);
+		} else {
+			bits::read_all_fields(
+				in, account::delimiter,
+				this->_login,
+				fmt_expire
+			);
+		}
 		if (in.eof()) {
 			in.clear();
 		}

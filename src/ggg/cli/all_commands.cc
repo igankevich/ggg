@@ -5,8 +5,10 @@
 #include <unordered_map>
 
 #include <ggg/cli/add_entity.hh>
+#include <ggg/cli/attach.hh>
 #include <ggg/cli/backup.hh>
 #include <ggg/cli/copy.hh>
+#include <ggg/cli/dot.hh>
 #include <ggg/cli/edit_entity.hh>
 #include <ggg/cli/expire_entity.hh>
 #include <ggg/cli/expunge.hh>
@@ -27,13 +29,22 @@
 #include <ggg/cli/unlock_entity.hh>
 
 #define MAKE_COMMAND(name, type) \
-	{name, [](){ return ::ggg::command_ptr(new ::ggg::type); }}
+	{ \
+		name, \
+		[](){ \
+			using namespace ::ggg; \
+			return command_ptr(new type); \
+		} \
+	}
 
 namespace {
 
 	typedef std::function<ggg::command_ptr()> command_ctr;
 
 	std::unordered_map<std::string,command_ctr> all_commands{
+		MAKE_COMMAND("init", Heal),
+		MAKE_COMMAND("heal", Heal),
+		MAKE_COMMAND("backup", Backup),
 		MAKE_COMMAND("delete", Remove_entity),
 		MAKE_COMMAND("remove", Remove_entity),
 		MAKE_COMMAND("rm", Remove_entity),
@@ -54,15 +65,14 @@ namespace {
 		MAKE_COMMAND("new", Add_entity),
 		MAKE_COMMAND("version", Show_version),
 		MAKE_COMMAND("copy", Copy),
-		MAKE_COMMAND("heal", Heal),
-		MAKE_COMMAND("init", Heal),
 		MAKE_COMMAND("show", Show_entity),
 		MAKE_COMMAND("info", Show_entity),
 		MAKE_COMMAND("members", Show_members),
-		MAKE_COMMAND("team", Show_members),
+		MAKE_COMMAND("children", Show_members),
+		MAKE_COMMAND("groups", Show_groups),
+		MAKE_COMMAND("parents", Show_groups),
 		MAKE_COMMAND("find", Find_entities),
 		MAKE_COMMAND("search", Find_entities),
-		MAKE_COMMAND("groups", Show_groups),
 		MAKE_COMMAND("expired", Show_expired),
 		MAKE_COMMAND("locked", Show_locked),
 		MAKE_COMMAND("inactive", Show_locked),
@@ -71,7 +81,12 @@ namespace {
 		MAKE_COMMAND("clean", Sanitise),
 		MAKE_COMMAND("expunge", Expunge),
 		MAKE_COMMAND("purge", Expunge),
-		MAKE_COMMAND("backup", Backup),
+		MAKE_COMMAND("attach", Attach),
+		MAKE_COMMAND("detach", Detach),
+		MAKE_COMMAND("tie", Tie),
+		MAKE_COMMAND("untie", Untie),
+		MAKE_COMMAND("dot", Dot),
+		MAKE_COMMAND("graphviz", Dot),
 		MAKE_COMMAND("-v", Show_version),
 		MAKE_COMMAND("--version", Show_version),
 		MAKE_COMMAND("help", Show_help),

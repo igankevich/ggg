@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include <ggg/core/entity_format.hh>
+
 namespace ggg {
 
 	template <class Container, class Ch>
@@ -25,10 +27,11 @@ namespace ggg {
 		const Container& cnt,
 		const std::vector<size_t>& width,
 		std::basic_ostream<Ch>& out,
-		Ch delimiter
+		Ch delimiter,
+		entity_format format
 	) {
 		for (const auto& value : cnt) {
-			value.write_human(out, width.data(), delimiter);
+			value.write_human(out, width.data(), format, delimiter);
 		}
 	}
 
@@ -43,7 +46,8 @@ namespace ggg {
 		std::basic_ostream<Ch>& out,
 		Ch delimiter,
 		Ch out_delimiter,
-		bool header
+		bool header,
+		entity_format format
 	) {
 		typedef typename Container::value_type entity_type;
 		std::basic_stringstream<Ch> str;
@@ -56,7 +60,7 @@ namespace ggg {
 		if (header) {
 			entity_type::write_header(out, width.data(), out_delimiter);
 		}
-		write_human(cnt, width, out, out_delimiter);
+		write_human(cnt, width, out, out_delimiter, format);
 	}
 
 	template <class Container, class Ch>
@@ -64,9 +68,10 @@ namespace ggg {
 	align_columns(
 		const Container& cnt,
 		std::basic_ostream<Ch>& out,
-		Ch delimiter
+		Ch delimiter,
+		entity_format format
 	) {
-		align_columns(cnt, out, delimiter, delimiter, true);
+		align_columns(cnt, out, delimiter, delimiter, true, format);
 	}
 }
 

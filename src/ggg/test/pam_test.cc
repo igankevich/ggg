@@ -38,20 +38,6 @@ add_testuser_without_password() {
 	add_testuser_without_password(db);
 }
 
-void
-add_testuser_with_password_and_expired_account(const char* password_id) {
-	Clean_database db;
-	add_testuser_with_password(db, password_id);
-	db.expire("testuser");
-}
-
-void
-add_testuser_with_expired_password(const char* password_id) {
-	Clean_database db;
-	add_testuser_with_password(db, password_id);
-	db.expire_password("testuser");
-}
-
 template <class T>
 T*
 allocate(size_t n) {
@@ -158,7 +144,7 @@ TEST(pam, authenticate_without_database) {
 	ggg::pam::call(::pam_end(pamh, 0));
 }
 
-TEST(pam, authenticate_testuser_without_password) {
+TEST(pam, authenticate_without_password) {
 	add_testuser_without_password();
 	ggg::pam_handle pamh;
 	ggg::conversation conv(default_conversation);
@@ -174,7 +160,7 @@ TEST(pam, authenticate_testuser_without_password) {
 	ggg::pam::call(::pam_end(pamh, 0));
 }
 
-TEST(pam, authenticate_testuser_with_password) {
+TEST(pam, authenticate_with_password) {
 	add_testuser_with_password("6");
 	ggg::pam_handle pamh;
 	ggg::conversation conv(default_conversation);
@@ -183,35 +169,12 @@ TEST(pam, authenticate_testuser_with_password) {
 	ggg::pam::call(::pam_end(pamh, 0));
 }
 
-TEST(pam, authenticate_testuser_with_password_and_valid_account) {
-	add_testuser_with_password("6");
-	ggg::pam_handle pamh;
-	ggg::conversation conv(default_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_authenticate(pamh, 0));
-	ggg::pam::call(::pam_acct_mgmt(pamh, 0));
-	ggg::pam::call(::pam_end(pamh, 0));
-}
-
-TEST(pam, authenticate_testuser_with_password_and_expired_account) {
-	add_testuser_with_password_and_expired_account("6");
-	ggg::pam_handle pamh;
-	ggg::conversation conv(default_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_authenticate(pamh, 0));
-	try {
-		ggg::pam::call(::pam_acct_mgmt(pamh, 0));
-	} catch (const std::system_error& err) {
-		EXPECT_EQ(
-			ggg::pam_errc::account_expired,
-			ggg::pam_errc(err.code().value())
-		) << err.what();
+TEST(pam, authenticate_with_expired_password) {
+	{
+		Clean_database db;
+		add_testuser_with_password(db, "6");
+		db.expire_password("testuser");
 	}
-	ggg::pam::call(::pam_end(pamh, 0));
-}
-
-TEST(pam, authenticate_testuser_with_expired_password) {
-	add_testuser_with_expired_password("6");
 	ggg::pam_handle pamh;
 	ggg::conversation conv(default_conversation);
 	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
@@ -227,9 +190,13 @@ TEST(pam, authenticate_testuser_with_expired_password) {
 	ggg::pam::call(::pam_end(pamh, 0));
 }
 
-TEST(pam, authenticate_testuser_with_expired_password_and_change_it) {
+TEST(pam, authenticate_with_expired_password_and_change_it) {
+	{
+		Clean_database db;
+		add_testuser_with_password(db, "6");
+		db.expire_password("testuser");
+	}
 	conversation_state = Conversation_state::Authenticate;
-	add_testuser_with_expired_password("6");
 	ggg::pam_handle pamh;
 	ggg::conversation conv(conversation_with_state);
 	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
@@ -250,6 +217,58 @@ TEST(pam, authenticate_testuser_with_expired_password_and_change_it) {
 	ggg::pam::call(::pam_end(pamh, 0));
 }
 
+TEST(pam, authenticate_with_valid_account) {
+	add_testuser_with_password("6");
+	ggg::pam_handle pamh;
+	ggg::conversation conv(default_conversation);
+	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
+	ggg::pam::call(::pam_authenticate(pamh, 0));
+	ggg::pam::call(::pam_acct_mgmt(pamh, 0));
+	ggg::pam::call(::pam_end(pamh, 0));
+}
+
+TEST(pam, authenticate_with_suspended_account) {
+	{
+		Clean_database db;
+		add_testuser_with_password(db, "6");
+		db.deactivate("testuser");
+	}
+	ggg::pam_handle pamh;
+	ggg::conversation conv(default_conversation);
+	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
+	ggg::pam::call(::pam_authenticate(pamh, 0));
+	try {
+		ggg::pam::call(::pam_acct_mgmt(pamh, 0));
+	} catch (const std::system_error& err) {
+		EXPECT_EQ(
+			ggg::pam_errc::permission_denied,
+			ggg::pam_errc(err.code().value())
+		) << err.what();
+	}
+	ggg::pam::call(::pam_end(pamh, 0));
+}
+
+TEST(pam, authenticate_with_expired_account) {
+	{
+		Clean_database db;
+		add_testuser_with_password(db, "6");
+		db.expire("testuser");
+	}
+	ggg::pam_handle pamh;
+	ggg::conversation conv(default_conversation);
+	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
+	ggg::pam::call(::pam_authenticate(pamh, 0));
+	try {
+		ggg::pam::call(::pam_acct_mgmt(pamh, 0));
+	} catch (const std::system_error& err) {
+		EXPECT_EQ(
+			ggg::pam_errc::account_expired,
+			ggg::pam_errc(err.code().value())
+		) << err.what();
+	}
+	ggg::pam::call(::pam_end(pamh, 0));
+}
+
 TEST(pam, change_password_and_authenticate) {
 	conversation_state = Conversation_state::Get_old_password;
 	add_testuser_with_password("6");
@@ -264,8 +283,12 @@ TEST(pam, change_password_and_authenticate) {
 }
 
 TEST(pam, change_password_of_expired_account) {
+	{
+		Clean_database db;
+		add_testuser_with_password(db, "6");
+		db.expire("testuser");
+	}
 	conversation_state = Conversation_state::Get_old_password;
-	add_testuser_with_password_and_expired_account("6");
 	ggg::pam_handle pamh;
 	ggg::conversation conv(conversation_with_state);
 	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
@@ -277,17 +300,5 @@ TEST(pam, change_password_of_expired_account) {
 			ggg::pam_errc(err.code().value())
 		) << err.what();
 	}
-	ggg::pam::call(::pam_end(pamh, 0));
-}
-
-TEST(pam, authenticate_then_account_then_session) {
-	add_testuser_with_password("6");
-	ggg::pam_handle pamh;
-	ggg::conversation conv(default_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_authenticate(pamh, 0));
-	ggg::pam::call(::pam_acct_mgmt(pamh, 0));
-	ggg::pam::call(::pam_open_session(pamh, 0));
-	ggg::pam::call(::pam_close_session(pamh, 0));
 	ggg::pam::call(::pam_end(pamh, 0));
 }

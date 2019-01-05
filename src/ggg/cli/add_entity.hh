@@ -29,7 +29,7 @@ namespace ggg {
 
 	private:
 		void generate_entities(Database& db, std::ostream& out);
-		void add_entities(Database& db, sys::path filename);
+		void add_entities(Database& db, sys::path filename, entity_format format);
 		void add_interactive(Database& db);
 		void add_batch(Database& db);
 

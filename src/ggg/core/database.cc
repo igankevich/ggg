@@ -1,5 +1,6 @@
-#include <type_traits>
 #include <regex>
+#include <type_traits>
+#include <vector>
 
 #include <ggg/bits/to_bytes.hh>
 #include <ggg/config.hh>
@@ -302,14 +303,14 @@ WITH RECURSIVE
 	entity_ids(id) AS (
 		SELECT id FROM entities WHERE name = $name
 	),
-	-- find all entities higher in the hierarchy
+	-- find all entities lower in the hierarchy
 	hierarchy_path(child_id,parent_id,depth) AS (
 		SELECT child_id,parent_id,1 FROM hierarchy
-		WHERE child_id IN (SELECT id FROM entity_ids)
+		WHERE parent_id IN (SELECT id FROM entity_ids)
 		UNION ALL
 		SELECT hierarchy.child_id, hierarchy.parent_id, hierarchy_path.depth+1
 		FROM hierarchy_path, hierarchy
-		WHERE hierarchy_path.parent_id = hierarchy.child_id
+		WHERE hierarchy_path.child_id = hierarchy.parent_id
 		  AND hierarchy_path.child_id <> hierarchy_path.parent_id
 		  AND hierarchy_path.depth < $depth
 	),
@@ -326,7 +327,7 @@ WITH RECURSIVE
 	ties_subgraph(child_id,parent_id,depth) AS (
 		SELECT child_id,parent_id,1
 		FROM ties
-		WHERE child_id IN (SELECT id FROM unique_hierarchy_path)
+		WHERE parent_id IN (SELECT id FROM unique_hierarchy_path)
 		UNION ALL
 		SELECT ties.child_id, ties.parent_id, ties_subgraph.depth+1
 		FROM ties_subgraph, ties
@@ -406,8 +407,25 @@ const char* sql_select_all_ties = R"(
 SELECT child_id,parent_id FROM ties
 )";
 
+const char* sql_select_tie_by_ids = R"(
+SELECT child_id,parent_id
+FROM ties
+WHERE child_id=$child_id AND parent_id=$parent_id
+)";
+
 const char* sql_insert_tie = R"(
 INSERT INTO ties (child_id,parent_id) VALUES (?,?)
+)";
+
+const char* sql_delete_tie_by_child_name = R"(
+DELETE FROM ties
+WHERE child_id IN (SELECT id FROM entities WHERE name=$child_name)
+)";
+
+const char* sql_delete_tie_by_child_and_parent_name = R"(
+DELETE FROM ties
+WHERE child_id IN (SELECT id FROM entities WHERE name=$child_name)
+  AND parent_id IN (SELECT id FROM entities WHERE name=$parent_name)
 )";
 
 const char* sql_select_account_by_name = R"(
@@ -484,10 +502,60 @@ WHERE expiration_date IS NOT NULL
   AND expiration_date < strftime('%s', 'now')
 )";
 
+const char* sql_select_whole_hierarchy = R"(
+SELECT child_id,parent_id FROM hierarchy
+)";
+
+const char* sql_select_hierarchy_root_by_child_id = R"(
+WITH RECURSIVE
+	hierarchy_path(child_id,parent_id,depth) AS (
+		SELECT child_id,parent_id,1 FROM hierarchy
+		WHERE child_id = $child_id
+		UNION ALL
+		SELECT
+			hierarchy.child_id,
+			hierarchy.parent_id,
+			hierarchy_path.depth+1
+		FROM hierarchy_path, hierarchy
+		WHERE hierarchy_path.parent_id = hierarchy.child_id
+		  AND hierarchy_path.child_id <> hierarchy_path.parent_id
+		  AND hierarchy_path.depth < $depth
+	)
+SELECT DISTINCT parent_id
+FROM hierarchy_path
+WHERE depth IN (SELECT MAX(depth) FROM hierarchy_path)
+)";
+
+const char* sql_hierarchy_attach = R"(
+INSERT INTO hierarchy(child_id,parent_id)
+VALUES (?,?)
+)";
+
+const char* sql_hierarchy_detach_child_by_name = R"(
+DELETE FROM hierarchy
+WHERE child_id IN (SELECT id FROM entities WHERE name = $child_name)
+)";
+
+const char* sql_select_hierarchy_by_ids = R"(
+SELECT child_id,parent_id
+FROM hierarchy
+WHERE child_id=$child_id AND parent_id=$parent_id
+)";
+
 	struct Tie {
 
-		int64_t child_id;
-		int64_t parent_id;
+		sys::uid_type child_id = ggg::bad_uid;
+		sys::uid_type parent_id = ggg::bad_uid;
+
+		Tie() = default;
+
+		Tie(sys::uid_type id1, sys::uid_type id2):
+		child_id(id1), parent_id(id2) {}
+
+		void
+		dot(std::ostream& out) const {
+			out << "id" << child_id << " -> " << "id" << parent_id << ";\n";
+		}
 
 	};
 
@@ -548,6 +616,8 @@ ggg::Database::open(File file, Flag flag) {
 			this->_db.user_version(params.schema_version);
 		}
 	}
+	this->_db.enable_foreign_keys();
+	this->_db.busy_timeout(std::chrono::seconds(30));
 }
 
 void
@@ -707,18 +777,16 @@ ggg::Database::erase(const char* name) {
 	}
 }
 
-void
-ggg::Database::tie(sys::uid_type uid, sys::gid_type gid) {
-	this->_db.execute(sql_insert_tie, uid, gid);
-}
-
 sys::uid_type
 ggg::Database::find_id(const char* name) {
-	sys::uid_type id = -1;
+	sys::uid_type id = bad_uid;
 	auto rstr = this->_db.prepare(sql_select_id_by_name, name);
 	sqlite::cstream cstr(rstr);
 	if (rstr >> cstr) {
 		cstr >> id;
+	}
+	if (id == bad_uid) {
+		throw std::invalid_argument("bad name");
 	}
 	return id;
 }
@@ -741,7 +809,9 @@ ggg::Database::ties() -> row_stream_t {
 
 void
 ggg::Database::dot(std::ostream& out) {
-	out << "digraph {\n";
+	sqlite::deferred_transaction tr(this->_db);
+	out << "digraph GGG {\n";
+	out << "rankdir=LR;\n";
 	{
 		auto rstr = entities();
 		sqlite::rstream_iterator<entity> first(rstr), last;
@@ -754,14 +824,33 @@ ggg::Database::dot(std::ostream& out) {
 		auto rstr = ties();
 		sqlite::rstream_iterator<Tie> first(rstr), last;
 		while (first != last) {
-			out << "id" << first->child_id
-				<< " -> "
-				<< "id" << first->parent_id
-				<< ";\n";
+			first->dot(out);
 			++first;
 		}
 	}
+	{
+		std::unordered_map<sys::uid_type,std::vector<Tie>> hierarchies;
+		auto rstr = hierarchy();
+		sqlite::rstream_iterator<Tie> first(rstr), last;
+		while (first != last) {
+			auto root_id = find_hierarchy_root(first->child_id);
+			hierarchies[root_id].emplace_back(first->child_id, first->parent_id);
+			++first;
+		}
+		for (const auto& entry : hierarchies) {
+			auto root_id = entry.first;
+			auto root_name = find_name(root_id);
+			const auto& ties = entry.second;
+			out << "subgraph cluster_" << root_id << " {\n";
+			out << "label=\"" << root_name << "\";\n";
+			for (const auto& tie : ties) {
+				tie.dot(out);
+			}
+			out << "}\n";
+		}
+	}
 	out << "}\n";
+	tr.commit();
 }
 
 auto
@@ -883,7 +972,7 @@ ggg::Database::update(const entity& ent) {
 		ent.id()
 	);
 	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("update: bad entity");
+		throw std::invalid_argument("bad entity");
 	}
 }
 
@@ -910,5 +999,107 @@ ggg::Database::find_entities_by_flag(
 	typedef std::underlying_type<account_flags>::type int_t;
 	int_t v = static_cast<int_t>(flag);
 	return this->_db.prepare(sql_select_entities_by_flag, v, set ? v : 0);
+}
+
+auto
+ggg::Database::hierarchy() -> row_stream_t {
+	return this->_db.prepare(sql_select_whole_hierarchy);
+}
+
+sys::uid_type
+ggg::Database::find_hierarchy_root(sys::uid_type child_id) {
+	sys::uid_type id = bad_uid;
+	auto rstr =
+		this->_db.prepare(sql_select_hierarchy_root_by_child_id, child_id);
+	sqlite::cstream cstr(rstr);
+	if (rstr >> cstr) {
+		cstr >> id;
+	}
+	if (id == bad_uid) {
+		id = child_id;
+	}
+	return id;
+}
+
+void
+ggg::Database::detach(const char* name) {
+	this->_db.execute(sql_hierarchy_detach_child_by_name, name);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("bad name");
+	}
+}
+
+void
+ggg::Database::attach(const char* child, const char* parent) {
+	Transaction tr(*this);
+	auto child_id = find_id(child);
+	auto parent_id = find_id(parent);
+	if (entities_are_attached(child_id, parent_id)) {
+		throw std::invalid_argument("entities are attached");
+	}
+	if (entities_are_tied(child_id, parent_id)) {
+		throw std::invalid_argument("entities are tied");
+	}
+	this->_db.execute(sql_hierarchy_detach_child_by_name, child);
+	this->_db.execute(sql_hierarchy_attach, child_id, parent_id);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("bad names");
+	}
+	tr.commit();
+}
+
+void
+ggg::Database::tie(sys::uid_type uid, sys::gid_type gid) {
+	this->_db.execute(sql_insert_tie, uid, gid);
+}
+
+void
+ggg::Database::tie(const char* child, const char* parent) {
+	Transaction tr(*this);
+	auto child_id = find_id(child);
+	auto parent_id = find_id(parent);
+	auto child_root = find_hierarchy_root(child_id);
+	auto parent_root = find_hierarchy_root(parent_id);
+	if (child_root == parent_root) {
+		throw std::invalid_argument("same hierarchy root");
+	}
+	this->tie(child_id, parent_id);
+	tr.commit();
+}
+
+void
+ggg::Database::untie(const char* child) {
+	this->_db.execute(sql_delete_tie_by_child_name, child);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("bad name");
+	}
+}
+
+void
+ggg::Database::untie(const char* child, const char* parent) {
+	this->_db.execute(sql_delete_tie_by_child_and_parent_name, child, parent);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("bad names");
+	}
+}
+
+bool
+ggg::Database::entities_are_tied(
+	sys::uid_type child_id,
+	sys::gid_type parent_id
+) {
+	auto rstr = this->_db.prepare(sql_select_tie_by_ids, child_id, parent_id);
+	rstr.step();
+	return !rstr.eof();
+}
+
+bool
+ggg::Database::entities_are_attached(
+	sys::uid_type child_id,
+	sys::gid_type parent_id
+) {
+	auto rstr = this->_db.prepare(sql_select_hierarchy_by_ids, child_id, parent_id);
+	rstr.step();
+	return !rstr.eof();
 }
 

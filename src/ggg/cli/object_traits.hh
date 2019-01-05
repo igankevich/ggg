@@ -10,6 +10,7 @@
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/entity.hh>
+#include <ggg/core/entity_format.hh>
 
 namespace ggg {
 
@@ -80,14 +81,19 @@ namespace ggg {
 
 	template <class T, class Result>
 	void
-	read_objects(const std::string& filename, Result result, std::string msg) {
+	read_objects(
+		const std::string& filename,
+		entity_format format,
+		Result result,
+		std::string msg
+	) {
 		std::ifstream in;
 		try {
 			in.exceptions(std::ios::badbit);
 			in.imbue(std::locale::classic());
 			in.open(filename, std::ios_base::in);
 			T obj;
-			while (obj.read_human(in)) {
+			while (obj.read_human(in, format)) {
 				*result++ = obj;
 			}
 		} catch (...) {

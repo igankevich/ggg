@@ -123,6 +123,7 @@ namespace ggg {
 				Transaction tr(db);
 				db.insert(ent);
 				db.insert(acc);
+				tr.commit();
 				success = true;
 			} catch (const std::system_error& err) {
 				success = false;

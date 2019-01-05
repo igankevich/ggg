@@ -18,7 +18,7 @@ ggg::Show_base<T>::parse_arguments(int argc, char* argv[]) {
 		}
 	}
 	for (int i=::optind; i<argc; ++i) {
-		this->_args.emplace(argv[i]);
+		this->_args.emplace_back(argv[i]);
 	}
 }
 
@@ -30,7 +30,14 @@ ggg::Show_base<T>::execute() {
 			std::cout << ent << '\n';
 		}
 	} else if (this->_long) {
-		align_columns(this->_result, std::cout, value_type::delimiter, ' ', true);
+		align_columns(
+			this->_result,
+			std::cout,
+			value_type::delimiter,
+			' ',
+			true,
+			entity_format::batch
+		);
 		const size_t nentities = this->_result.size();
 		if (nentities > 7) {
 			std::cout << std::endl;

@@ -75,21 +75,19 @@ TEST_F(Commands, Info) {
 	EXPECT_NON_ZERO("ggg info donotexist");
 }
 
-/*
-TEST_F(Commands, GetEnt) {
-	EXPECT_NON_ZERO("getent passwd u1");
-	EXPECT_NON_ZERO("getent group u1");
-	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
-	EXPECT_OUTPUT("u1::2001:2001:U1:/home/u1:/bin/sh\n", "getent passwd u1");
-	EXPECT_OUTPUT("u1::2001:2001:U1:/home/u1:/bin/sh\n", "LANG=donotexist getent passwd u1");
-	EXPECT_OUTPUT("u1::2001:\n", "getent group u1");
-	EXPECT_OUTPUT("u1\n", "getent group u1 | cut -d: -f1");
-	EXPECT_OUTPUT("2001\n", "getent group u1 | cut -d: -f3");
-	EXPECT_ZERO("ggg rm u1");
-	EXPECT_NON_ZERO("getent passwd u1");
-	EXPECT_NON_ZERO("getent group u1");
-}
-*/
+//TEST_F(Commands, GetEnt) {
+//	EXPECT_NON_ZERO("getent passwd u1");
+//	EXPECT_NON_ZERO("getent group u1");
+//	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+//	EXPECT_OUTPUT("u1::2001:2001:U1:/home/u1:/bin/sh\n", "getent passwd u1");
+//	EXPECT_OUTPUT("u1::2001:2001:U1:/home/u1:/bin/sh\n", "LANG=donotexist getent passwd u1");
+//	EXPECT_OUTPUT("u1::2001:\n", "getent group u1");
+//	EXPECT_OUTPUT("u1\n", "getent group u1 | cut -d: -f1");
+//	EXPECT_OUTPUT("2001\n", "getent group u1 | cut -d: -f3");
+//	EXPECT_ZERO("ggg rm u1");
+//	EXPECT_NON_ZERO("getent passwd u1");
+//	EXPECT_NON_ZERO("getent group u1");
+//}
 
 TEST_F(Commands, Find) {
 	EXPECT_OUTPUT("", "ggg find");
@@ -108,32 +106,30 @@ TEST_F(Commands, Find) {
 	EXPECT_OUTPUT("", "ggg find u1");
 }
 
-/*
-TEST_F(Commands, FindOutputMatchesGetEntOutput) {
-	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
-	auto result1 = execute_command("ggg find -t u1");
-	EXPECT_EQ(0, result1.first.exit_code());
-	auto result2 = execute_command("getent passwd u1");
-	EXPECT_EQ(0, result2.first.exit_code());
-	EXPECT_EQ(result2.second, result1.second);
-}
-
-TEST_F(Commands, Duplicates) {
-	auto uid = sys::this_process::user();
-	{
-		std::stringstream tmp;
-		tmp << "echo '";
-		tmp << "u1:" << uid << ":U1:/:/bin/sh";
-		tmp << "' | ggg add -";
-		std::clog << "tmp.str()=" << tmp.str() << std::endl;
-		EXPECT_ZERO(tmp.str().data());
-	}
-	EXPECT_ZERO("ggg duplicates");
-	auto result = execute_command("ggg duplicates");
-	EXPECT_EQ(0, result.first.exit_code());
-	EXPECT_TRUE(result.second.empty());
-}
-*/
+//TEST_F(Commands, FindOutputMatchesGetEntOutput) {
+//	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+//	auto result1 = execute_command("ggg find -t u1");
+//	EXPECT_EQ(0, result1.first.exit_code());
+//	auto result2 = execute_command("getent passwd u1");
+//	EXPECT_EQ(0, result2.first.exit_code());
+//	EXPECT_EQ(result2.second, result1.second);
+//}
+//
+//TEST_F(Commands, Duplicates) {
+//	auto uid = sys::this_process::user();
+//	{
+//		std::stringstream tmp;
+//		tmp << "echo '";
+//		tmp << "u1:" << uid << ":U1:/:/bin/sh";
+//		tmp << "' | ggg add -";
+//		std::clog << "tmp.str()=" << tmp.str() << std::endl;
+//		EXPECT_ZERO(tmp.str().data());
+//	}
+//	EXPECT_ZERO("ggg duplicates");
+//	auto result = execute_command("ggg duplicates");
+//	EXPECT_EQ(0, result.first.exit_code());
+//	EXPECT_TRUE(result.second.empty());
+//}
 
 
 TEST_F(Commands, GroupsAndMembers) {
@@ -304,6 +300,22 @@ TEST_F(Commands, Locale) {
 	EXPECT_ZERO("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -");
 	EXPECT_ZERO("ggg lock u1 u2 u3");
 	EXPECT_OUTPUT("u1\nu2\nu3\n", "env -i LC_ALL=C PATH=$PATH ggg locked");
+}
+
+TEST_F(Commands, TiesAndHierarchies) {
+	EXPECT_ZERO("echo 'u1:2001:U1:/home/u1:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'u2:2002:Ю2:/home/u2:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'u3:2003:U3:/home/u3:/bin/sh' | ggg add -");
+	EXPECT_ZERO("ggg attach u1 u2");
+	EXPECT_NON_ZERO("ggg attach u1 u2")
+		<< "attached same entities multiple times";
+	EXPECT_NON_ZERO("ggg tie u1 u2")
+		<< "tied entitites with the same hierarhy root";
+	EXPECT_ZERO("ggg detach u1");
+	EXPECT_ZERO("ggg tie u1 u2");
+	EXPECT_NON_ZERO("ggg attach u1 u2") << "attached tied entities";
+	EXPECT_ZERO("ggg untie u1 u2");
+	EXPECT_ZERO("ggg attach u1 u2");
 }
 
 int

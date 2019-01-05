@@ -149,7 +149,8 @@ if not etc.startswith('/')
 			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
 			'GGG_UNPRIVILEDGED=1'
 		],
-		suite: 'unit'
+		suite: 'unit',
+		timeout: 120
 	)
 endif
 

@@ -94,6 +94,7 @@ register_user(GtkButton*, gpointer) {
 			Transaction tr(db);
 			db.insert(ent);
 			db.update(acc);
+			tr.commit();
 		}
 		show_message_box(ggg::native("Registered successfully!"), GTK_MESSAGE_INFO);
 		for (GtkWidget* entry : all_entries) {

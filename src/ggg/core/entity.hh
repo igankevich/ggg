@@ -13,6 +13,7 @@
 
 #include <sqlitex/rstream.hh>
 
+#include <ggg/core/entity_format.hh>
 #include <ggg/core/eq_traits.hh>
 #include <ggg/core/form_field.hh>
 
@@ -153,11 +154,12 @@ namespace ggg {
 		write_human(
 			ostream_type& out,
 			columns_type width,
+			entity_format fmt,
 			char_type delim=delimiter
 		) const;
 
 		std::basic_istream<Ch>&
-		read_human(std::basic_istream<Ch>& in);
+		read_human(std::basic_istream<Ch>& in, entity_format fmt);
 
 		inline sys::uid_type
 		id() const noexcept {

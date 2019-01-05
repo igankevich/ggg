@@ -22,7 +22,7 @@ namespace {
 
 	size_t num_errors = 0;
 
-	sys::file_mode entities_file_mode(0664);
+	sys::file_mode entities_file_mode(0644);
 	sys::file_mode accounts_file_mode(0000);
 
 	sys::gid_type write_gid = ggg::bad_gid;
@@ -338,11 +338,15 @@ ggg::Heal
 		db.open(Database::File::All, Database::Flag::Read_write);
 	} catch (const std::exception& err) {
 		++num_errors;
-		native_sentence(std::cerr, "Entities are broken.");
+		native_sentence(std::cerr, "Entities are broken. ");
 		error_message(std::cerr, err);
 	}
 	heal_database();
-	write_gid = db.find_id(GGG_WRITE_GROUP);
+	try {
+		write_gid = db.find_id(GGG_WRITE_GROUP);
+	} catch (const std::exception& err) {
+		write_gid = bad_gid;
+	}
 	heal_forms(db);
 	if (num_errors > 0) {
 		throw quiet_error();

@@ -2,14 +2,14 @@
 #define GGG_COMMAND_HH
 
 #include <string>
-#include <unordered_set>
+#include <vector>
 
 namespace ggg {
 
 	class Command {
 
 	public:
-		typedef std::unordered_set<std::string> args_type;
+		typedef std::vector<std::string> args_type;
 		typedef args_type::const_iterator args_iterator;
 
 	protected:
@@ -62,6 +62,9 @@ namespace ggg {
 		is_batch() const noexcept {
 			return this->_args.size() == 1 && *this->_args.begin() == "-";
 		}
+
+		void
+		remove_duplicate_arguments();
 
 	};
 

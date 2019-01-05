@@ -29,7 +29,7 @@ ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
 		}
 	}
 	for (int i=::optind; i<argc; ++i) {
-		this->_args.emplace(argv[i]);
+		this->_args.emplace_back(argv[i]);
 	}
 	if (this->_args.empty()) {
 		throw std::invalid_argument("please, specify entity names");
@@ -69,7 +69,7 @@ ggg::Edit_entity::edit_interactive(Database& db) {
 		tmp.out().imbue(std::locale::classic());
 		this->print_objects<T>(db, tmp.out());
 		edit_file_or_throw(tmp.filename());
-		this->update_objects<T>(db, tmp.filename());
+		this->update_objects<T>(db, tmp.filename(), entity_format::human);
 		if (!this->_args.empty()) {
 			native_message(std::clog, "Press any key to continue...");
 			std::cin.get();
@@ -84,7 +84,7 @@ ggg::Edit_entity::edit_batch(Database& db) {
 	tmp.out().imbue(std::locale::classic());
 	tmp.out() << std::cin.rdbuf();
 	tmp.out().flush();
-	this->update_objects<T>(db, tmp.filename());
+	this->update_objects<T>(db, tmp.filename(), entity_format::batch);
 }
 
 template <class T>
@@ -96,7 +96,7 @@ ggg::Edit_entity::print_objects(Database& db, std::ostream& out) {
 	if (cnt.empty()) {
 		throw std::runtime_error("not found");
 	}
-	align_columns(cnt, out, traits_type::delimiter());
+	align_columns(cnt, out, traits_type::delimiter(), entity_format::human);
 	out.flush();
 }
 
@@ -113,11 +113,16 @@ ggg::Edit_entity::print_usage() {
 
 template <class T>
 void
-ggg::Edit_entity::update_objects(Database& db, const std::string& filename) {
+ggg::Edit_entity::update_objects(
+	Database& db,
+	const std::string& filename,
+	entity_format format
+) {
 	typedef Object_traits<T> traits_type;
 	std::vector<T> ents;
 	read_objects<T>(
 		filename,
+		format,
 		std::back_inserter(ents),
 		"unable to read entities"
 	);
@@ -126,7 +131,16 @@ ggg::Edit_entity::update_objects(Database& db, const std::string& filename) {
 	for (const T& ent : ents) {
 		try {
 			db.update(ent);
-			this->_args.erase(traits_type::name(ent));
+			auto result = std::find_if(
+				args().begin(),
+				args().end(),
+				[&ent] (const std::string& s) {
+					return s == traits_type::name(ent);
+				}
+			);
+			if (result != args().end()) {
+				this->_args.erase(result);
+			}
 		} catch (const std::exception& err) {
 			++nerrors;
 			native_message(std::cerr, "error updating _: _", ent, native(err.what()));
@@ -142,9 +156,17 @@ ggg::Edit_entity::print_objects<ggg::entity>(Database& db, std::ostream& out);
 template void
 ggg::Edit_entity::print_objects<ggg::account>(Database& db, std::ostream& out);
 template void
-ggg::Edit_entity::update_objects<ggg::entity>(Database& db, const std::string& filename);
+ggg::Edit_entity::update_objects<ggg::entity>(
+	Database& db,
+	const std::string& filename,
+	ggg::entity_format format
+);
 template void
-ggg::Edit_entity::update_objects<ggg::account>(Database& db, const std::string& filename);
+ggg::Edit_entity::update_objects<ggg::account>(
+	Database& db,
+	const std::string& filename,
+	ggg::entity_format format
+);
 template void
 ggg::Edit_entity::edit_objects<ggg::entity>(Database& db);
 template void

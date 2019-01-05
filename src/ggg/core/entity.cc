@@ -158,16 +158,23 @@ ggg::basic_entity<Ch>
 template <class Ch>
 void
 ggg::basic_entity<Ch>
-::write_human(ostream_type& out, columns_type width, char_type delim) const {
+::write_human(
+	ostream_type& out,
+	columns_type width,
+	entity_format fmt,
+	char_type delim
+) const {
 	const char_type d[4] = {
 		' ',
 		delim,
 		delim == ' ' ? char_type(0) : ' ',
 		0
 	};
-	out << std::left << std::setw(width[0]) << this->name() << d
-	    << std::right << std::setw(width[2]) << this->id() << d
-	    << std::left << std::setw(width[4]) << this->real_name() << d
+	out << std::left << std::setw(width[0]) << this->name() << d;
+	if (fmt == entity_format::batch) {
+		out << std::right << std::setw(width[2]) << this->id() << d;
+	}
+	out << std::left << std::setw(width[4]) << this->real_name() << d
 	    << std::left << std::setw(width[5]) << this->home() << d
 	    << std::left << std::setw(width[6]) << this->shell() << '\n';
 }
@@ -175,20 +182,31 @@ ggg::basic_entity<Ch>
 template <class Ch>
 std::basic_istream<Ch>&
 ggg::basic_entity<Ch>
-::read_human(std::basic_istream<Ch>& in) {
+::read_human(std::basic_istream<Ch>& in, entity_format fmt) {
 	typename std::basic_istream<Ch>::sentry s(in);
 	if (s) {
 		this->clear();
-		bits::read_all_fields(
-			in,
-			basic_entity<Ch>::delimiter,
-			this->_name,
-			this->_uid,
-			this->_realname,
-			this->_homedir,
-			this->_shell
-		);
-		this->_gid = this->_uid;
+		if (fmt == entity_format::batch) {
+			bits::read_all_fields(
+				in,
+				basic_entity<Ch>::delimiter,
+				this->_name,
+				this->_uid,
+				this->_realname,
+				this->_homedir,
+				this->_shell
+			);
+			this->_gid = this->_uid;
+		} else {
+			bits::read_all_fields(
+				in,
+				basic_entity<Ch>::delimiter,
+				this->_name,
+				this->_realname,
+				this->_homedir,
+				this->_shell
+			);
+		}
 		if (in.eof()) {
 			in.clear();
 		}

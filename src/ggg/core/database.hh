@@ -62,9 +62,6 @@ namespace ggg {
 		void
 		open(File file, Flag flag=Flag::Read_only);
 
-		void
-		attach(File file, Flag flag=Flag::Read_only);
-
 		inline bool
 		is_open() const noexcept {
 			return this->_db.db() != nullptr;
@@ -156,9 +153,6 @@ namespace ggg {
 
 		void
 		erase(const char* name);
-
-		void
-		tie(sys::uid_type uid, sys::gid_type gid);
 
 		sys::uid_type
 		find_id(const char* name);
@@ -253,6 +247,36 @@ namespace ggg {
 			return this->find_entities_by_flag(account_flags::suspended, true);
 		}
 
+		row_stream_t
+		hierarchy();
+
+		void
+		attach(const char* child, const char* parent);
+
+		void
+		detach(const char* child);
+
+		bool
+		entities_are_attached(sys::uid_type child_id, sys::gid_type parent_id);
+
+		void
+		tie(sys::uid_type uid, sys::gid_type gid);
+
+		void
+		tie(const char* child, const char* parent);
+
+		void
+		untie(const char* child, const char* parent);
+
+		void
+		untie(const char* child);
+
+		bool
+		entities_are_tied(sys::uid_type child_id, sys::gid_type parent_id);
+
+		sys::uid_type
+		find_hierarchy_root(sys::uid_type child_id);
+
 	private:
 
 		std::string
@@ -260,6 +284,9 @@ namespace ggg {
 
 		std::string
 		select_accounts_by_names(int n);
+
+		void
+		attach(File file, Flag flag=Flag::Read_only);
 
 		friend class Transaction;
 

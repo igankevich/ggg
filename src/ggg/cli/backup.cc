@@ -51,7 +51,7 @@ ggg::Backup::parse_arguments(int argc, char* argv[]) {
 		}
 	}
 	for (int i=::optind; i<argc; ++i) {
-		this->_args.emplace(argv[i]);
+		this->_args.emplace_back(argv[i]);
 	}
 	if (this->_args.empty()) {
 		this->print_usage();
