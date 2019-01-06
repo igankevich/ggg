@@ -3,8 +3,6 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
-class GrpTest: public ::testing::Test {};
-
 TEST(grp, Empty) {
 	{ Clean_database db; }
 	gr_guard g;
@@ -98,6 +96,6 @@ TEST(grp, group_member_via_tie) {
 	} else if (groups[0] == 2001) {
 		EXPECT_EQ(2000, groups[1]);
 	} else {
-		FAIL();
+		FAIL() << "groups=" << groups[0] << ',' << groups[1];
 	}
 }

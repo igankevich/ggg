@@ -72,15 +72,16 @@ test(
 	suite: 'unit'
 )
 
+libasan_path = 'libasan.so.' + get_option('libasan_so_version').to_string()
+
 if with_nss
 	nss_wrapper = dependency('nss_wrapper', required: false)
 	if nss_wrapper.found() and not etc.startswith('/')
-		ld_preload = ''
+		ld_preload_items = ['libnss_wrapper.so']
 		if b_sanitize == 'address'
-			ld_preload += 'LD_PRELOAD=libasan.so.3 libnss_wrapper.so'
-		elif b_sanitize == 'none'
-			ld_preload += 'LD_PRELOAD=libnss_wrapper.so'
+			ld_preload_items = [libasan_path] + ld_preload_items
 		endif
+		ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
 		foreach service : ['pwd', 'grp']
 			test(
 				'-'.join(['nss', service, 'test']),
@@ -107,11 +108,8 @@ endif
 
 if with_pam
 	pam_wrapper = dependency('pam_wrapper', required: false)
-	if pam_wrapper.found() and not etc.startswith('/')
+	if pam_wrapper.found() and not etc.startswith('/') and b_sanitize != 'address'
 		ld_preload_items = ['libpam_wrapper.so']
-		if b_sanitize == 'address'
-			ld_preload_items = ['libasan.so.3'] + ld_preload_items
-		endif
 		ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
 		test(
 			'pam-test',

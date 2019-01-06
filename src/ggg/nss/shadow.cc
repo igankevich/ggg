@@ -22,26 +22,24 @@ namespace {
 }
 
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, sp) {
-	enum nss_status ret;
+	nss_status ret;
 	try {
 		init();
 		ret = NSS_STATUS_SUCCESS;
 	} catch (...) {
 		ret = NSS_STATUS_UNAVAIL;
-		errno = ENOENT;
 	}
 	return ret;
 }
 
 NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, sp) {
-	enum nss_status ret;
+	nss_status ret;
 	try {
 		rstr.close();
 		database.close();
 		ret = NSS_STATUS_SUCCESS;
 	} catch (...) {
 		ret = NSS_STATUS_UNAVAIL;
-		errno = ENOENT;
 	}
 	return ret;
 }
@@ -52,25 +50,27 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, sp)(
 	size_t buflen,
 	int* errnop
 ) {
-	enum nss_status ret = NSS_STATUS_NOTFOUND;
+	nss_status ret;
+	int err;
 	try {
 		account_iterator last;
 		if (first == last) {
 			ret = NSS_STATUS_NOTFOUND;
-			*errnop = ENOENT;
+			err = ENOENT;
 		} else if (buflen < first->buffer_size()) {
 			ret = NSS_STATUS_TRYAGAIN;
-			*errnop = ERANGE;
+			err = ERANGE;
 		} else {
 			first->copy_to(result, buffer);
 			++first;
 			ret = NSS_STATUS_SUCCESS;
-			*errnop = 0;
+			err = 0;
 		}
 	} catch (...) {
 		ret = NSS_STATUS_UNAVAIL;
-		errno = ENOENT;
+		err = ENOENT;
 	}
+	*errnop = err;
 	return ret;
 }
 
@@ -81,25 +81,27 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, sp, nam)(
 	size_t buflen,
 	int* errnop
 ) {
-	enum nss_status ret;
+	nss_status ret;
+	int err;
 	try {
 		ggg::Database db(ggg::Database::File::Accounts);
 		auto rstr = db.find_account(name);
 		account_iterator first(rstr), last;
 		if (first == last) {
 			ret = NSS_STATUS_NOTFOUND;
-			*errnop = ENOENT;
+			err = ENOENT;
 		} else if (buflen < first->buffer_size()) {
 			ret = NSS_STATUS_TRYAGAIN;
-			*errnop = ERANGE;
+			err = ERANGE;
 		} else {
 			first->copy_to(result, buffer);
 			ret = NSS_STATUS_SUCCESS;
-			*errnop = 0;
+			err = 0;
 		}
 	} catch (...) {
 		ret = NSS_STATUS_UNAVAIL;
-		errno = ENOENT;
+		err = ENOENT;
 	}
+	*errnop = err;
 	return ret;
 }

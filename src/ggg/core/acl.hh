@@ -9,6 +9,7 @@
 #include <cassert>
 #include <cstring>
 #include <iterator>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <type_traits>
@@ -55,6 +56,14 @@ namespace ggg {
 			typedef ::acl_perm_t tp;
 			return permission_type(tp(lhs) | tp(rhs));
 		}
+
+		struct acl_deleter {
+			inline void operator()(void* ptr) {
+				UNISTDX_CHECK(::acl_free(ptr));
+			}
+		};
+
+		typedef std::unique_ptr<char,acl_deleter> text_ptr;
 
 		inline permission_type
 		user_permissions(sys::file_mode m) {
@@ -613,11 +622,11 @@ namespace ggg {
 				}
 				ssize_t len1 = 0;
 				ssize_t len2 = 0;
-				char* str1 = ::acl_to_text(this->_acl, &len1);
-				char* str2 = ::acl_to_text(rhs._acl, &len2);
+				text_ptr str1(::acl_to_text(this->_acl, &len1));
+				text_ptr str2(::acl_to_text(this->_acl, &len2));
 				try {
-					UNISTDX_CHECK2(str1, nullptr);
-					UNISTDX_CHECK2(str2, nullptr);
+					UNISTDX_CHECK2(str1.get(), nullptr);
+					UNISTDX_CHECK2(str2.get(), nullptr);
 				} catch (const sys::bad_call& err) {
 					if (err.errc() == std::errc::invalid_argument) {
 						return false;
@@ -625,8 +634,8 @@ namespace ggg {
 					throw;
 				}
 				return len1 == len2 &&
-					(std::strncmp(str1, str2, len1) == 0 ||
-					 equal_sort_lines(str1, str2));
+					(std::strncmp(str1.get(), str2.get(), len1) == 0 ||
+					 equal_sort_lines(str1.get(), str2.get()));
 			}
 
 			inline bool

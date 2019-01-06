@@ -4,7 +4,7 @@
 #include <pwd.h>
 #include <stddef.h>
 
-#include "nss.hh"
+#include <ggg/nss/nss.hh>
 
 NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, pw);
 

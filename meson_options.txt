@@ -25,3 +25,10 @@ option(
 	value: true,
 	description: 'build unit tests'
 )
+
+option(
+	'libasan_so_version',
+	type: 'integer',
+	value: 5,
+	description: 'version of the address sanitizer library for NSS unit tests'
+)
