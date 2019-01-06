@@ -6,10 +6,10 @@
 #include <unistdx/fs/path>
 #include <unistdx/ipc/identity>
 
+#include <ggg/cli/file.hh>
 #include <ggg/cli/heal.hh>
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/config.hh>
-#include <ggg/core/acl.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/native.hh>
 
@@ -38,48 +38,9 @@ namespace {
 		return gid;
 	}
 
-	struct File {
-
-		const char* filename;
-
-		inline void
-		owner(sys::uid_type uid, sys::gid_type gid) {
-			UNISTDX_CHECK(::chown(filename, uid, gid));
-		}
-
-		inline void
-		mode(sys::file_mode m) {
-			UNISTDX_CHECK(::chmod(filename, m));
-		}
-
-		inline void
-		mode(
-			ggg::acl::access_control_list& acl,
-			ggg::acl::acl_type tp = ggg::acl::access_acl
-		) {
-			acl.add_mask();
-			acl.write(filename, tp);
-		}
-
-	};
-
-	struct Directory: public File {
-
-		inline explicit
-		Directory(const char* name): File{name} {}
-
-		inline void
-		make(sys::file_mode m) {
-			int ret = ::mkdir(filename, m);
-			if (ret != 0 && errno != EEXIST) {
-				UNISTDX_CHECK(ret);
-			}
-		}
-
-	};
-
 	void
 	heal_forms(ggg::Database& db) {
+		using namespace ggg;
 		sys::idirtree tree(sys::path(GGG_ROOT, "reg"));
 		std::for_each(
 			sys::idirtree_iterator<sys::directory_entry>(tree),
@@ -89,7 +50,7 @@ namespace {
 			    sys::file_status st(f);
 			    if (st.type() == sys::file_type::regular) {
 			        auto rstr = db.find_user(entry.name());
-					ggg::user_iterator first(rstr), last;
+					user_iterator first(rstr), last;
 			        sys::uid_type uid = root_uid;
 			        sys::gid_type gid = root_gid;
 			        if (first == last) {
@@ -117,6 +78,7 @@ namespace {
 	void
 	heal_access_control_lists() {
 		using namespace ggg::acl;
+		using namespace ggg;
 		access_control_list root(root_directory_mode);
 		access_control_list entities(entities_file_mode);
 		access_control_list accounts(accounts_file_mode);
@@ -144,6 +106,7 @@ namespace {
 
 	void
 	heal_root_directory() {
+		using namespace ggg;
 		Directory root{GGG_ROOT};
 		root.make(root_directory_mode);
 		root.owner(root_uid, root_gid);
@@ -154,6 +117,7 @@ namespace {
 
 	void
 	heal_database() {
+		using namespace ggg;
 		File{GGG_ENTITIES_PATH}.owner(root_uid, root_gid);
 		File{GGG_ACCOUNTS_PATH}.owner(root_uid, root_gid);
 	}

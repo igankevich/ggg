@@ -17,6 +17,7 @@
 
 #include <unistdx/base/check>
 #include <unistdx/fs/file_mode>
+#include <unistdx/ipc/identity>
 
 namespace ggg {
 

@@ -7,6 +7,7 @@
 
 #include <sqlitex/backup.hh>
 
+#include <ggg/cli/file.hh>
 #include <unistdx/fs/file_status>
 #include <unistdx/fs/mkdirs>
 #include <unistdx/fs/path>
@@ -89,6 +90,7 @@ ggg::Backup::execute() {
 		do {
 			backup.step();
 		} while (!backup.done());
+		File{dst_path.data()}.mode(0400);
 	}
 }
 
