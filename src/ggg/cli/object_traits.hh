@@ -30,6 +30,11 @@ namespace ggg {
 			return lhs.id() == rhs.id() || lhs.name() == rhs.name();
 		}
 
+		inline static bool
+		equal_names(const ggg::entity& lhs, const ggg::entity& rhs) {
+			return lhs.name() == rhs.name();
+		}
+
 		inline static std::ostream&
 		print(std::ostream& out, const ggg::entity& rhs) {
 			return out << rhs.name() << ':' << rhs.id();
@@ -59,6 +64,11 @@ namespace ggg {
 		inline static bool
 		eq(const ggg::account& lhs, const ggg::account& rhs) {
 			return lhs.login() == rhs.login();
+		}
+
+		inline static bool
+		equal_names(const ggg::account& lhs, const ggg::account& rhs) {
+			return lhs.name() == rhs.name();
 		}
 
 		inline static std::ostream&

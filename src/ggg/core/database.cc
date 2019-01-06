@@ -765,7 +765,7 @@ ggg::Database::next_entity_id() {
 }
 
 void
-ggg::Database::insert(const entity& ent) {
+ggg::Database::validate_entity(const entity& ent) {
 	if (!ent.has_valid_name()) {
 		throw std::invalid_argument("bad name");
 	}
@@ -774,6 +774,11 @@ ggg::Database::insert(const entity& ent) {
 			throw std::invalid_argument("conflicting system user");
 		}
 	}
+}
+
+void
+ggg::Database::insert(const entity& ent) {
+	validate_entity(ent);
 	auto home = ent.home().empty() ? nullptr : ent.home().data();
 	auto shell = ent.shell().empty() ? nullptr : ent.shell().data();
 	sys::uid_type id;
@@ -828,6 +833,9 @@ ggg::Database::find_name(sys::uid_type id) {
 	sqlite::cstream cstr(rstr);
 	if (rstr >> cstr) {
 		cstr >> name;
+	}
+	if (name.empty()) {
+		throw std::invalid_argument("bad id");
 	}
 	return name;
 }
@@ -993,17 +1001,32 @@ ggg::Database::select_accounts_by_names(int n) {
 
 void
 ggg::Database::update(const entity& ent) {
+	if (!ent.has_id() && !ent.has_name()) {
+		throw std::invalid_argument("bad entity");
+	}
+	validate_entity(ent);
+	Transaction tr(*this);
+	sys::uid_type id;
+	if (!ent.has_id()) {
+		id = find_id(ent.name().data());
+	} else {
+		id = ent.id();
+	}
+	entity::string_type name;
+	if (!ent.has_name()) {
+		name = find_name(id);
+	} else {
+		name = ent.name();
+	}
 	this->_db.execute(
 		sql_update_user_by_id,
-		ent.name(),
+		name,
 		ent.real_name(),
 		ent.home(),
 		ent.shell(),
-		ent.id()
+		id
 	);
-	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("bad entity");
-	}
+	tr.commit();
 }
 
 auto

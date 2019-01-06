@@ -126,7 +126,7 @@ ggg::Edit_entity::update_objects(
 		std::back_inserter(ents),
 		"unable to read entities"
 	);
-	check_duplicates(ents, traits_type::eq);
+	check_duplicates(ents, traits_type::equal_names);
 	int nerrors = 0;
 	for (const T& ent : ents) {
 		try {

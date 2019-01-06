@@ -71,7 +71,7 @@ namespace ggg {
 		Ch delimiter,
 		entity_format format
 	) {
-		align_columns(cnt, out, delimiter, delimiter, true, format);
+		align_columns(cnt, out, delimiter, delimiter, false, format);
 	}
 }
 

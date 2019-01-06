@@ -182,6 +182,11 @@ namespace ggg {
 			return this->_name;
 		}
 
+		inline bool
+		has_name() const noexcept {
+			return !this->_name.empty();
+		}
+
 		bool
 		has_valid_name() const noexcept;
 

@@ -31,7 +31,6 @@ protected:
 
 };
 
-/*
 TEST(CommandsBase, Init) {
 	EXPECT_ZERO("rm -rf " GGG_ROOT);
 	EXPECT_ZERO("ggg init");
@@ -178,7 +177,6 @@ TEST_F(Commands, Edit) {
 		"ggg find -t u2"
 	);
 }
-*/
 
 TEST_F(Commands, Form) {
 	auto uid = sys::this_process::user();
@@ -215,7 +213,6 @@ set_secure:account.password:4
 	EXPECT_OUTPUT("u2\n", "ggg parents u3");
 }
 
-/*
 TEST_F(Commands, EmptyForm) {
 	auto uid = sys::this_process::user();
 	{
@@ -317,7 +314,6 @@ TEST_F(Commands, TiesAndHierarchies) {
 	EXPECT_ZERO("ggg untie u1 u2");
 	EXPECT_ZERO("ggg attach u1 u2");
 }
-*/
 
 int
 main(int argc, char* argv[]) {

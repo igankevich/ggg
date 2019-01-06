@@ -299,6 +299,9 @@ namespace ggg {
 		void
 		attach(File file, Flag flag=Flag::Read_only);
 
+		void
+		validate_entity(const entity& ent);
+
 		friend class Transaction;
 
 	};
