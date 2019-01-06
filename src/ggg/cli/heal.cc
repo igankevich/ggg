@@ -342,7 +342,6 @@ namespace {
 		make_directory(sys::path(GGG_ROOT), root_uid, root_gid, root_directory_mode);
 		make_directory(sys::path(GGG_ROOT, "reg"), root_uid, root_gid, 0755);
 		change_owner(GGG_ROOT, sys::file_status(GGG_ROOT), root_uid, root_gid);
-		change_permissions(GGG_ROOT, root_directory_mode);
 	}
 
 	void

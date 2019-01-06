@@ -9,7 +9,7 @@ Vagrant.configure("2") do |config|
 	config.vm.box_version = "20180425"
 	config.vm.synced_folder "/home/igankevich/rpmbuild/RPMS", "/rpms"
 	config.vm.provision "shell", inline: <<-SHELL
-	cat > /etc/nsswitch << EOF
+	cat > /etc/nsswitch.conf << EOF
 passwd:     files ggg
 group:      files ggg
 netgroup:   files
