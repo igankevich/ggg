@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.0.3',
+	version: '1.0.4',
 	meson_version: '>=0.46',
 	default_options: ['cpp_std=c++11'],
 	license: ['GPLv2']
@@ -64,7 +64,7 @@ config.set('overflow_id', 65534)
 unistdx = dependency('unistdx', version: '>=0.4.6')
 zxcvbn = dependency('zxcvbn')
 pam = cpp.find_library('pam')
-libcrypt = dependency('ggg-libxcrypt')
+libcrypt = dependency('ggg-crypt', version: '>=0.1.1')
 libacl = cpp.find_library('acl')
 sqlite = dependency('sqlite3')
 sqlitex = dependency('sqlitex')

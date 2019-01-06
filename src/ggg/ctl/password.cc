@@ -1,14 +1,14 @@
 #include "password.hh"
 
-#include <crypt.h>
-
 #include <ostream>
 #include <random>
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
 
 #include <ggg/config.hh>
 #include <ggg/core/account.hh>
+#include <ggg/ggg_crypt.hh>
 
 namespace {
 	typedef std::independent_bits_engine<std::random_device, 8, unsigned char>
@@ -35,19 +35,7 @@ ggg::generate_salt() {
 
 ggg::secure_string
 ggg::encrypt(const char* password, const std::string& prefix) {
-	crypt_data data{};
-	char* encrypted = ::crypt_r(
-		password,
-		prefix.data(),
-		&data
-	);
-	if (!encrypted) {
-		throw std::system_error(errno, std::system_category());
-	}
-	secure_string result(encrypted);
-	size_t n = account::string::traits_type::length(encrypted);
-	shred(encrypted, n);
-	return result;
+	return password_hash_sha512(password, prefix).data();
 }
 
 std::ostream&
