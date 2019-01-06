@@ -531,6 +531,11 @@ INSERT INTO hierarchy(child_id,parent_id)
 VALUES (?,?)
 )";
 
+const char* sql_hierarchy_detach_child_by_id = R"(
+DELETE FROM hierarchy
+WHERE child_id=$child_id
+)";
+
 const char* sql_hierarchy_detach_child_by_name = R"(
 DELETE FROM hierarchy
 WHERE child_id IN (SELECT id FROM entities WHERE name = $child_name)
@@ -788,6 +793,10 @@ ggg::Database::insert(const entity& ent) {
 		home,
 		shell
 	);
+	if (ent.has_valid_parent()) {
+		auto parent_id = find_id(ent.parent().data());
+		attach(id, parent_id);
+	}
 }
 
 void
@@ -1051,21 +1060,23 @@ ggg::Database::detach(const char* name) {
 }
 
 void
-ggg::Database::attach(const char* child, const char* parent) {
-	Transaction tr(*this);
-	auto child_id = find_id(child);
-	auto parent_id = find_id(parent);
+ggg::Database::attach(sys::uid_type child_id, sys::gid_type parent_id) {
 	if (entities_are_attached(child_id, parent_id)) {
 		throw std::invalid_argument("entities are attached");
 	}
 	if (entities_are_tied(child_id, parent_id)) {
 		throw std::invalid_argument("entities are tied");
 	}
-	this->_db.execute(sql_hierarchy_detach_child_by_name, child);
+	this->_db.execute(sql_hierarchy_detach_child_by_id, child_id);
 	this->_db.execute(sql_hierarchy_attach, child_id, parent_id);
-	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("bad names");
-	}
+}
+
+void
+ggg::Database::attach(const char* child, const char* parent) {
+	Transaction tr(*this);
+	auto child_id = find_id(child);
+	auto parent_id = find_id(parent);
+	attach(child_id, parent_id);
 	tr.commit();
 }
 

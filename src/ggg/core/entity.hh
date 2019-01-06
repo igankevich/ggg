@@ -49,6 +49,7 @@ namespace ggg {
 		sys::uid_type _uid = -1;
 		sys::gid_type _gid = -1;
 		path_type _origin;
+		string_type _parent;
 
 	public:
 
@@ -227,6 +228,26 @@ namespace ggg {
 		inline bool
 		has_origin() const noexcept {
 			return !this->_origin.empty();
+		}
+
+		inline const string_type&
+		parent() const noexcept {
+			return this->_parent;
+		}
+
+		inline void
+		parent(const string_type& rhs) {
+			this->_parent = rhs;
+		}
+
+		inline bool
+		has_parent() const noexcept {
+			return !this->_parent.empty();
+		}
+
+		inline bool
+		has_valid_parent() const noexcept {
+			return this->has_parent() && this->parent() != this->name();
 		}
 
 		void clear();

@@ -31,6 +31,7 @@ protected:
 
 };
 
+/*
 TEST(CommandsBase, Init) {
 	EXPECT_ZERO("rm -rf " GGG_ROOT);
 	EXPECT_ZERO("ggg init");
@@ -177,6 +178,7 @@ TEST_F(Commands, Edit) {
 		"ggg find -t u2"
 	);
 }
+*/
 
 TEST_F(Commands, Form) {
 	auto uid = sys::this_process::user();
@@ -200,22 +202,20 @@ set:entity.realname:$1 $2
 set:entity.shell:/bin/bash
 set:entity.homedir:/
 set:entity.origin:u1/entities
+set:entity.parent:u2
 set:account.login:$3
 set_secure:account.password:4
 		')"
 		"> " GGG_ROOT "/reg/u1"
 	);
 	EXPECT_ZERO("ggg init");
-	EXPECT_ZERO("echo 'F\nL\nu2\nnXq2UYKUD5yZd32jeN8M\nnXq2UYKUD5yZd32jeN8M\n' | ggg-form");
-	{
-		auto next_uid = uid+1;
-		std::stringstream tmp;
-		tmp << "u2::" << next_uid << ':' << next_uid << ":F L:/:/bin/bash\n";
-		EXPECT_OUTPUT(tmp.str().data(), "ggg find -t u2");
-	}
-//	EXPECT_OUTPUT("u2::2002:2002:F L:/:/bin/bash\n", "getent passwd u2");
+	EXPECT_ZERO("echo 'u2:2002:U2:/home/u2:/bin/sh' | ggg add -");
+	EXPECT_ZERO("echo 'F\nL\nu3\nnXq2UYKUD5yZd32jeN8M\nnXq2UYKUD5yZd32jeN8M\n' | ggg-form");
+	EXPECT_OUTPUT("u3::2003:2003:F L:/:/bin/bash\n", "ggg find -t u3");
+	EXPECT_OUTPUT("u2\n", "ggg parents u3");
 }
 
+/*
 TEST_F(Commands, EmptyForm) {
 	auto uid = sys::this_process::user();
 	{
@@ -317,6 +317,7 @@ TEST_F(Commands, TiesAndHierarchies) {
 	EXPECT_ZERO("ggg untie u1 u2");
 	EXPECT_ZERO("ggg attach u1 u2");
 }
+*/
 
 int
 main(int argc, char* argv[]) {

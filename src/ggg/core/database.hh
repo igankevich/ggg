@@ -262,6 +262,9 @@ namespace ggg {
 		attach(const char* child, const char* parent);
 
 		void
+		attach(sys::uid_type child_id, sys::gid_type parent_id);
+
+		void
 		detach(const char* child);
 
 		bool

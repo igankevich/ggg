@@ -291,6 +291,7 @@ ggg::basic_entity<Ch>
 	this->_uid = -1;
 	this->_gid = -1;
 	this->_origin.clear();
+	this->_parent.clear();
 }
 
 template <class Ch>
@@ -321,6 +322,8 @@ ggg::basic_entity<Ch>
 		}
 	} else if (t == "entity.origin") {
 		this->_origin = value;
+	} else if (t == "entity.parent") {
+		this->_parent = value;
 	} else {
 		std::stringstream msg;
 		msg << "bad field target: \"" << t << "\"";
@@ -339,6 +342,7 @@ ggg::basic_entity<Ch>
 	merge_str(this->_realname, rhs._realname);
 	merge_str(this->_homedir, rhs._homedir);
 	merge_str(this->_shell, rhs._shell);
+	merge_str(this->_parent, rhs._parent);
 	if (!this->has_id() && rhs.has_id()) {
 		this->_uid = rhs._uid;
 		merge_origin(this->_origin, rhs._origin);
