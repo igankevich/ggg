@@ -59,6 +59,7 @@ config.set('max_depth', 1000)
 config.set('entities_path', join_paths(etc, module_name, 'entities.sqlite3'))
 config.set('accounts_path', join_paths(etc, module_name, 'accounts.sqlite3'))
 config.set('min_id', 1000)
+config.set('overflow_id', 65534)
 
 unistdx = dependency('unistdx', version: '>=0.4.6')
 zxcvbn = dependency('zxcvbn')

@@ -1,3 +1,4 @@
+#include <limits>
 #include <regex>
 #include <type_traits>
 #include <vector>
@@ -105,11 +106,10 @@ INSERT INTO entities
 VALUES (?,?,?,?,?)
 )";
 
-const char* sql_insert_user_without_id = R"(
-INSERT INTO entities
-	(name,description,home,shell)
-VALUES (?,?,?,?)
+const char* sql_select_next_id = R"(
+SELECT COALESCE(MAX(id)+1,$min_id) FROM entities
 )";
+
 
 const char* sql_select_id_by_name = R"(
 SELECT id
@@ -734,46 +734,67 @@ ggg::Database::groups() -> group_container_t {
 	return groups;
 }
 
+sys::uid_type
+ggg::Database::next_entity_id() {
+	sys::uid_type id = bad_uid;
+	auto rstr = this->_db.prepare(sql_select_next_id, GGG_MIN_ID);
+	sqlite::cstream cstr(rstr);
+	if (rstr >> cstr) {
+		cstr >> id;
+	}
+	if (id == bad_uid) {
+		throw std::invalid_argument("failed to generate new id");
+	}
+	for (int i=0; i<2; ++i) {
+		if (id == std::numeric_limits<sys::uid_type>::max()) {
+			throw std::overflow_error("id overflow");
+		}
+		if (id == GGG_OVERFLOW_ID) {
+			++id;
+		}
+		if (id < GGG_MIN_ID) {
+			id = GGG_MIN_ID;
+		}
+	}
+	return id;
+}
+
 void
 ggg::Database::insert(const entity& ent) {
-	if (!(ent.id() >= GGG_MIN_ID)) {
-		throw std::invalid_argument("bad uid/gid");
-	}
 	if (!ent.has_valid_name()) {
 		throw std::invalid_argument("bad name");
 	}
 	if (struct ::passwd* pw = ::getpwnam(ent.name().data())) {
-		if (pw->pw_uid < GGG_MIN_UID || pw->pw_gid < GGG_MIN_GID) {
+		if (pw->pw_uid < GGG_MIN_ID || pw->pw_gid < GGG_MIN_ID) {
 			throw std::invalid_argument("conflicting system user");
 		}
 	}
 	auto home = ent.home().empty() ? nullptr : ent.home().data();
 	auto shell = ent.shell().empty() ? nullptr : ent.shell().data();
+	sys::uid_type id;
 	if (ent.has_id()) {
-		this->_db.execute(
-			sql_insert_user,
-			ent.id(),
-			ent.name(),
-			ent.real_name(),
-			home,
-			shell
-		);
+		id = ent.id();
+		if (id < GGG_MIN_ID || id == GGG_OVERFLOW_ID) {
+			throw std::invalid_argument("bad id");
+		}
 	} else {
-		this->_db.execute(
-			sql_insert_user_without_id,
-			ent.name(),
-			ent.real_name(),
-			home,
-			shell
-		);
+		id = this->next_entity_id();
 	}
+	this->_db.execute(
+		sql_insert_user,
+		id,
+		ent.name(),
+		ent.real_name(),
+		home,
+		shell
+	);
 }
 
 void
 ggg::Database::erase(const char* name) {
 	this->_db.execute(sql_delete_entity_by_name, name);
 	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("erase: bad entity");
+		throw std::invalid_argument("bad entity");
 	}
 }
 
@@ -900,7 +921,7 @@ ggg::Database::set_password(const account& acc) {
 		acc.login().data()
 	);
 	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("set_password: bad account");
+		throw std::invalid_argument("bad account");
 	}
 }
 
@@ -908,7 +929,7 @@ void
 ggg::Database::expire(const char* name) {
 	this->_db.execute(sql_expire_account_by_name, name);
 	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("expire: bad account name");
+		throw std::invalid_argument("bad account name");
 	}
 }
 

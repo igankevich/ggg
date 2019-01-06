@@ -166,6 +166,11 @@ namespace ggg {
 			return this->_uid;
 		}
 
+		inline void
+		id(sys::uid_type uid) noexcept {
+			this->_uid = uid;
+		}
+
 		inline sys::gid_type
 		gid() const noexcept {
 			return this->_gid;

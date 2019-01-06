@@ -148,6 +148,9 @@ namespace ggg {
 		row_stream_t
 		ties();
 
+		sys::uid_type
+		next_entity_id();
+
 		void
 		insert(const entity& ent);
 
