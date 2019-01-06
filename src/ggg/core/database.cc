@@ -417,9 +417,9 @@ const char* sql_insert_tie = R"(
 INSERT INTO ties (child_id,parent_id) VALUES (?,?)
 )";
 
-const char* sql_delete_tie_by_child_name = R"(
+const char* sql_delete_tie_by_id = R"(
 DELETE FROM ties
-WHERE child_id IN (SELECT id FROM entities WHERE name=$child_name)
+WHERE child_id=$id OR parent_id=$id
 )";
 
 const char* sql_delete_tie_by_child_and_parent_name = R"(
@@ -1089,19 +1089,19 @@ ggg::Database::tie(const char* child, const char* parent) {
 }
 
 void
-ggg::Database::untie(const char* child) {
-	this->_db.execute(sql_delete_tie_by_child_name, child);
-	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("bad name");
-	}
-}
-
-void
 ggg::Database::untie(const char* child, const char* parent) {
 	this->_db.execute(sql_delete_tie_by_child_and_parent_name, child, parent);
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad names");
 	}
+}
+
+void
+ggg::Database::untie(const char* child) {
+	Transaction tr(*this);
+	auto child_id = find_id(child);
+	this->_db.execute(sql_delete_tie_by_id, child_id);
+	tr.commit();
 }
 
 bool
