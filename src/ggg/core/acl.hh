@@ -623,7 +623,7 @@ namespace ggg {
 				ssize_t len1 = 0;
 				ssize_t len2 = 0;
 				text_ptr str1(::acl_to_text(this->_acl, &len1));
-				text_ptr str2(::acl_to_text(this->_acl, &len2));
+				text_ptr str2(::acl_to_text(rhs._acl, &len2));
 				try {
 					UNISTDX_CHECK2(str1.get(), nullptr);
 					UNISTDX_CHECK2(str2.get(), nullptr);

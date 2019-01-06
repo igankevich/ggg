@@ -162,7 +162,12 @@ namespace ggg {
 
 		inline bool
 		contains(const char* name) {
-			return this->find_id(name) != bad_uid;
+			try {
+				this->find_id(name);
+				return true;
+			} catch (const std::invalid_argument&) {
+				return false;
+			}
 		}
 
 		std::string
