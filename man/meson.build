@@ -56,6 +56,14 @@ if xsltproc.found()
 		output: outputs,
 		build_by_default: true
 	)
-	install_man(man.full_path())
+	foreach filename : outputs
+		pair = filename.split('.')
+		name = pair[0]
+		section = pair[1]
+		install_data(
+			join_paths(cbd, filename),
+			install_dir: join_paths(mandir, 'man'+section)
+		)
+	endforeach
 endif
 # }}}
