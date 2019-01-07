@@ -32,3 +32,11 @@ option(
 	value: 5,
 	description: 'version of the address sanitizer library for NSS unit tests'
 )
+
+option(
+	'with_man',
+	type: 'boolean',
+	value: false,
+	description: 'build man pages'
+)
+

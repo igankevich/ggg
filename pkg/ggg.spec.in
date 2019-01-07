@@ -42,7 +42,7 @@ GTK-based GGG registration form.
 %autosetup
 
 %build
-%meson
+%meson -Dwith_man=true
 %meson_build
 
 %install
@@ -65,7 +65,7 @@ GTK-based GGG registration form.
 %defattr(0644,root,root,0755)
 %{_datadir}/locale/ru/LC_MESSAGES/ggg.mo
 %{_datadir}/locale/en/LC_MESSAGES/ggg.mo
-%{_mandir}
+%{_mandir}/man*/*ggg*
 
 %files gtk3
 %defattr(0755,root,root,0755)

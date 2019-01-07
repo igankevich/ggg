@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.0.13',
+	version: '1.0.14',
 	meson_version: '>=0.46',
 	default_options: ['cpp_std=c++11'],
 	license: ['GPLv2']
@@ -35,6 +35,7 @@ with_nss = get_option('with_nss')
 with_pam = get_option('with_pam')
 with_tests = get_option('with_tests')
 with_gtk3 = get_option('with_gtk3')
+with_man = get_option('with_man')
 b_sanitize = get_option('b_sanitize')
 
 module_name = 'ggg'
@@ -72,7 +73,10 @@ sqlitex = dependency('sqlitex')
 subdir('src')
 subdir('po')
 subdir('pkg')
-subdir('man')
+
+if with_man
+	subdir('man')
+endif
 
 # generate empty files for nss_wrapper
 if nss_wrapper.found()

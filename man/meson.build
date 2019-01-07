@@ -5,7 +5,6 @@ cbd = meson.current_build_dir()
 main_xml = configuration_data()
 main_xml.set('version', meson.project_version())
 main_xml.set('src', csd)
-
 configure_file(
 	input: 'main.xml',
 	output: 'main.xml',
@@ -32,9 +31,16 @@ endif
 
 # man pages {{{
 mandir = join_paths(get_option('prefix'), get_option('mandir'))
-xsltproc = find_program('xsltproc', required: false)
+xsltproc = find_program('xsltproc')
+inputs = [
+	'ggg.xml',
+	'main.xml'
+]
+outputs = [
+	'ggg.1'
+]
 if xsltproc.found()
-	run_target(
+	man = custom_target(
 		'man',
 		command: [
 			xsltproc,
@@ -45,12 +51,11 @@ if xsltproc.found()
 			cbd + '/',
 			join_paths(csd, 'man.xsl'),
 			join_paths(cbd, 'main.xml'),
-		]
+		],
+		input: inputs,
+		output: outputs,
+		build_by_default: true
 	)
-	install_subdir(
-		join_paths(cbd, 'man'),
-		install_dir: mandir,
-		strip_directory: true
-	)
+	install_man(man.full_path())
 endif
 # }}}
