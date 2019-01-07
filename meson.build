@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.0.12',
+	version: '1.0.13',
 	meson_version: '>=0.46',
 	default_options: ['cpp_std=c++11'],
 	license: ['GPLv2']
@@ -72,6 +72,7 @@ sqlitex = dependency('sqlitex')
 subdir('src')
 subdir('po')
 subdir('pkg')
+subdir('man')
 
 # generate empty files for nss_wrapper
 if nss_wrapper.found()

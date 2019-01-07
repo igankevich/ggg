@@ -1,6 +1,6 @@
 Name:           @name@
 Version:        @version@
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Groups of groups of groups NSS and PAM modules
 License:        @license@
 URL:            http://igankevich.com/
@@ -65,13 +65,16 @@ GTK-based GGG registration form.
 %defattr(0644,root,root,0755)
 %{_datadir}/locale/ru/LC_MESSAGES/ggg.mo
 %{_datadir}/locale/en/LC_MESSAGES/ggg.mo
+%{_mandir}
 
 %files gtk3
 %defattr(0755,root,root,0755)
 %{_bindir}/ggg-regform
 
 %changelog
-* Mon Jun 4 2018 Ivan Gankevich <igankevich@ya.ru> 0.6.2-1
+* Mon Jul 7 2019 Ivan Gankevich <igankevich@ya.ru> 1.0.9-3
+Install man pages.
+* Mon Jun 4 2018 Ivan Gankevich <igankevich@ya.ru> 0.6.2-2
 Update to the newest version.
 * Tue Apr 10 2018 Ivan Gankevich <igankevich@ya.ru> 0.2-1
 Update to the newest version.

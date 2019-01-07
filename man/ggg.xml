@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<refentry xmlns="http://docbook.org/ns/docbook">
+  <refmeta>
+    <manvolnum>1</manvolnum>
+    <refentrytitle>ggg</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refdescriptor>GGG</refdescriptor>
+    <refname>ggg</refname>
+    <refpurpose>manage access control and entity database</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <synopsis>ggg COMMAND OPTIONS ENTITIES...</synopsis>
+  </refsynopsisdiv>
+  <refsection>
+    <title>Description</title>
+    <para></para>
+  </refsection>
+</refentry>

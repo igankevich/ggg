@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:x="http://www.w3.org/2001/XInclude" xmllang="en">
+	<info>
+		<title>Groups of groups of groups</title>
+		<subtitle>Versatile and uniform access control management</subtitle>
+		<titleabbrev>GGG</titleabbrev>
+		<date><?dbtimestamp format="Y-m-d"?></date>
+		<author>
+			<personname>
+				<firstname>Ivan</firstname>
+				<surname>Gankevich</surname>
+			</personname>
+			<contrib>The source code.</contrib>
+		</author>
+		<keywordset>
+			<keyword>access control</keyword>
+			<keyword>hierarchy</keyword>
+			<keyword>graph</keyword>
+			<keyword>users</keyword>
+			<keyword>groups</keyword>
+			<keyword>accounts</keyword>
+			<keyword>Name Service Switch</keyword>
+			<keyword>NSS</keyword>
+			<keyword>Pluggable Authentication Modules</keyword>
+			<keyword>PAM</keyword>
+			<keyword>Linux</keyword>
+		</keywordset>
+		<copyright>
+			<year><?dbtimestamp format="Y"?></year>
+			<holder>Ivan Gankevich</holder>
+		</copyright>
+		<productname>GGG</productname>
+		<productnumber>@version@</productnumber>
+	</info>
+	<reference>
+		<x:include href="@src@/ggg.xml" />
+	</reference>
+</book>
