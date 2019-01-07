@@ -39,6 +39,11 @@ inputs = [
 outputs = [
 	'ggg.1'
 ]
+output_dirs = []
+foreach filename : outputs
+	section = 'man' + filename.split('.')[1]
+	output_dirs += join_paths(mandir, section)
+endforeach
 if xsltproc.found()
 	man = custom_target(
 		'man',
@@ -54,16 +59,9 @@ if xsltproc.found()
 		],
 		input: inputs,
 		output: outputs,
-		build_by_default: true
+		build_by_default: true,
+		install: true,
+		install_dir: output_dirs
 	)
-	foreach filename : outputs
-		pair = filename.split('.')
-		name = pair[0]
-		section = pair[1]
-		install_data(
-			join_paths(cbd, filename),
-			install_dir: join_paths(mandir, 'man'+section)
-		)
-	endforeach
 endif
 # }}}
