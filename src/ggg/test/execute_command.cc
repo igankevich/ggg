@@ -13,7 +13,8 @@ execute_command(const char* cmd) {
 	sys::process child {
 		[cmd,&pipe] () {
 			pipe.in().close();
-			pipe.out().remap(STDOUT_FILENO);
+			sys::fildes out(STDOUT_FILENO);
+			out = pipe.out();
 			sys::argstream args;
 			args.append("/bin/sh");
 			args.append("-c");

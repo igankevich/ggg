@@ -162,12 +162,7 @@ namespace ggg {
 
 		inline bool
 		contains(const char* name) {
-			try {
-				this->find_id(name);
-				return true;
-			} catch (const std::invalid_argument&) {
-				return false;
-			}
+			return this->find_id_nocheck(name) != ggg::bad_uid;
 		}
 
 		std::string
@@ -301,6 +296,12 @@ namespace ggg {
 
 		void
 		validate_entity(const entity& ent);
+
+		sys::uid_type
+		find_id_nocheck(const char* name);
+
+		std::string
+		find_name_nocheck(sys::uid_type id);
 
 		friend class Transaction;
 

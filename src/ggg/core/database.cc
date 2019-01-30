@@ -143,259 +143,108 @@ DELETE FROM entities WHERE name = ?
 
 const char* sql_select_group_by_id = R"(
 WITH RECURSIVE
-	-- find all entities higher in the hierarchy
-	hierarchy_path(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1 FROM hierarchy
-		WHERE child_id = $id
+	-- merge hierarchy and ties
+	edges(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM hierarchy
+		UNION
+		SELECT child_id,parent_id FROM ties
+	),
+	-- find all upstream entities in the graph
+	path(child_id,parent_id,depth) AS (
+		SELECT child_id,parent_id,1 FROM edges
+		WHERE parent_id = $id
 		UNION ALL
-		SELECT hierarchy.child_id, hierarchy.parent_id, hierarchy_path.depth+1
-		FROM hierarchy_path, hierarchy
-		WHERE hierarchy_path.parent_id = hierarchy.child_id
-		  AND hierarchy_path.child_id <> hierarchy_path.parent_id
-		  AND hierarchy_path.depth < $depth
-	),
-	-- remove duplicate entities (include this entity in case there is no
-	-- entity higher in the hierarchy)
-	unique_hierarchy_path(id) AS (
-		SELECT $id
-		UNION
-		SELECT DISTINCT child_id FROM hierarchy_path
-		UNION
-		SELECT DISTINCT parent_id FROM hierarchy_path
-	),
-	-- find all ties between entities in the hiearachy and other entities
-	ties_subgraph(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1
-		FROM ties
-		WHERE parent_id IN (SELECT id FROM unique_hierarchy_path)
-		UNION ALL
-		SELECT ties.child_id, ties.parent_id, ties_subgraph.depth+1
-		FROM ties_subgraph, ties
-		WHERE ties_subgraph.child_id = ties.parent_id
-		  AND ties_subgraph.child_id <> ties_subgraph.parent_id
-		  AND ties_subgraph.depth < $depth
-	),
-	-- remove duplicate entities
-	unique_ids(id) AS (
-		SELECT $id
-		UNION
-		SELECT DISTINCT child_id FROM ties_subgraph
-		UNION
-		SELECT DISTINCT parent_id FROM ties_subgraph
+		SELECT edges.child_id, edges.parent_id, path.depth+1
+		FROM path, edges
+		WHERE path.child_id = edges.parent_id
+		  AND path.child_id <> path.parent_id
+		  AND path.depth < $depth
 	)
 SELECT id,name,description
 FROM entities
-WHERE id IN (SELECT id FROM unique_ids)
+WHERE id IN (SELECT DISTINCT child_id FROM path UNION SELECT $id)
 )";
 
 const char* sql_select_group_by_name = R"(
 WITH RECURSIVE
 	-- find group id by group name
-	group_ids(id) AS (
+	ids(id) AS (
 		SELECT id FROM entities WHERE name = $name
 	),
-	-- find all entities higher in the hierarchy
-	hierarchy_path(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1 FROM hierarchy
-		WHERE child_id IN (SELECT id FROM group_ids)
+	-- merge hierarchy and ties
+	edges(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM hierarchy
+		UNION
+		SELECT child_id,parent_id FROM ties
+	),
+	-- find all upstream entities in the graph
+	path(child_id,parent_id,depth) AS (
+		SELECT child_id,parent_id,1 FROM edges
+		WHERE parent_id IN (SELECT id FROM ids)
 		UNION ALL
-		SELECT hierarchy.child_id, hierarchy.parent_id, hierarchy_path.depth+1
-		FROM hierarchy_path, hierarchy
-		WHERE hierarchy_path.parent_id = hierarchy.child_id
-		  AND hierarchy_path.child_id <> hierarchy_path.parent_id
-		  AND hierarchy_path.depth < $depth
-	),
-	-- remove duplicate entities (include this entity in case there is no
-	-- entity higher in the hierarchy)
-	unique_hierarchy_path(id) AS (
-		SELECT id FROM group_ids
-		UNION
-		SELECT DISTINCT child_id FROM hierarchy_path
-		UNION
-		SELECT DISTINCT parent_id FROM hierarchy_path
-	),
-	-- find all ties between entities in the hiearachy and other entities
-	ties_subgraph(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1
-		FROM ties
-		WHERE parent_id IN (SELECT id FROM unique_hierarchy_path)
-		UNION ALL
-		SELECT ties.child_id, ties.parent_id, ties_subgraph.depth+1
-		FROM ties_subgraph, ties
-		WHERE ties_subgraph.child_id = ties.parent_id
-		  AND ties_subgraph.child_id <> ties_subgraph.parent_id
-		  AND ties_subgraph.depth < $depth
-	),
-	-- remove duplicate entities
-	unique_ids(id) AS (
-		SELECT id FROM group_ids
-		UNION
-		SELECT DISTINCT child_id FROM ties_subgraph
-		UNION
-		SELECT DISTINCT parent_id FROM ties_subgraph
+		SELECT edges.child_id, edges.parent_id, path.depth+1
+		FROM path, edges
+		WHERE path.child_id = edges.parent_id
+		  AND path.child_id <> path.parent_id
+		  AND path.depth < $depth
 	)
 SELECT id,name,description
 FROM entities
-WHERE id IN (SELECT id FROM unique_ids)
+WHERE id IN (SELECT DISTINCT child_id FROM path UNION SELECT id FROM ids)
 )";
 
-const char* sql_select_parent_entities_by_name = R"(
+const char* sql_select_parent_entities_by_id = R"(
 WITH RECURSIVE
-	-- find entity id by entity name
-	entity_ids(id) AS (
-		SELECT id FROM entities WHERE name = $name
+	-- merge hierarchy and ties
+	edges(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM hierarchy
+		UNION
+		SELECT child_id,parent_id FROM ties
 	),
-	-- find all entities higher in the hierarchy
-	hierarchy_path(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1 FROM hierarchy
-		WHERE child_id IN (SELECT id FROM entity_ids)
+	-- find all downstream entities in the graph
+	path(child_id,parent_id,depth) AS (
+		SELECT child_id,parent_id,1 FROM edges
+		WHERE child_id = $id
 		UNION ALL
-		SELECT hierarchy.child_id, hierarchy.parent_id, hierarchy_path.depth+1
-		FROM hierarchy_path, hierarchy
-		WHERE hierarchy_path.parent_id = hierarchy.child_id
-		  AND hierarchy_path.child_id <> hierarchy_path.parent_id
-		  AND hierarchy_path.depth < $depth
-	),
-	-- remove duplicate entities (include this entity in case there is no
-	-- entity higher in the hierarchy)
-	unique_hierarchy_path(id) AS (
-		SELECT id FROM entity_ids
-		UNION
-		SELECT DISTINCT child_id FROM hierarchy_path
-		UNION
-		SELECT DISTINCT parent_id FROM hierarchy_path
-	),
-	-- find all ties between entities in the hiearachy and other entities
-	ties_subgraph(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1
-		FROM ties
-		WHERE child_id IN (SELECT id FROM unique_hierarchy_path)
-		UNION ALL
-		SELECT ties.child_id, ties.parent_id, ties_subgraph.depth+1
-		FROM ties_subgraph, ties
-		WHERE ties_subgraph.parent_id = ties.child_id
-		  AND ties_subgraph.child_id <> ties_subgraph.parent_id
-		  AND ties_subgraph.depth < $depth
-	),
-	-- remove duplicate entities
-	unique_ids(id) AS (
-		SELECT DISTINCT child_id FROM hierarchy_path
-		UNION
-		SELECT DISTINCT parent_id FROM hierarchy_path
-		UNION
-		SELECT DISTINCT child_id FROM ties_subgraph
-		UNION
-		SELECT DISTINCT parent_id FROM ties_subgraph
-	),
-	clean_ids(id) AS (
-		SELECT id
-		FROM unique_ids
-		WHERE id NOT IN (SELECT id FROM entity_ids)
+		SELECT edges.child_id, edges.parent_id, path.depth+1
+		FROM path, edges
+		WHERE path.parent_id = edges.child_id
+		  AND path.child_id <> path.parent_id
+		  AND path.depth < $depth
 	)
 SELECT id,name,description
 FROM entities
-WHERE id IN (SELECT id FROM clean_ids)
+WHERE id IN (SELECT DISTINCT parent_id FROM path)
 )";
 
-const char* sql_select_child_entities_by_name = R"(
+const char* sql_select_child_entities_by_id = R"(
 WITH RECURSIVE
-	-- find entity id by entity name
-	entity_ids(id) AS (
-		SELECT id FROM entities WHERE name = $name
+	-- merge hierarchy and ties
+	edges(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM hierarchy
+		UNION
+		SELECT child_id,parent_id FROM ties
 	),
-	-- find all entities lower in the hierarchy
-	hierarchy_path(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1 FROM hierarchy
-		WHERE parent_id IN (SELECT id FROM entity_ids)
+	-- find all upstream entities in the graph
+	path(child_id,parent_id,depth) AS (
+		SELECT child_id,parent_id,1 FROM edges
+		WHERE parent_id = $id
 		UNION ALL
-		SELECT hierarchy.child_id, hierarchy.parent_id, hierarchy_path.depth+1
-		FROM hierarchy_path, hierarchy
-		WHERE hierarchy_path.child_id = hierarchy.parent_id
-		  AND hierarchy_path.child_id <> hierarchy_path.parent_id
-		  AND hierarchy_path.depth < $depth
-	),
-	-- remove duplicate entities (include this entity in case there is no
-	-- entity higher in the hierarchy)
-	unique_hierarchy_path(id) AS (
-		SELECT id FROM entity_ids
-		UNION
-		SELECT DISTINCT child_id FROM hierarchy_path
-		UNION
-		SELECT DISTINCT parent_id FROM hierarchy_path
-	),
-	-- find all ties between entities in the hiearachy and other entities
-	ties_subgraph(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1
-		FROM ties
-		WHERE parent_id IN (SELECT id FROM unique_hierarchy_path)
-		UNION ALL
-		SELECT ties.child_id, ties.parent_id, ties_subgraph.depth+1
-		FROM ties_subgraph, ties
-		WHERE ties_subgraph.child_id = ties.parent_id
-		  AND ties_subgraph.child_id <> ties_subgraph.parent_id
-		  AND ties_subgraph.depth < $depth
-	),
-	-- remove duplicate entities
-	unique_ids(id) AS (
-		SELECT DISTINCT child_id FROM hierarchy_path
-		UNION
-		SELECT DISTINCT parent_id FROM hierarchy_path
-		UNION
-		SELECT DISTINCT child_id FROM ties_subgraph
-		UNION
-		SELECT DISTINCT parent_id FROM ties_subgraph
-	),
-	clean_ids(id) AS (
-		SELECT id
-		FROM unique_ids
-		WHERE id NOT IN (SELECT id FROM entity_ids)
+		SELECT edges.child_id, edges.parent_id, path.depth+1
+		FROM path, edges
+		WHERE path.child_id = edges.parent_id
+		  AND path.child_id <> path.parent_id
+		  AND path.depth < $depth
 	)
 SELECT id,name,description
 FROM entities
-WHERE id IN (SELECT id FROM clean_ids)
+WHERE id IN (SELECT DISTINCT child_id FROM path)
 )";
 
 const char* sql_select_all_group_members = R"(
-WITH RECURSIVE
-	hierarchy_path(child_id,parent_id,depth,initial_id) AS (
-		SELECT child_id,parent_id,1,child_id FROM hierarchy
-		UNION ALL
-		SELECT
-			hierarchy.child_id,
-			hierarchy.parent_id,
-			hierarchy_path.depth+1,
-			hierarchy_path.initial_id
-		FROM hierarchy_path, hierarchy
-		WHERE hierarchy_path.parent_id = hierarchy.child_id
-		  AND hierarchy_path.child_id <> hierarchy_path.parent_id
-		  AND hierarchy_path.depth < $depth
-	),
-	ties_subgraph(child_id,parent_id,depth,initial_id) AS (
-		SELECT child_id,parent_id,1,parent_id FROM ties
-		UNION ALL
-		SELECT
-			ties.child_id,
-			ties.parent_id,
-			ties_subgraph.depth+1,
-			ties_subgraph.initial_id
-		FROM ties_subgraph, ties
-		WHERE ties_subgraph.child_id = ties.parent_id
-		  AND ties_subgraph.child_id <> ties_subgraph.parent_id
-		  AND ties_subgraph.depth < $depth
-	),
-	unique_ids(parent_id,child_id) AS (
-		SELECT DISTINCT initial_id,child_id FROM ties_subgraph
-		UNION
-		SELECT DISTINCT initial_id,parent_id
-		FROM ties_subgraph
-		WHERE parent_id <> initial_id
-		UNION
-		SELECT DISTINCT initial_id,child_id FROM hierarchy_path
-		WHERE child_id <> initial_id
-		UNION
-		SELECT DISTINCT initial_id,parent_id FROM hierarchy_path
-	)
-SELECT child_id,parent_id FROM unique_ids
+SELECT child_id,parent_id FROM hierarchy
+UNION
+SELECT child_id,parent_id FROM ties
 )";
 
 const char* sql_select_all_groups = R"(
@@ -691,26 +540,14 @@ ggg::Database::find_group(const char* name, ggg::group& result) {
 
 auto
 ggg::Database::find_parent_entities(const char* name) -> row_stream_t {
-	if (!this->contains(name)) {
-		throw std::invalid_argument("bad entity");
-	}
-	return this->_db.prepare(
-		sql_select_parent_entities_by_name,
-		name,
-		GGG_MAX_DEPTH
-	);
+	auto id = find_id(name);
+	return this->_db.prepare(sql_select_parent_entities_by_id, id, GGG_MAX_DEPTH);
 }
 
 auto
 ggg::Database::find_child_entities(const char* name) -> row_stream_t {
-	if (!this->contains(name)) {
-		throw std::invalid_argument("bad entity");
-	}
-	return this->_db.prepare(
-		sql_select_child_entities_by_name,
-		name,
-		GGG_MAX_DEPTH
-	);
+	auto id = find_id(name);
+	return this->_db.prepare(sql_select_child_entities_by_id, id, GGG_MAX_DEPTH);
 }
 
 auto
@@ -723,7 +560,7 @@ ggg::Database::groups() -> group_container_t {
 			groups.emplace(tmp.id(), std::move(tmp));
 		}
 	}
-	auto rstr2 = this->_db.prepare(sql_select_all_group_members, GGG_MAX_DEPTH);
+	auto rstr2 = this->_db.prepare(sql_select_all_group_members);
 	Tie tie;
 	while (rstr2 >> tie) {
 		auto parent = groups.find(tie.parent_id);
@@ -813,13 +650,19 @@ ggg::Database::erase(const char* name) {
 }
 
 sys::uid_type
-ggg::Database::find_id(const char* name) {
+ggg::Database::find_id_nocheck(const char* name) {
 	sys::uid_type id = bad_uid;
 	auto rstr = this->_db.prepare(sql_select_id_by_name, name);
 	sqlite::cstream cstr(rstr);
 	if (rstr >> cstr) {
 		cstr >> id;
 	}
+	return id;
+}
+
+sys::uid_type
+ggg::Database::find_id(const char* name) {
+	sys::uid_type id = find_id_nocheck(name);
 	if (id == bad_uid) {
 		throw std::invalid_argument("bad name");
 	}
@@ -827,13 +670,19 @@ ggg::Database::find_id(const char* name) {
 }
 
 std::string
-ggg::Database::find_name(sys::uid_type id) {
+ggg::Database::find_name_nocheck(sys::uid_type id) {
 	std::string name;
 	auto rstr = this->_db.prepare(sql_select_name_by_id, id);
 	sqlite::cstream cstr(rstr);
 	if (rstr >> cstr) {
 		cstr >> name;
 	}
+	return name;
+}
+
+std::string
+ggg::Database::find_name(sys::uid_type id) {
+	std::string name = find_name_nocheck(id);
 	if (name.empty()) {
 		throw std::invalid_argument("bad id");
 	}
@@ -1005,18 +854,21 @@ ggg::Database::update(const entity& ent) {
 		throw std::invalid_argument("bad entity");
 	}
 	validate_entity(ent);
+	auto id = ent.id();
+	auto name = ent.name();
 	Transaction tr(*this);
-	sys::uid_type id;
-	if (!ent.has_id()) {
+	if (ent.has_id() && ent.has_name()) {
+		auto existing_id = find_id_nocheck(ent.name().data());
+		auto existing_name = find_name_nocheck(ent.id());
+		if (existing_id != bad_uid &&
+			existing_id != ent.id() &&
+			existing_name == ent.name()) {
+			throw std::invalid_argument("changing id is not allowed");
+		}
+	} else if (!ent.has_id()) {
 		id = find_id(ent.name().data());
-	} else {
-		id = ent.id();
-	}
-	entity::string_type name;
-	if (!ent.has_name()) {
+	} else if (!ent.has_name()) {
 		name = find_name(id);
-	} else {
-		name = ent.name();
 	}
 	this->_db.execute(
 		sql_update_user_by_id,
@@ -1026,6 +878,9 @@ ggg::Database::update(const entity& ent) {
 		ent.shell(),
 		id
 	);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("bad entity");
+	}
 	tr.commit();
 }
 

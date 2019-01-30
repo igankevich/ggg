@@ -157,7 +157,7 @@ ggg::Add_entity
 			}
 		} catch (const std::exception& err) {
 			++nerrors;
-			native_sentence(std::cerr, "Error adding _. ", ent);
+			native_sentence(std::cerr, "Error adding _. ", ent.name());
 			error_message(std::cerr, err);
 		}
 	}

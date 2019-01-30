@@ -143,7 +143,12 @@ ggg::Edit_entity::update_objects(
 			}
 		} catch (const std::exception& err) {
 			++nerrors;
-			native_message(std::cerr, "error updating _: _", ent, native(err.what()));
+			native_message(
+				std::cerr,
+				"error updating _: _",
+				ent.name(),
+				native(err.what())
+			);
 		}
 	}
 	if (nerrors > 0) {

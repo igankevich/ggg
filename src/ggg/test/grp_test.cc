@@ -90,6 +90,11 @@ TEST(grp, group_member_via_tie) {
 	int ngroups = 4096 / sizeof(::gid_t);
 	::gid_t groups[ngroups];
 	int ret = ::getgrouplist("testuser", 2000, groups, &ngroups);
+	if (ret > 0) {
+		for (int i=0; i<ret; ++i) {
+			std::clog << "groups[i]=" << groups[i] << std::endl;
+		}
+	}
 	ASSERT_EQ(2, ret);
 	if (groups[0] == 2000) {
 		EXPECT_EQ(2001, groups[1]);
