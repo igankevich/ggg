@@ -90,7 +90,7 @@ TEST(grp, group_member_via_tie) {
 	int ngroups = 4096 / sizeof(::gid_t);
 	::gid_t groups[ngroups];
 	int ret = ::getgrouplist("testuser", 2000, groups, &ngroups);
-	if (ret > 0) {
+	if (ret > 0 && ret != 2) {
 		for (int i=0; i<ret; ++i) {
 			std::clog << "groups[i]=" << groups[i] << std::endl;
 		}
@@ -102,5 +102,45 @@ TEST(grp, group_member_via_tie) {
 		EXPECT_EQ(2000, groups[1]);
 	} else {
 		FAIL() << "groups=" << groups[0] << ',' << groups[1];
+	}
+}
+
+TEST(grp, getgrent_nested_groups) {
+	{
+		Clean_database db;
+		db.insert("u1:x:2000:2000:halt:/sbin:/sbin/halt");
+		db.insert("g1:x:2001:2001:halt:/sbin:/sbin/halt");
+		db.insert("g2:x:2002:2002:halt:/sbin:/sbin/halt");
+		db.tie("u1", "g1");
+		db.tie("g1", "g2");
+	}
+	gr_guard g;
+	while (const auto* ent = ::getgrent()) {
+		std::string name = ent->gr_name;
+		if (name == "u1") {
+			ASSERT_NE(nullptr, ent->gr_mem);
+			EXPECT_EQ(nullptr, ent->gr_mem[0]) << ent->gr_mem[0];
+		} else if (name == "g1") {
+			ASSERT_NE(nullptr, ent->gr_mem);
+			ASSERT_NE(nullptr, ent->gr_mem[0]) << ent->gr_mem[0];
+			ASSERT_EQ(nullptr, ent->gr_mem[1]) << ent->gr_mem[1];
+			EXPECT_STREQ("u1", ent->gr_mem[0]);
+		} else if (name == "g2") {
+			ASSERT_NE(nullptr, ent->gr_mem);
+			ASSERT_NE(nullptr, ent->gr_mem[0]) << ent->gr_mem[0];
+			ASSERT_NE(nullptr, ent->gr_mem[1]) << ent->gr_mem[1];
+			ASSERT_EQ(nullptr, ent->gr_mem[2]) << ent->gr_mem[2];
+			if (ent->gr_mem[0] && ent->gr_mem[1]) {
+				std::string m1 = ent->gr_mem[0];
+				std::string m2 = ent->gr_mem[1];
+				if (m1 < m2) {
+					std::swap(m1, m2);
+				}
+				EXPECT_EQ("u1", m1);
+				EXPECT_EQ("g1", m2);
+			}
+		} else {
+			FAIL() << "unexpected group: " << name;
+		}
 	}
 }

@@ -242,9 +242,24 @@ WHERE id IN (SELECT DISTINCT child_id FROM path)
 )";
 
 const char* sql_select_all_group_members = R"(
-SELECT child_id,parent_id FROM hierarchy
-UNION
-SELECT child_id,parent_id FROM ties
+WITH RECURSIVE
+	-- merge hierarchy and ties
+	edges(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM hierarchy
+		UNION
+		SELECT child_id,parent_id FROM ties
+	),
+	-- find all upstream entities in the graph
+	path(child_id,parent_id,depth,initial_id) AS (
+		SELECT child_id,parent_id,1,parent_id FROM edges
+		UNION ALL
+		SELECT edges.child_id, edges.parent_id, path.depth+1, path.initial_id
+		FROM path, edges
+		WHERE path.child_id = edges.parent_id
+		  AND path.child_id <> path.parent_id
+		  AND path.depth < $depth
+	)
+SELECT child_id,initial_id FROM path
 )";
 
 const char* sql_select_all_groups = R"(
@@ -560,7 +575,7 @@ ggg::Database::groups() -> group_container_t {
 			groups.emplace(tmp.id(), std::move(tmp));
 		}
 	}
-	auto rstr2 = this->_db.prepare(sql_select_all_group_members);
+	auto rstr2 = this->_db.prepare(sql_select_all_group_members, GGG_MAX_DEPTH);
 	Tie tie;
 	while (rstr2 >> tie) {
 		auto parent = groups.find(tie.parent_id);

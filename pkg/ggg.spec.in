@@ -5,7 +5,6 @@ Summary:        Groups of groups of groups NSS and PAM modules
 License:        @license@
 URL:            http://igankevich.com/
 Source0:        @name@-%{version}.tar.xz
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires: ggg-crypt >= 0.1.1
 Requires: libacl
