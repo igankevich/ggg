@@ -62,7 +62,7 @@ config.set('accounts_path', join_paths(etc, module_name, 'accounts.sqlite3'))
 config.set('min_id', 1000)
 config.set('overflow_id', 65534)
 
-unistdx = dependency('unistdx', version: '>=0.4.6')
+unistdx = dependency('unistdx', version: '>=0.4.15')
 zxcvbn = dependency('zxcvbn')
 pam = cpp.find_library('pam')
 libcrypt = dependency('ggg-crypt', version: '>=0.1.1')

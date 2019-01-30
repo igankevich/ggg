@@ -10,7 +10,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: ggg-crypt >= 0.1.1
 Requires: libacl
 Requires: sqlitex
-Requires: unistdx >= 0.4.6
+Requires: unistdx >= 0.4.15
 Requires: zxcvbn-c
 
 BuildRequires: gcc-c++
@@ -23,7 +23,7 @@ BuildRequires: nss_wrapper
 BuildRequires: pam-devel
 BuildRequires: pam_wrapper
 BuildRequires: sqlitex-devel
-BuildRequires: unistdx-devel >= 0.4.6
+BuildRequires: unistdx-devel >= 0.4.15
 BuildRequires: zxcvbn-c-devel
 
 %description
