@@ -93,7 +93,7 @@ register_user(GtkButton*, gpointer) {
 			Database db(Database::File::All, Database::Flag::Read_write);
 			Transaction tr(db);
 			db.insert(ent);
-			db.update(acc);
+			db.insert(acc);
 			tr.commit();
 		}
 		show_message_box(ggg::native("Registered successfully!"), GTK_MESSAGE_INFO);
