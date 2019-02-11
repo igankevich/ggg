@@ -365,12 +365,7 @@ void
 load_form() {
 	form.clear();
 	form.set_type(ggg::form_type::graphical);
-	ggg::Database db(ggg::Database::File::Entities);
-	auto name = db.find_name(sys::this_process::user());
-	if (name.empty()) {
-		throw std::invalid_argument("unable to find form");
-	}
-	form.open(name.data());
+	form.open(form_user.data());
 	fields = form.fields();
 }
 
@@ -582,10 +577,14 @@ void
 parse_arguments(int argc, char* argv[]) {
 	if (argc != 2) {
 		throw std::invalid_argument(
-				  "please, specify username as the first argument"
+			"please, specify username as the first argument"
 		);
 	}
 	form_user = argv[1];
+	ggg::Database db(ggg::Database::File::Entities);
+	if (!db.contains(form_user.data())) {
+		throw std::invalid_argument("unknown user");
+	}
 }
 
 int
