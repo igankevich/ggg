@@ -6,70 +6,11 @@
 #include <ggg/bits/to_bytes.hh>
 #include <ggg/config.hh>
 #include <ggg/core/database.hh>
+#include <ggg/core/schema.hh>
 
 #include <iostream>
 
 namespace {
-
-const int64_t entities_schema_version = 1;
-
-const char* sql_entities_schema = R"(
-CREATE TABLE entities (
-	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	name TEXT NOT NULL UNIQUE,
-	description TEXT,
-	home TEXT,
-	shell TEXT
-);
-
-CREATE UNIQUE INDEX entities_name_index ON entities (name);
-
--- start IDs from 1000
-INSERT INTO sqlite_sequence (name,seq) VALUES ('entities',999);
-
-CREATE TABLE ties (
-	child_id INTEGER NOT NULL,
-	parent_id INTEGER NOT NULL,
-	PRIMARY KEY (child_id, parent_id),
-	FOREIGN KEY (child_id)
-		REFERENCES entities (id)
-		ON DELETE CASCADE
-		ON UPDATE RESTRICT,
-	FOREIGN KEY (parent_id)
-		REFERENCES entities (id)
-		ON DELETE CASCADE
-		ON UPDATE RESTRICT
-);
-
-CREATE UNIQUE INDEX ties_index ON ties (child_id,parent_id);
-
-CREATE TABLE hierarchy (
-	child_id INTEGER NOT NULL,
-	parent_id INTEGER NOT NULL,
-	PRIMARY KEY (child_id, parent_id),
-	FOREIGN KEY (child_id)
-		REFERENCES entities (id)
-		ON DELETE CASCADE
-		ON UPDATE RESTRICT,
-	FOREIGN KEY (parent_id)
-		REFERENCES entities (id)
-		ON DELETE CASCADE
-		ON UPDATE RESTRICT
-);
-
-CREATE UNIQUE INDEX hierarchy_index ON hierarchy (child_id,parent_id);
-)";
-
-const int64_t accounts_schema_version = 1;
-
-const char* sql_accounts_schema = R"(
-CREATE TABLE accounts (
-	name TEXT NOT NULL PRIMARY KEY,
-	password TEXT,
-	expiration_date INTEGER,
-	flags INTEGER NOT NULL DEFAULT 0
-);
-)";
 
 const char* sql_select_user_by_id = R"(
 SELECT id,name,description,home,shell
@@ -439,7 +380,7 @@ WHERE child_id=$child_id AND parent_id=$parent_id
 
 	struct database_parameters {
 		const char* filename;
-		const char* schema;
+		const char* const* schema;
 		const int64_t schema_version;
 		const char* name;
 	};
@@ -447,13 +388,13 @@ WHERE child_id=$child_id AND parent_id=$parent_id
 	const database_parameters configurations[] = {
 		{
 			GGG_ENTITIES_PATH,
-			sql_entities_schema,
+			entities_schema,
 			entities_schema_version,
 			"entities"
 		},
 		{
 			GGG_ACCOUNTS_PATH,
-			sql_accounts_schema,
+			accounts_schema,
 			accounts_schema_version,
 			"accounts"
 		},
@@ -481,8 +422,10 @@ ggg::Database::open(File file, Flag flag) {
 					"unable to update schema of read-only database"
 				);
 			}
-			this->_db.execute(params.schema);
-			this->_db.user_version(params.schema_version);
+			for (int64_t v=version; v<params.schema_version; ++v) {
+				this->_db.execute(params.schema[v]);
+				this->_db.user_version(v);
+			}
 		}
 	}
 	this->_db.enable_foreign_keys();
