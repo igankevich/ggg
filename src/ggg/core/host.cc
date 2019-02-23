@@ -12,8 +12,8 @@ ggg::operator<<(std::ostream& out, const host& rhs) {
 sqlite::rstream&
 ggg::operator>>(sqlite::rstream& in, host& rhs) {
 	sqlite::cstream cstr(in);
-	sqlite::blob addr;
 	if (in >> cstr) {
+		sqlite::blob addr;
 		cstr >> addr;
 		if (addr.size() == rhs._address.size()) {
 			std::copy_n(

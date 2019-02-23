@@ -36,7 +36,7 @@ tags
 
 # End of https://www.gitignore.io/api/vim,linux
 
-build
+/build*
 GPATH
 GRTAGS
 GTAGS

@@ -9,6 +9,9 @@
 #include <ggg/core/entity.hh>
 #include <ggg/core/group.hh>
 #include <ggg/core/host.hh>
+#include <ggg/core/host_address.hh>
+#include <ggg/core/ip_address.hh>
+
 #include <sqlitex/database.hh>
 #include <sqlitex/transaction.hh>
 #include <unistdx/ipc/identity>
@@ -38,7 +41,6 @@ namespace ggg {
 		typedef std::unordered_map<sys::gid_type,group> group_container_t;
 
 	private:
-		bool _regex = false;
 		database_t _db;
 
 	public:
@@ -52,12 +54,7 @@ namespace ggg {
 
 		inline
 		~Database() {
-			// TODO this is neede only in NSS module
-			try {
-				this->close();
-			} catch (...) {
-				// ignore errors for NSS modules
-			}
+			this->close();
 		}
 
 		void
@@ -292,6 +289,15 @@ namespace ggg {
 
 		row_stream_t
 		find_host(const sys::ethernet_address& address);
+
+		row_stream_t
+		host_addresses();
+
+		row_stream_t
+		find_ip_address(const char* name, sys::family_type family);
+
+		row_stream_t
+		find_host_name(const ip_address& address);
 
 	private:
 

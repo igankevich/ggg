@@ -1,9 +1,9 @@
 nss_src = files([
-	'ether.cc',
-	'pwd.cc',
-	'grp.cc',
+	'ethers.cc',
+	'group.cc',
+	'hosts.cc',
+	'passwd.cc',
 	'shadow.cc',
-	'hierarchy_instance.cc'
 ])
 
 libnss_ggg = shared_library(
@@ -15,4 +15,4 @@ libnss_ggg = shared_library(
 	install: true
 )
 
-
+nss_library_path = meson.current_build_dir()

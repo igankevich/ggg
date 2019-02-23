@@ -5,79 +5,35 @@
 #include <ggg/nss/hierarchy_instance.hh>
 #include <ggg/nss/nss.hh>
 
-using ggg::database;
+namespace ggg {
+
+	template <>
+	struct entity_traits<entity> {
+
+		typedef entity entity_type;
+		typedef Database::row_stream_t stream_type;
+
+		static inline stream_type
+		all(Database* db) {
+			return db->entities();
+		}
+
+	};
+
+}
 
 namespace {
 
-	ggg::Database::row_stream_t rstr;
-	ggg::entity current;
-
-	inline void
-	init() {
-		if (!database.is_open()) {
-			database.open(ggg::Database::File::Entities);
-			rstr = database.users();
-			rstr >> current;
-		}
-	}
+	typedef struct ::passwd entity_type;
+	ggg::NSS_database<ggg::entity> database;
 
 }
 
-NSS_SETENT(pw) {
-	nss_status ret;
-	try {
-		init();
-		ret = NSS_STATUS_SUCCESS;
-	} catch (...) {
-		ret = NSS_STATUS_UNAVAIL;
-	}
-	return ret;
-}
-
-NSS_ENDENT(pw) {
-	nss_status ret;
-	try {
-		rstr.close();
-		database.close();
-		ret = NSS_STATUS_SUCCESS;
-	} catch (...) {
-		ret = NSS_STATUS_UNAVAIL;
-	}
-	return ret;
-}
-
-NSS_GETENT_R(pw)(
-	struct ::passwd* result,
-	char* buffer,
-	size_t buflen,
-	int* errnop
-) {
-	nss_status ret = NSS_STATUS_NOTFOUND;
-	int err;
-	try {
-		if (!rstr.good()) {
-			ret = NSS_STATUS_NOTFOUND;
-			err = ENOENT;
-		} else if (buflen < buffer_size(current)) {
-			ret = NSS_STATUS_TRYAGAIN;
-			err = ERANGE;
-		} else {
-			copy_to(current, result, buffer);
-			rstr >> current;
-			ret = NSS_STATUS_SUCCESS;
-			err = 0;
-		}
-	} catch (...) {
-		ret = NSS_STATUS_UNAVAIL;
-		err = ENOENT;
-	}
-	*errnop = err;
-	return ret;
-}
+NSS_ENUMERATE(pw, entity_type, Entities)
 
 NSS_GETENTBY_R(pw, uid)(
 	::uid_t uid,
-	struct ::passwd* result,
+	entity_type* result,
 	char* buffer,
 	size_t buflen,
 	int* errnop
@@ -109,7 +65,7 @@ NSS_GETENTBY_R(pw, uid)(
 
 NSS_GETENTBY_R(pw, nam)(
 	const char* name,
-	struct ::passwd* result,
+	entity_type* result,
 	char* buffer,
 	size_t buflen,
 	int* errnop

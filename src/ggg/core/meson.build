@@ -8,5 +8,7 @@ hierarchy_src += files([
 	'group.cc',
 	'hierarchy.cc',
 	'host.cc',
+	'host_address.cc',
+	'ip_address.cc',
 	'native.cc',
 ])

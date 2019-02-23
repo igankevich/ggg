@@ -63,18 +63,11 @@ namespace ggg {
 		{}
 
 		basic_group() = default;
-
 		basic_group(const basic_group& rhs) = default;
-
 		basic_group(basic_group&& rhs) = default;
-
 		~basic_group() = default;
-
-		basic_group&
-		operator=(const basic_group& rhs) = default;
-
-		basic_group&
-		operator=(basic_group&& rhs) = default;
+		basic_group& operator=(const basic_group& rhs) = default;
+		basic_group& operator=(basic_group&& rhs) = default;
 
 		inline bool
 		has_id() const noexcept {
@@ -151,7 +144,22 @@ namespace ggg {
 			this->_members.clear();
 		}
 
+		inline void
+		swap(basic_group& rhs) {
+			using std::swap;
+			swap(this->_name, rhs._name);
+			swap(this->_password, rhs._password);
+			swap(this->_gid, rhs._gid);
+			swap(this->_members, rhs._members);
+		}
+
 	};
+
+	template <class Ch>
+	inline void
+	swap(basic_group<Ch>& lhs, basic_group<Ch>& rhs) {
+		lhs.swap(rhs);
+	}
 
 	template <class Ch>
 	void

@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.1.0',
+	version: '1.1.1',
 	meson_version: '>=0.46',
 	default_options: ['cpp_std=c++11'],
 	license: ['GPLv2']
@@ -62,7 +62,7 @@ config.set('accounts_path', join_paths(etc, module_name, 'accounts.sqlite3'))
 config.set('min_id', 1000)
 config.set('overflow_id', 65534)
 
-unistdx_version = '>= 0.5.2'
+unistdx_version = '>= 0.5.4'
 ggg_crypt_version = '>= 0.1.1'
 
 unistdx = dependency('unistdx', version: unistdx_version)
@@ -79,17 +79,6 @@ subdir('pkg')
 
 if with_man
 	subdir('man')
-endif
-
-# generate empty files for nss_wrapper
-if nss_wrapper.found()
-	foreach file : ['passwd', 'group']
-		configure_file(
-			output: file,
-			capture: true,
-			command: ['true']
-		)
-	endforeach
 endif
 
 run_target(

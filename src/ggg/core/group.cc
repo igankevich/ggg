@@ -8,13 +8,7 @@
 
 namespace {
 
-	union pointer {
-		char* ptr;
-		char bytes[sizeof(ptr)];
-	};
-
-	static_assert(sizeof(pointer) == sizeof(char*), "bad pointer size");
-	static_assert(sizeof(pointer) == alignof(pointer), "bad pointer size");
+	using ggg::bits::pointer;
 
 }
 
@@ -110,9 +104,7 @@ ggg
 	}
 	mem[i].ptr = nullptr;
 	// align the buffer
-	const size_t remainder = size_t(buffer) % alignof(pointer);
-	const size_t offset = remainder == 0 ? 0 : (alignof(pointer) - remainder);
-	buffer += offset;
+	buffer = bits::align_buffer(buffer);
 	// store address of the first basic_group<Ch> member in the gr_mem field
 	lhs->gr_mem = reinterpret_cast<char**>(buffer);
 	// copy pointers to basic_group<Ch> members as well

@@ -1,0 +1,6 @@
+#ifndef GGG_NSS_CONFIG_HH_IN
+#define GGG_NSS_CONFIG_HH_IN
+
+#define GGG_NSS_LIBRARY_PATH "@nss_library_path@"
+
+#endif // vim:filetype=cpp

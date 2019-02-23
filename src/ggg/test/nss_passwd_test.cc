@@ -1,15 +1,20 @@
-#include <ggg/nss/pw_guard.hh>
 #include <ggg/test/clean_database.hh>
 #include <gtest/gtest.h>
+#include <pwd.h>
 
-TEST(pwd, Empty) {
+struct pw_guard {
+	pw_guard() { ::setpwent(); }
+	~pw_guard() { ::endpwent(); }
+};
+
+TEST(passwd, empty) {
 	{ Clean_database db; }
 	pw_guard g;
 	struct ::passwd* ent = ::getpwent();
 	ASSERT_EQ(nullptr, ent) << ent->pw_name;
 }
 
-TEST(pwd, getpwent) {
+TEST(passwd, getpwent) {
 	{
 		Clean_database db;
 		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
@@ -20,7 +25,7 @@ TEST(pwd, getpwent) {
 	EXPECT_STREQ("testuser", ent->pw_name);
 }
 
-TEST(pwd, getpwnam) {
+TEST(passwd, getpwnam) {
 	{
 		Clean_database db;
 		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
@@ -43,7 +48,7 @@ TEST(pwd, getpwnam) {
 	ASSERT_EQ(nullptr, user4);
 }
 
-TEST(pwd, getpwuid) {
+TEST(passwd, getpwuid) {
 	{
 		Clean_database db;
 		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");

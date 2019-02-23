@@ -1,4 +1,3 @@
-#include <ggg/config.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/host.hh>
 #include <ggg/nss/etherent.hh>

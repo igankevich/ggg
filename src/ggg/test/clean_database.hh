@@ -2,10 +2,12 @@
 #define GGG_TEST_CLEAN_DATABASE_HH
 
 #include <cstdlib>
+#include <sstream>
+
+#include <unistdx/fs/mkdirs>
+
 #include <ggg/config.hh>
 #include <ggg/core/database.hh>
-#include <sstream>
-#include <unistdx/fs/mkdirs>
 
 struct Clean_database: public ggg::Database {
 

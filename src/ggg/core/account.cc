@@ -178,12 +178,6 @@ namespace chrono {
 }
 }
 
-size_t
-ggg::account::buffer_size() const noexcept {
-	return this->_login.size() + 1
-		+ this->_password.size() + 1;
-}
-
 void
 ggg::account::copy_to(struct ::spwd* lhs, char* buffer) const {
 	buffer = bits::bufcopy(&lhs->sp_namp, buffer, this->_login.data());

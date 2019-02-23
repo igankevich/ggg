@@ -6,6 +6,10 @@ test_src = files([
 	'execute_command.cc',
 ])
 
+override_nss_src = files([
+	'override_nss.cc'
+])
+
 test(
 	'entity-test',
 	executable(
@@ -72,38 +76,25 @@ test(
 	suite: 'unit'
 )
 
-libasan_path = 'libasan.so.' + get_option('libasan_so_version').to_string()
-
-if with_nss
-	nss_wrapper = dependency('nss_wrapper', required: false)
-	if nss_wrapper.found() and not etc.startswith('/')
-		ld_preload_items = ['libnss_wrapper.so']
-		if b_sanitize == 'address'
-			ld_preload_items = [libasan_path] + ld_preload_items
-		endif
-		ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
-		foreach service : ['pwd', 'grp']
-			test(
-				'-'.join(['nss', service, 'test']),
-				executable(
-					service + '-test',
-					sources: [service + '_test.cc'],
-					include_directories: inc,
-					dependencies: [unistdx, gtest, ggg_core],
-				),
-				env: [
-					ld_preload,
-					'NSS_WRAPPER_MODULE_SO_PATH=' + libnss_ggg.full_path(),
-					'NSS_WRAPPER_MODULE_FN_PREFIX=' + module_name,
-					'NSS_WRAPPER_DEBUGLEVEL=3',
-					'NSS_WRAPPER_PASSWD=passwd',
-					'NSS_WRAPPER_GROUP=group',
-				],
-				suite: 'unit',
-				is_parallel: false
-			)
-		endforeach
-	endif
+if with_nss and not etc.startswith('/')
+	foreach service : ['passwd', 'group', 'hosts']
+		name = '-'.join(['nss', service, 'test'])
+		test(
+			name,
+			executable(
+				name,
+				sources: ['nss_' + service + '_test.cc'] + override_nss_src,
+				include_directories: inc,
+				dependencies: [unistdx, gtest, ggg_core],
+			),
+			env: [
+				'LD_LIBRARY_PATH=' + nss_library_path,
+				'GGG_NSS_SERVICE=' + service
+			],
+			suite: 'unit',
+			is_parallel: false
+		)
+	endforeach
 endif
 
 if with_pam

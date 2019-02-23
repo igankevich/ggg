@@ -1,16 +1,20 @@
-#include <ggg/nss/gr_guard.hh>
 #include <ggg/test/clean_database.hh>
+#include <grp.h>
 #include <gtest/gtest.h>
-#include <sstream>
 
-TEST(grp, Empty) {
+struct gr_guard {
+	gr_guard() { ::setgrent(); }
+	~gr_guard() { ::endgrent(); }
+};
+
+TEST(group, empty) {
 	{ Clean_database db; }
 	gr_guard g;
 	struct ::group* ent = ::getgrent();
 	ASSERT_EQ(nullptr, ent) << ent->gr_name;
 }
 
-TEST(grp, getgrent) {
+TEST(group, getgrent) {
 	{
 		Clean_database db;
 		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
@@ -21,7 +25,7 @@ TEST(grp, getgrent) {
 	EXPECT_STREQ("testuser", ent->gr_name);
 }
 
-TEST(grd, getgrnam) {
+TEST(group, getgrnam) {
 	{
 		Clean_database db;
 		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
@@ -44,7 +48,7 @@ TEST(grd, getgrnam) {
 	ASSERT_EQ(nullptr, user4);
 }
 
-TEST(grp, getgrgid) {
+TEST(group, getgrgid) {
 	{
 		Clean_database db;
 		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
@@ -67,7 +71,7 @@ TEST(grp, getgrgid) {
 	ASSERT_EQ(nullptr, user4);
 }
 
-TEST(grp, getgrouplist) {
+TEST(group, getgrouplist) {
 	{
 		Clean_database db;
 		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
@@ -78,7 +82,7 @@ TEST(grp, getgrouplist) {
 	ASSERT_EQ(1, ret);
 }
 
-TEST(grp, group_member_via_tie) {
+TEST(group, group_member_via_tie) {
 	{
 		Clean_database db;
 		db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
@@ -105,7 +109,7 @@ TEST(grp, group_member_via_tie) {
 	}
 }
 
-TEST(grp, getgrent_nested_groups) {
+TEST(group, getgrent_nested_groups) {
 	{
 		Clean_database db;
 		db.insert("u1:x:2000:2000:halt:/sbin:/sbin/halt");

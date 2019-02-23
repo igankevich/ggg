@@ -27,7 +27,7 @@ netmasks:   files
 networks:   files
 protocols:  files
 rpc:        files
-hosts:      files dns myhostname
+hosts:      files ggg dns myhostname
 
 aliases:    files nisplus
 bootparams: nisplus [NOTFOUND=return] files

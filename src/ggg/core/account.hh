@@ -115,9 +115,6 @@ namespace ggg {
 			this->setf(account_flags::password_has_expired);
 		}
 
-		size_t
-		buffer_size() const noexcept;
-
 		void
 		copy_to(struct ::spwd* lhs, char* buffer) const;
 
@@ -344,6 +341,16 @@ namespace ggg {
 		}
 
 	};
+
+	inline size_t
+	buffer_size(const account& a) noexcept {
+		return a.login().size() + 1 + a.password().size() + 1;
+	}
+
+	inline void
+	copy_to(const account& ent, struct ::spwd* lhs, char* buffer) {
+		ent.copy_to(lhs, buffer);
+	}
 
 }
 

@@ -369,6 +369,23 @@ FROM hosts
 WHERE ethernet_address=?
 )";
 
+const char* sql_select_all_host_addresses = R"(
+SELECT ip_address,name
+FROM hosts JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
+)";
+
+const char* sql_select_ip_address_by_name_and_length = R"(
+SELECT ip_address
+FROM hosts JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
+WHERE hosts.name=? AND length(hosts.ethernet_address)=?
+)";
+
+const char* sql_select_host_name_by_address = R"(
+SELECT name
+FROM hosts JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
+WHERE ip_address=?
+)";
+
 	struct Tie {
 
 		sys::uid_type child_id = ggg::bad_uid;
@@ -1003,6 +1020,30 @@ ggg::Database::find_host(const sys::ethernet_address& address) -> row_stream_t {
 	return this->_db.prepare(
 		sql_select_host_by_address,
 		sqlite::blob(address.begin(), address.end())
+	);
+}
+
+auto
+ggg::Database::host_addresses() -> row_stream_t {
+	return this->_db.prepare(sql_select_all_host_addresses);
+}
+
+auto
+ggg::Database::find_ip_address(
+	const char* name,
+	sys::family_type family
+) -> row_stream_t {
+	int64_t length = family == sys::family_type::inet6
+		? sizeof(sys::ipv6_address)
+		: sizeof(sys::ipv4_address);
+	return this->_db.prepare(sql_select_ip_address_by_name_and_length, name, length);
+}
+
+auto
+ggg::Database::find_host_name(const ip_address& address) -> row_stream_t {
+	return this->_db.prepare(
+		sql_select_host_name_by_address,
+		sqlite::blob(address.data(), address.size())
 	);
 }
 

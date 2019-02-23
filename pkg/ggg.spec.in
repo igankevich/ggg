@@ -18,7 +18,6 @@ BuildRequires: gtest-devel
 BuildRequires: gtk3-devel
 BuildRequires: libacl-devel
 BuildRequires: meson
-BuildRequires: nss_wrapper
 BuildRequires: pam-devel
 BuildRequires: pam_wrapper
 BuildRequires: sqlitex-devel
