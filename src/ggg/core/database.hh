@@ -8,6 +8,7 @@
 #include <ggg/core/account.hh>
 #include <ggg/core/entity.hh>
 #include <ggg/core/group.hh>
+#include <ggg/core/host.hh>
 #include <sqlitex/database.hh>
 #include <sqlitex/transaction.hh>
 #include <unistdx/ipc/identity>
@@ -283,6 +284,15 @@ namespace ggg {
 		sys::uid_type
 		find_hierarchy_root(sys::uid_type child_id);
 
+		row_stream_t
+		hosts();
+
+		row_stream_t
+		find_host(const char* name);
+
+		row_stream_t
+		find_host(const sys::ethernet_address& address);
+
 	private:
 
 		std::string
@@ -310,6 +320,7 @@ namespace ggg {
 	typedef sqlite::rstream_iterator<ggg::entity> user_iterator;
 	typedef sqlite::rstream_iterator<ggg::group> group_iterator;
 	typedef sqlite::rstream_iterator<ggg::account> account_iterator;
+	typedef sqlite::rstream_iterator<ggg::host> host_iterator;
 
 	class Transaction: public sqlite::immediate_transaction {
 

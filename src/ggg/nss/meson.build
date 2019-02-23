@@ -1,4 +1,5 @@
 nss_src = files([
+	'ether.cc',
 	'pwd.cc',
 	'grp.cc',
 	'shadow.cc',

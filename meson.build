@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.0.20',
+	version: '1.1.0',
 	meson_version: '>=0.46',
 	default_options: ['cpp_std=c++11'],
 	license: ['GPLv2']
@@ -62,10 +62,13 @@ config.set('accounts_path', join_paths(etc, module_name, 'accounts.sqlite3'))
 config.set('min_id', 1000)
 config.set('overflow_id', 65534)
 
-unistdx = dependency('unistdx', version: '>=0.4.15')
+unistdx_version = '>= 0.5.2'
+ggg_crypt_version = '>= 0.1.1'
+
+unistdx = dependency('unistdx', version: unistdx_version)
 zxcvbn = dependency('zxcvbn')
 pam = cpp.find_library('pam')
-libcrypt = dependency('ggg-crypt', version: '>=0.1.1')
+ggg_crypt = dependency('ggg-crypt', version: ggg_crypt_version)
 libacl = cpp.find_library('acl')
 sqlite = dependency('sqlite3')
 sqlitex = dependency('sqlitex')

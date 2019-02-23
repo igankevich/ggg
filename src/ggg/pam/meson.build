@@ -5,7 +5,7 @@ pam_src = files([
 	'conversation.cc',
 ]) + forms_src
 
-ggg_pam_deps = [libcrypt, pam, unistdx, ggg_core, zxcvbn]
+ggg_pam_deps = [ggg_crypt, pam, unistdx, ggg_core, zxcvbn]
 
 ggg_pam_lib = shared_library(
 	'pam_ggg',

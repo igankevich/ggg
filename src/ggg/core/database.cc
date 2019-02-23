@@ -352,6 +352,23 @@ FROM hierarchy
 WHERE child_id=$child_id AND parent_id=$parent_id
 )";
 
+const char* sql_select_all_hosts = R"(
+SELECT ethernet_address,name
+FROM hosts
+)";
+
+const char* sql_select_host_by_name = R"(
+SELECT ethernet_address,name
+FROM hosts
+WHERE name=?
+)";
+
+const char* sql_select_host_by_address = R"(
+SELECT ethernet_address,name
+FROM hosts
+WHERE ethernet_address=?
+)";
+
 	struct Tie {
 
 		sys::uid_type child_id = ggg::bad_uid;
@@ -424,7 +441,7 @@ ggg::Database::open(File file, Flag flag) {
 			}
 			for (int64_t v=version; v<params.schema_version; ++v) {
 				this->_db.execute(params.schema[v]);
-				this->_db.user_version(v);
+				this->_db.user_version(v+1);
 			}
 		}
 	}
@@ -969,5 +986,23 @@ ggg::Database::entities_are_attached(
 	auto rstr = this->_db.prepare(sql_select_hierarchy_by_ids, child_id, parent_id);
 	rstr.step();
 	return !rstr.eof();
+}
+
+auto
+ggg::Database::hosts() -> row_stream_t {
+	return this->_db.prepare(sql_select_all_hosts);
+}
+
+auto
+ggg::Database::find_host(const char* name) -> row_stream_t {
+	return this->_db.prepare(sql_select_host_by_name, name);
+}
+
+auto
+ggg::Database::find_host(const sys::ethernet_address& address) -> row_stream_t {
+	return this->_db.prepare(
+		sql_select_host_by_address,
+		sqlite::blob(address.begin(), address.end())
+	);
 }
 

@@ -77,7 +77,7 @@ CREATE UNIQUE INDEX network_index ON networks (number);
 
 constexpr const int64_t accounts_schema_version = 1;
 
-constexpr const char* accounts_schema[] = {
+constexpr const char* accounts_schema[accounts_schema_version] = {
 R"(
 CREATE TABLE accounts (
            name  TEXT      NOT NULL  PRIMARY KEY,

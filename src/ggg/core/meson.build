@@ -7,5 +7,6 @@ hierarchy_src += files([
 	'form_type.cc',
 	'group.cc',
 	'hierarchy.cc',
+	'host.cc',
 	'native.cc',
 ])

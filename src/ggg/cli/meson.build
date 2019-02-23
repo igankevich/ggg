@@ -36,7 +36,7 @@ ggg_exe = executable(
 	executable_name,
 	sources: ggg_src,
 	include_directories: inc,
-	dependencies: [unistdx,libcrypt,ggg_core,libacl],
+	dependencies: [unistdx,ggg_crypt,ggg_core,libacl],
 	install: true
 )
 
@@ -48,7 +48,7 @@ executable(
 	'ggg-form',
 	sources: ggg_form_src,
 	include_directories: inc,
-	dependencies: [unistdx,libcrypt,ggg_core,zxcvbn],
+	dependencies: [unistdx,ggg_crypt,ggg_core,zxcvbn],
 	install: true
 )
 

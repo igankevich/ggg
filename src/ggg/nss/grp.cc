@@ -1,9 +1,11 @@
 #include <cstdlib>
+#include <grp.h>
 #include <limits>
+#include <stddef.h>
 
 #include <ggg/config.hh>
-#include <ggg/nss/grp.hh>
 #include <ggg/nss/hierarchy_instance.hh>
+#include <ggg/nss/nss.hh>
 
 #if defined(GGG_DEBUG_INITGROUPS)
 #include <iostream>
@@ -29,7 +31,7 @@ namespace {
 
 }
 
-NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, gr) {
+NSS_SETENT(gr) {
 	nss_status ret;
 	try {
 		init();
@@ -40,7 +42,7 @@ NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, gr) {
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, gr) {
+NSS_ENDENT(gr) {
 	nss_status ret;
 	try {
 		rstr.close();
@@ -52,7 +54,7 @@ NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, gr) {
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, gr)(
+NSS_GETENT_R(gr)(
 	struct ::group* result,
 	char* buffer,
 	size_t buflen,
@@ -81,7 +83,7 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, gr)(
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, gid)(
+NSS_GETENTBY_R(gr, gid)(
 	::gid_t gid,
 	struct ::group* result,
 	char* buffer,
@@ -112,7 +114,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, gid)(
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, nam)(
+NSS_GETENTBY_R(gr, nam)(
 	const char* name,
 	struct ::group* result,
 	char* buffer,
@@ -143,7 +145,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, gr, nam)(
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_INITGROUPS(MODULE_NAME)(
+NSS_FUNCTION(initgroups_dyn)(
 	const char* user,
 	gid_t group,
 	long int* start_ptr,

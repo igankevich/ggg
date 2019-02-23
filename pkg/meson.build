@@ -24,6 +24,8 @@ rpm_spec.set('release', '1')
 rpm_spec.set('archive_name', full_archive_name)
 rpm_spec.set('arch', build_machine.cpu_family())
 rpm_spec.set('license', ' '.join(meson.project_license()))
+rpm_spec.set('unistdx_version', unistdx_version)
+rpm_spec.set('ggg_crypt_version', ggg_crypt_version)
 configure_file(
 	input: meson.project_name() + '.spec.in',
 	output: meson.project_name() + '.spec',

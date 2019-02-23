@@ -1,6 +1,9 @@
+#include <shadow.h>
+#include <stddef.h>
+
 #include <ggg/config.hh>
 #include <ggg/nss/hierarchy_instance.hh>
-#include <ggg/nss/shadow.hh>
+#include <ggg/nss/nss.hh>
 
 using ggg::database;
 
@@ -21,7 +24,7 @@ namespace {
 
 }
 
-NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, sp) {
+NSS_SETENT(sp) {
 	nss_status ret;
 	try {
 		init();
@@ -32,7 +35,7 @@ NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, sp) {
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, sp) {
+NSS_ENDENT(sp) {
 	nss_status ret;
 	try {
 		rstr.close();
@@ -44,7 +47,7 @@ NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, sp) {
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, sp)(
+NSS_GETENT_R(sp)(
 	struct ::spwd* result,
 	char* buffer,
 	size_t buflen,
@@ -74,7 +77,7 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, sp)(
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, sp, nam)(
+NSS_GETENTBY_R(sp, nam)(
 	const char* name,
 	struct ::spwd* result,
 	char* buffer,

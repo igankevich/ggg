@@ -7,6 +7,10 @@ Vagrant.configure("2") do |config|
 	end
 	config.vm.box = "fedora/28-cloud-base"
 	config.vm.box_version = "20180425"
+	config.vm.synced_folder ".", "/vagrant", disabled: true
+	config.vm.synced_folder ".", "/home/vagrant/ggg",
+		disabled: false,
+		rsync__exclude: [".git/", "build/"]
 	config.vm.synced_folder "/home/igankevich/rpmbuild/RPMS", "/rpms"
 	config.vm.provision "shell", inline: <<-SHELL
 	cat > /etc/nsswitch.conf << EOF
@@ -18,7 +22,7 @@ services:   files
 sudoers:    files
 
 shadow:     files ggg
-ethers:     files
+ethers:     files ggg
 netmasks:   files
 networks:   files
 protocols:  files
@@ -66,6 +70,17 @@ session     required      pam_unix.so
 session     optional      pam_ggg.so debug
 EOF
 	(cd /etc/pam.d && ln -sfn password-auth-ggg password-auth)
+	dnf install -y createrepo
+	createrepo --update /rpms
+	cat > /etc/yum.repos.d/ggg.repo << 'EOF'
+[ggg]
+name=ggg
+baseurl=file:///rpms
+gpgcheck=0
+EOF
+	cd ggg
+	meson . build
+	dnf builddep -y build/pkg/ggg.spec
 	SHELL
 end
 

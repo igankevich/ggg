@@ -1,15 +1,15 @@
 Name:           @name@
 Version:        @version@
-Release:        3%{?dist}
+Release:        1%{?dist}
 Summary:        Groups of groups of groups NSS and PAM modules
 License:        @license@
 URL:            http://igankevich.com/
 Source0:        @name@-%{version}.tar.xz
 
-Requires: ggg-crypt >= 0.1.1
+Requires: ggg-crypt @ggg_crypt_version@
 Requires: libacl
 Requires: sqlitex
-Requires: unistdx >= 0.4.15
+Requires: unistdx @unistdx_version@
 Requires: zxcvbn-c
 
 BuildRequires: gcc-c++
@@ -22,7 +22,7 @@ BuildRequires: nss_wrapper
 BuildRequires: pam-devel
 BuildRequires: pam_wrapper
 BuildRequires: sqlitex-devel
-BuildRequires: unistdx-devel >= 0.4.15
+BuildRequires: unistdx-devel @unistdx_version@
 BuildRequires: zxcvbn-c-devel
 
 %description

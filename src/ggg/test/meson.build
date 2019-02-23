@@ -56,7 +56,7 @@ test(
 		'conversation-test',
 		sources: ['conversation_test.cc'],
 		include_directories: inc,
-		dependencies: [unistdx, gtest, libcrypt, pam, ggg_core, ggg_pam]
+		dependencies: [unistdx, gtest, ggg_crypt, pam, ggg_core, ggg_pam]
 	),
 	suite: 'unit'
 )
@@ -67,7 +67,7 @@ test(
 		'form-field-test',
 		sources: ['form_field_test.cc'],
 		include_directories: inc,
-		dependencies: [unistdx, gtest, pam, libcrypt, ggg_core, ggg_pam]
+		dependencies: [unistdx, gtest, pam, ggg_crypt, ggg_core, ggg_pam]
 	),
 	suite: 'unit'
 )
@@ -141,7 +141,7 @@ if not etc.startswith('/')
 		executable(
 			'cli-test',
 			sources: ['cli_test.cc'] + test_src,
-			dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+			dependencies: [unistdx, gtest_nomain, pam, ggg_crypt, ggg_core]
 		),
 		env: [
 			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
@@ -157,7 +157,7 @@ test(
 	executable(
 		'ggg-dm-test',
 		sources: ['ggg_dm_test.cc'] + test_src,
-		dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+		dependencies: [unistdx, gtest_nomain, pam, ggg_crypt, ggg_core]
 	),
 	suite: 'gui',
 	timeout: 600
@@ -168,7 +168,7 @@ test(
 	executable(
 		'ggg-form-test',
 		sources: ['ggg_form_test.cc'] + test_src,
-		dependencies: [unistdx, gtest_nomain, pam, libcrypt, ggg_core]
+		dependencies: [unistdx, gtest_nomain, pam, ggg_crypt, ggg_core]
 	),
 	suite: 'cli',
 	timeout: 600

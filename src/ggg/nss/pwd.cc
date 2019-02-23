@@ -1,8 +1,9 @@
+#include <pwd.h>
+#include <stddef.h>
+
 #include <ggg/config.hh>
 #include <ggg/nss/hierarchy_instance.hh>
-#include <ggg/nss/pwd.hh>
-
-#include <iostream>
+#include <ggg/nss/nss.hh>
 
 using ggg::database;
 
@@ -22,7 +23,7 @@ namespace {
 
 }
 
-NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, pw) {
+NSS_SETENT(pw) {
 	nss_status ret;
 	try {
 		init();
@@ -33,7 +34,7 @@ NSS_MODULE_FUNCTION_SETENT(MODULE_NAME, pw) {
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, pw) {
+NSS_ENDENT(pw) {
 	nss_status ret;
 	try {
 		rstr.close();
@@ -45,7 +46,7 @@ NSS_MODULE_FUNCTION_ENDENT(MODULE_NAME, pw) {
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, pw)(
+NSS_GETENT_R(pw)(
 	struct ::passwd* result,
 	char* buffer,
 	size_t buflen,
@@ -74,7 +75,7 @@ NSS_MODULE_FUNCTION_GETENT_R(MODULE_NAME, pw)(
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, uid)(
+NSS_GETENTBY_R(pw, uid)(
 	::uid_t uid,
 	struct ::passwd* result,
 	char* buffer,
@@ -106,7 +107,7 @@ NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, uid)(
 	return ret;
 }
 
-NSS_MODULE_FUNCTION_GETENTBY_R(MODULE_NAME, pw, nam)(
+NSS_GETENTBY_R(pw, nam)(
 	const char* name,
 	struct ::passwd* result,
 	char* buffer,
