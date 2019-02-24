@@ -36,9 +36,7 @@ template <class Ch>
 std::basic_ostream<Ch>&
 ggg::operator<<(std::basic_ostream<Ch>& out, const basic_group<Ch>& rhs) {
 	typedef typename basic_group<Ch>::string_type string_type;
-	out << rhs.name() << ':'
-	    << rhs.password() << ':'
-	    << rhs.id() << ':';
+	out << rhs.name() << "::" << rhs.id() << ':';
 	std::copy(
 		rhs._members.begin(),
 		rhs._members.end(),
@@ -51,7 +49,6 @@ template <class Ch>
 sys::basic_bstream<Ch>&
 ggg::operator<<(sys::basic_bstream<Ch>& out, const basic_group<Ch>& rhs) {
 	return out << rhs._name
-	           << rhs._password
 	           << rhs._gid
 	           << rhs._members;
 }
@@ -61,7 +58,6 @@ sys::basic_bstream<Ch>&
 ggg::operator>>(sys::basic_bstream<Ch>& in, basic_group<Ch>& rhs) {
 	return in
 	       >> rhs._name
-	       >> rhs._password
 	       >> rhs._gid
 	       >> rhs._members;
 }

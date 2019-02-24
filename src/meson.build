@@ -1,3 +1,3 @@
-inc = include_directories('.')
+src = include_directories('.')
 
 subdir('ggg')

@@ -1,5 +1,3 @@
-#include "form.hh"
-
 #include <algorithm>
 #include <codecvt>
 #include <fstream>
@@ -11,6 +9,7 @@
 
 #include <ggg/config.hh>
 #include <ggg/core/native.hh>
+#include <ggg/ctl/form.hh>
 #include <ggg/ctl/password.hh>
 
 

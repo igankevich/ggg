@@ -1,22 +1,22 @@
-pam_src = files([
+ggg_pam_src = files([
 	'pam_ggg.cc',
 	'pam_handle.cc',
 	'pam_category.cc',
 	'conversation.cc',
-]) + forms_src
+]) + password_src
 
 ggg_pam_deps = [ggg_crypt, pam, unistdx, ggg_core, zxcvbn]
 
 ggg_pam_lib = shared_library(
 	'pam_ggg',
-	sources: pam_src,
-	include_directories: inc,
+	sources: ggg_pam_src,
+	include_directories: src,
 	dependencies: ggg_pam_deps
 )
 
 ggg_pam = declare_dependency(
 	link_with: [ggg_pam_lib],
-	include_directories: inc,
+	include_directories: src,
 	dependencies: ggg_pam_deps
 )
 

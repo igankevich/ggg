@@ -8,8 +8,8 @@ endif
 
 executable(
 	'ggg-regform',
-	sources: pam_src + ['regform.cc'],
-	include_directories: inc,
+	sources: ggg_pam_src + forms_src + ['regform.cc'],
+	include_directories: src,
 	dependencies: [pam, gtk3, ggg_crypt, threads, unistdx, ggg_core, zxcvbn],
 	cpp_args: regform_cpp_args,
 	install: true

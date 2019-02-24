@@ -6,7 +6,6 @@ ggg_src = files([
 	'attach.cc',
 	'backup.cc',
 	'command.cc',
-	'copy.cc',
 	'dot.cc',
 	'edit_entity.cc',
 	'editor.cc',
@@ -39,19 +38,19 @@ ggg_src = files([
 ggg_exe = executable(
 	executable_name,
 	sources: ggg_src,
-	include_directories: inc,
+	include_directories: src,
 	dependencies: [unistdx,ggg_crypt,ggg_core,libacl],
 	install: true
 )
 
 ggg_form_src = files([
 	'ggg_form.cc',
-]) + forms_src
+]) + forms_src + password_src
 
 executable(
 	'ggg-form',
 	sources: ggg_form_src,
-	include_directories: inc,
+	include_directories: src,
 	dependencies: [unistdx,ggg_crypt,ggg_core,zxcvbn],
 	install: true
 )

@@ -27,32 +27,22 @@ namespace ggg {
 
 	private:
 		string_type _name;
-		string_type _password;
 		sys::gid_type _gid;
 		mutable container_type _members;
 
 	public:
 
 		inline explicit
-		basic_group(
-			const string_type& name,
-			const string_type& password,
-			sys::gid_type gid
-		):
-		_name(name),
-		_password(password),
-		_gid(gid)
-		{}
+		basic_group(const string_type& name, sys::gid_type gid):
+		_name(name), _gid(gid) {}
 
 		inline explicit
 		basic_group(
 			const string_type& name,
-			const string_type& password,
 			sys::gid_type gid,
 			const container_type& members
 		):
 		_name(name),
-		_password(password),
 		_gid(gid),
 		_members(members)
 		{}
@@ -114,11 +104,6 @@ namespace ggg {
 			return this->_name;
 		}
 
-		inline const string_type&
-		password() const noexcept {
-			return this->_password;
-		}
-
 		inline container_type&
 		members() const noexcept {
 			return this->_members;
@@ -148,7 +133,6 @@ namespace ggg {
 		swap(basic_group& rhs) {
 			using std::swap;
 			swap(this->_name, rhs._name);
-			swap(this->_password, rhs._password);
 			swap(this->_gid, rhs._gid);
 			swap(this->_members, rhs._members);
 		}

@@ -33,8 +33,9 @@ datadir = join_paths(
 
 with_nss = get_option('with_nss')
 with_pam = get_option('with_pam')
-with_tests = get_option('with_tests')
+with_cli = get_option('with_cli')
 with_gtk3 = get_option('with_gtk3')
+with_tests = get_option('with_tests')
 with_man = get_option('with_man')
 b_sanitize = get_option('b_sanitize')
 

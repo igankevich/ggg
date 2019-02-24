@@ -13,6 +13,13 @@ option(
 )
 
 option(
+	'with_cli',
+	type: 'boolean',
+	value: true,
+	description: 'build CLI executables'
+)
+
+option(
 	'with_gtk3',
 	type: 'boolean',
 	value: true,

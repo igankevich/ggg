@@ -96,7 +96,7 @@ namespace ggg {
 		using bits::pointer;
 		size_t sum = 0;
 		sum += gr.name().size() + 1;
-		sum += gr.password().size() + 1;
+		sum += 1; // empty password
 		for (const std::string& member : gr.members()) {
 			sum += member.size() + 1;
 		}

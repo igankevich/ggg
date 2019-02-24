@@ -4,14 +4,7 @@ configure_file(
 	configuration: config
 )
 
-hierarchy_src = files([
-])
-
-forms_src = files([
-])
-
 subdir('core')
-subdir('sec')
 subdir('ctl')
 
 if with_nss
@@ -22,7 +15,9 @@ if with_pam
 	subdir('pam')
 endif
 
-subdir('cli')
+if with_cli
+	subdir('cli')
+endif
 
 if with_gtk3
 	subdir('regform')

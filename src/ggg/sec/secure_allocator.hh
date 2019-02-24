@@ -11,7 +11,7 @@
 	#include <sys/mman.h>
 #endif
 
-#include "shred.hh"
+#include <ggg/core/shred.hh>
 
 namespace ggg {
 

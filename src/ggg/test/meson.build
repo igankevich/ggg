@@ -15,7 +15,7 @@ test(
 	executable(
 		'entity-test',
 		sources: ['entity_test.cc'],
-		include_directories: inc,
+		include_directories: src,
 		dependencies: [unistdx, gtest, ggg_core]
 	),
 	suite: 'unit'
@@ -26,7 +26,7 @@ test(
 	executable(
 		'group-test',
 		sources: ['group_test.cc'],
-		include_directories: inc,
+		include_directories: src,
 		dependencies: [unistdx, gtest, ggg_core]
 	),
 	suite: 'unit'
@@ -37,18 +37,7 @@ test(
 	executable(
 		'account-test',
 		sources: ['account_test.cc'],
-		include_directories: inc,
-		dependencies: [unistdx, gtest, ggg_core]
-	),
-	suite: 'unit'
-)
-
-test(
-	'hierarchy-test',
-	executable(
-		'hierarchy-test',
-		sources: ['hierarchy_test.cc'],
-		include_directories: inc,
+		include_directories: src,
 		dependencies: [unistdx, gtest, ggg_core]
 	),
 	suite: 'unit'
@@ -59,7 +48,7 @@ test(
 	executable(
 		'conversation-test',
 		sources: ['conversation_test.cc'],
-		include_directories: inc,
+		include_directories: src,
 		dependencies: [unistdx, gtest, ggg_crypt, pam, ggg_core, ggg_pam]
 	),
 	suite: 'unit'
@@ -70,7 +59,7 @@ test(
 	executable(
 		'form-field-test',
 		sources: ['form_field_test.cc'],
-		include_directories: inc,
+		include_directories: src,
 		dependencies: [unistdx, gtest, pam, ggg_crypt, ggg_core, ggg_pam]
 	),
 	suite: 'unit'
@@ -84,7 +73,7 @@ if with_nss and not etc.startswith('/')
 			executable(
 				name,
 				sources: ['nss_' + service + '_test.cc'] + override_nss_src,
-				include_directories: inc,
+				include_directories: src,
 				dependencies: [unistdx, gtest, ggg_core],
 				link_with: [libnss_ggg],
 				cpp_args: ['-DGGG_NSS_SERVICE="' + service + '"'],
@@ -105,7 +94,7 @@ if with_pam
 			executable(
 				'pam-test',
 				sources: ['pam_test.cc'],
-				include_directories: inc,
+				include_directories: src,
 				dependencies: [unistdx, gtest, ggg_pam]
 			),
 			env: [

@@ -49,7 +49,6 @@ namespace ggg {
 		duration _maxinactive = duration::zero();
 		time_point _expire = time_point(duration::zero());
 		account_flags _flags = account_flags(0);
-		mutable path_type _origin;
 
 	public:
 		inline explicit
@@ -267,21 +266,6 @@ namespace ggg {
 		inline void
 		set_max_change(duration rhs) noexcept {
 			this->_maxchange = rhs;
-		}
-
-		inline const path_type&
-		origin() const noexcept {
-			return this->_origin;
-		}
-
-		inline void
-		origin(const path_type& rhs) const {
-			this->_origin = rhs;
-		}
-
-		inline bool
-		has_origin() const noexcept {
-			return !this->_origin.empty();
 		}
 
 		void

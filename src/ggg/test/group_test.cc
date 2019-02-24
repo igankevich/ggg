@@ -21,10 +21,10 @@ INSTANTIATE_TEST_CASE_P(
 	::testing::Values(
 		ggg::group(),
 		ggg::group("g1"),
-		ggg::group("g1", "x", 1231),
-		ggg::group("g1", "x", 1231, {"a", "b", "c"}),
-		ggg::group("g1", "x", 1231, {"a", "b"}),
-		ggg::group("g1", "x", 1231, {"a"})
+		ggg::group("g1", 1231),
+		ggg::group("g1", 1231, {"a", "b", "c"}),
+		ggg::group("g1", 1231, {"a", "b"}),
+		ggg::group("g1", 1231, {"a"})
 	)
 );
 

@@ -7,7 +7,6 @@
 #include <ggg/cli/add_entity.hh>
 #include <ggg/cli/attach.hh>
 #include <ggg/cli/backup.hh>
-#include <ggg/cli/copy.hh>
 #include <ggg/cli/dot.hh>
 #include <ggg/cli/edit_entity.hh>
 #include <ggg/cli/expire_entity.hh>
@@ -65,7 +64,6 @@ namespace {
 		MAKE_COMMAND("insert", Add_entity),
 		MAKE_COMMAND("new", Add_entity),
 		MAKE_COMMAND("version", Show_version),
-		MAKE_COMMAND("copy", Copy),
 		MAKE_COMMAND("show", Show_entity),
 		MAKE_COMMAND("info", Show_entity),
 		MAKE_COMMAND("members", Show_members),

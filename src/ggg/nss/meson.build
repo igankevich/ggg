@@ -9,7 +9,7 @@ nss_src = files([
 libnss_ggg = shared_library(
 	'nss_' + module_name,
 	sources: nss_src,
-	include_directories: inc,
+	include_directories: src,
 	dependencies: [unistdx,ggg_core],
 	version: '2',
 	install: true
