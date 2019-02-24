@@ -14,5 +14,3 @@ libnss_ggg = shared_library(
 	version: '2',
 	install: true
 )
-
-nss_library_path = meson.current_build_dir()

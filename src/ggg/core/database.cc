@@ -386,6 +386,12 @@ FROM hosts JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
 WHERE ip_address=?
 )";
 
+const char* sql_select_all_machines = R"(
+SELECT name, addresses.ethernet_address, addresses.ip_address
+FROM hosts
+JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
+)";
+
 	struct Tie {
 
 		sys::uid_type child_id = ggg::bad_uid;
@@ -1045,5 +1051,10 @@ ggg::Database::find_host_name(const ip_address& address) -> row_stream_t {
 		sql_select_host_name_by_address,
 		sqlite::blob(address.data(), address.size())
 	);
+}
+
+auto
+ggg::Database::machines() -> row_stream_t {
+	return this->_db.prepare(sql_select_all_machines);
 }
 

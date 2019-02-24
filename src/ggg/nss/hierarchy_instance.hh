@@ -2,12 +2,10 @@
 #define GGG_INSTANCE_HH
 
 #include <ggg/core/database.hh>
+#include <ggg/nss/entity_traits.hh>
 #include <ggg/nss/nss.hh>
 
 namespace ggg {
-
-	template <class T>
-	struct entity_traits;
 
 	template <class T>
 	class NSS_database: public Database {

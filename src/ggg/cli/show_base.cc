@@ -4,6 +4,7 @@
 #include <ggg/cli/show_base.hh>
 #include <ggg/config.hh>
 #include <ggg/core/entity.hh>
+#include <ggg/core/machine.hh>
 #include <ggg/core/native.hh>
 
 template <class T>
@@ -33,7 +34,6 @@ ggg::Show_base<T>::execute() {
 		align_columns(
 			this->_result,
 			std::cout,
-			value_type::delimiter,
 			' ',
 			true,
 			entity_format::batch
@@ -59,3 +59,4 @@ ggg::Show_base<T>::print_usage() {
 
 
 template class ggg::Show_base<ggg::entity>;
+template class ggg::Show_base<ggg::Machine>;

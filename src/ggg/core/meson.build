@@ -10,5 +10,6 @@ hierarchy_src += files([
 	'host.cc',
 	'host_address.cc',
 	'ip_address.cc',
+	'machine.cc',
 	'native.cc',
 ])

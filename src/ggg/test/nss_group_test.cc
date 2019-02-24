@@ -1,3 +1,4 @@
+#include <ggg/nss/entity_traits.hh>
 #include <ggg/test/clean_database.hh>
 #include <grp.h>
 #include <gtest/gtest.h>
@@ -148,3 +149,26 @@ TEST(group, getgrent_nested_groups) {
 		}
 	}
 }
+
+TEST(group, copy) {
+	ggg::group ent;
+	char fillchar = -1;
+	size_t bs = buffer_size(ent);
+	std::clog << "bs=" << bs << std::endl;
+	std::vector<char> buffer((bs * 2) | 64, fillchar);
+	struct ::group gr;
+	ggg::copy_to(ent, &gr, buffer.data());
+//	EXPECT_EQ(fillchar, buffer[bs]);
+	EXPECT_STREQ(ent.name().data(), gr.gr_name);
+	EXPECT_EQ(ent.id(), gr.gr_gid);
+	EXPECT_STREQ(ent.password().data(), gr.gr_passwd);
+	std::unordered_set<std::string> mem;
+	char** first = gr.gr_mem;
+	while (*first) {
+		mem.emplace(*first);
+		++first;
+	}
+	EXPECT_EQ(ent.members(), mem);
+}
+
+

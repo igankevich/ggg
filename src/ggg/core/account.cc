@@ -3,59 +3,12 @@
 #include <locale>
 #include <ratio>
 
-#include <ggg/bits/bufcopy.hh>
 #include <ggg/bits/read_field.hh>
 #include <ggg/core/account.hh>
+#include <ggg/core/days.hh>
 #include <ggg/sec/secure_sstream.hh>
 
 namespace {
-
-	typedef ggg::chrono::days days;
-	typedef std::chrono::time_point<ggg::account::clock_type,days>
-		time_point_in_days;
-
-	long
-	to_days(ggg::account::time_point tp) {
-		using namespace std::chrono;
-		return time_point_cast<days>(tp).time_since_epoch().count();
-	}
-
-	long
-	to_days(ggg::account::duration d) {
-		using namespace std::chrono;
-		return duration_cast<days>(d).count();
-	}
-
-	ggg::account::time_point
-	time_point_from_days(long d) {
-		using namespace std::chrono;
-		return time_point_cast<ggg::account::duration>(
-			time_point_in_days(days(d))
-		);
-	}
-
-	ggg::account::duration
-	duration_from_days(long d) {
-		using namespace std::chrono;
-		return duration_cast<ggg::account::duration>(days(d));
-	}
-
-	void
-	set_days(long& lhs, ggg::account::time_point rhs) {
-		typedef ggg::account::time_point tp;
-		typedef ggg::account::duration dur;
-		if (rhs > tp(dur::zero())) {
-			lhs = to_days(rhs);
-		}
-	}
-
-	void
-	set_days(long& lhs, ggg::account::duration rhs) {
-		typedef ggg::account::duration dur;
-		if (rhs > dur::zero()) {
-			lhs = to_days(rhs);
-		}
-	}
 
 	template <class T>
 	class formatted_date {
@@ -90,6 +43,7 @@ namespace {
 
 		friend std::istream&
 		operator>>(std::istream& in, formatted_date& rhs) {
+			using ggg::days;
 			if (!rhs._date) {
 				return in;
 			}
@@ -137,7 +91,7 @@ namespace chrono {
 
 	std::ostream&
 	operator<<(std::ostream& out, const ggg::account::time_point& rhs) {
-		long d = to_days(rhs);
+		long d = ggg::to_days(rhs);
 		if (d > 0) {
 			out << d;
 		}
@@ -146,7 +100,7 @@ namespace chrono {
 
 	std::ostream&
 	operator<<(std::ostream& out, const ggg::account::duration& rhs) {
-		long d = to_days(rhs);
+		long d = ggg::to_days(rhs);
 		if (d > 0) {
 			out << d;
 		}
@@ -160,7 +114,7 @@ namespace chrono {
 			val = 0L;
 			in.clear();
 		}
-		rhs = time_point_from_days(val);
+		rhs = ggg::time_point_from_days(val);
 		return in;
 	}
 
@@ -171,23 +125,11 @@ namespace chrono {
 			val = 0L;
 			in.clear();
 		}
-		rhs = duration_from_days(val);
+		rhs = ggg::duration_from_days(val);
 		return in;
 	}
 
 }
-}
-
-void
-ggg::account::copy_to(struct ::spwd* lhs, char* buffer) const {
-	buffer = bits::bufcopy(&lhs->sp_namp, buffer, this->_login.data());
-	bits::bufcopy(&lhs->sp_pwdp, buffer, this->_password.data());
-	set_days(lhs->sp_lstchg, this->_lastchange);
-	set_days(lhs->sp_min, this->_minchange);
-	set_days(lhs->sp_max, this->_maxchange);
-	set_days(lhs->sp_warn, this->_warnchange);
-	set_days(lhs->sp_inact, this->_maxinactive);
-	set_days(lhs->sp_expire, this->_expire);
 }
 
 std::ostream&
@@ -222,73 +164,6 @@ ggg::operator>>(std::istream& in, account& rhs) {
 			rhs._flags
 		);
 		rhs.parse_password();
-		if (in.eof()) {
-			in.clear();
-		}
-	}
-	return in;
-}
-
-void
-ggg::account::write_header(
-	std::ostream& out,
-	columns_type width,
-	char_type delim
-) {
-	if (width) {
-		const char_type d[4] = {' ', delim, ' ', 0};
-		out << std::left << std::setw(width[0]) << "LOGIN" << d
-			<< std::left << std::setw(width[3]) << "MINCHANGE" << d
-			<< std::left << std::setw(width[4]) << "MAXCHANGE" << d
-			<< std::left << std::setw(width[5]) << "WARNCHANGE" << d
-			<< std::left << std::setw(width[6]) << "MAXINACTIVE" << d
-			<< std::left << std::setw(width[7]) << "EXPIRE" << '\n';
-	} else {
-		out << "LOGIN:unused:MINCHANGE:MAXCHANGE:WARNCHANGE:MAXINACTIVE:EXPIRE\n";
-	}
-}
-
-void
-ggg::account::write_human(
-	std::ostream& out,
-	columns_type width,
-	entity_format fmt,
-	char_type delim
-) const {
-	const char_type d[4] = {' ', delim, ' ', 0};
-	out << std::left << std::setw(width[0]) << this->_login << d;
-	if (fmt == entity_format::batch) {
-		out << std::left << std::setw(width[3]) << this->_minchange << d
-			<< std::left << std::setw(width[4]) << this->_maxchange << d
-			<< std::left << std::setw(width[5]) << this->_warnchange << d
-			<< std::left << std::setw(width[6]) << this->_maxinactive << d;
-	}
-	out << std::left << std::setw(width[7]) << make_formatted(&this->_expire) << '\n';
-}
-
-std::istream&
-ggg::account::read_human(std::istream& in, entity_format fmt) {
-	std::istream::sentry s(in);
-	if (s) {
-		this->clear();
-		auto fmt_expire = make_formatted(&this->_expire);
-		if (fmt == entity_format::batch) {
-			bits::read_all_fields(
-				in, account::delimiter,
-				this->_login,
-				this->_minchange,
-				this->_maxchange,
-				this->_warnchange,
-				this->_maxinactive,
-				fmt_expire
-			);
-		} else {
-			bits::read_all_fields(
-				in, account::delimiter,
-				this->_login,
-				fmt_expire
-			);
-		}
 		if (in.eof()) {
 			in.clear();
 		}

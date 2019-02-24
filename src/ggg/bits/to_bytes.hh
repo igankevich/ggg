@@ -2,6 +2,7 @@
 #define BITS_TO_BYTES_HH
 
 #include <codecvt>
+#include <locale>
 
 namespace ggg {
 

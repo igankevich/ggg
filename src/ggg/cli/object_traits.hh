@@ -97,13 +97,14 @@ namespace ggg {
 		Result result,
 		std::string msg
 	) {
+		typedef Entity_header<T> traits_type;
 		std::ifstream in;
 		try {
 			in.exceptions(std::ios::badbit);
 			in.imbue(std::locale::classic());
 			in.open(filename, std::ios_base::in);
 			T obj;
-			while (obj.read_human(in, format)) {
+			while (traits_type::read_body(in, obj, format)) {
 				*result++ = obj;
 			}
 		} catch (...) {

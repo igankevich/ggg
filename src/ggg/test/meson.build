@@ -77,7 +77,7 @@ test(
 )
 
 if with_nss and not etc.startswith('/')
-	foreach service : ['passwd', 'group', 'hosts']
+	foreach service : ['passwd', 'group', 'shadow', 'hosts']
 		name = '-'.join(['nss', service, 'test'])
 		test(
 			name,
@@ -86,11 +86,9 @@ if with_nss and not etc.startswith('/')
 				sources: ['nss_' + service + '_test.cc'] + override_nss_src,
 				include_directories: inc,
 				dependencies: [unistdx, gtest, ggg_core],
+				link_with: [libnss_ggg],
+				cpp_args: ['-DGGG_NSS_SERVICE="' + service + '"'],
 			),
-			env: [
-				'LD_LIBRARY_PATH=' + nss_library_path,
-				'GGG_NSS_SERVICE=' + service
-			],
 			suite: 'unit',
 			is_parallel: false
 		)

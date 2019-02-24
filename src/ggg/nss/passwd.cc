@@ -1,6 +1,7 @@
 #include <pwd.h>
 #include <stddef.h>
 
+#include <ggg/bits/bufcopy.hh>
 #include <ggg/config.hh>
 #include <ggg/nss/hierarchy_instance.hh>
 #include <ggg/nss/nss.hh>
@@ -19,6 +20,33 @@ namespace ggg {
 		}
 
 	};
+
+	template <>
+	size_t
+	buffer_size<entity>(const entity& rhs) noexcept {
+		return rhs.name().size() + 1
+			   + rhs.password().size() + 1
+			   + rhs.real_name().size() + 1
+			   + rhs.home().size() + 1
+			   + rhs.shell().size() + 1;
+	}
+
+	template <>
+	void
+	copy_to<entity,::passwd>(const entity& ent, passwd* lhs, char* buffer) {
+		using bits::Buffer;
+		using bits::Vector;
+		Buffer buf(buffer);
+		lhs->pw_name = buf.write(ent.name());
+		lhs->pw_passwd = buf.write(ent.password());
+		#ifdef __linux__
+		lhs->pw_gecos = buf.write(ent.real_name());
+		#endif
+		lhs->pw_dir = buf.write(ent.home());
+		lhs->pw_shell = buf.write(ent.shell());
+		lhs->pw_uid = ent.id();
+		lhs->pw_gid = ent.gid();
+	}
 
 }
 

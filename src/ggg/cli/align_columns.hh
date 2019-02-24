@@ -30,8 +30,10 @@ namespace ggg {
 		Ch delimiter,
 		entity_format format
 	) {
+		typedef typename Container::value_type entity_type;
+		typedef Entity_header<entity_type> traits_type;
 		for (const auto& value : cnt) {
-			value.write_human(out, width.data(), format, delimiter);
+			traits_type::write_body(out, value, width.data(), format, delimiter);
 		}
 	}
 
@@ -44,21 +46,21 @@ namespace ggg {
 	align_columns(
 		const Container& cnt,
 		std::basic_ostream<Ch>& out,
-		Ch delimiter,
 		Ch out_delimiter,
 		bool header,
 		entity_format format
 	) {
 		typedef typename Container::value_type entity_type;
+		typedef Entity_header<entity_type> traits_type;
 		std::basic_stringstream<Ch> str;
 		str.imbue(std::locale::classic());
 		if (header) {
-			entity_type::write_header(str, nullptr, 0);
+			traits_type::write_header(str, nullptr, 0);
 		}
 		print_lines(cnt, str);
-		std::vector<size_t> width = align_columns(str, delimiter);
+		std::vector<size_t> width = align_columns(str, traits_type::delimiter());
 		if (header) {
-			entity_type::write_header(out, width.data(), out_delimiter);
+			traits_type::write_header(out, width.data(), out_delimiter);
 		}
 		write_human(cnt, width, out, out_delimiter, format);
 	}
@@ -71,7 +73,7 @@ namespace ggg {
 		Ch delimiter,
 		entity_format format
 	) {
-		align_columns(cnt, out, delimiter, delimiter, false, format);
+		align_columns(cnt, out, delimiter, false, format);
 	}
 }
 

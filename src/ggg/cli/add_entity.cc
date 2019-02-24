@@ -115,7 +115,6 @@ ggg::Add_entity
 		cnt,
 		out,
 		entity::delimiter,
-		entity::delimiter,
 		false,
 		entity_format::human
 	);

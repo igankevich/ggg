@@ -46,9 +46,8 @@ namespace ggg {
 			return dest + nbytes;
 		}
 
-		struct Vector {
+		union Vector {
 			const void* ptr = nullptr;
-			size_t n = 0;
 			char bytes[sizeof(ptr)];
 		};
 
@@ -96,7 +95,7 @@ namespace ggg {
 
 			inline char*
 			write(const std::string& s) {
-				return this->write(s.data(), s.size());
+				return this->write(s.data());
 			}
 
 			inline char**
@@ -104,7 +103,7 @@ namespace ggg {
 				this->align();
 				char** old = this->array_ptr();
 				for (size_t i=0; i<n; ++i) {
-					this->write(array[i].ptr, array[i].n);
+					this->write(array[i].bytes, sizeof(array[i]));
 				}
 				Vector last;
 				this->write(last.bytes, sizeof(Vector));

@@ -162,14 +162,6 @@ namespace ggg {
 	}
 
 	template <class Ch>
-	void
-	copy_to(const basic_group<Ch>& gr, struct ::group* lhs, char* buffer);
-
-	template <class Ch>
-	size_t
-	buffer_size(const basic_group<Ch>& gr) noexcept;
-
-	template <class Ch>
 	std::basic_ostream<Ch>&
 	operator<<(std::basic_ostream<Ch>& out, const basic_group<Ch>& rhs);
 

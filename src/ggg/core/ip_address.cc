@@ -13,8 +13,47 @@ _family{rhs._family} {
 			this->_address6 = rhs._address6;
 			break;
 		default:
-			throw std::invalid_argument("unknown address family");
 			break;
+	}
+}
+
+ggg::ip_address&
+ggg::ip_address::operator=(const ip_address& rhs) {
+	this->_family = rhs._family;
+	switch (rhs.family()) {
+		case sys::family_type::inet:
+			this->_address4 = rhs._address4;
+			break;
+		case sys::family_type::inet6:
+			this->_address6 = rhs._address6;
+			break;
+		default:
+			break;
+	}
+	return *this;
+}
+
+bool
+ggg::operator==(const ip_address& lhs, const ip_address& rhs) {
+	if (lhs._family != rhs._family) {
+		return false;
+	}
+	switch (rhs.family()) {
+		case sys::family_type::inet: return lhs._address4 == rhs._address4;
+		case sys::family_type::inet6: return lhs._address6 == rhs._address6;
+		default: return false;
+	}
+}
+
+bool
+ggg::operator<(const ip_address& lhs, const ip_address& rhs) {
+	if (lhs._family != rhs._family) {
+		return lhs._family < rhs._family;
+	}
+	switch (rhs.family()) {
+		case sys::family_type::inet: return lhs._address4 < rhs._address4;
+		case sys::family_type::inet6: return lhs._address6 < rhs._address6;
+		default: return false;
 	}
 }
 

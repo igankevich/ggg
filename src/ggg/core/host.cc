@@ -13,16 +13,17 @@ sqlite::rstream&
 ggg::operator>>(sqlite::rstream& in, host& rhs) {
 	sqlite::cstream cstr(in);
 	if (in >> cstr) {
-		sqlite::blob addr;
-		cstr >> addr;
-		if (addr.size() == rhs._address.size()) {
-			std::copy_n(
-				addr.data(),
-				addr.size(),
-				rhs._address.data()
-			);
-		}
-		cstr >> rhs._name;
+		cstr >> rhs._address >> rhs._name;
+	}
+	return in;
+}
+
+sqlite::cstream&
+ggg::operator>>(sqlite::cstream& in, sys::ethernet_address& rhs) {
+	sqlite::blob addr;
+	in >> addr;
+	if (addr.size() == rhs.size()) {
+		std::copy_n(addr.data(), addr.size(), rhs.data());
 	}
 	return in;
 }

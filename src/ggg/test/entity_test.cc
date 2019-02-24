@@ -117,24 +117,6 @@ TEST(EntityTest, ReadEntryWithMissingFields) {
 	EXPECT_EQ("", ent.shell());
 }
 
-TEST(EntityTest, CopyTo) {
-	ggg::entity ent;
-	char fillchar = -1;
-	std::vector<char> buffer(buffer_size(ent) * 2, fillchar);
-	struct ::passwd pw;
-	copy_to(ent, &pw, buffer.data());
-	EXPECT_EQ(fillchar, buffer[buffer_size(ent)]);
-	EXPECT_STREQ(ent.name().data(), pw.pw_name);
-	EXPECT_STREQ(ent.password().data(), pw.pw_passwd);
-	EXPECT_EQ(ent.id(), pw.pw_uid);
-	EXPECT_EQ(ent.gid(), pw.pw_gid);
-	EXPECT_STREQ(ent.shell().data(), pw.pw_shell);
-	EXPECT_STREQ(ent.home().data(), pw.pw_dir);
-	#ifdef __linux__
-	EXPECT_STREQ(ent.real_name().data(), pw.pw_gecos);
-	#endif
-}
-
 TEST_P(EntityTest, BstreamIO) {
 	ggg::entity ent, ent2;
 	{

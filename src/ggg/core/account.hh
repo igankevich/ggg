@@ -20,12 +20,6 @@
 
 namespace ggg {
 
-	namespace chrono {
-
-		typedef std::chrono::duration<long,std::ratio<60*60*24,1>> days;
-
-	}
-
 	class account {
 
 	public:
@@ -115,9 +109,6 @@ namespace ggg {
 			this->setf(account_flags::password_has_expired);
 		}
 
-		void
-		copy_to(struct ::spwd* lhs, char* buffer) const;
-
 		friend std::ostream&
 		operator<<(std::ostream& out, const account& rhs);
 
@@ -126,24 +117,6 @@ namespace ggg {
 
 		friend sqlite::rstream&
 		operator>>(sqlite::rstream& in, account& rhs);
-
-		static void
-		write_header(
-			std::ostream& out,
-			columns_type width,
-			char_type delim=delimiter
-		);
-
-		void
-		write_human(
-			std::ostream& out,
-			columns_type width,
-			entity_format fmt,
-			char_type delim=delimiter
-		) const;
-
-		std::istream&
-		read_human(std::istream& in, entity_format fmt);
 
 		void
 		copy_from(const account& rhs);
@@ -321,6 +294,8 @@ namespace ggg {
 		void
 		parse_password();
 
+		friend struct Entity_header<account>;
+
 	};
 
 	std::ostream&
@@ -341,16 +316,6 @@ namespace ggg {
 		}
 
 	};
-
-	inline size_t
-	buffer_size(const account& a) noexcept {
-		return a.login().size() + 1 + a.password().size() + 1;
-	}
-
-	inline void
-	copy_to(const account& ent, struct ::spwd* lhs, char* buffer) {
-		ent.copy_to(lhs, buffer);
-	}
 
 }
 

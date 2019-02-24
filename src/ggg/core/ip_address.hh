@@ -38,7 +38,9 @@ namespace ggg {
 
 		ip_address(const ip_address& rhs);
 
-		ip_address& operator=(const ip_address&) = default;
+		ip_address&
+		operator=(const ip_address&);
+
 		ip_address(ip_address&&) = default;
 		ip_address& operator=(ip_address&&) = default;
 
@@ -79,6 +81,12 @@ namespace ggg {
 		friend sqlite::cstream&
 		operator>>(sqlite::cstream& in, ip_address& rhs);
 
+		friend bool
+		operator==(const ip_address& lhs, const ip_address& rhs);
+
+		friend bool
+		operator<(const ip_address& lhs, const ip_address& rhs);
+
 	};
 
 	std::ostream&
@@ -89,6 +97,17 @@ namespace ggg {
 
 	sqlite::cstream&
 	operator>>(sqlite::cstream& in, ip_address& rhs);
+
+	bool
+	operator==(const ip_address& lhs, const ip_address& rhs);
+
+	inline bool
+	operator!=(const ip_address& lhs, const ip_address& rhs) {
+		return !operator==(lhs, rhs);
+	}
+
+	bool
+	operator<(const ip_address& lhs, const ip_address& rhs);
 
 }
 

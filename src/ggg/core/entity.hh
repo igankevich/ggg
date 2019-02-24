@@ -77,14 +77,6 @@ namespace ggg {
 
 		template <class X>
 		friend void
-		copy_to(const basic_entity<X>& ent, struct ::passwd* lhs, char* buffer);
-
-		template <class X>
-		friend size_t
-		buffer_size(const basic_entity<X>& ent) noexcept;
-
-		template <class X>
-		friend void
 		assign(basic_entity<X>& lhs, const struct ::passwd& rhs);
 
 		inline bool
@@ -143,24 +135,6 @@ namespace ggg {
 
 		void
 		set(const form_field& field, const char_type* value);
-
-		static void
-		write_header(
-			ostream_type& out,
-			columns_type width,
-			char_type delim=delimiter
-		);
-
-		void
-		write_human(
-			ostream_type& out,
-			columns_type width,
-			entity_format fmt,
-			char_type delim=delimiter
-		) const;
-
-		std::basic_istream<Ch>&
-		read_human(std::basic_istream<Ch>& in, entity_format fmt);
 
 		inline sys::uid_type
 		id() const noexcept {
@@ -259,15 +233,10 @@ namespace ggg {
 
 		void
 		merge(const basic_entity& rhs);
+
+		friend struct Entity_header<basic_entity>;
+
 	};
-
-	template <class Ch>
-	void
-	copy_to(const basic_entity<Ch>& ent, struct ::passwd* lhs, char* buffer);
-
-	template <class Ch>
-	size_t
-	buffer_size(const basic_entity<Ch>& ent) noexcept;
 
 	template <class Ch>
 	void

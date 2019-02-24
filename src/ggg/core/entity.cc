@@ -1,8 +1,6 @@
-#include "entity.hh"
-
-#include <ggg/bits/bufcopy.hh>
 #include <ggg/bits/read_field.hh>
 #include <ggg/bits/to_bytes.hh>
+#include <ggg/core/entity.hh>
 
 #include <algorithm>
 #include <iomanip>
@@ -131,117 +129,6 @@ ggg::operator>>(sys::basic_bstream<Ch>& in, basic_entity<Ch>& rhs) {
 	       >> rhs._uid
 	       >> rhs._gid
 	       >> static_cast<std::string&>(rhs._origin);
-}
-
-template <class Ch>
-void
-ggg::basic_entity<Ch>
-::write_header(ostream_type& out, columns_type width, char_type delim) {
-	typedef entity_headers<Ch> h;
-	if (width) {
-		const char_type d[4] = {
-			' ',
-			delim,
-			delim == ' ' ? char_type(0) : ' ',
-			0
-		};
-		out << std::left << std::setw(width[0]) << h::name() << d
-		    << std::right << std::setw(width[2]) << h::id() << d
-		    << std::left << std::setw(width[4]) << h::real_name() << d
-		    << std::left << std::setw(width[5]) << h::home() << d
-		    << std::left << std::setw(width[6]) << h::shell() << '\n';
-	} else {
-		out << h::all() << '\n';
-	}
-}
-
-template <class Ch>
-void
-ggg::basic_entity<Ch>
-::write_human(
-	ostream_type& out,
-	columns_type width,
-	entity_format fmt,
-	char_type delim
-) const {
-	const char_type d[4] = {
-		' ',
-		delim,
-		delim == ' ' ? char_type(0) : ' ',
-		0
-	};
-	out << std::left << std::setw(width[0]) << this->name() << d;
-	if (fmt == entity_format::batch) {
-		out << std::right << std::setw(width[2]) << this->id() << d;
-	}
-	out << std::left << std::setw(width[4]) << this->real_name() << d
-	    << std::left << std::setw(width[5]) << this->home() << d
-	    << std::left << std::setw(width[6]) << this->shell() << '\n';
-}
-
-template <class Ch>
-std::basic_istream<Ch>&
-ggg::basic_entity<Ch>
-::read_human(std::basic_istream<Ch>& in, entity_format fmt) {
-	typename std::basic_istream<Ch>::sentry s(in);
-	if (s) {
-		this->clear();
-		if (fmt == entity_format::batch) {
-			bits::read_all_fields(
-				in,
-				basic_entity<Ch>::delimiter,
-				this->_name,
-				this->_uid,
-				this->_realname,
-				this->_homedir,
-				this->_shell
-			);
-			this->_gid = this->_uid;
-		} else {
-			bits::read_all_fields(
-				in,
-				basic_entity<Ch>::delimiter,
-				this->_name,
-				this->_realname,
-				this->_homedir,
-				this->_shell
-			);
-		}
-		if (in.eof()) {
-			in.clear();
-		}
-	}
-	return in;
-}
-
-template <class Ch>
-size_t
-ggg
-::buffer_size(const basic_entity<Ch>& rhs) noexcept {
-	return rhs._name.size() + 1
-	       + rhs._password.size() + 1
-	       + rhs._realname.size() + 1
-	       + rhs._homedir.size() + 1
-	       + rhs._shell.size() + 1;
-}
-
-template <class Ch>
-void
-ggg
-::copy_to(
-	const basic_entity<Ch>& ent,
-	struct ::passwd* lhs,
-	char* buffer
-) {
-	buffer = bits::bufcopy(&lhs->pw_name, buffer, ent._name.data());
-	buffer = bits::bufcopy(&lhs->pw_passwd, buffer, ent._password.data());
-	#ifdef __linux__
-	buffer = bits::bufcopy(&lhs->pw_gecos, buffer, ent._realname.data());
-	#endif
-	buffer = bits::bufcopy(&lhs->pw_dir, buffer, ent._homedir.data());
-	bits::bufcopy(&lhs->pw_shell, buffer, ent._shell.data());
-	lhs->pw_uid = ent._uid;
-	lhs->pw_gid = ent._gid;
 }
 
 template <class Ch>
@@ -383,14 +270,6 @@ ggg::operator>>(sqlite::rstream& in, basic_entity<char>& rhs) {
 }
 
 template class ggg::basic_entity<char>;
-
-template void
-ggg
-::copy_to(const basic_entity<char>& ent, struct ::passwd* lhs, char* buffer);
-
-template size_t
-ggg
-::buffer_size(const basic_entity<char>& ent) noexcept;
 
 template void
 ggg

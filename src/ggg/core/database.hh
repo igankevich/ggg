@@ -11,6 +11,7 @@
 #include <ggg/core/host.hh>
 #include <ggg/core/host_address.hh>
 #include <ggg/core/ip_address.hh>
+#include <ggg/core/machine.hh>
 
 #include <sqlitex/database.hh>
 #include <sqlitex/transaction.hh>
@@ -299,6 +300,9 @@ namespace ggg {
 		row_stream_t
 		find_host_name(const ip_address& address);
 
+		row_stream_t
+		machines();
+
 	private:
 
 		std::string
@@ -327,6 +331,7 @@ namespace ggg {
 	typedef sqlite::rstream_iterator<ggg::group> group_iterator;
 	typedef sqlite::rstream_iterator<ggg::account> account_iterator;
 	typedef sqlite::rstream_iterator<ggg::host> host_iterator;
+	typedef sqlite::rstream_iterator<ggg::Machine> machine_iterator;
 
 	class Transaction: public sqlite::immediate_transaction {
 

@@ -1,3 +1,4 @@
+#include <ggg/nss/entity_traits.hh>
 #include <ggg/test/clean_database.hh>
 #include <gtest/gtest.h>
 #include <pwd.h>
@@ -69,4 +70,22 @@ TEST(passwd, getpwuid) {
 	EXPECT_EQ(2002, user3->pw_uid);
 	struct passwd* user4 = getpwuid(12345);
 	ASSERT_EQ(nullptr, user4);
+}
+
+TEST(passwd, copy) {
+	ggg::entity ent;
+	char fillchar = -1;
+	std::vector<char> buffer(buffer_size(ent) * 2, fillchar);
+	struct ::passwd pw;
+	copy_to(ent, &pw, buffer.data());
+	EXPECT_EQ(fillchar, buffer[buffer_size(ent)]);
+	EXPECT_STREQ(ent.name().data(), pw.pw_name);
+	EXPECT_STREQ(ent.password().data(), pw.pw_passwd);
+	EXPECT_EQ(ent.id(), pw.pw_uid);
+	EXPECT_EQ(ent.gid(), pw.pw_gid);
+	EXPECT_STREQ(ent.shell().data(), pw.pw_shell);
+	EXPECT_STREQ(ent.home().data(), pw.pw_dir);
+	#ifdef __linux__
+	EXPECT_STREQ(ent.real_name().data(), pw.pw_gecos);
+	#endif
 }

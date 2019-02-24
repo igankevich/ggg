@@ -1,7 +1,9 @@
 #include <shadow.h>
 #include <stddef.h>
 
+#include <ggg/bits/bufcopy.hh>
 #include <ggg/config.hh>
+#include <ggg/core/days.hh>
 #include <ggg/nss/hierarchy_instance.hh>
 #include <ggg/nss/nss.hh>
 
@@ -19,6 +21,27 @@ namespace ggg {
 		}
 
 	};
+
+	template <>
+	size_t
+	buffer_size<account>(const account& a) noexcept {
+		return a.login().size() + 1 + a.password().size() + 1;
+	}
+
+	template <>
+	void
+	copy_to<account>(const account& ent, struct ::spwd* lhs, char* buffer) {
+		using bits::Buffer;
+		Buffer buf(buffer);
+		lhs->sp_namp = buf.write(ent.login());
+		lhs->sp_pwdp = buf.write("");
+		set_days(lhs->sp_lstchg, ent.last_change());
+		set_days(lhs->sp_min, ent.min_change());
+		set_days(lhs->sp_max, ent.max_change());
+		set_days(lhs->sp_warn, ent.warn_change());
+		set_days(lhs->sp_inact, ent.max_inactive());
+		set_days(lhs->sp_expire, ent.expire());
+	}
 
 }
 
@@ -52,7 +75,7 @@ NSS_GETENTBY_R(sp, nam)(
 			ret = NSS_STATUS_TRYAGAIN;
 			err = ERANGE;
 		} else {
-			first->copy_to(result, buffer);
+			copy_to(*first, result, buffer);
 			ret = NSS_STATUS_SUCCESS;
 			err = 0;
 		}

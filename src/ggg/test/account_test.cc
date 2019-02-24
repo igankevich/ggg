@@ -46,27 +46,6 @@ TEST_P(AccountTest, ReadWrite) {
 	EXPECT_EQ(tmp2.str(), tmp.str());
 }
 
-TEST_P(AccountTest, CopyTo) {
-	std::stringstream tmp;
-	tmp << GetParam();
-	ggg::account acc;
-	tmp >> acc;
-	char fillchar = -1;
-	std::vector<char> buffer(buffer_size(acc) * 2, fillchar);
-	struct ::spwd spw;
-	std::memset(&spw, 0, sizeof(::spwd));
-	acc.copy_to(&spw, buffer.data());
-	EXPECT_EQ(fillchar, buffer[buffer_size(acc)]);
-	EXPECT_STREQ(acc.login().data(), spw.sp_namp);
-	EXPECT_STREQ(acc.password().data(), spw.sp_pwdp);
-	EXPECT_EQ(to_days(acc.last_change()), spw.sp_lstchg);
-	EXPECT_EQ(to_days(acc.min_change()), spw.sp_min);
-	EXPECT_EQ(to_days(acc.max_change()), spw.sp_max);
-	EXPECT_EQ(to_days(acc.warn_change()), spw.sp_warn);
-	EXPECT_EQ(to_days(acc.max_inactive()), spw.sp_inact);
-	EXPECT_EQ(to_days(acc.expire()), spw.sp_expire);
-}
-
 INSTANTIATE_TEST_CASE_P(
 	ReadWithWhiteSpace,
 	AccountTest,
