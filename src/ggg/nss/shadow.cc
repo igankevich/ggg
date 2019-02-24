@@ -1,10 +1,10 @@
 #include <shadow.h>
 #include <stddef.h>
 
-#include <ggg/bits/bufcopy.hh>
 #include <ggg/config.hh>
 #include <ggg/core/days.hh>
-#include <ggg/nss/hierarchy_instance.hh>
+#include <ggg/nss/buffer.hh>
+#include <ggg/nss/database.hh>
 #include <ggg/nss/nss.hh>
 
 namespace ggg {
@@ -31,7 +31,6 @@ namespace ggg {
 	template <>
 	void
 	copy_to<account>(const account& ent, struct ::spwd* lhs, char* buffer) {
-		using bits::Buffer;
 		Buffer buf(buffer);
 		lhs->sp_namp = buf.write(ent.login());
 		lhs->sp_pwdp = buf.write("");

@@ -1,7 +1,7 @@
 #include <cstring>
 #include <ostream>
 
-#include <ggg/bits/bufcopy.hh>
+#include <ggg/nss/buffer.hh>
 #include <ggg/core/host.hh>
 
 std::ostream&
@@ -27,14 +27,3 @@ ggg::operator>>(sqlite::cstream& in, sys::ethernet_address& rhs) {
 	}
 	return in;
 }
-
-void
-ggg::copy_to(const host& ent, struct ::etherent* lhs, char* buffer) {
-	buffer = bits::bufcopy(&lhs->e_name, buffer, ent.name().data());
-	std::memcpy(
-		lhs->e_addr.ether_addr_octet,
-		ent.address().data(),
-		ent.address().size()
-	);
-}
-

@@ -1,9 +1,7 @@
 #include <netdb.h>
 
-#include <iostream>
-
-#include <ggg/bits/bufcopy.hh>
-#include <ggg/nss/hierarchy_instance.hh>
+#include <ggg/nss/buffer.hh>
+#include <ggg/nss/database.hh>
 #include <ggg/nss/nss.hh>
 
 namespace ggg {
@@ -33,10 +31,8 @@ namespace ggg {
 
 	void
 	copy_to(const host_address& a, struct ::hostent* lhs, char* buffer) {
-		using bits::Buffer;
-		using bits::Vector;
-		Vector aliases[0];
-		Vector addresses[2];
+		Pointer aliases[0];
+		Pointer addresses[2];
 		addresses[0].ptr = a.address().data();
 		addresses[1].ptr = nullptr;
 		Buffer buf(buffer);

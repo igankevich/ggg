@@ -1,4 +1,3 @@
-src/ggg/bits/bufcopy.hh
 src/ggg/bits/field_iterator.hh
 src/ggg/bits/io.hh
 src/ggg/bits/read_field.hh
@@ -77,12 +76,13 @@ src/ggg/ggg/show_version.cc
 src/ggg/ggg/show_version.hh
 src/ggg/ggg/tmpfile.cc
 src/ggg/ggg/tmpfile.hh
+src/ggg/nss/buffer.hh
+src/ggg/nss/database.cc
+src/ggg/nss/database.hh
 src/ggg/nss/entity_guard.hh
 src/ggg/nss/gr_guard.hh
 src/ggg/nss/grp.cc
 src/ggg/nss/grp.hh
-src/ggg/nss/hierarchy_instance.cc
-src/ggg/nss/hierarchy_instance.hh
 src/ggg/nss/nss.hh
 src/ggg/nss/pw_guard.hh
 src/ggg/nss/pwd.cc

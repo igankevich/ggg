@@ -1,7 +1,31 @@
 #include <ggg/core/database.hh>
 #include <ggg/core/host.hh>
+#include <ggg/nss/buffer.hh>
+#include <ggg/nss/entity_traits.hh>
 #include <ggg/nss/etherent.hh>
 #include <ggg/nss/nss.hh>
+
+namespace ggg {
+
+	template <>
+	size_t
+	buffer_size<host>(const host& h) noexcept {
+		return h.name().size() + 1 + h.address().size();
+	}
+
+	template <>
+	void
+	copy_to<host>(const host& ent, struct ::etherent* lhs, char* buffer) {
+		Buffer buf(buffer);
+		lhs->e_name = buf.write(ent.name());
+		std::memcpy(
+			lhs->e_addr.ether_addr_octet,
+			ent.address().data(),
+			ent.address().size()
+		);
+	}
+
+}
 
 NSS_FUNCTION(gethostton_r)(
 	const char* name,

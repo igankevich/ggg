@@ -6,7 +6,6 @@
 #include <fstream>
 #include <stdexcept>
 
-#include <ggg/bits/io.hh>
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/entity.hh>
@@ -108,7 +107,9 @@ namespace ggg {
 				*result++ = obj;
 			}
 		} catch (...) {
-			ggg::bits::throw_io_error(in, msg);
+			if (!in.eof()) {
+				throw std::system_error(std::io_errc::stream, msg);
+			}
 		}
 	}
 

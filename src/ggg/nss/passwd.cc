@@ -1,9 +1,9 @@
 #include <pwd.h>
 #include <stddef.h>
 
-#include <ggg/bits/bufcopy.hh>
 #include <ggg/config.hh>
-#include <ggg/nss/hierarchy_instance.hh>
+#include <ggg/nss/buffer.hh>
+#include <ggg/nss/database.hh>
 #include <ggg/nss/nss.hh>
 
 namespace ggg {
@@ -34,8 +34,6 @@ namespace ggg {
 	template <>
 	void
 	copy_to<entity,::passwd>(const entity& ent, passwd* lhs, char* buffer) {
-		using bits::Buffer;
-		using bits::Vector;
 		Buffer buf(buffer);
 		lhs->pw_name = buf.write(ent.name());
 		lhs->pw_passwd = buf.write(ent.password());

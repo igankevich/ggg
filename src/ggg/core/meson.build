@@ -14,7 +14,7 @@ ggg_core_src = files([
 	'shred.cc'
 ])
 
-ggg_core_deps = [unistdx,libacl,sqlitex,sqlite]
+ggg_core_deps = [unistdx,sqlitex,sqlite]
 
 ggg_core_lib = shared_library(
 	'ggg_core',

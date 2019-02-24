@@ -96,14 +96,6 @@ namespace ggg {
 	sqlite::cstream&
 	operator>>(sqlite::cstream& in, sys::ethernet_address& rhs);
 
-	inline size_t
-	buffer_size(const host& h) noexcept {
-		return h.name().size() + 1 + h.address().size();
-	}
-
-	void
-	copy_to(const host& ent, struct ::etherent* lhs, char* buffer);
-
 }
 
 namespace std {
