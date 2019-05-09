@@ -62,15 +62,12 @@ ggg::operator>>(sys::basic_bstream<Ch>& in, basic_group<Ch>& rhs) {
 	       >> rhs._members;
 }
 
-sqlite::rstream&
-ggg::operator>>(sqlite::rstream& in, basic_group<char>& rhs) {
+void
+ggg::operator>>(const sqlite::statement& in, basic_group<char>& rhs) {
 	rhs._name.clear();
 	rhs._gid = -1;
 	sqlite::cstream cstr(in);
-	if (in >> cstr) {
-		cstr >> rhs._gid >> rhs._name;
-	}
-	return in;
+	cstr >> rhs._gid >> rhs._name;
 }
 
 template class ggg::basic_group<char>;

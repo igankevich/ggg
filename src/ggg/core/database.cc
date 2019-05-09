@@ -409,13 +409,10 @@ JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
 
 	};
 
-	sqlite::rstream&
-	operator>>(sqlite::rstream& in, Tie& rhs) {
+	void
+	operator>>(const sqlite::statement& in, Tie& rhs) {
 		sqlite::cstream cstr(in);
-		if (in >> cstr) {
-			cstr >> rhs.child_id >> rhs.parent_id;
-		}
-		return in;
+		cstr >> rhs.child_id >> rhs.parent_id;
 	}
 
 	struct database_parameters {
@@ -450,9 +447,9 @@ ggg::Database::open(File file, Flag flag) {
 		this->attach(File::Accounts, flag);
 	} else {
 		const auto& params = configurations[static_cast<int>(file)];
-		sqlite::open_flag flags = sqlite::open_flag::read_only;
+		sqlite::file_flag flags = sqlite::file_flag::read_only;
 		if (flag == Flag::Read_write) {
-			flags = sqlite::open_flag::read_write | sqlite::open_flag::create;
+			flags = sqlite::file_flag::read_write | sqlite::file_flag::create;
 		}
 		this->_db.open(params.filename, flags);
 		int64_t version = this->_db.user_version();
@@ -468,7 +465,7 @@ ggg::Database::open(File file, Flag flag) {
 			}
 		}
 	}
-	this->_db.enable_foreign_keys();
+	this->_db.foreign_keys(true);
 	this->_db.busy_timeout(std::chrono::seconds(30));
 }
 
@@ -505,7 +502,7 @@ ggg::Database::find_group(sys::gid_type gid, ggg::group& result) {
 	ggg::group::container_type members;
 	ggg::group tmp;
 	bool found = false;
-	while (rstr >> tmp) {
+	for (auto& tmp : rstr.rows<ggg::group>()) {
 		if (tmp.id() == gid) {
 			result = std::move(tmp);
 			found = true;
@@ -514,7 +511,7 @@ ggg::Database::find_group(sys::gid_type gid, ggg::group& result) {
 		}
 	}
 	result.members(std::move(members));
-	return found && !rstr.fail() && !rstr.bad();
+	return found;
 }
 
 bool
@@ -524,7 +521,7 @@ ggg::Database::find_group(const char* name, ggg::group& result) {
 	ggg::group::container_type members;
 	ggg::group tmp;
 	bool found = false;
-	while (rstr >> tmp) {
+	for (auto& tmp : rstr.rows<ggg::group>()) {
 		if (tmp.name() == name) {
 			found = true;
 			result = std::move(tmp);
@@ -533,7 +530,7 @@ ggg::Database::find_group(const char* name, ggg::group& result) {
 		}
 	}
 	result.members(std::move(members));
-	return found && !rstr.fail() && !rstr.bad();
+	return found;
 }
 
 auto
@@ -553,14 +550,12 @@ ggg::Database::groups() -> group_container_t {
 	group_container_t groups;
 	{
 		auto rstr1 = this->_db.prepare(sql_select_all_groups);
-		ggg::group tmp;
-		while (rstr1 >> tmp) {
+		for (auto& tmp : rstr1.rows<group>()) {
 			groups.emplace(tmp.id(), std::move(tmp));
 		}
 	}
 	auto rstr2 = this->_db.prepare(sql_select_all_group_members, GGG_MAX_DEPTH);
-	Tie tie;
-	while (rstr2 >> tie) {
+	for (auto& tie : rstr2.rows<Tie>()) {
 		auto parent = groups.find(tie.parent_id);
 		if (parent == groups.end()) {
 			continue;
@@ -578,9 +573,8 @@ sys::uid_type
 ggg::Database::next_entity_id() {
 	sys::uid_type id = bad_uid;
 	auto rstr = this->_db.prepare(sql_select_next_id, GGG_MIN_ID);
-	sqlite::cstream cstr(rstr);
-	if (rstr >> cstr) {
-		cstr >> id;
+	if (rstr.step() != sqlite::errc::done) {
+		rstr.column(0, id);
 	}
 	if (id == bad_uid) {
 		throw std::invalid_argument("failed to generate new id");
@@ -651,10 +645,7 @@ sys::uid_type
 ggg::Database::find_id_nocheck(const char* name) {
 	sys::uid_type id = bad_uid;
 	auto rstr = this->_db.prepare(sql_select_id_by_name, name);
-	sqlite::cstream cstr(rstr);
-	if (rstr >> cstr) {
-		cstr >> id;
-	}
+	if (rstr.step() != sqlite::errc::done) { rstr.column(0, id); }
 	return id;
 }
 
@@ -671,10 +662,7 @@ std::string
 ggg::Database::find_name_nocheck(sys::uid_type id) {
 	std::string name;
 	auto rstr = this->_db.prepare(sql_select_name_by_id, id);
-	sqlite::cstream cstr(rstr);
-	if (rstr >> cstr) {
-		cstr >> name;
-	}
+	if (rstr.step() != sqlite::errc::done) { rstr.column(0, name); }
 	return name;
 }
 
@@ -699,7 +687,7 @@ ggg::Database::dot(std::ostream& out) {
 	out << "rankdir=LR;\n";
 	{
 		auto rstr = entities();
-		sqlite::rstream_iterator<entity> first(rstr), last;
+		sqlite::row_iterator<entity> first(rstr), last;
 		while (first != last) {
 			out << "id" << first->id() << " [label=\"" << first->name() << "\"];\n";
 			++first;
@@ -707,7 +695,7 @@ ggg::Database::dot(std::ostream& out) {
 	}
 	{
 		auto rstr = ties();
-		sqlite::rstream_iterator<Tie> first(rstr), last;
+		sqlite::row_iterator<Tie> first(rstr), last;
 		while (first != last) {
 			first->dot(out);
 			++first;
@@ -716,7 +704,7 @@ ggg::Database::dot(std::ostream& out) {
 	{
 		std::unordered_map<sys::uid_type,std::vector<Tie>> hierarchies;
 		auto rstr = hierarchy();
-		sqlite::rstream_iterator<Tie> first(rstr), last;
+		sqlite::row_iterator<Tie> first(rstr), last;
 		while (first != last) {
 			auto root_id = find_hierarchy_root(first->child_id);
 			hierarchies[root_id].emplace_back(first->child_id, first->parent_id);
@@ -915,11 +903,9 @@ ggg::Database::hierarchy() -> row_stream_t {
 sys::uid_type
 ggg::Database::find_hierarchy_root(sys::uid_type child_id) {
 	sys::uid_type id = bad_uid;
-	auto rstr =
-		this->_db.prepare(sql_select_hierarchy_root_by_child_id, child_id);
-	sqlite::cstream cstr(rstr);
-	if (rstr >> cstr) {
-		cstr >> id;
+	auto rstr = this->_db.prepare(sql_select_hierarchy_root_by_child_id, child_id);
+	if (rstr.step() != sqlite::errc::done) {
+		rstr.column(0, id);
 	}
 	if (id == bad_uid) {
 		id = child_id;
@@ -969,6 +955,8 @@ ggg::Database::tie(const char* child, const char* parent) {
 	auto child_root = find_hierarchy_root(child_id);
 	auto parent_root = find_hierarchy_root(parent_id);
 	if (child_root == parent_root) {
+		std::clog << "child_root=" << child_root << std::endl;
+		std::clog << "parent_root=" << parent_root << std::endl;
 		throw std::invalid_argument("same hierarchy root");
 	}
 	this->tie(child_id, parent_id);
@@ -997,8 +985,7 @@ ggg::Database::entities_are_tied(
 	sys::gid_type parent_id
 ) {
 	auto rstr = this->_db.prepare(sql_select_tie_by_ids, child_id, parent_id);
-	rstr.step();
-	return !rstr.eof();
+	return rstr.step() != sqlite::errc::done;
 }
 
 bool
@@ -1007,8 +994,7 @@ ggg::Database::entities_are_attached(
 	sys::gid_type parent_id
 ) {
 	auto rstr = this->_db.prepare(sql_select_hierarchy_by_ids, child_id, parent_id);
-	rstr.step();
-	return !rstr.eof();
+	return rstr.step() != sqlite::errc::done;
 }
 
 auto

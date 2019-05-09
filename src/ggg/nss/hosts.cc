@@ -11,6 +11,7 @@ namespace ggg {
 
 		typedef host_address entity_type;
 		typedef Database::row_stream_t stream_type;
+		typedef sqlite::row_iterator<host_address> iterator;
 
 		static inline stream_type
 		all(Database* db) {
@@ -67,7 +68,7 @@ NSS_GETENT_R(host)(
 	auto& stream = database.stream();
 	auto& entity = database.entity();
 	try {
-		if (!stream.good()) {
+		if (database.empty()) {
 			ret = NSS_STATUS_NOTFOUND;
 			err = ENOENT;
 			h_err = HOST_NOT_FOUND;
@@ -108,21 +109,22 @@ NSS_FUNCTION(gethostbyname2_r)(
 		sys::family_type family = static_cast<sys::family_type>(af);
 		ggg::Database db(ggg::Database::File::Entities);
 		auto rstr = db.find_ip_address(name, family);
-		ggg::ip_address address;
-		rstr >> address;
-		if (!rstr.good()) {
+		auto first = rstr.begin<ggg::ip_address>();
+		if (first == rstr.end<ggg::ip_address>()) {
 			ret = NSS_STATUS_NOTFOUND;
 			err = ENOENT;
 			h_err = HOST_NOT_FOUND;
-		} else if (buflen < buffer_size(address)) {
-			ret = NSS_STATUS_TRYAGAIN;
-			err = ERANGE;
-			h_err = 0;
 		} else {
-			ggg::host_address ha(address, name);
-			copy_to(ha, result, buffer);
-			ret = NSS_STATUS_SUCCESS;
-			err = 0;
+			ggg::host_address ha(*first, name);
+			if (buflen < buffer_size(ha)) {
+				ret = NSS_STATUS_TRYAGAIN;
+				err = ERANGE;
+				h_err = 0;
+			} else {
+				copy_to(ha, result, buffer);
+				ret = NSS_STATUS_SUCCESS;
+				err = 0;
+			}
 		}
 	} catch (...) {
 		ret = NSS_STATUS_UNAVAIL;
@@ -177,23 +179,23 @@ NSS_FUNCTION(gethostbyaddr_r)(
 			std::string name;
 			std::memcpy(address.data(), addr, len);
 			auto rstr = db.find_host_name(address);
-			sqlite::cstream cstr(rstr);
-			if (rstr >> cstr) {
-				cstr >> name;
-			}
-			if (!rstr.good()) {
+			if (rstr.step() == sqlite::errc::done) {
 				ret = NSS_STATUS_NOTFOUND;
 				err = ENOENT;
 				h_err = HOST_NOT_FOUND;
-			} else if (buflen < buffer_size(address)) {
-				ret = NSS_STATUS_TRYAGAIN;
-				err = ERANGE;
-				h_err = 0;
 			} else {
-				ggg::host_address ha(address, name);
-				copy_to(ha, result, buffer);
-				ret = NSS_STATUS_SUCCESS;
-				err = 0;
+				sqlite::cstream cstr(rstr);
+				cstr >> name;
+				if (buflen < buffer_size(address)) {
+					ret = NSS_STATUS_TRYAGAIN;
+					err = ERANGE;
+					h_err = 0;
+				} else {
+					ggg::host_address ha(address, name);
+					copy_to(ha, result, buffer);
+					ret = NSS_STATUS_SUCCESS;
+					err = 0;
+				}
 			}
 		}
 	} catch (...) {

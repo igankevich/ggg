@@ -44,16 +44,16 @@ namespace ggg {
 		friend std::ostream&
 		operator<<(std::ostream& out, const host_address& rhs);
 
-		friend sqlite::rstream&
-		operator>>(sqlite::rstream& in, host_address& rhs);
+		friend void
+		operator>>(const sqlite::statement& in, host_address& rhs);
 
 	};
 
 	std::ostream&
 	operator<<(std::ostream& out, const host_address& rhs);
 
-	sqlite::rstream&
-	operator>>(sqlite::rstream& in, host_address& rhs);
+	void
+	operator>>(const sqlite::statement& in, host_address& rhs);
 
 }
 

@@ -16,7 +16,7 @@
 #include <ggg/core/form_field.hh>
 #include <ggg/sec/secure_string.hh>
 
-#include <sqlitex/rstream.hh>
+#include <sqlitex/statement.hh>
 
 namespace ggg {
 
@@ -114,8 +114,8 @@ namespace ggg {
 		friend std::istream&
 		operator>>(std::istream& in, account& rhs);
 
-		friend sqlite::rstream&
-		operator>>(sqlite::rstream& in, account& rhs);
+		friend void
+		operator>>(const sqlite::statement& in, account& rhs);
 
 		void
 		copy_from(const account& rhs);
@@ -288,8 +288,8 @@ namespace ggg {
 	std::istream&
 	operator>>(std::istream& in, account& rhs);
 
-	sqlite::rstream&
-	operator>>(sqlite::rstream& in, account& rhs);
+	void
+	operator>>(const sqlite::statement& in, account& rhs);
 
 	template <>
 	struct eq_traits<account> {

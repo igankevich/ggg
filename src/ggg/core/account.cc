@@ -291,16 +291,13 @@ ggg::account::set(const form_field& field, const char* value) {
 	}
 }
 
-sqlite::rstream&
-ggg::operator>>(sqlite::rstream& in, account& rhs) {
+void
+ggg::operator>>(const sqlite::statement& in, account& rhs) {
 	rhs.clear();
 	sqlite::cstream cstr(in);
-	if (in >> cstr) {
-		uint64_t flags = 0;
-		cstr >> rhs._login >> rhs._password >> rhs._expire >> flags;
-		rhs._flags = static_cast<account_flags>(flags);
-		rhs.parse_password();
-	}
-	return in;
+	uint64_t flags = 0;
+	cstr >> rhs._login >> rhs._password >> rhs._expire >> flags;
+	rhs._flags = static_cast<account_flags>(flags);
+	rhs.parse_password();
 }
 

@@ -5,7 +5,7 @@
 #include <string>
 
 #include <ggg/nss/etherent.hh>
-#include <sqlitex/rstream.hh>
+#include <sqlitex/statement.hh>
 #include <unistdx/net/ethernet_address>
 
 namespace ggg {
@@ -77,8 +77,8 @@ namespace ggg {
 				std::make_tuple(rhs._address, rhs._name);
 		}
 
-		friend sqlite::rstream&
-		operator>>(sqlite::rstream& in, host& rhs);
+		friend void
+		operator>>(const sqlite::statement& in, host& rhs);
 
 	};
 
@@ -90,8 +90,8 @@ namespace ggg {
 	std::ostream&
 	operator<<(std::ostream& out, const host& rhs);
 
-	sqlite::rstream&
-	operator>>(sqlite::rstream& in, host& rhs);
+	void
+	operator>>(const sqlite::statement& in, host& rhs);
 
 	sqlite::cstream&
 	operator>>(sqlite::cstream& in, sys::ethernet_address& rhs);

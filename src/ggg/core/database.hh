@@ -38,7 +38,7 @@ namespace ggg {
 
 	public:
 		typedef sqlite::database database_t;
-		typedef sqlite::rstream row_stream_t;
+		typedef sqlite::statement row_stream_t;
 		typedef std::unordered_map<sys::gid_type,group> group_container_t;
 
 	private:
@@ -63,7 +63,7 @@ namespace ggg {
 
 		inline bool
 		is_open() const noexcept {
-			return this->_db.db() != nullptr;
+			return this->_db.get() != nullptr;
 		}
 
 		inline void
@@ -115,8 +115,7 @@ namespace ggg {
 				rstr.bind(++i, *first);
 				++first;
 			}
-			entity tmp;
-			while (rstr >> tmp) {
+			for (const auto& tmp : rstr.template rows<entity>()) {
 				*result++ = tmp;
 			}
 		}
@@ -185,8 +184,7 @@ namespace ggg {
 				rstr.bind(++i, *first);
 				++first;
 			}
-			account tmp;
-			while (rstr >> tmp) {
+			for (const auto& tmp : rstr.template rows<account>()) {
 				*result++ = tmp;
 			}
 		}
@@ -327,11 +325,11 @@ namespace ggg {
 
 	};
 
-	typedef sqlite::rstream_iterator<ggg::entity> user_iterator;
-	typedef sqlite::rstream_iterator<ggg::group> group_iterator;
-	typedef sqlite::rstream_iterator<ggg::account> account_iterator;
-	typedef sqlite::rstream_iterator<ggg::host> host_iterator;
-	typedef sqlite::rstream_iterator<ggg::Machine> machine_iterator;
+	typedef sqlite::row_iterator<ggg::entity> user_iterator;
+	typedef sqlite::row_iterator<ggg::group> group_iterator;
+	typedef sqlite::row_iterator<ggg::account> account_iterator;
+	typedef sqlite::row_iterator<ggg::host> host_iterator;
+	typedef sqlite::row_iterator<ggg::Machine> machine_iterator;
 
 	class Transaction: public sqlite::immediate_transaction {
 

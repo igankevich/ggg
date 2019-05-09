@@ -3,7 +3,6 @@
 
 #include <gtest/gtest.h>
 
-#include <ggg/nss/config.hh>
 #include <ggg/test/clean_database.hh>
 
 struct host_guard {

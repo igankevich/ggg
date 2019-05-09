@@ -65,6 +65,7 @@ config.set('overflow_id', 65534)
 
 unistdx_version = '>= 0.5.4'
 ggg_crypt_version = '>= 0.1.1'
+sqlitex_version = '>= 0.4.2'
 
 unistdx = dependency('unistdx', version: unistdx_version)
 zxcvbn = dependency('zxcvbn')
@@ -72,7 +73,7 @@ pam = cpp.find_library('pam')
 ggg_crypt = dependency('ggg-crypt', version: ggg_crypt_version)
 libacl = cpp.find_library('acl')
 sqlite = dependency('sqlite3')
-sqlitex = dependency('sqlitex')
+sqlitex = dependency('sqlitex', version: sqlitex_version)
 
 subdir('src')
 subdir('po')

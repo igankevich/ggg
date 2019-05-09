@@ -8,7 +8,7 @@ Source0:        @name@-%{version}.tar.xz
 
 Requires: ggg-crypt @ggg_crypt_version@
 Requires: libacl
-Requires: sqlitex
+Requires: sqlitex @sqlitex_version@
 Requires: unistdx @unistdx_version@
 Requires: zxcvbn-c
 
@@ -20,7 +20,7 @@ BuildRequires: libacl-devel
 BuildRequires: meson
 BuildRequires: pam-devel
 BuildRequires: pam_wrapper
-BuildRequires: sqlitex-devel
+BuildRequires: sqlitex-devel @sqlitex_version@
 BuildRequires: unistdx-devel @unistdx_version@
 BuildRequires: zxcvbn-c-devel
 

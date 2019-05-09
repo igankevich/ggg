@@ -73,13 +73,10 @@ ggg::operator<<(std::ostream& out, const ip_address& rhs) {
 	return out;
 }
 
-sqlite::rstream&
-ggg::operator>>(sqlite::rstream& in, ip_address& rhs) {
+void
+ggg::operator>>(const sqlite::statement& in, ip_address& rhs) {
 	sqlite::cstream cstr(in);
-	if (in >> cstr) {
-		cstr >> rhs;
-	}
-	return in;
+	cstr >> rhs;
 }
 
 sqlite::cstream&

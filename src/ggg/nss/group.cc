@@ -3,6 +3,8 @@
 #include <limits>
 #include <stddef.h>
 
+#include <unistdx/it/field_iterator>
+
 #include <ggg/config.hh>
 #include <ggg/nss/buffer.hh>
 #include <ggg/nss/database.hh>
@@ -16,13 +18,13 @@ namespace ggg {
 
 	class Group_stream {
 
-	private:
+	public:
 		typedef ggg::Database::group_container_t container_type;
-		typedef container_type::iterator iterator;
+		typedef sys::field_iterator<container_type::iterator,1> iterator;
 
 	private:
 		container_type _groups;
-		iterator _first, _last;
+		container_type::iterator _first, _last;
 		bool _good = true;
 
 	public:
@@ -68,6 +70,11 @@ namespace ggg {
 			return this->_good;
 		}
 
+		inline bool empty() const { return this->_first == this->_last; }
+
+		template <class T> inline iterator begin() { return this->_first; }
+		template <class T> inline iterator end() { return this->_last; }
+
 		inline void
 		close() {
 			this->_groups.clear();
@@ -82,6 +89,7 @@ namespace ggg {
 
 		typedef group entity_type;
 		typedef Group_stream stream_type;
+		typedef Group_stream::iterator iterator;
 
 		static inline stream_type
 		all(Database* db) {

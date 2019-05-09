@@ -62,8 +62,8 @@ ggg::Expunge::find_expired_entities() {
 	this->_uids.clear();
 	Database db(Database::File::All);
 	auto rstr = db.expired_ids();
-	sqlite::cstream cstr(rstr);
-	while (rstr >> cstr) {
+	while (rstr.step() != sqlite::errc::done) {
+		sqlite::cstream cstr(rstr);
 		sys::uid_type id = bad_uid;
 		cstr >> id;
 		this->_uids.insert(id);

@@ -3,7 +3,7 @@
 
 #include <iosfwd>
 
-#include <sqlitex/rstream.hh>
+#include <sqlitex/statement.hh>
 
 #include <unistdx/net/family>
 #include <unistdx/net/ipv4_address>
@@ -75,8 +75,8 @@ namespace ggg {
 		friend std::ostream&
 		operator<<(std::ostream& out, const ip_address& rhs);
 
-		friend sqlite::rstream&
-		operator>>(sqlite::rstream& in, ip_address& rhs);
+		friend void
+		operator>>(const sqlite::statement& in, ip_address& rhs);
 
 		friend sqlite::cstream&
 		operator>>(sqlite::cstream& in, ip_address& rhs);
@@ -92,8 +92,8 @@ namespace ggg {
 	std::ostream&
 	operator<<(std::ostream& out, const ip_address& rhs);
 
-	sqlite::rstream&
-	operator>>(sqlite::rstream& in, ip_address& rhs);
+	void
+	operator>>(const sqlite::statement& in, ip_address& rhs);
 
 	sqlite::cstream&
 	operator>>(sqlite::cstream& in, ip_address& rhs);

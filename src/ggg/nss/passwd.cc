@@ -13,6 +13,7 @@ namespace ggg {
 
 		typedef entity entity_type;
 		typedef Database::row_stream_t stream_type;
+		typedef sqlite::row_iterator<entity> iterator;
 
 		static inline stream_type
 		all(Database* db) {

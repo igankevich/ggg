@@ -9,7 +9,7 @@
 
 #include <unistdx/net/bstream>
 
-#include <sqlitex/rstream.hh>
+#include <sqlitex/statement.hh>
 
 namespace sys {
 	typedef ::gid_t gid_type;
@@ -91,8 +91,8 @@ namespace ggg {
 		friend sys::basic_bstream<X>&
 		operator>>(sys::basic_bstream<X>& in, basic_group<X>& rhs);
 
-		friend sqlite::rstream&
-		operator>>(sqlite::rstream& in, basic_group<char>& rhs);
+		friend void
+		operator>>(const sqlite::statement& in, basic_group<char>& rhs);
 
 		inline sys::gid_type
 		id() const noexcept {
@@ -157,8 +157,8 @@ namespace ggg {
 	sys::basic_bstream<Ch>&
 	operator>>(sys::basic_bstream<Ch>& in, basic_group<Ch>& rhs);
 
-	sqlite::rstream&
-	operator>>(sqlite::rstream& in, basic_group<char>& rhs);
+	void
+	operator>>(const sqlite::statement& in, basic_group<char>& rhs);
 
 	typedef basic_group<char> group;
 

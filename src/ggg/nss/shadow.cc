@@ -14,6 +14,7 @@ namespace ggg {
 
 		typedef account entity_type;
 		typedef Database::row_stream_t stream_type;
+		typedef sqlite::row_iterator<account> iterator;
 
 		static inline stream_type
 		all(Database* db) {
@@ -46,7 +47,7 @@ namespace ggg {
 
 namespace {
 
-	typedef sqlite::rstream_iterator<ggg::account> iterator;
+	typedef sqlite::row_iterator<ggg::account> iterator;
 	typedef struct ::spwd entity_type;
 	ggg::NSS_database<ggg::account> database;
 

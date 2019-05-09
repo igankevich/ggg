@@ -72,8 +72,8 @@ namespace ggg {
 		friend std::ostream&
 		operator<<(std::ostream& out, const Machine& rhs);
 
-		friend sqlite::rstream&
-		operator>>(sqlite::rstream& in, Machine& rhs);
+		friend void
+		operator>>(const sqlite::statement& in, Machine& rhs);
 
 		friend bool
 		operator<(const Machine& lhs, const Machine& rhs);
@@ -91,8 +91,8 @@ namespace ggg {
 	std::ostream&
 	operator<<(std::ostream& out, const Machine& rhs);
 
-	sqlite::rstream&
-	operator>>(sqlite::rstream& in, Machine& rhs);
+	void
+	operator>>(const sqlite::statement& in, Machine& rhs);
 
 	inline void
 	swap(Machine& lhs, Machine& rhs) {
