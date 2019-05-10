@@ -65,7 +65,7 @@ config.set('overflow_id', 65534)
 
 unistdx_version = '>= 0.5.4'
 ggg_crypt_version = '>= 0.1.1'
-sqlitex_version = '>= 0.4.2'
+sqlitex_version = '>= 0.4.4'
 
 unistdx = dependency('unistdx', version: unistdx_version)
 zxcvbn = dependency('zxcvbn')

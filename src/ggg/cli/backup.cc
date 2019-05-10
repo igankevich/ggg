@@ -73,7 +73,7 @@ ggg::Backup::execute() {
 	};
 	for (const auto& param : params) {
 		sys::path dst_path(dir, destination_filename(param.dst_suffix, this->_format));
-		sqlite::database src(param.src_path, sqlite::file_flag::read_only);
+		sqlite::connection src(param.src_path, sqlite::file_flag::read_only);
 		try {
 			sys::file_status st{dst_path};
 			throw std::invalid_argument("destination file already exists");
@@ -82,7 +82,7 @@ ggg::Backup::execute() {
 				throw;
 			}
 		}
-		sqlite::database dst(
+		sqlite::connection dst(
 			dst_path,
 			sqlite::file_flag::read_write | sqlite::file_flag::create
 		);

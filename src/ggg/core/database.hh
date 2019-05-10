@@ -13,7 +13,7 @@
 #include <ggg/core/ip_address.hh>
 #include <ggg/core/machine.hh>
 
-#include <sqlitex/database.hh>
+#include <sqlitex/connection.hh>
 #include <sqlitex/transaction.hh>
 #include <unistdx/ipc/identity>
 
@@ -37,7 +37,7 @@ namespace ggg {
 
 
 	public:
-		typedef sqlite::database database_t;
+		typedef sqlite::connection database_t;
 		typedef sqlite::statement row_stream_t;
 		typedef std::unordered_map<sys::gid_type,group> group_container_t;
 
