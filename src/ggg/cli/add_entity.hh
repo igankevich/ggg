@@ -13,15 +13,6 @@ namespace ggg {
 
 	class Add_entity: public Command {
 
-	private:
-		enum struct Type {
-			Directory,
-			File
-		};
-
-		std::string _path;
-		Type _type = Type::Directory;
-
 	public:
 		void parse_arguments(int argc, char* argv[]) override;
 		void execute() override;

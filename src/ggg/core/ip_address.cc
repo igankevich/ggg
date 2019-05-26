@@ -57,6 +57,21 @@ ggg::operator<(const ip_address& lhs, const ip_address& rhs) {
 	}
 }
 
+std::istream&
+ggg::operator>>(std::istream& in, ip_address& rhs) {
+	rhs.clear();
+	auto oldg = in.tellg();
+	if (in >> rhs._address4) {
+		rhs._family = sys::family_type::inet;
+	} else {
+		in.seekg(oldg);
+		if (in >> rhs._address6) {
+			rhs._family = sys::family_type::inet6;
+		}
+	}
+	return in;
+}
+
 std::ostream&
 ggg::operator<<(std::ostream& out, const ip_address& rhs) {
 	switch (rhs.family()) {
@@ -86,13 +101,13 @@ ggg::operator>>(sqlite::cstream& in, ip_address& rhs) {
 	in >> addr;
 	void* ptr = nullptr;
 	if (addr.size() == sizeof(rhs._address4)) {
+		rhs._family = sys::family_type::inet;
 		ptr = rhs._address4.data();
 	} else if (addr.size() == sizeof(rhs._address6)) {
+		rhs._family = sys::family_type::inet6;
 		ptr = rhs._address6.data();
 	}
-	if (ptr) {
-		std::memcpy(ptr, addr.data(), addr.size());
-	}
+	if (ptr) { std::memcpy(ptr, addr.data(), addr.size()); }
 	return in;
 }
 

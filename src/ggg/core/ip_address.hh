@@ -72,6 +72,9 @@ namespace ggg {
 			return reinterpret_cast<const_pointer>(this->_address4.data());
 		}
 
+		friend std::istream&
+		operator>>(std::istream& in, ip_address& rhs);
+
 		friend std::ostream&
 		operator<<(std::ostream& out, const ip_address& rhs);
 
@@ -88,6 +91,9 @@ namespace ggg {
 		operator<(const ip_address& lhs, const ip_address& rhs);
 
 	};
+
+	std::istream&
+	operator>>(std::istream& in, ip_address& rhs);
 
 	std::ostream&
 	operator<<(std::ostream& out, const ip_address& rhs);

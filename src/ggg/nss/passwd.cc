@@ -12,7 +12,7 @@ namespace ggg {
 	struct entity_traits<entity> {
 
 		typedef entity entity_type;
-		typedef Database::row_stream_t stream_type;
+		typedef Database::statement_type stream_type;
 		typedef sqlite::row_iterator<entity> iterator;
 
 		static inline stream_type

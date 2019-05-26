@@ -38,7 +38,7 @@ namespace ggg {
 
 	public:
 		typedef sqlite::connection database_t;
-		typedef sqlite::statement row_stream_t;
+		typedef sqlite::statement statement_type;
 		typedef std::unordered_map<sys::gid_type,group> group_container_t;
 
 	private:
@@ -81,24 +81,24 @@ namespace ggg {
 			return &this->_db;
 		}
 
-		row_stream_t
+		statement_type
 		find_entity(int64_t id);
 
-		row_stream_t
+		statement_type
 		find_entity(const char* name);
 
-		row_stream_t
+		statement_type
 		entities();
 
-		row_stream_t
+		statement_type
 		search_entities();
 
-		inline row_stream_t
+		inline statement_type
 		find_user(sys::uid_type uid) {
 			return this->find_entity(static_cast<int64_t>(uid));
 		}
 
-		inline row_stream_t
+		inline statement_type
 		find_user(const char* name) {
 			return this->find_entity(name);
 		}
@@ -120,7 +120,7 @@ namespace ggg {
 			}
 		}
 
-		inline row_stream_t
+		inline statement_type
 		users() {
 			return this->entities();
 		}
@@ -134,16 +134,16 @@ namespace ggg {
 		bool
 		find_group(const char* name, ggg::group& result);
 
-		row_stream_t
+		statement_type
 		find_parent_entities(const char* name);
 
-		row_stream_t
+		statement_type
 		find_child_entities(const char* name);
 
 		group_container_t
 		groups();
 
-		row_stream_t
+		statement_type
 		ties();
 
 		sys::uid_type
@@ -169,7 +169,7 @@ namespace ggg {
 		void
 		dot(std::ostream& out);
 
-		row_stream_t
+		statement_type
 		find_account(const char* name);
 
 		template <class Iterator, class Result>
@@ -189,7 +189,7 @@ namespace ggg {
 			}
 		}
 
-		row_stream_t
+		statement_type
 		accounts();
 
 		void
@@ -204,13 +204,13 @@ namespace ggg {
 		void
 		expire(const char* name);
 
-		row_stream_t
+		statement_type
 		expired_entities();
 
-		row_stream_t
+		statement_type
 		expired_ids();
 
-		row_stream_t
+		statement_type
 		expired_names();
 
 		void
@@ -219,7 +219,7 @@ namespace ggg {
 		void
 		unset_account_flag(const char* name, account_flags flag);
 
-		row_stream_t
+		statement_type
 		find_entities_by_flag(account_flags flag, bool set);
 
 		inline void
@@ -242,12 +242,12 @@ namespace ggg {
 			this->set_account_flag(name, account_flags::suspended);
 		}
 
-		inline row_stream_t
+		inline statement_type
 		locked_entities() {
 			return this->find_entities_by_flag(account_flags::suspended, true);
 		}
 
-		row_stream_t
+		statement_type
 		hierarchy();
 
 		void
@@ -280,26 +280,19 @@ namespace ggg {
 		sys::uid_type
 		find_hierarchy_root(sys::uid_type child_id);
 
-		row_stream_t
-		hosts();
-
-		row_stream_t
-		find_host(const char* name);
-
-		row_stream_t
-		find_host(const sys::ethernet_address& address);
-
-		row_stream_t
-		host_addresses();
-
-		row_stream_t
-		find_ip_address(const char* name, sys::family_type family);
-
-		row_stream_t
-		find_host_name(const ip_address& address);
-
-		row_stream_t
-		machines();
+		statement_type hosts();
+		statement_type find_host(const char* name);
+		statement_type find_host(const sys::ethernet_address& address);
+		statement_type host_addresses();
+		statement_type find_ip_address(const char* name, sys::family_type family);
+		statement_type find_ip_address(const sys::ethernet_address& hwaddr);
+		statement_type find_host_name(const ip_address& address);
+		statement_type machines();
+		void insert(const Machine& rhs);
+		void remove_machine(const char* name);
+		void remove(const ip_address& address);
+		void remove(const sys::ethernet_address& address);
+		void remove_all_machines();
 
 	private:
 

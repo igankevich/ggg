@@ -27,17 +27,9 @@ void
 ggg::Add_entity
 ::parse_arguments(int argc, char* argv[]) {
 	int opt;
-	while ((opt = getopt(argc, argv, "qf:d:")) != -1) {
+	while ((opt = getopt(argc, argv, "q")) != -1) {
 		switch (opt) {
 		case 'q': this->_verbose = false; break;
-		case 'f':
-			this->_path = ::optarg;
-			this->_type = Type::File;
-			break;
-		case 'd':
-			this->_path = ::optarg;
-			this->_type = Type::Directory;
-			break;
 		}
 	}
 	for (int i=::optind; i<argc; ++i) {
@@ -170,10 +162,6 @@ ggg::Add_entity
 ::print_usage() {
 	const int w = 20;
 	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-	          << this->prefix() << " [-q] [-f FILE] [-d DIR] [ENTITY...]\n"
-	          << std::setw(w) << std::left << "  -q" << "quiet\n"
-	          << std::setw(w) << std::left << "  -f FILE" <<
-	"file to add entities to\n"
-	          << std::setw(w) << std::left << "  -d DIR" <<
-	"directory to add entities to\n";
+	          << this->prefix() << " [-q] [ENTITY...]\n"
+	          << std::setw(w) << std::left << "  -q" << "quiet\n";
 }

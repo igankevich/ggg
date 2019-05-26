@@ -14,6 +14,6 @@ void
 ggg::operator>>(const sqlite::statement& in, Machine& rhs) {
 	rhs.clear();
 	sqlite::cstream cstr(in);
-	cstr >> rhs._name >> rhs._ip_address >> rhs._ethernet_address;
+	cstr >> rhs._name >> rhs._ethernet_address >> rhs._ip_address;
 }
 

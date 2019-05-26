@@ -13,6 +13,7 @@
 #include <ggg/cli/expunge.hh>
 #include <ggg/cli/find_entities.hh>
 #include <ggg/cli/find_machines.hh>
+#include <ggg/cli/guile.hh>
 #include <ggg/cli/heal.hh>
 #include <ggg/cli/lock_entity.hh>
 #include <ggg/cli/remove_entity.hh>
@@ -88,6 +89,8 @@ namespace {
 		MAKE_COMMAND("graphviz", Dot),
 		MAKE_COMMAND("machines", Find_machines),
 		MAKE_COMMAND("hosts", Find_machines),
+		MAKE_COMMAND("guile", Guile),
+		MAKE_COMMAND("script", Guile),
 		MAKE_COMMAND("-v", Show_version),
 		MAKE_COMMAND("--version", Show_version),
 		MAKE_COMMAND("help", Show_help),

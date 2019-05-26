@@ -15,6 +15,7 @@ ggg_src = files([
 	'find_entities.cc',
 	'find_machines.cc',
 	'ggg_main.cc',
+	'guile.cc',
 	'heal.cc',
 	'lock_entity.cc',
 	'machine.cc',
@@ -39,7 +40,7 @@ ggg_exe = executable(
 	executable_name,
 	sources: ggg_src,
 	include_directories: src,
-	dependencies: [unistdx,ggg_crypt,ggg_core,libacl],
+	dependencies: [unistdx,ggg_crypt,ggg_core,libacl,guile],
 	install: true
 )
 

@@ -10,7 +10,7 @@ namespace ggg {
 	struct entity_traits<host_address> {
 
 		typedef host_address entity_type;
-		typedef Database::row_stream_t stream_type;
+		typedef Database::statement_type stream_type;
 		typedef sqlite::row_iterator<host_address> iterator;
 
 		static inline stream_type

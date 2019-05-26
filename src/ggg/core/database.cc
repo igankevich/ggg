@@ -476,28 +476,28 @@ ggg::Database::attach(File file, Flag flag) {
 }
 
 auto
-ggg::Database::find_entity(int64_t id) -> row_stream_t {
+ggg::Database::find_entity(int64_t id) -> statement_type {
 	return this->_db.prepare(sql_select_user_by_id, id);
 }
 
 auto
-ggg::Database::find_entity(const char* name) -> row_stream_t {
+ggg::Database::find_entity(const char* name) -> statement_type {
 	return this->_db.prepare(sql_select_user_by_name, name);
 }
 
 auto
-ggg::Database::entities() -> row_stream_t {
+ggg::Database::entities() -> statement_type {
 	return this->_db.prepare(sql_select_all_users);
 }
 
 auto
-ggg::Database::search_entities() -> row_stream_t {
+ggg::Database::search_entities() -> statement_type {
 	return this->_db.prepare(sql_search_entities);
 }
 
 bool
 ggg::Database::find_group(sys::gid_type gid, ggg::group& result) {
-	row_stream_t rstr =
+	statement_type rstr =
 		this->_db.prepare(sql_select_group_by_id, gid, GGG_MAX_DEPTH);
 	ggg::group::container_type members;
 	ggg::group tmp;
@@ -516,7 +516,7 @@ ggg::Database::find_group(sys::gid_type gid, ggg::group& result) {
 
 bool
 ggg::Database::find_group(const char* name, ggg::group& result) {
-	row_stream_t rstr =
+	statement_type rstr =
 		this->_db.prepare(sql_select_group_by_name, name, GGG_MAX_DEPTH);
 	ggg::group::container_type members;
 	ggg::group tmp;
@@ -534,13 +534,13 @@ ggg::Database::find_group(const char* name, ggg::group& result) {
 }
 
 auto
-ggg::Database::find_parent_entities(const char* name) -> row_stream_t {
+ggg::Database::find_parent_entities(const char* name) -> statement_type {
 	auto id = find_id(name);
 	return this->_db.prepare(sql_select_parent_entities_by_id, id, GGG_MAX_DEPTH);
 }
 
 auto
-ggg::Database::find_child_entities(const char* name) -> row_stream_t {
+ggg::Database::find_child_entities(const char* name) -> statement_type {
 	auto id = find_id(name);
 	return this->_db.prepare(sql_select_child_entities_by_id, id, GGG_MAX_DEPTH);
 }
@@ -676,7 +676,7 @@ ggg::Database::find_name(sys::uid_type id) {
 }
 
 auto
-ggg::Database::ties() -> row_stream_t {
+ggg::Database::ties() -> statement_type {
 	return this->_db.prepare(sql_select_all_ties);
 }
 
@@ -727,12 +727,12 @@ ggg::Database::dot(std::ostream& out) {
 }
 
 auto
-ggg::Database::find_account(const char* name) -> row_stream_t {
+ggg::Database::find_account(const char* name) -> statement_type {
 	return this->_db.prepare(sql_select_account_by_name, name);
 }
 
 auto
-ggg::Database::accounts() -> row_stream_t {
+ggg::Database::accounts() -> statement_type {
 	return this->_db.prepare(sql_select_all_accounts);
 }
 
@@ -871,17 +871,17 @@ ggg::Database::update(const entity& ent) {
 }
 
 auto
-ggg::Database::expired_entities() -> row_stream_t {
+ggg::Database::expired_entities() -> statement_type {
 	return this->_db.prepare(sql_select_expired_entities);
 }
 
 auto
-ggg::Database::expired_ids() -> row_stream_t {
+ggg::Database::expired_ids() -> statement_type {
 	return this->_db.prepare(sql_select_expired_ids);
 }
 
 auto
-ggg::Database::expired_names() -> row_stream_t {
+ggg::Database::expired_names() -> statement_type {
 	return this->_db.prepare(sql_select_expired_names);
 }
 
@@ -889,14 +889,14 @@ auto
 ggg::Database::find_entities_by_flag(
 	account_flags flag,
 	bool set
-) -> row_stream_t {
+) -> statement_type {
 	typedef std::underlying_type<account_flags>::type int_t;
 	int_t v = static_cast<int_t>(flag);
 	return this->_db.prepare(sql_select_entities_by_flag, v, set ? v : 0);
 }
 
 auto
-ggg::Database::hierarchy() -> row_stream_t {
+ggg::Database::hierarchy() -> statement_type {
 	return this->_db.prepare(sql_select_whole_hierarchy);
 }
 
@@ -998,17 +998,17 @@ ggg::Database::entities_are_attached(
 }
 
 auto
-ggg::Database::hosts() -> row_stream_t {
+ggg::Database::hosts() -> statement_type {
 	return this->_db.prepare(sql_select_all_hosts);
 }
 
 auto
-ggg::Database::find_host(const char* name) -> row_stream_t {
+ggg::Database::find_host(const char* name) -> statement_type {
 	return this->_db.prepare(sql_select_host_by_name, name);
 }
 
 auto
-ggg::Database::find_host(const sys::ethernet_address& address) -> row_stream_t {
+ggg::Database::find_host(const sys::ethernet_address& address) -> statement_type {
 	return this->_db.prepare(
 		sql_select_host_by_address,
 		sqlite::blob(address.begin(), address.end())
@@ -1016,7 +1016,7 @@ ggg::Database::find_host(const sys::ethernet_address& address) -> row_stream_t {
 }
 
 auto
-ggg::Database::host_addresses() -> row_stream_t {
+ggg::Database::host_addresses() -> statement_type {
 	return this->_db.prepare(sql_select_all_host_addresses);
 }
 
@@ -1024,7 +1024,7 @@ auto
 ggg::Database::find_ip_address(
 	const char* name,
 	sys::family_type family
-) -> row_stream_t {
+) -> statement_type {
 	int64_t length = family == sys::family_type::inet6
 		? sizeof(sys::ipv6_address)
 		: sizeof(sys::ipv4_address);
@@ -1032,7 +1032,13 @@ ggg::Database::find_ip_address(
 }
 
 auto
-ggg::Database::find_host_name(const ip_address& address) -> row_stream_t {
+ggg::Database::find_ip_address(const sys::ethernet_address& hwaddr) -> statement_type {
+	return this->_db.prepare("SELECT ip_address FROM addresses WHERE ethernet_address=?",
+		sqlite::blob(hwaddr.begin(), hwaddr.end()));
+}
+
+auto
+ggg::Database::find_host_name(const ip_address& address) -> statement_type {
 	return this->_db.prepare(
 		sql_select_host_name_by_address,
 		sqlite::blob(address.data(), address.size())
@@ -1040,7 +1046,67 @@ ggg::Database::find_host_name(const ip_address& address) -> row_stream_t {
 }
 
 auto
-ggg::Database::machines() -> row_stream_t {
+ggg::Database::machines() -> statement_type {
 	return this->_db.prepare(sql_select_all_machines);
+}
+
+void
+ggg::Database::insert(const Machine& rhs) {
+	std::bitset<3> set;
+	set[0] = !rhs.name().empty();
+	set[1] = rhs.address().family() != sys::family_type::unspecified;
+	set[2] = (rhs.ethernet_address() != sys::ethernet_address());
+	if (set.count() < 2) { throw std::invalid_argument("bad machine"); }
+	const auto& addr = rhs.address();
+	auto hwaddr = rhs.ethernet_address();
+	if (set[0]) {
+		bool insert_hwaddr = false;
+		if (set[2]) {
+			if (find_host(hwaddr).step() == sqlite::errc::done) {
+				insert_hwaddr = true;
+			}
+		} else {
+			auto st = find_host(rhs.name().data());
+			if (st.step() == sqlite::errc::done) {
+				insert_hwaddr = true;
+			} else {
+				sqlite::cstream in(st);
+				in >> hwaddr;
+			}
+		}
+		if (insert_hwaddr) {
+			this->_db.execute("INSERT INTO hosts (ethernet_address,name) VALUES (?,?)",
+				sqlite::blob(hwaddr.begin(), hwaddr.end()), rhs.name());
+		}
+	}
+	auto st = this->_db.prepare("SELECT ip_address FROM addresses WHERE ip_address=?",
+		sqlite::blob(addr.data(), addr.size()));
+	if (st.step() == sqlite::errc::done) {
+		this->_db.execute("INSERT INTO addresses (ip_address,ethernet_address) VALUES (?,?)",
+			sqlite::blob(addr.data(), addr.size()),
+			sqlite::blob(hwaddr.begin(), hwaddr.end()));
+	}
+}
+
+void
+ggg::Database::remove_machine(const char* name) {
+	this->_db.execute("DELETE FROM hosts WHERE name=?", name);
+}
+
+void
+ggg::Database::remove(const ip_address& address) {
+	this->_db.execute("DELETE FROM addresses WHERE ip_address=?",
+		sqlite::blob(address.data(), address.size()));
+}
+
+void
+ggg::Database::remove(const sys::ethernet_address& address) {
+	this->_db.execute("DELETE FROM hosts WHERE ethernet_address=?",
+		sqlite::blob(address.begin(), address.end()));
+}
+
+void
+ggg::Database::remove_all_machines() {
+	this->_db.execute("DELETE FROM hosts");
 }
 

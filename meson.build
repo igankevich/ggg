@@ -74,6 +74,7 @@ ggg_crypt = dependency('ggg-crypt', version: ggg_crypt_version)
 libacl = cpp.find_library('acl')
 sqlite = dependency('sqlite3')
 sqlitex = dependency('sqlitex', version: sqlitex_version)
+guile = dependency('guile-2.0')
 
 subdir('src')
 subdir('po')

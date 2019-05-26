@@ -78,6 +78,8 @@ ggg::Show_help::print_usage() {
 		<< std::setw(col1) << std::right << "machines,hosts  "
 		<< std::left << "list all machines\n"
 		<< "Other commands:\n"
+		<< std::setw(col1) << std::right << "guile,script  "
+		<< std::left << "run Guile script that manipulates entities\n"
 		<< std::setw(col1) << std::right << "dot,graphviz  "
 		<< std::left << "output entity graph in dot format\n"
 		<< std::setw(col1) << std::right << "version  "
