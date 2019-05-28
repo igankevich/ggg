@@ -1,0 +1,5 @@
+(use-modules (oop goops))
+(define-class <machine> ()
+  (name #:init-keyword #:name #:accessor machine-name)
+  (ethernet-address #:init-keyword #:ethernet-address #:accessor machine-ethernet-address)
+  (ip-address #:init-keyword #:ip-address #:accessor machine-ip-address))

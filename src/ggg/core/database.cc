@@ -1089,20 +1089,12 @@ ggg::Database::insert(const Machine& rhs) {
 }
 
 void
-ggg::Database::remove_machine(const char* name) {
-	this->_db.execute("DELETE FROM hosts WHERE name=?", name);
-}
-
-void
-ggg::Database::remove(const ip_address& address) {
+ggg::Database::remove(const Machine& m) {
+	this->_db.execute("DELETE FROM hosts WHERE name=?", m.name());
 	this->_db.execute("DELETE FROM addresses WHERE ip_address=?",
-		sqlite::blob(address.data(), address.size()));
-}
-
-void
-ggg::Database::remove(const sys::ethernet_address& address) {
+		sqlite::blob(m.address().data(), m.address().size()));
 	this->_db.execute("DELETE FROM hosts WHERE ethernet_address=?",
-		sqlite::blob(address.begin(), address.end()));
+		sqlite::blob(m.ethernet_address().begin(), m.ethernet_address().end()));
 }
 
 void

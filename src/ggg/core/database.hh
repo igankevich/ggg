@@ -289,9 +289,7 @@ namespace ggg {
 		statement_type find_host_name(const ip_address& address);
 		statement_type machines();
 		void insert(const Machine& rhs);
-		void remove_machine(const char* name);
-		void remove(const ip_address& address);
-		void remove(const sys::ethernet_address& address);
+		void remove(const Machine& rhs);
 		void remove_all_machines();
 
 	private:

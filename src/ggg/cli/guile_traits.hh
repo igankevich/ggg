@@ -11,10 +11,12 @@ namespace ggg {
 
 	template <class T>
 	struct Guile_traits {
-		static const char* name();
+		static T from(SCM x);
+		static SCM to(const T& x);
 		static SCM insert(SCM args);
 		static SCM remove(SCM args);
 		static SCM remove_all();
+		static SCM find();
 		static void define_procedures();
 	};
 
@@ -26,6 +28,11 @@ namespace ggg {
 	}
 
 	inline bool is_bound(SCM s) { return !SCM_UNBNDP(s); }
+
+	inline SCM
+	slot(SCM x, const char* name) {
+		return scm_slot_ref(x, scm_from_latin1_symbol(name));
+	}
 
 }
 
