@@ -5,6 +5,7 @@
 #include <ggg/cli/guile_traits.hh>
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/config.hh>
+#include <ggg/core/account.hh>
 #include <ggg/core/entity.hh>
 #include <ggg/core/group.hh>
 #include <ggg/core/machine.hh>
@@ -17,6 +18,7 @@ namespace {
 		Guile_traits<Machine>::define_procedures();
 		Guile_traits<entity>::define_procedures();
 		Guile_traits<::ggg::group>::define_procedures();
+		Guile_traits<account>::define_procedures();
 		return nullptr;
 	}
 

@@ -9,7 +9,9 @@
 #include <istream>
 
 #include <ggg/bits/read_field.hh>
+#include <ggg/cli/guile_traits.hh>
 #include <ggg/core/account.hh>
+#include <ggg/core/database.hh>
 #include <ggg/core/days.hh>
 
 namespace {
@@ -218,3 +220,94 @@ ggg::Entity_header<ggg::account>::read_body(
 	return in;
 }
 
+template <>
+ggg::account
+ggg::Guile_traits<ggg::account>::from(SCM obj) {
+	account acc;
+	acc._login = to_string(slot(obj, "name"));
+	acc._expire = account::clock_type::from_time_t(scm_to_uint64(slot(obj, "expiration-date")));
+	acc._flags = account_flags(scm_to_uint64(slot(obj, "flags")));
+	return acc;
+}
+
+template <>
+SCM
+ggg::Guile_traits<ggg::account>::to(const account& acc) {
+	static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
+	return scm_call(
+		scm_variable_ref(scm_c_lookup("make")),
+		scm_variable_ref(scm_c_lookup("<account>")),
+		scm_from_latin1_keyword("name"),
+		scm_from_utf8_string(acc.name().data()),
+		scm_from_latin1_keyword("expiration-date"),
+		scm_from_uint64(account::clock_type::to_time_t(acc.expire())),
+		scm_from_latin1_keyword("flags"),
+		scm_from_uint64(downcast(acc.flags())),
+		SCM_UNDEFINED
+	);
+}
+
+template <>
+std::string
+ggg::Guile_traits<ggg::account>::to_guile(const account& acc) {
+	const char format[] = "%Y-%m-%dT%H:%M:%S%z";
+	char expire_str[128] {};
+	auto t = account::clock_type::to_time_t(acc.expire());
+	std::strftime(expire_str, sizeof(expire_str), format, std::localtime(&t));
+	std::string flags_str;
+	if (acc.flags() & account_flags::suspended) {
+		flags_str += "SUSPENDED ";
+	}
+	if (acc.flags() & account_flags::password_has_expired) {
+		flags_str += "PASSWORD_HAS_EXPIRED ";
+	}
+	if (!flags_str.empty() && flags_str.back() == ' ') { flags_str.pop_back(); }
+	std::stringstream guile;
+	guile << "(make <account>\n";
+	guile << "      #:name " << escape_string(acc.name()) << '\n';
+	guile << "      #:expiration-date (time-point " << escape_string(expire_str) << ")\n";
+	guile << "      #:flags (flags " << escape_string(flags_str) << "))\n";
+	return guile.str();
+}
+
+template <>
+SCM
+ggg::Guile_traits<ggg::account>::insert(SCM obj) {
+	Database db(Database::File::All, Database::Flag::Read_write);
+	Transaction tr(db);
+	db.insert(from(obj));
+	tr.commit();
+	return SCM_UNSPECIFIED;
+}
+
+template <>
+SCM
+ggg::Guile_traits<ggg::account>::remove(SCM obj) {
+	Database db(Database::File::All, Database::Flag::Read_write);
+	Transaction tr(db);
+	db.erase(from(obj));
+	tr.commit();
+	return SCM_UNSPECIFIED;
+}
+
+template <>
+SCM
+ggg::Guile_traits<ggg::account>::find() {
+	Database db(Database::File::Accounts, Database::Flag::Read_only);
+	auto st = db.accounts();
+	account_iterator first(st), last;
+	SCM list = SCM_EOL;
+	while (first != last) {
+		list = scm_append(scm_list_2(list, scm_list_1(to(*first))));
+		++first;
+	}
+	return list;
+}
+
+template <>
+void
+ggg::Guile_traits<ggg::account>::define_procedures() {
+	scm_c_define_gsubr("ggg-account-insert", 1, 0, 0, (scm_t_subr)&insert);
+	scm_c_define_gsubr("ggg-account-delete", 1, 0, 0, (scm_t_subr)&remove);
+	scm_c_define_gsubr("ggg-accounts", 0, 0, 0, (scm_t_subr)&find);
+}

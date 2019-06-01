@@ -17,3 +17,20 @@
   (name #:init-keyword #:name #:accessor group-name)
   (members #:init-keyword #:shell #:accessor group-members)
   (id #:init-keyword #:id #:accessor group-id #:init-value 4294967295))
+
+(define-class account ()
+  (name #:init-keyword #:name #:accessor account-name)
+  (expiration-date #:init-keyword #:expiration-date #:accessor account-expiration-date
+				   #:init-value (current-time))
+  (flags #:init-keyword #:flags #:accessor account-flags #:init-value 0))
+
+(define iso-time-format "%Y-%m-%dT%H:%M:%S%z")
+
+(define time-point
+  (lambda* (string #:optional (format iso-time-format))
+	(strptime format string)))
+
+(define SUSPENDED 1)
+(define PASSWORD_HAS_EXPIRED 2)
+
+(define flags logior)

@@ -9,6 +9,7 @@
 void
 ggg::Remove_entity::execute()  {
 	Database db(Database::File::All, Database::Flag::Read_write);
+	Transaction tr(db);
 	for (const auto& name : this->args()) {
 		try {
 			db.erase(name.data());
@@ -16,6 +17,7 @@ ggg::Remove_entity::execute()  {
 			ggg::native_message(std::cerr, "Failed to remove _: _", name, err.what());
 		}
 	}
+	tr.commit();
 }
 
 void

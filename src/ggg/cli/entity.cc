@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <ostream>
+#include <sstream>
 
 #include <ggg/bits/read_field.hh>
 #include <ggg/cli/guile_traits.hh>
@@ -133,6 +134,19 @@ ggg::Guile_traits<ggg::entity>::to(const entity& ent) {
 		scm_from_uint32(ent.id()),
 		SCM_UNDEFINED
 	);
+}
+
+template <>
+std::string
+ggg::Guile_traits<ggg::entity>::to_guile(const entity& ent) {
+	std::stringstream guile;
+	guile << "(make <entity>\n";
+	guile << "      #:name " << escape_string(ent.name()) << '\n';
+	guile << "      #:real-name " << escape_string(ent.real_name()) << '\n';
+	guile << "      #:home-directory " << escape_string(ent.home()) << '\n';
+	guile << "      #:shell " << escape_string(ent.shell()) << '\n';
+	guile << "      #:id " << ent.id() << ")\n";
+	return guile.str();
 }
 
 template <>

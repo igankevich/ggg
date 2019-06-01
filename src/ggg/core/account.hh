@@ -14,6 +14,7 @@
 #include <ggg/core/entity_format.hh>
 #include <ggg/core/eq_traits.hh>
 #include <ggg/core/form_field.hh>
+#include <ggg/core/guile_traits.hh>
 #include <ggg/sec/secure_string.hh>
 
 #include <sqlitex/statement.hh>
@@ -279,6 +280,7 @@ namespace ggg {
 		parse_password();
 
 		friend struct Entity_header<account>;
+		friend struct Guile_traits<account>;
 
 	};
 

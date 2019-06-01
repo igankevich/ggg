@@ -18,6 +18,7 @@ ggg_src = files([
 	'ggg_main.cc',
 	'group.cc',
 	'guile.cc',
+	'guile_traits.cc',
 	'heal.cc',
 	'lock_entity.cc',
 	'machine.cc',

@@ -3,6 +3,7 @@
 
 #include <istream>
 #include <ostream>
+#include <type_traits>
 
 namespace ggg {
 
@@ -37,6 +38,11 @@ namespace ggg {
 
 	std::istream&
 	operator>>(std::istream& in, account_flags& rhs);
+
+	inline std::underlying_type<account_flags>::type
+	downcast(account_flags x) {
+		return static_cast<std::underlying_type<account_flags>::type>(x);
+	}
 
 }
 

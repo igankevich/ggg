@@ -636,7 +636,10 @@ ggg::Database::insert(const entity& ent) {
 void
 ggg::Database::erase(const char* name) {
 	this->_db.execute(sql_delete_entity_by_name, name);
-	if (this->_db.num_rows_modified() == 0) {
+	auto nrows1 = this->_db.num_rows_modified();
+	this->_db.execute("DELETE FROM accounts WHERE name=?", name);
+	auto nrows2 = this->_db.num_rows_modified();
+	if (nrows1 == 0 && nrows2 == 0) {
 		throw std::invalid_argument("bad entity");
 	}
 }

@@ -190,11 +190,9 @@ namespace ggg {
 		statement_type
 		accounts();
 
-		void
-		insert(const account& acc);
-
-		void
-		update(const account& acc);
+		void insert(const account& acc);
+		void update(const account& acc);
+		inline void erase(const account& acc) { this->erase(acc.name().data()); }
 
 		void
 		set_password(const account& acc);
