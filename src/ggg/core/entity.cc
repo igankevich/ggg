@@ -112,8 +112,7 @@ ggg::operator<<(sys::basic_bstream<Ch>& out, const basic_entity<Ch>& rhs) {
 	           << rhs._homedir
 	           << rhs._shell
 	           << rhs._uid
-	           << rhs._gid
-	           << rhs._origin;
+	           << rhs._gid;
 }
 
 template <class Ch>
@@ -127,8 +126,7 @@ ggg::operator>>(sys::basic_bstream<Ch>& in, basic_entity<Ch>& rhs) {
 	       >> rhs._homedir
 	       >> rhs._shell
 	       >> rhs._uid
-	       >> rhs._gid
-	       >> static_cast<std::string&>(rhs._origin);
+	       >> rhs._gid;
 }
 
 template <class Ch>
@@ -177,7 +175,6 @@ ggg::basic_entity<Ch>
 	this->_shell.clear();
 	this->_uid = -1;
 	this->_gid = -1;
-	this->_origin.clear();
 	this->_parent.clear();
 }
 
@@ -208,7 +205,7 @@ ggg::basic_entity<Ch>
 			throw std::invalid_argument("bad gid");
 		}
 	} else if (t == "entity.origin") {
-		this->_origin = value;
+		// ignore for backward compatibility
 	} else if (t == "entity.parent") {
 		this->_parent = value;
 	} else {
@@ -232,7 +229,6 @@ ggg::basic_entity<Ch>
 	merge_str(this->_parent, rhs._parent);
 	if (!this->has_id() && rhs.has_id()) {
 		this->_uid = rhs._uid;
-		merge_origin(this->_origin, rhs._origin);
 	}
 	if (!this->has_gid() && rhs.has_gid()) {
 		this->_gid = rhs._gid;

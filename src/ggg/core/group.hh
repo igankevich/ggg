@@ -11,6 +11,8 @@
 
 #include <sqlitex/statement.hh>
 
+#include <ggg/core/guile_traits.hh>
+
 namespace sys {
 	typedef ::gid_t gid_type;
 }
@@ -136,6 +138,8 @@ namespace ggg {
 			swap(this->_gid, rhs._gid);
 			swap(this->_members, rhs._members);
 		}
+
+		friend struct Guile_traits<basic_group>;
 
 	};
 

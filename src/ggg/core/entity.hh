@@ -16,6 +16,7 @@
 #include <ggg/core/entity_format.hh>
 #include <ggg/core/eq_traits.hh>
 #include <ggg/core/form_field.hh>
+#include <ggg/core/guile_traits.hh>
 
 namespace ggg {
 
@@ -48,7 +49,6 @@ namespace ggg {
 		string_type _shell;
 		sys::uid_type _uid = -1;
 		sys::gid_type _gid = -1;
-		path_type _origin;
 		string_type _parent;
 
 	public:
@@ -194,21 +194,6 @@ namespace ggg {
 			this->_shell = rhs;
 		}
 
-		inline const path_type&
-		origin() const noexcept {
-			return this->_origin;
-		}
-
-		inline void
-		origin(const path_type& rhs) {
-			this->_origin = rhs;
-		}
-
-		inline bool
-		has_origin() const noexcept {
-			return !this->_origin.empty();
-		}
-
 		inline const string_type&
 		parent() const noexcept {
 			return this->_parent;
@@ -235,6 +220,7 @@ namespace ggg {
 		merge(const basic_entity& rhs);
 
 		friend struct Entity_header<basic_entity>;
+		friend struct Guile_traits<basic_entity>;
 
 	};
 

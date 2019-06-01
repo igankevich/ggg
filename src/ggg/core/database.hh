@@ -149,11 +149,9 @@ namespace ggg {
 		sys::uid_type
 		next_entity_id();
 
-		void
-		insert(const entity& ent);
-
-		void
-		erase(const char* name);
+		void insert(const entity& ent);
+		void erase(const char* name);
+		inline void erase(const entity& ent) { this->erase(ent.name().data()); }
 
 		sys::uid_type
 		find_id(const char* name);
@@ -289,7 +287,7 @@ namespace ggg {
 		statement_type find_host_name(const ip_address& address);
 		statement_type machines();
 		void insert(const Machine& rhs);
-		void remove(const Machine& rhs);
+		void erase(const Machine& rhs);
 		void remove_all_machines();
 
 	private:

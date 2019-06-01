@@ -1089,7 +1089,7 @@ ggg::Database::insert(const Machine& rhs) {
 }
 
 void
-ggg::Database::remove(const Machine& m) {
+ggg::Database::erase(const Machine& m) {
 	this->_db.execute("DELETE FROM hosts WHERE name=?", m.name());
 	this->_db.execute("DELETE FROM addresses WHERE ip_address=?",
 		sqlite::blob(m.address().data(), m.address().size()));

@@ -97,7 +97,7 @@ SCM
 ggg::Guile_traits<ggg::Machine>::remove(SCM obj) {
 	Database db(Database::File::Entities, Database::Flag::Read_write);
 	Transaction tr(db);
-	db.remove(from(obj));
+	db.erase(from(obj));
 	tr.commit();
 	return SCM_UNSPECIFIED;
 }
@@ -115,7 +115,7 @@ ggg::Guile_traits<ggg::Machine>::remove_all() {
 template <>
 SCM
 ggg::Guile_traits<ggg::Machine>::find() {
-	Database db(Database::File::Entities, Database::Flag::Read_write);
+	Database db(Database::File::Entities, Database::Flag::Read_only);
 	auto st = db.machines();
 	machine_iterator first(st), last;
 	SCM list = SCM_EOL;
