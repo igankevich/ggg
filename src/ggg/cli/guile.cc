@@ -36,6 +36,7 @@ ggg::Guile::parse_arguments(int argc, char* argv[]) {
 void
 ggg::Guile::execute() {
 	scm_with_guile(&register_functions, nullptr);
+	scm_c_primitive_load(GGG_GUILE_ROOT "/types.scm");
 	for (const auto& filename : args()) {
 		scm_c_primitive_load(filename.data());
 	}

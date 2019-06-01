@@ -38,6 +38,7 @@ with_gtk3 = get_option('with_gtk3')
 with_tests = get_option('with_tests')
 with_man = get_option('with_man')
 b_sanitize = get_option('b_sanitize')
+developer = get_option('developer')
 
 module_name = 'ggg'
 executable_name = 'ggg'
@@ -62,6 +63,12 @@ config.set('entities_path', join_paths(etc, module_name, 'entities.sqlite3'))
 config.set('accounts_path', join_paths(etc, module_name, 'accounts.sqlite3'))
 config.set('min_id', 1000)
 config.set('overflow_id', 65534)
+if developer
+	config.set('guile_root', join_paths(meson.source_root(), 'src', 'ggg', 'cli'))
+else
+	config.set('guile_root',
+		join_paths(get_option('prefix'), get_option('datadir'), meson.project_name()))
+endif
 
 unistdx_version = '>= 0.5.4'
 ggg_crypt_version = '>= 0.1.1'

@@ -26,7 +26,7 @@ namespace ggg {
 
 		inline static bool
 		eq(const ggg::entity& lhs, const ggg::entity& rhs) {
-			return lhs.id() == rhs.id() || lhs.name() == rhs.name();
+			return (lhs.has_id() && lhs.id() == rhs.id()) || lhs.name() == rhs.name();
 		}
 
 		inline static bool

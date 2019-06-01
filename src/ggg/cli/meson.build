@@ -59,3 +59,4 @@ executable(
 	install: true
 )
 
+install_data('types.scm')

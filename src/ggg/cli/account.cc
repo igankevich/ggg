@@ -249,7 +249,8 @@ ggg::Guile_traits<ggg::account>::to(const account& acc) {
 
 template <>
 std::string
-ggg::Guile_traits<ggg::account>::to_guile(const account& acc) {
+ggg::Guile_traits<ggg::account>::to_guile(const account& acc, size_t shift, bool shift_first) {
+	std::string indent(shift, ' ');
 	const char format[] = "%Y-%m-%dT%H:%M:%S%z";
 	char expire_str[128] {};
 	auto t = account::clock_type::to_time_t(acc.expire());
@@ -263,10 +264,12 @@ ggg::Guile_traits<ggg::account>::to_guile(const account& acc) {
 	}
 	if (!flags_str.empty() && flags_str.back() == ' ') { flags_str.pop_back(); }
 	std::stringstream guile;
+	if (shift_first) { guile << ' '; };
 	guile << "(make <account>\n";
-	guile << "      #:name " << escape_string(acc.name()) << '\n';
-	guile << "      #:expiration-date (time-point " << escape_string(expire_str) << ")\n";
-	guile << "      #:flags (flags " << escape_string(flags_str) << "))\n";
+	guile << indent << "      #:name " << escape_string(acc.name()) << '\n';
+	guile << indent << "      #:expiration-date (time-point "
+		<< escape_string(expire_str) << ")\n";
+	guile << indent << "      #:flags (flags " << escape_string(flags_str) << "))\n";
 	return guile.str();
 }
 

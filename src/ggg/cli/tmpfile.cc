@@ -15,8 +15,8 @@ namespace {
 	std::array<std::string,3> all_tmpdirs{"TMPDIR", "TMP", "TEMP"};
 
 	inline sys::fildes
-	get_fd(std::string& tpl) {
-		sys::fildes fd(::mkostemp(&tpl[0], O_CLOEXEC));
+	get_fd(std::string& tpl, int suffix_length) {
+		sys::fildes fd(::mkostemps(&tpl[0], suffix_length, O_CLOEXEC));
 		if (!fd) {
 			throw std::runtime_error(
 				"unable to create a file in temporary directory"
@@ -56,17 +56,18 @@ sys::find_temporary_directory() {
 }
 
 std::string
-sys::get_temporary_file_name_template(sys::path dir) {
+sys::get_temporary_file_name_template(sys::path dir, std::string suffix) {
 	std::string basename;
 	basename.append(GGG_EXECUTABLE_NAME);
 	basename.push_back('.');
 	basename.append("XXXXXX");
+	if (!suffix.empty()) { basename.append(suffix); }
 	return sys::path(dir, basename);
 }
 
-sys::tmpfile::tmpfile():
-_filename(get_temporary_file_name_template(find_temporary_directory())),
-_out(get_fd(_filename))
+sys::tmpfile::tmpfile(std::string suffix):
+_filename(get_temporary_file_name_template(find_temporary_directory(), suffix)),
+_out(get_fd(_filename, suffix.size()))
 {}
 
 sys::tmpfile::~tmpfile() {

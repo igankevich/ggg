@@ -23,6 +23,7 @@ namespace ggg {
 		void add_entities(Database& db, sys::path filename, entity_format format);
 		void add_interactive(Database& db);
 		void add_batch(Database& db);
+		void add_entities_guile(Database& db, sys::path filename);
 
 	};
 

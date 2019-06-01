@@ -11,14 +11,14 @@ namespace sys {
 	find_temporary_directory();
 
 	std::string
-	get_temporary_file_name_template(sys::path dir);
+	get_temporary_file_name_template(sys::path dir, std::string suffix);
 
 	class tmpfile {
 		std::string _filename;
 		sys::ofdstream _out;
 
 	public:
-		tmpfile();
+		tmpfile(std::string suffix="");
 		tmpfile(tmpfile&&) = default;
 		~tmpfile();
 		tmpfile(const tmpfile&) = delete;

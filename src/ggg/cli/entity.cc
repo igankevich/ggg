@@ -138,15 +138,38 @@ ggg::Guile_traits<ggg::entity>::to(const entity& ent) {
 
 template <>
 std::string
-ggg::Guile_traits<ggg::entity>::to_guile(const entity& ent) {
+ggg::Guile_traits<ggg::entity>::to_guile(const entity& ent, size_t shift, bool shift_first) {
+	std::string indent(shift, ' ');
 	std::stringstream guile;
+	if (shift_first) { guile << ' '; };
 	guile << "(make <entity>\n";
-	guile << "      #:name " << escape_string(ent.name()) << '\n';
-	guile << "      #:real-name " << escape_string(ent.real_name()) << '\n';
-	guile << "      #:home-directory " << escape_string(ent.home()) << '\n';
-	guile << "      #:shell " << escape_string(ent.shell()) << '\n';
-	guile << "      #:id " << ent.id() << ")\n";
+	guile << indent << "      #:name " << escape_string(ent.name()) << '\n';
+	guile << indent << "      #:real-name " << escape_string(ent.real_name()) << '\n';
+	guile << indent << "      #:home-directory " << escape_string(ent.home()) << '\n';
+	guile << indent << "      #:shell " << escape_string(ent.shell());
+	if (ent.has_id()) {
+		guile << '\n';
+		guile << indent << "      #:id " << ent.id() << ")\n";
+	} else {
+		guile << ')';
+	}
 	return guile.str();
+}
+
+template <>
+auto
+ggg::Guile_traits<ggg::entity>::from_guile(std::string guile) -> array_type {
+	array_type result;
+	auto list = scm_c_eval_string(guile.data());
+	if (scm_to_bool(scm_list_p(list))) {
+		auto n = scm_to_int32(scm_length(list));
+		for (int i=0; i<n; ++i) {
+			result.emplace_back(from(scm_list_ref(list, scm_from_int32(i))));
+		}
+	} else {
+		result.emplace_back(from(list));
+	}
+	return result;
 }
 
 template <>

@@ -8,11 +8,12 @@
 
 #include <unistdx/ipc/identity>
 
-#include "align_columns.hh"
-#include "editor.hh"
-#include "object_traits.hh"
-#include "tmpfile.hh"
+#include <ggg/cli/align_columns.hh>
+#include <ggg/cli/editor.hh>
+#include <ggg/cli/guile_traits.hh>
+#include <ggg/cli/object_traits.hh>
 #include <ggg/cli/quiet_error.hh>
+#include <ggg/cli/tmpfile.hh>
 #include <ggg/config.hh>
 #include <ggg/core/native.hh>
 
@@ -43,6 +44,8 @@ ggg::Add_entity
 void
 ggg::Add_entity
 ::execute() {
+	scm_init_guile();
+	scm_c_primitive_load(GGG_GUILE_ROOT "/types.scm");
 	Database db(Database::File::All, Database::Flag::Read_write);
 	if (this->is_batch()) {
 		this->add_batch(db);
@@ -66,21 +69,20 @@ ggg::Add_entity
 	if (!success) {
 		throw quiet_error();
 	}
-	while (!this->_args.empty()) {
-		sys::tmpfile tmp;
+	do {
+		sys::tmpfile tmp(".scm");
 		tmp.out().imbue(std::locale::classic());
 		this->generate_entities(db, tmp.out());
 		edit_file_or_throw(tmp.filename());
 		try {
-			this->add_entities(db, sys::path(tmp.filename()), entity_format::human);
-		} catch (const quiet_error& err) {
-			// ignore quiet error
-		}
-		if (!this->_args.empty()) {
-			native_message(std::clog, "Press any key to continue...");
+			this->add_entities_guile(db, sys::path(tmp.filename()));
+		} catch (const std::exception& err) {
+			success = false;
+			native_message(std::cerr, "_", err.what());
+			native_message(std::cerr, "Press any key to continue...");
 			std::cin.get();
 		}
-	}
+	} while (!success);
 }
 
 void
@@ -103,13 +105,21 @@ ggg::Add_entity
 		tmp.shell(default_shell);
 		cnt.emplace(std::move(tmp));
 	}
-	align_columns(
-		cnt,
-		out,
-		entity::delimiter,
-		false,
-		entity_format::human
-	);
+	using traits_type = Guile_traits<entity>;
+	if (cnt.size() == 1) {
+		out << traits_type::to_guile(*cnt.begin());
+	} else {
+		out << "(list ";
+		auto first = cnt.begin();
+		auto last = cnt.end();
+		out << traits_type::to_guile(*first, 1);
+		++first;
+		while (first != last) {
+			out << '\n' << traits_type::to_guile(*first, 1, true);
+			++first;
+		}
+		out << ")\n";
+	}
 	out.flush();
 }
 
@@ -155,6 +165,35 @@ ggg::Add_entity
 	if (nerrors > 0) {
 		throw quiet_error();
 	}
+}
+
+void
+ggg::Add_entity
+::add_entities_guile(Database& db, sys::path filename) {
+	using guile_traits_type = Guile_traits<entity>;
+	using traits_type = Object_traits<entity>;
+	std::ifstream in;
+	std::stringstream guile;
+	try {
+		in.exceptions(std::ios::failbit | std::ios::badbit);
+		in.imbue(std::locale::classic());
+		in.open(filename, std::ios_base::in);
+		guile << in.rdbuf();
+		in.close();
+	} catch (...) {
+		if (!in.eof()) {
+			throw std::system_error(std::io_errc::stream,
+				native("Unable to read entities."));
+		}
+	}
+	auto ents = guile_traits_type::from_guile(guile.str());
+	check_duplicates(ents, traits_type::eq);
+	Transaction tr(db);
+	for (const auto& ent : ents) {
+		db.insert(ent);
+		db.insert(account(ent.name().data()));
+	}
+	tr.commit();
 }
 
 void

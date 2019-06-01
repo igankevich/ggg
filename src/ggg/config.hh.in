@@ -21,5 +21,6 @@
 #define GGG_ACCOUNTS_PATH "@accounts_path@"
 #define GGG_MIN_ID @min_id@
 #define GGG_OVERFLOW_ID @overflow_id@
+#define GGG_GUILE_ROOT "@guile_root@"
 
 #endif // vim:filetype=cpp

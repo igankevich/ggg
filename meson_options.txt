@@ -47,3 +47,10 @@ option(
 	description: 'build man pages'
 )
 
+option(
+	'developer',
+	type: 'boolean',
+	value: false,
+	description: 'developer build'
+)
+
