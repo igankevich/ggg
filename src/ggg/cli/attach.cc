@@ -76,12 +76,14 @@ ggg::Untie::execute() {
 	}
 	const auto& child = args().front();
 	Database db(Database::File::Entities, Database::Flag::Read_write);
+	Transaction tr(db);
 	if (n == 1) {
 		db.untie(child.data());
 	} else if (n == 2) {
 		const auto& parent = args().back();
 		db.untie(child.data(), parent.data());
 	}
+	tr.commit();
 }
 
 void

@@ -68,6 +68,8 @@ namespace ggg {
 		return scm_to_bool(scm_slot_bound_p(x, name));
 	}
 
+	inline bool is_string(SCM x) { return scm_to_bool(scm_string_p(x)); }
+
 	std::string escape_string(const std::string& s);
 	std::string file_to_string(std::string filename);
 

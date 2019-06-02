@@ -950,7 +950,6 @@ ggg::Database::tie(sys::uid_type uid, sys::gid_type gid) {
 
 void
 ggg::Database::tie(const char* child, const char* parent) {
-	Transaction tr(*this);
 	auto child_id = find_id(child);
 	auto parent_id = find_id(parent);
 	auto child_root = find_hierarchy_root(child_id);
@@ -961,7 +960,6 @@ ggg::Database::tie(const char* child, const char* parent) {
 		throw std::invalid_argument("same hierarchy root");
 	}
 	this->tie(child_id, parent_id);
-	tr.commit();
 }
 
 void
@@ -974,10 +972,8 @@ ggg::Database::untie(const char* child, const char* parent) {
 
 void
 ggg::Database::untie(const char* child) {
-	Transaction tr(*this);
 	auto child_id = find_id(child);
 	this->_db.execute(sql_delete_tie_by_id, child_id);
-	tr.commit();
 }
 
 bool

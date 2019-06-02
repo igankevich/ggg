@@ -8,6 +8,80 @@
 #include <ggg/core/database.hh>
 #include <ggg/core/entity.hh>
 
+namespace {
+
+	SCM entity_tie(SCM a, SCM b) {
+		using namespace ggg;
+		if (scm_is_integer(a) && scm_is_integer(b)) {
+			Database db(Database::File::Entities, Database::Flag::Read_write);
+			Transaction tr(db);
+			db.tie(scm_to_uint32(a), scm_to_uint32(b));
+			tr.commit();
+		} else if (is_string(a) && is_string(b)) {
+			Database db(Database::File::Entities, Database::Flag::Read_write);
+			Transaction tr(db);
+			db.tie(to_string(a).data(), to_string(b).data());
+			tr.commit();
+		} else {
+			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
+				scm_from_utf8_string("ggg-entity-tie needs either two IDs or two names"));
+			return SCM_UNSPECIFIED;
+		}
+		return SCM_UNSPECIFIED;
+	}
+
+	SCM entity_untie(SCM a, SCM b) {
+		using namespace ggg;
+		if (!is_string(a) || (is_bound(b) && !is_string(b))) {
+			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
+				scm_from_utf8_string("ggg-entity-untie needs either one or two names"));
+			return SCM_UNSPECIFIED;
+		}
+		Database db(Database::File::Entities, Database::Flag::Read_write);
+		Transaction tr(db);
+		auto child = to_string(a);
+		if (is_bound(b)) { db.untie(child.data(), to_string(b).data()); }
+		else { db.untie(child.data()); }
+		tr.commit();
+		return SCM_UNSPECIFIED;
+	}
+
+	SCM entity_attach(SCM a, SCM b) {
+		using namespace ggg;
+		if (scm_is_integer(a) && scm_is_integer(b)) {
+			Database db(Database::File::Entities, Database::Flag::Read_write);
+			Transaction tr(db);
+			db.attach(scm_to_uint32(a), scm_to_uint32(b));
+			tr.commit();
+		} else if (is_string(a) && is_string(b)) {
+			Database db(Database::File::Entities, Database::Flag::Read_write);
+			Transaction tr(db);
+			db.attach(to_string(a).data(), to_string(b).data());
+			tr.commit();
+		} else {
+			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
+				scm_from_utf8_string("ggg-entity-attach needs either two IDs or two names"));
+			return SCM_UNSPECIFIED;
+		}
+		return SCM_UNSPECIFIED;
+	}
+
+	SCM entity_detach(SCM a, SCM b) {
+		using namespace ggg;
+		if (!is_string(a)) {
+			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
+				scm_from_utf8_string("ggg-entity-detach needs string argument"));
+			return SCM_UNSPECIFIED;
+		}
+		Database db(Database::File::Entities, Database::Flag::Read_write);
+		Transaction tr(db);
+		db.detach(to_string(a).data());
+		tr.commit();
+		return SCM_UNSPECIFIED;
+	}
+
+}
+
 template <>
 char
 ggg::Entity_header<ggg::entity>::delimiter() {
@@ -238,4 +312,8 @@ ggg::Guile_traits<ggg::entity>::define_procedures() {
 	scm_c_define_gsubr("ggg-entity-delete", 1, 0, 0, (scm_t_subr)&remove);
 	scm_c_define_gsubr("ggg-entities", 0, 0, 0, (scm_t_subr)&find);
 	scm_c_define_gsubr("ggg-users", 0, 0, 0, (scm_t_subr)&find);
+	scm_c_define_gsubr("ggg-entity-tie", 2, 0, 0, (scm_t_subr)&entity_tie);
+	scm_c_define_gsubr("ggg-entity-untie", 1, 1, 0, (scm_t_subr)&entity_untie);
+	scm_c_define_gsubr("ggg-entity-attach", 2, 0, 0, (scm_t_subr)&entity_attach);
+	scm_c_define_gsubr("ggg-entity-detach", 1, 0, 0, (scm_t_subr)&entity_detach);
 }
