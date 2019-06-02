@@ -11,6 +11,7 @@ ggg_src = files([
 	'editor.cc',
 	'entity.cc',
 	'entity.cc',
+	'entity_type.cc',
 	'expire_entity.cc',
 	'expunge.cc',
 	'find_entities.cc',

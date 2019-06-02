@@ -69,6 +69,8 @@ else
 	config.set('guile_root',
 		join_paths(get_option('prefix'), get_option('datadir'), meson.project_name()))
 endif
+config.set('default_home_prefix', '/home')
+config.set('default_shell', '/bin/sh')
 
 unistdx_version = '>= 0.5.4'
 ggg_crypt_version = '>= 0.1.1'

@@ -845,7 +845,6 @@ ggg::Database::update(const entity& ent) {
 	validate_entity(ent);
 	auto id = ent.id();
 	auto name = ent.name();
-	Transaction tr(*this);
 	if (ent.has_id() && ent.has_name()) {
 		auto existing_id = find_id_nocheck(ent.name().data());
 		auto existing_name = find_name_nocheck(ent.id());
@@ -870,7 +869,6 @@ ggg::Database::update(const entity& ent) {
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad entity");
 	}
-	tr.commit();
 }
 
 auto

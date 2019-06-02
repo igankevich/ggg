@@ -2,6 +2,7 @@
 #define GGG_EDIT_ENTITY_HH
 
 #include <ggg/cli/command.hh>
+#include <ggg/cli/entity_type.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/entity_format.hh>
 
@@ -9,11 +10,10 @@ namespace ggg {
 
 	class Edit_entity: public Command {
 
-	public:
-		enum struct Type {Account, Entity};
-
 	private:
-		Type _type = Type::Entity;
+		Entity_type _type = Entity_type::Entity;
+		std::string _filename;
+		std::string _expression;
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;
@@ -26,11 +26,7 @@ namespace ggg {
 		void print_objects(Database& db, std::ostream& out);
 
 		template <class T>
-		void update_objects(
-			Database& db,
-			const std::string& filename,
-			entity_format format
-		);
+		void update(Database& db, const std::string& guile);
 
 		template <class T>
 		void edit_objects(Database& db);

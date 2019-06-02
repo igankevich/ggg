@@ -141,6 +141,7 @@ namespace ggg {
 			out << *s++;
 		}
 		out << value;
+		if (!*s) { return out; }
 		return format_message(out, ch, ++s, args ...);
 	}
 

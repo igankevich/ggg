@@ -12,6 +12,7 @@
 #include <ggg/cli/align_columns.hh>
 #include <ggg/cli/edit_entity.hh>
 #include <ggg/cli/editor.hh>
+#include <ggg/cli/guile_traits.hh>
 #include <ggg/cli/object_traits.hh>
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/cli/tmpfile.hh>
@@ -21,40 +22,45 @@
 void
 ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
 	int opt;
-	while ((opt = getopt(argc, argv, "qae")) != -1) {
+	while ((opt = getopt(argc, argv, "t:f:e:")) != -1) {
 		switch (opt) {
-			case 'q': this->_verbose = false; break;
-			case 'a': this->_type = Type::Account; break;
-			case 'e': this->_type = Type::Entity; break;
+			case 't': std::string(::optarg) >> this->_type; break;
+			case 'f': this->_filename = ::optarg; break;
+			case 'e': this->_expression = ::optarg; break;
 		}
 	}
 	for (int i=::optind; i<argc; ++i) {
 		this->_args.emplace_back(argv[i]);
 	}
-	if (this->_args.empty()) {
-		throw std::invalid_argument("please, specify entity names");
+	if (this->_args.empty() && this->_filename.empty() && this->_expression.empty()) {
+		throw std::invalid_argument("please, specify entity names, filename or Guile expression");
 	}
+	remove_duplicate_arguments();
 }
 
 void
 ggg::Edit_entity::execute()  {
+	scm_init_guile();
+	scm_c_primitive_load(GGG_GUILE_ROOT "/types.scm");
 	Database db;
 	switch (this->_type) {
-		case Type::Entity:
+		case Entity_type::Entity:
 			db.open(Database::File::Entities, Database::Flag::Read_write);
 			this->edit_objects<entity>(db);
 			break;
-		case Type::Account:
+		case Entity_type::Account:
 			db.open(Database::File::Accounts, Database::Flag::Read_write);
 			this->edit_objects<account>(db);
 			break;
+		case Entity_type::Machine:
+			throw std::invalid_argument("not implemented");
 	}
 }
 
 template <class T>
 void
 ggg::Edit_entity::edit_objects(Database& db) {
-	if (this->is_batch()) {
+	if (!this->_filename.empty() || !this->_expression.empty()) {
 		this->edit_batch<T>(db);
 	} else {
 		this->edit_interactive<T>(db);
@@ -64,39 +70,53 @@ ggg::Edit_entity::edit_objects(Database& db) {
 template <class T>
 void
 ggg::Edit_entity::edit_interactive(Database& db) {
-	while (!this->_args.empty()) {
-		sys::tmpfile tmp;
+	bool success = true;
+	do {
+		sys::tmpfile tmp(".scm");
 		tmp.out().imbue(std::locale::classic());
 		this->print_objects<T>(db, tmp.out());
 		edit_file_or_throw(tmp.filename());
-		this->update_objects<T>(db, tmp.filename(), entity_format::human);
-		if (!this->_args.empty()) {
-			native_message(std::clog, "Press any key to continue...");
+		try {
+			this->update<T>(db, file_to_string(tmp.filename()));
+		} catch (const std::exception& err) {
+			success = false;
+			native_message(std::cerr, "_", err.what());
+			native_message(std::cerr, "Press any key to continue...");
 			std::cin.get();
 		}
-	}
+	} while (!success);
 }
 
 template <class T>
 void
 ggg::Edit_entity::edit_batch(Database& db) {
-	sys::tmpfile tmp;
-	tmp.out().imbue(std::locale::classic());
-	tmp.out() << std::cin.rdbuf();
-	tmp.out().flush();
-	this->update_objects<T>(db, tmp.filename(), entity_format::batch);
+	if (!this->_filename.empty()) {
+		sys::tmpfile tmp;
+		tmp.out().imbue(std::locale::classic());
+		if (this->_filename == "-") {
+			tmp.out() << std::cin.rdbuf();
+		} else {
+			tmp.out() << file_to_string(this->_filename);
+		}
+		tmp.out().flush();
+		this->update<T>(db, file_to_string(tmp.filename()));
+	}
+	if (!this->_expression.empty()) {
+		this->update<T>(db, this->_expression);
+	}
 }
 
 template <class T>
 void
 ggg::Edit_entity::print_objects(Database& db, std::ostream& out) {
-	typedef Object_traits<T> traits_type;
-	std::set<T> cnt;
-	traits_type::find(db, this->args(), std::inserter(cnt, cnt.begin()));
-	if (cnt.empty()) {
-		throw std::runtime_error("not found");
+	using traits_type = Guile_traits<T>;
+	std::vector<T> entities;
+	for (const auto& name : this->args()) {
+		const auto& ent = traits_type::select(name.data());
+		if (!ent.empty()) { entities.insert(entities.end(), ent.begin(), ent.end()); }
 	}
-	align_columns(cnt, out, traits_type::delimiter(), entity_format::human);
+	if (entities.empty()) { throw std::runtime_error("not found"); }
+	traits_type::to_guile(out, entities);
 	out.flush();
 }
 
@@ -104,83 +124,34 @@ void
 ggg::Edit_entity::print_usage() {
 	const int w = 20;
 	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-		<< this->prefix() << " [-qaed] [ENTITY...]\n"
-		<< std::setw(w) << std::left << "  -q" << "quiet\n"
-		<< std::setw(w) << std::left << "  -a ACCOUNT..." << "edit accounts\n"
-		<< std::setw(w) << std::left << "  -e ENTITY..." << "edit entities\n"
-		<< std::setw(w) << std::left << "  -d" << "edit directory hierarchy\n";
+		<< this->prefix() << " [-t TYPE] [-f FILE] [-e EXPR] [NAME...]\n"
+		<< std::setw(w) << std::left << "  -t TYPE"
+		<< "entity type (account, entity, machine)\n"
+		<< std::setw(w) << std::left << "  -f FILE"
+		<< "file to read entities from\n"
+		<< std::setw(w) << std::left << "  -e EXPR"
+		<< "read entities by evaluating Guile expression\n";
 }
 
 template <class T>
 void
-ggg::Edit_entity::update_objects(
-	Database& db,
-	const std::string& filename,
-	entity_format format
-) {
-	typedef Object_traits<T> traits_type;
-	std::vector<T> ents;
-	read_objects<T>(
-		filename,
-		format,
-		std::back_inserter(ents),
-		"unable to read entities"
-	);
+ggg::Edit_entity::update(Database& db, const std::string& guile) {
+	using guile_traits_type = Guile_traits<T>;
+	using traits_type = Object_traits<T>;
+	auto ents = guile_traits_type::from_guile(guile);
 	check_duplicates(ents, traits_type::equal_names);
-	int nerrors = 0;
-	for (const T& ent : ents) {
-		try {
-			db.update(ent);
-			auto result = std::find_if(
-				args().begin(),
-				args().end(),
-				[&ent] (const std::string& s) {
-					return s == traits_type::name(ent);
-				}
-			);
-			if (result != args().end()) {
-				this->_args.erase(result);
-			}
-		} catch (const std::exception& err) {
-			++nerrors;
-			native_message(
-				std::cerr,
-				"error updating _: _",
-				ent.name(),
-				native(err.what())
-			);
-		}
-	}
-	if (nerrors > 0) {
-		throw quiet_error();
-	}
+	Transaction tr(db);
+	for (const auto& ent : ents) { db.update(ent); }
+	tr.commit();
 }
 
-template void
-ggg::Edit_entity::print_objects<ggg::entity>(Database& db, std::ostream& out);
-template void
-ggg::Edit_entity::print_objects<ggg::account>(Database& db, std::ostream& out);
-template void
-ggg::Edit_entity::update_objects<ggg::entity>(
-	Database& db,
-	const std::string& filename,
-	ggg::entity_format format
-);
-template void
-ggg::Edit_entity::update_objects<ggg::account>(
-	Database& db,
-	const std::string& filename,
-	ggg::entity_format format
-);
-template void
-ggg::Edit_entity::edit_objects<ggg::entity>(Database& db);
-template void
-ggg::Edit_entity::edit_objects<ggg::account>(Database& db);
-template void
-ggg::Edit_entity::edit_batch<ggg::entity>(Database& db);
-template void
-ggg::Edit_entity::edit_batch<ggg::account>(Database& db);
-template void
-ggg::Edit_entity::edit_interactive<ggg::entity>(Database& db);
-template void
-ggg::Edit_entity::edit_interactive<ggg::account>(Database& db);
+template void ggg::Edit_entity::print_objects<ggg::entity>(Database& db, std::ostream& out);
+template void ggg::Edit_entity::print_objects<ggg::account>(Database& db, std::ostream& out);
+template void ggg::Edit_entity::update<ggg::entity>(Database&, const std::string&);
+template void ggg::Edit_entity::update<ggg::account>(Database&, const std::string&);
+template void ggg::Edit_entity::edit_objects<ggg::entity>(Database& db);
+template void ggg::Edit_entity::edit_objects<ggg::account>(Database& db);
+template void ggg::Edit_entity::edit_batch<ggg::entity>(Database& db);
+template void ggg::Edit_entity::edit_batch<ggg::account>(Database& db);
+template void ggg::Edit_entity::edit_interactive<ggg::entity>(Database& db);
+template void ggg::Edit_entity::edit_interactive<ggg::account>(Database& db);

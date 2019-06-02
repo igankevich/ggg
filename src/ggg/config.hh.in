@@ -22,5 +22,7 @@
 #define GGG_MIN_ID @min_id@
 #define GGG_OVERFLOW_ID @overflow_id@
 #define GGG_GUILE_ROOT "@guile_root@"
+#define GGG_DEFAULT_HOME_PREFIX "@default_home_prefix@"
+#define GGG_DEFAULT_SHELL "@default_shell@"
 
 #endif // vim:filetype=cpp

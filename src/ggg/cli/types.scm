@@ -8,17 +8,16 @@
 (define-class <entity> ()
   (name #:init-keyword #:name #:accessor entity-name)
   (real-name #:init-keyword #:real-name #:accessor entity-real-name)
-  (home-directory #:init-keyword #:home-directory #:accessor entity-home-directory
-				  #:init-value "")
-  (shell #:init-keyword #:shell #:accessor entity-shell #:init-value "/bin/sh")
-  (id #:init-keyword #:id #:accessor entity-id #:init-value 4294967295))
+  (home-directory #:init-keyword #:home-directory #:accessor entity-home-directory)
+  (shell #:init-keyword #:shell #:accessor entity-shell)
+  (id #:init-keyword #:id #:accessor entity-id))
 
 (define-class <group> ()
   (name #:init-keyword #:name #:accessor group-name)
   (members #:init-keyword #:shell #:accessor group-members)
   (id #:init-keyword #:id #:accessor group-id #:init-value 4294967295))
 
-(define-class account ()
+(define-class <account> ()
   (name #:init-keyword #:name #:accessor account-name)
   (expiration-date #:init-keyword #:expiration-date #:accessor account-expiration-date
 				   #:init-value (current-time))
@@ -28,7 +27,8 @@
 
 (define time-point
   (lambda* (string #:optional (format iso-time-format))
-	(strptime format string)))
+		   "Convert string to UNIX timestamp"
+	(car (mktime (car (strptime format string))))))
 
 (define SUSPENDED 1)
 (define PASSWORD_HAS_EXPIRED 2)

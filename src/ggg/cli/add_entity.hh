@@ -6,12 +6,18 @@
 
 #include <unistdx/fs/path>
 
-#include <ggg/core/database.hh>
 #include <ggg/cli/command.hh>
+#include <ggg/cli/entity_type.hh>
+#include <ggg/core/database.hh>
 
 namespace ggg {
 
 	class Add_entity: public Command {
+
+	private:
+		Entity_type _type = Entity_type::Entity;
+		std::string _filename;
+		std::string _expression;
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;
@@ -19,11 +25,11 @@ namespace ggg {
 		void print_usage() override;
 
 	private:
-		void generate_entities(Database& db, std::ostream& out);
-		void add_entities(Database& db, sys::path filename, entity_format format);
-		void add_interactive(Database& db);
-		void add_batch(Database& db);
-		void add_entities_guile(Database& db, sys::path filename);
+		template <class T> void do_execute(Database& db);
+		template <class T> void add_interactive(Database& db);
+		template <class T> void insert(Database& db, std::string guile);
+
+		inline Entity_type type() const { return this->_type; }
 
 	};
 

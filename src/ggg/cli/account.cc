@@ -248,29 +248,31 @@ ggg::Guile_traits<ggg::account>::to(const account& acc) {
 }
 
 template <>
-std::string
-ggg::Guile_traits<ggg::account>::to_guile(const account& acc, size_t shift, bool shift_first) {
-	std::string indent(shift, ' ');
+void
+ggg::Guile_traits<ggg::account>::to_guile(std::ostream& guile, const array_type& objects) {
 	const char format[] = "%Y-%m-%dT%H:%M:%S%z";
-	char expire_str[128] {};
-	auto t = account::clock_type::to_time_t(acc.expire());
-	std::strftime(expire_str, sizeof(expire_str), format, std::localtime(&t));
-	std::string flags_str;
-	if (acc.flags() & account_flags::suspended) {
-		flags_str += "SUSPENDED ";
+	if (objects.empty()) { guile << "(list)"; return; }
+	std::string indent(2, ' ');
+	guile << "(list";
+	for (const auto& acc : objects) {
+		char expire_str[128] {};
+		auto t = account::clock_type::to_time_t(acc.expire());
+		std::strftime(expire_str, sizeof(expire_str), format, std::localtime(&t));
+		std::string flags_str;
+		if (acc.flags() & account_flags::suspended) {
+			flags_str += " SUSPENDED";
+		}
+		if (acc.flags() & account_flags::password_has_expired) {
+			flags_str += " PASSWORD_HAS_EXPIRED";
+		}
+		guile << '\n' << indent;
+		guile << "(make <account>\n";
+		guile << indent << "      #:name " << escape_string(acc.name()) << '\n';
+		guile << indent << "      #:expiration-date (time-point "
+			<< escape_string(expire_str) << ")\n";
+		guile << indent << "      #:flags (flags" << flags_str << "))";
 	}
-	if (acc.flags() & account_flags::password_has_expired) {
-		flags_str += "PASSWORD_HAS_EXPIRED ";
-	}
-	if (!flags_str.empty() && flags_str.back() == ' ') { flags_str.pop_back(); }
-	std::stringstream guile;
-	if (shift_first) { guile << ' '; };
-	guile << "(make <account>\n";
-	guile << indent << "      #:name " << escape_string(acc.name()) << '\n';
-	guile << indent << "      #:expiration-date (time-point "
-		<< escape_string(expire_str) << ")\n";
-	guile << indent << "      #:flags (flags " << escape_string(flags_str) << "))\n";
-	return guile.str();
+	guile << ")\n";
 }
 
 template <>
@@ -291,6 +293,14 @@ ggg::Guile_traits<ggg::account>::remove(SCM obj) {
 	db.erase(from(obj));
 	tr.commit();
 	return SCM_UNSPECIFIED;
+}
+
+template <>
+auto
+ggg::Guile_traits<ggg::account>::select(std::string name) -> array_type {
+	Database db(Database::File::Accounts, Database::Flag::Read_only);
+	auto st = db.find_account(name.data());
+	return array_type(account_iterator(st), account_iterator());
 }
 
 template <>

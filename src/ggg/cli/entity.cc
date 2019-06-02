@@ -4,6 +4,7 @@
 
 #include <ggg/bits/read_field.hh>
 #include <ggg/cli/guile_traits.hh>
+#include <ggg/config.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/entity.hh>
 
@@ -104,14 +105,29 @@ template <>
 ggg::entity
 ggg::Guile_traits<ggg::entity>::from(SCM obj) {
 	static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
+	auto s_real_name = scm_from_latin1_symbol("real-name");
+	auto s_home = scm_from_latin1_symbol("home-directory");
+	auto s_shell = scm_from_latin1_symbol("shell");
+	auto s_id = scm_from_latin1_symbol("id");
 	entity ent;
 	ent._name = to_string(slot(obj, "name"));
-	ent._realname = to_string(slot(obj, "real-name"));
-	ent._homedir = to_string(slot(obj, "home-directory"));
-	if (ent._homedir.empty()) { ent._homedir = "/home/" + ent._name; }
-	ent._shell = to_string(slot(obj, "shell"));
-	ent._uid = scm_to_uint32(slot(obj, "id"));
-	ent._gid = ent._uid;
+	if (slot_is_bound(obj, s_real_name)) {
+		ent._realname = to_string(slot(obj, s_real_name));
+	}
+	if (slot_is_bound(obj, s_home)) {
+		ent._homedir = to_string(slot(obj, s_home));
+	} else {
+		ent._homedir = GGG_DEFAULT_HOME_PREFIX "/" + ent._name;
+	}
+	if (slot_is_bound(obj, s_shell)) {
+		ent._shell = to_string(slot(obj, s_shell));
+	} else {
+		ent._shell = GGG_DEFAULT_SHELL;
+	}
+	if (slot_is_bound(obj, s_id)) {
+		ent._uid = scm_to_uint32(slot(obj, "id"));
+		ent._gid = ent._uid;
+	}
 	return ent;
 }
 
@@ -137,39 +153,26 @@ ggg::Guile_traits<ggg::entity>::to(const entity& ent) {
 }
 
 template <>
-std::string
-ggg::Guile_traits<ggg::entity>::to_guile(const entity& ent, size_t shift, bool shift_first) {
-	std::string indent(shift, ' ');
-	std::stringstream guile;
-	if (shift_first) { guile << ' '; };
-	guile << "(make <entity>\n";
-	guile << indent << "      #:name " << escape_string(ent.name()) << '\n';
-	guile << indent << "      #:real-name " << escape_string(ent.real_name()) << '\n';
-	guile << indent << "      #:home-directory " << escape_string(ent.home()) << '\n';
-	guile << indent << "      #:shell " << escape_string(ent.shell());
-	if (ent.has_id()) {
-		guile << '\n';
-		guile << indent << "      #:id " << ent.id() << ")\n";
-	} else {
-		guile << ')';
-	}
-	return guile.str();
-}
-
-template <>
-auto
-ggg::Guile_traits<ggg::entity>::from_guile(std::string guile) -> array_type {
-	array_type result;
-	auto list = scm_c_eval_string(guile.data());
-	if (scm_to_bool(scm_list_p(list))) {
-		auto n = scm_to_int32(scm_length(list));
-		for (int i=0; i<n; ++i) {
-			result.emplace_back(from(scm_list_ref(list, scm_from_int32(i))));
+void
+ggg::Guile_traits<ggg::entity>::to_guile(std::ostream& guile, const array_type& objects) {
+	if (objects.empty()) { guile << "(list)"; return; }
+	std::string indent(2, ' ');
+	guile << "(list";
+	for (const auto& ent : objects) {
+		guile << '\n' << indent;
+		guile << "(make <entity>\n";
+		guile << indent << "      #:name " << escape_string(ent.name()) << '\n';
+		guile << indent << "      #:real-name " << escape_string(ent.real_name()) << '\n';
+		guile << indent << "      #:home-directory " << escape_string(ent.home()) << '\n';
+		guile << indent << "      #:shell " << escape_string(ent.shell());
+		if (ent.has_id()) {
+			guile << '\n';
+			guile << indent << "      #:id " << ent.id() << ")";
+		} else {
+			guile << ')';
 		}
-	} else {
-		result.emplace_back(from(list));
 	}
-	return result;
+	guile << ")\n";
 }
 
 template <>
@@ -193,6 +196,14 @@ ggg::Guile_traits<ggg::entity>::remove(SCM obj) {
 }
 
 template <>
+auto
+ggg::Guile_traits<ggg::entity>::select(std::string name) -> array_type {
+	Database db(Database::File::Entities, Database::Flag::Read_only);
+	auto st = db.find_entity(name.data());
+	return array_type(user_iterator(st), user_iterator());
+}
+
+template <>
 SCM
 ggg::Guile_traits<ggg::entity>::find() {
 	Database db(Database::File::Entities, Database::Flag::Read_only);
@@ -204,6 +215,20 @@ ggg::Guile_traits<ggg::entity>::find() {
 		++first;
 	}
 	return list;
+}
+
+template <>
+auto
+ggg::Guile_traits<ggg::entity>::generate(const string_array& names) -> array_type {
+	std::vector<entity> result;
+	result.reserve(names.size());
+	for (const auto& name : names) {
+		result.emplace_back(name.data());
+		auto& tmp = result.back();
+		tmp.home(sys::path(GGG_DEFAULT_HOME_PREFIX, name));
+		tmp.shell(GGG_DEFAULT_SHELL);
+	}
+	return result;
 }
 
 template <>
