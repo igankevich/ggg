@@ -16,6 +16,7 @@ ggg_src = files([
 	'expunge.cc',
 	'find_entities.cc',
 	'find_machines.cc',
+	'form.cc',
 	'ggg_main.cc',
 	'group.cc',
 	'guile.cc',
@@ -36,6 +37,7 @@ ggg_src = files([
 	'show_locked.cc',
 	'show_members.cc',
 	'show_version.cc',
+	'store.cc',
 	'tmpfile.cc',
 	'unlock_entity.cc',
 ])

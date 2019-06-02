@@ -14,7 +14,17 @@
 namespace ggg {
 
 	template <class T>
-	struct Object_traits;
+	struct Object_traits {
+
+		inline static const std::string& name(const T& rhs) { return rhs.name(); }
+		inline static bool eq(const T& lhs, const T& rhs) { return lhs == rhs; }
+
+		inline static bool
+		equal_names(const T& lhs, const T& rhs) {
+			return name(lhs) == name(rhs);
+		}
+
+	};
 
 	template <>
 	struct Object_traits<ggg::entity> {

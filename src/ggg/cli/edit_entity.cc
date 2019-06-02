@@ -17,6 +17,7 @@
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/cli/tmpfile.hh>
 #include <ggg/config.hh>
+#include <ggg/core/form.hh>
 #include <ggg/core/native.hh>
 
 void
@@ -54,6 +55,10 @@ ggg::Edit_entity::execute()  {
 			break;
 		case Entity_type::Machine:
 			throw std::invalid_argument("not implemented");
+		case Entity_type::Form:
+			db.open(Database::File::All, Database::Flag::Read_write);
+			this->edit_objects<form2>(db);
+			break;
 	}
 }
 
@@ -126,7 +131,7 @@ ggg::Edit_entity::print_usage() {
 	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
 		<< this->prefix() << " [-t TYPE] [-f FILE] [-e EXPR] [NAME...]\n"
 		<< std::setw(w) << std::left << "  -t TYPE"
-		<< "entity type (account, entity, machine)\n"
+		<< "entity type (account, entity, machine, form)\n"
 		<< std::setw(w) << std::left << "  -f FILE"
 		<< "file to read entities from\n"
 		<< std::setw(w) << std::left << "  -e EXPR"

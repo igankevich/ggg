@@ -75,9 +75,10 @@ CREATE UNIQUE INDEX network_index ON networks (number);
 )"
 };
 
-constexpr const int64_t accounts_schema_version = 1;
+constexpr const int64_t accounts_schema_version = 2;
 
 constexpr const char* accounts_schema[accounts_schema_version] = {
+
 R"(
 CREATE TABLE accounts (
            name  TEXT      NOT NULL  PRIMARY KEY,
@@ -85,7 +86,15 @@ CREATE TABLE accounts (
 expiration_date  INTEGER,
           flags  INTEGER   NOT NULL  DEFAULT 0
 );
+)",
+
+R"(
+CREATE TABLE forms (
+           name  TEXT  NOT NULL  PRIMARY KEY,
+        content  TEXT
+);
 )"
+
 };
 
 }

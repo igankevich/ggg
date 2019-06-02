@@ -8,6 +8,7 @@
 
 #include <ggg/cli/command.hh>
 #include <ggg/cli/entity_type.hh>
+#include <ggg/cli/store.hh>
 #include <ggg/core/database.hh>
 
 namespace ggg {
@@ -25,9 +26,9 @@ namespace ggg {
 		void print_usage() override;
 
 	private:
-		template <class T> void do_execute(Database& db);
-		template <class T> void add_interactive(Database& db);
-		template <class T> void insert(Database& db, std::string guile);
+		template <class T> void do_execute(Store& db);
+		template <class T> void add_interactive(Store& db);
+		template <class T> void insert(Store& db, std::string guile);
 
 		inline Entity_type type() const { return this->_type; }
 

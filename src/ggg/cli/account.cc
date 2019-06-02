@@ -10,8 +10,8 @@
 
 #include <ggg/bits/read_field.hh>
 #include <ggg/cli/guile_traits.hh>
+#include <ggg/cli/store.hh>
 #include <ggg/core/account.hh>
-#include <ggg/core/database.hh>
 #include <ggg/core/days.hh>
 
 namespace {
@@ -278,9 +278,9 @@ ggg::Guile_traits<ggg::account>::to_guile(std::ostream& guile, const array_type&
 template <>
 SCM
 ggg::Guile_traits<ggg::account>::insert(SCM obj) {
-	Database db(Database::File::All, Database::Flag::Read_write);
-	Transaction tr(db);
-	db.insert(from(obj));
+	Store store(Store::File::All, Store::Flag::Read_write);
+	Transaction tr(store);
+	store.add(from(obj));
 	tr.commit();
 	return SCM_UNSPECIFIED;
 }
@@ -288,9 +288,9 @@ ggg::Guile_traits<ggg::account>::insert(SCM obj) {
 template <>
 SCM
 ggg::Guile_traits<ggg::account>::remove(SCM obj) {
-	Database db(Database::File::All, Database::Flag::Read_write);
-	Transaction tr(db);
-	db.erase(from(obj));
+	Store store(Store::File::All, Store::Flag::Read_write);
+	Transaction tr(store);
+	store.erase(from(obj));
 	tr.commit();
 	return SCM_UNSPECIFIED;
 }
@@ -298,16 +298,16 @@ ggg::Guile_traits<ggg::account>::remove(SCM obj) {
 template <>
 auto
 ggg::Guile_traits<ggg::account>::select(std::string name) -> array_type {
-	Database db(Database::File::Accounts, Database::Flag::Read_only);
-	auto st = db.find_account(name.data());
+	Store store(Store::File::Accounts, Store::Flag::Read_only);
+	auto st = store.find_account(name.data());
 	return array_type(account_iterator(st), account_iterator());
 }
 
 template <>
 SCM
 ggg::Guile_traits<ggg::account>::find() {
-	Database db(Database::File::Accounts, Database::Flag::Read_only);
-	auto st = db.accounts();
+	Store store(Store::File::Accounts, Store::Flag::Read_only);
+	auto st = store.accounts();
 	account_iterator first(st), last;
 	SCM list = SCM_EOL;
 	while (first != last) {
@@ -315,6 +315,17 @@ ggg::Guile_traits<ggg::account>::find() {
 		++first;
 	}
 	return list;
+}
+
+template <>
+auto
+ggg::Guile_traits<ggg::account>::generate(const string_array& names) -> array_type {
+	std::vector<account> result;
+	result.reserve(names.size());
+	for (const auto& name : names) {
+		result.emplace_back(name.data());
+	}
+	return result;
 }
 
 template <>

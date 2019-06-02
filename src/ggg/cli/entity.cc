@@ -4,8 +4,8 @@
 
 #include <ggg/bits/read_field.hh>
 #include <ggg/cli/guile_traits.hh>
+#include <ggg/cli/store.hh>
 #include <ggg/config.hh>
-#include <ggg/core/database.hh>
 #include <ggg/core/entity.hh>
 
 namespace {
@@ -13,14 +13,14 @@ namespace {
 	SCM entity_tie(SCM a, SCM b) {
 		using namespace ggg;
 		if (scm_is_integer(a) && scm_is_integer(b)) {
-			Database db(Database::File::Entities, Database::Flag::Read_write);
-			Transaction tr(db);
-			db.tie(scm_to_uint32(a), scm_to_uint32(b));
+			Store store(Store::File::Entities, Store::Flag::Read_write);
+			Transaction tr(store);
+			store.tie(scm_to_uint32(a), scm_to_uint32(b));
 			tr.commit();
 		} else if (is_string(a) && is_string(b)) {
-			Database db(Database::File::Entities, Database::Flag::Read_write);
-			Transaction tr(db);
-			db.tie(to_string(a).data(), to_string(b).data());
+			Store store(Store::File::Entities, Store::Flag::Read_write);
+			Transaction tr(store);
+			store.tie(to_string(a).data(), to_string(b).data());
 			tr.commit();
 		} else {
 			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
@@ -37,11 +37,11 @@ namespace {
 				scm_from_utf8_string("ggg-entity-untie needs either one or two names"));
 			return SCM_UNSPECIFIED;
 		}
-		Database db(Database::File::Entities, Database::Flag::Read_write);
-		Transaction tr(db);
+		Store store(Store::File::Entities, Store::Flag::Read_write);
+		Transaction tr(store);
 		auto child = to_string(a);
-		if (is_bound(b)) { db.untie(child.data(), to_string(b).data()); }
-		else { db.untie(child.data()); }
+		if (is_bound(b)) { store.untie(child.data(), to_string(b).data()); }
+		else { store.untie(child.data()); }
 		tr.commit();
 		return SCM_UNSPECIFIED;
 	}
@@ -49,14 +49,14 @@ namespace {
 	SCM entity_attach(SCM a, SCM b) {
 		using namespace ggg;
 		if (scm_is_integer(a) && scm_is_integer(b)) {
-			Database db(Database::File::Entities, Database::Flag::Read_write);
-			Transaction tr(db);
-			db.attach(scm_to_uint32(a), scm_to_uint32(b));
+			Store store(Store::File::Entities, Store::Flag::Read_write);
+			Transaction tr(store);
+			store.attach(scm_to_uint32(a), scm_to_uint32(b));
 			tr.commit();
 		} else if (is_string(a) && is_string(b)) {
-			Database db(Database::File::Entities, Database::Flag::Read_write);
-			Transaction tr(db);
-			db.attach(to_string(a).data(), to_string(b).data());
+			Store store(Store::File::Entities, Store::Flag::Read_write);
+			Transaction tr(store);
+			store.attach(to_string(a).data(), to_string(b).data());
 			tr.commit();
 		} else {
 			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
@@ -73,9 +73,9 @@ namespace {
 				scm_from_utf8_string("ggg-entity-detach needs string argument"));
 			return SCM_UNSPECIFIED;
 		}
-		Database db(Database::File::Entities, Database::Flag::Read_write);
-		Transaction tr(db);
-		db.detach(to_string(a).data());
+		Store store(Store::File::Entities, Store::Flag::Read_write);
+		Transaction tr(store);
+		store.detach(to_string(a).data());
 		tr.commit();
 		return SCM_UNSPECIFIED;
 	}
@@ -252,9 +252,9 @@ ggg::Guile_traits<ggg::entity>::to_guile(std::ostream& guile, const array_type& 
 template <>
 SCM
 ggg::Guile_traits<ggg::entity>::insert(SCM obj) {
-	Database db(Database::File::Entities, Database::Flag::Read_write);
-	Transaction tr(db);
-	db.insert(from(obj));
+	Store store(Store::File::Entities, Store::Flag::Read_write);
+	Transaction tr(store);
+	store.add(from(obj));
 	tr.commit();
 	return SCM_UNSPECIFIED;
 }
@@ -262,9 +262,9 @@ ggg::Guile_traits<ggg::entity>::insert(SCM obj) {
 template <>
 SCM
 ggg::Guile_traits<ggg::entity>::remove(SCM obj) {
-	Database db(Database::File::Entities, Database::Flag::Read_write);
-	Transaction tr(db);
-	db.erase(from(obj));
+	Store store(Store::File::Entities, Store::Flag::Read_write);
+	Transaction tr(store);
+	store.erase(from(obj));
 	tr.commit();
 	return SCM_UNSPECIFIED;
 }
@@ -272,16 +272,16 @@ ggg::Guile_traits<ggg::entity>::remove(SCM obj) {
 template <>
 auto
 ggg::Guile_traits<ggg::entity>::select(std::string name) -> array_type {
-	Database db(Database::File::Entities, Database::Flag::Read_only);
-	auto st = db.find_entity(name.data());
+	Store store(Store::File::Entities, Store::Flag::Read_only);
+	auto st = store.find_entity(name.data());
 	return array_type(user_iterator(st), user_iterator());
 }
 
 template <>
 SCM
 ggg::Guile_traits<ggg::entity>::find() {
-	Database db(Database::File::Entities, Database::Flag::Read_only);
-	auto st = db.users();
+	Store store(Store::File::Entities, Store::Flag::Read_only);
+	auto st = store.users();
 	user_iterator first(st), last;
 	SCM list = SCM_EOL;
 	while (first != last) {
