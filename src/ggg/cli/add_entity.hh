@@ -8,8 +8,8 @@
 
 #include <ggg/cli/command.hh>
 #include <ggg/cli/entity_type.hh>
-#include <ggg/cli/store.hh>
 #include <ggg/core/database.hh>
+#include <ggg/guile/store.hh>
 
 namespace ggg {
 

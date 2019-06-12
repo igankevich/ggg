@@ -73,6 +73,13 @@ namespace ggg {
 	std::string escape_string(const std::string& s);
 	std::string file_to_string(std::string filename);
 
+	template <class Pointer>
+	inline void
+	define_procedure(const char *name, int req, int opt, int rest, Pointer ptr) {
+		scm_c_define_gsubr(name, req, opt, rest, reinterpret_cast<scm_t_subr>(ptr));
+		scm_c_export(name);
+	}
+
 }
 
 #endif // vim:filetype=cpp

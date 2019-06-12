@@ -1,0 +1,3 @@
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:@load_compiled_path@"
+export GUILE_LOAD_PATH="@load_path@"
+export GUILE_LOAD_COMPILED_PATH="@load_compiled_path@"

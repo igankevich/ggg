@@ -1,5 +1,4 @@
 ggg_src = files([
-	'account.cc',
 	'add_entity.cc',
 	'align_columns.cc',
 	'all_commands.cc',
@@ -9,21 +8,15 @@ ggg_src = files([
 	'dot.cc',
 	'edit_entity.cc',
 	'editor.cc',
-	'entity.cc',
-	'entity.cc',
 	'entity_type.cc',
 	'expire_entity.cc',
 	'expunge.cc',
 	'find_entities.cc',
 	'find_machines.cc',
-	'form.cc',
 	'ggg_main.cc',
-	'group.cc',
 	'guile.cc',
-	'guile_traits.cc',
 	'heal.cc',
 	'lock_entity.cc',
-	'machine.cc',
 	'remove_entity.cc',
 	'reset_password.cc',
 	'sanitise.cc',
@@ -37,7 +30,6 @@ ggg_src = files([
 	'show_locked.cc',
 	'show_members.cc',
 	'show_version.cc',
-	'store.cc',
 	'tmpfile.cc',
 	'unlock_entity.cc',
 ])
@@ -46,7 +38,7 @@ ggg_exe = executable(
 	executable_name,
 	sources: ggg_src,
 	include_directories: src,
-	dependencies: [unistdx,ggg_crypt,ggg_core,libacl,guile],
+	dependencies: [unistdx,ggg_crypt,ggg_core,libacl,guile,ggg_guile],
 	install: true
 )
 
@@ -62,4 +54,28 @@ executable(
 	install: true
 )
 
-install_data('types.scm')
+run_target(
+	'form-cli',
+	command: [
+		'env',
+		'LD_LIBRARY_PATH=' + guile_load_compiled_path,
+		'GUILE_LOAD_PATH=' + guile_load_path,
+		'GUILE_LOAD_COMPILED_PATH=' + guile_load_compiled_path,
+		'GUILE_AUTO_COMPILE=0',
+		find_program('guile2.2').path(),
+		'-s',
+		join_paths(meson.current_source_dir(), 'form-cli.scm')
+	],
+	depends: ggg_guile_forms
+)
+
+# guile_config {{{
+guile_config = configuration_data()
+guile_config.set('load_compiled_path', guile_load_compiled_path)
+guile_config.set('load_path', guile_load_path)
+configure_file(
+	input: 'guile.in',
+	output: 'guile',
+	configuration: guile_config
+)
+# }}}

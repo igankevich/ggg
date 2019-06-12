@@ -1,12 +1,13 @@
 #include <iomanip>
 #include <ostream>
+#include <iostream>
 #include <sstream>
 
 #include <ggg/bits/read_field.hh>
-#include <ggg/cli/guile_traits.hh>
-#include <ggg/cli/store.hh>
 #include <ggg/config.hh>
 #include <ggg/core/entity.hh>
+#include <ggg/guile/guile_traits.hh>
+#include <ggg/guile/store.hh>
 
 namespace {
 
@@ -308,12 +309,12 @@ ggg::Guile_traits<ggg::entity>::generate(const string_array& names) -> array_typ
 template <>
 void
 ggg::Guile_traits<ggg::entity>::define_procedures() {
-	scm_c_define_gsubr("ggg-entity-insert", 1, 0, 0, (scm_t_subr)&insert);
-	scm_c_define_gsubr("ggg-entity-delete", 1, 0, 0, (scm_t_subr)&remove);
-	scm_c_define_gsubr("ggg-entities", 0, 0, 0, (scm_t_subr)&find);
-	scm_c_define_gsubr("ggg-users", 0, 0, 0, (scm_t_subr)&find);
-	scm_c_define_gsubr("ggg-entity-tie", 2, 0, 0, (scm_t_subr)&entity_tie);
-	scm_c_define_gsubr("ggg-entity-untie", 1, 1, 0, (scm_t_subr)&entity_untie);
-	scm_c_define_gsubr("ggg-entity-attach", 2, 0, 0, (scm_t_subr)&entity_attach);
-	scm_c_define_gsubr("ggg-entity-detach", 1, 0, 0, (scm_t_subr)&entity_detach);
+	define_procedure("ggg-entity-insert", 1, 0, 0, insert);
+	define_procedure("ggg-entity-delete", 1, 0, 0, remove);
+	define_procedure("ggg-entities", 0, 0, 0, find);
+	define_procedure("ggg-users", 0, 0, 0, find);
+	define_procedure("ggg-entity-tie", 2, 0, 0, entity_tie);
+	define_procedure("ggg-entity-untie", 1, 1, 0, entity_untie);
+	define_procedure("ggg-entity-attach", 2, 0, 0, entity_attach);
+	define_procedure("ggg-entity-detach", 1, 0, 0, entity_detach);
 }

@@ -2,8 +2,8 @@
 #include <fstream>
 #include <sstream>
 
-#include <ggg/cli/guile_traits.hh>
 #include <ggg/core/native.hh>
+#include <ggg/guile/guile_traits.hh>
 
 std::string
 ggg::escape_string(const std::string& s) {

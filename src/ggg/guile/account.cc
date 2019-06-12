@@ -9,10 +9,10 @@
 #include <istream>
 
 #include <ggg/bits/read_field.hh>
-#include <ggg/cli/guile_traits.hh>
-#include <ggg/cli/store.hh>
 #include <ggg/core/account.hh>
 #include <ggg/core/days.hh>
+#include <ggg/guile/guile_traits.hh>
+#include <ggg/guile/store.hh>
 
 namespace {
 
@@ -331,7 +331,7 @@ ggg::Guile_traits<ggg::account>::generate(const string_array& names) -> array_ty
 template <>
 void
 ggg::Guile_traits<ggg::account>::define_procedures() {
-	scm_c_define_gsubr("ggg-account-insert", 1, 0, 0, (scm_t_subr)&insert);
-	scm_c_define_gsubr("ggg-account-delete", 1, 0, 0, (scm_t_subr)&remove);
-	scm_c_define_gsubr("ggg-accounts", 0, 0, 0, (scm_t_subr)&find);
+	define_procedure("ggg-account-insert", 1, 0, 0, (scm_t_subr)&insert);
+	define_procedure("ggg-account-delete", 1, 0, 0, (scm_t_subr)&remove);
+	define_procedure("ggg-accounts", 0, 0, 0, (scm_t_subr)&find);
 }

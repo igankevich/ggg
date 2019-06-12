@@ -1,4 +1,4 @@
-#include <ggg/cli/store.hh>
+#include <ggg/guile/store.hh>
 
 bool
 ggg::Store::has(const entity& rhs) {

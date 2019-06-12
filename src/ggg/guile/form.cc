@@ -1,6 +1,6 @@
-#include <ggg/cli/guile_traits.hh>
-#include <ggg/cli/store.hh>
 #include <ggg/core/form.hh>
+#include <ggg/guile/guile_traits.hh>
+#include <ggg/guile/store.hh>
 
 template <>
 ggg::form2
@@ -96,7 +96,7 @@ ggg::Guile_traits<ggg::form2>::generate(const string_array& names) -> array_type
 template <>
 void
 ggg::Guile_traits<ggg::form2>::define_procedures() {
-	scm_c_define_gsubr("ggg-form-insert", 1, 0, 0, (scm_t_subr)&insert);
-	scm_c_define_gsubr("ggg-form-delete", 1, 0, 0, (scm_t_subr)&remove);
-	scm_c_define_gsubr("ggg-forms", 0, 0, 0, (scm_t_subr)&find);
+	define_procedure("ggg-form-insert", 1, 0, 0, (scm_t_subr)&insert);
+	define_procedure("ggg-form-delete", 1, 0, 0, (scm_t_subr)&remove);
+	define_procedure("ggg-forms", 0, 0, 0, (scm_t_subr)&find);
 }

@@ -8,13 +8,14 @@
 
 #include <ggg/cli/add_entity.hh>
 #include <ggg/cli/editor.hh>
-#include <ggg/cli/guile_traits.hh>
 #include <ggg/cli/object_traits.hh>
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/cli/tmpfile.hh>
 #include <ggg/config.hh>
 #include <ggg/core/form.hh>
 #include <ggg/core/native.hh>
+#include <ggg/guile/guile_traits.hh>
+#include <ggg/guile/init.hh>
 
 void
 ggg::Add_entity
@@ -39,8 +40,7 @@ ggg::Add_entity
 void
 ggg::Add_entity
 ::execute() {
-	scm_init_guile();
-	scm_c_primitive_load(GGG_GUILE_ROOT "/types.scm");
+	guile_init();
 	Store store;
 	switch (this->_type) {
 		case Entity_type::Entity:

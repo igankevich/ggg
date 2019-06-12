@@ -12,13 +12,14 @@
 #include <ggg/cli/align_columns.hh>
 #include <ggg/cli/edit_entity.hh>
 #include <ggg/cli/editor.hh>
-#include <ggg/cli/guile_traits.hh>
 #include <ggg/cli/object_traits.hh>
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/cli/tmpfile.hh>
 #include <ggg/config.hh>
 #include <ggg/core/form.hh>
 #include <ggg/core/native.hh>
+#include <ggg/guile/guile_traits.hh>
+#include <ggg/guile/init.hh>
 
 void
 ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
@@ -41,8 +42,7 @@ ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Edit_entity::execute()  {
-	scm_init_guile();
-	scm_c_primitive_load(GGG_GUILE_ROOT "/types.scm");
+	guile_init();
 	Database db;
 	switch (this->_type) {
 		case Entity_type::Entity:

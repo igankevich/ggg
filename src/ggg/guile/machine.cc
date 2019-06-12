@@ -1,13 +1,11 @@
-#include <libguile.h>
-
 #include <ostream>
 #include <iomanip>
 #include <sstream>
 #include <iostream>
 
-#include <ggg/cli/guile_traits.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/machine.hh>
+#include <ggg/guile/guile_traits.hh>
 
 template <>
 char
@@ -129,9 +127,9 @@ ggg::Guile_traits<ggg::Machine>::find() {
 template <>
 void
 ggg::Guile_traits<ggg::Machine>::define_procedures() {
-	scm_c_define_gsubr("ggg-machine-insert", 1, 0, 0, (scm_t_subr)&insert);
-	scm_c_define_gsubr("ggg-machine-delete", 1, 0, 0, (scm_t_subr)&remove);
-	scm_c_define_gsubr("ggg-machine-delete-all", 0, 0, 0, (scm_t_subr)&remove_all);
-	scm_c_define_gsubr("ggg-machines", 0, 0, 0, (scm_t_subr)&find);
+	define_procedure("ggg-machine-insert", 1, 0, 0, &insert);
+	define_procedure("ggg-machine-delete", 1, 0, 0, &remove);
+	define_procedure("ggg-machine-delete-all", 0, 0, 0, &remove_all);
+	define_procedure("ggg-machines", 0, 0, 0, &find);
 }
 

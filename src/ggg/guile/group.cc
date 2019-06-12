@@ -1,9 +1,9 @@
 #include <iomanip>
 #include <ostream>
 
-#include <ggg/cli/guile_traits.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/group.hh>
+#include <ggg/guile/guile_traits.hh>
 
 template <>
 ggg::group
@@ -56,5 +56,5 @@ ggg::Guile_traits<ggg::group>::find() {
 template <>
 void
 ggg::Guile_traits<ggg::group>::define_procedures() {
-	scm_c_define_gsubr("ggg-groups", 0, 0, 0, (scm_t_subr)&find);
+	define_procedure("ggg-groups", 0, 0, 0, (scm_t_subr)&find);
 }

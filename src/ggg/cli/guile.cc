@@ -2,27 +2,14 @@
 #include <iostream>
 
 #include <ggg/cli/guile.hh>
-#include <ggg/cli/guile_traits.hh>
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/config.hh>
 #include <ggg/core/account.hh>
 #include <ggg/core/entity.hh>
 #include <ggg/core/group.hh>
 #include <ggg/core/machine.hh>
-
-namespace {
-
-	void*
-	register_functions(void* data) {
-		using namespace ggg;
-		Guile_traits<Machine>::define_procedures();
-		Guile_traits<entity>::define_procedures();
-		Guile_traits<::ggg::group>::define_procedures();
-		Guile_traits<account>::define_procedures();
-		return nullptr;
-	}
-
-}
+#include <ggg/guile/guile_traits.hh>
+#include <ggg/guile/init.hh>
 
 void
 ggg::Guile::parse_arguments(int argc, char* argv[]) {
@@ -35,8 +22,7 @@ ggg::Guile::parse_arguments(int argc, char* argv[]) {
 
 void
 ggg::Guile::execute() {
-	scm_with_guile(&register_functions, nullptr);
-	scm_c_primitive_load(GGG_GUILE_ROOT "/types.scm");
+	guile_init();
 	for (const auto& filename : args()) {
 		scm_c_primitive_load(filename.data());
 	}

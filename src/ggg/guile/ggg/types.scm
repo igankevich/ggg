@@ -1,4 +1,7 @@
+(define-module (ggg types))
 (use-modules (oop goops))
+
+(load-extension "libggg-guile.so" "scm_init_ggg")
 
 (define-class <machine> ()
   (name #:init-keyword #:name #:accessor machine-name)
@@ -34,3 +37,9 @@
 (define PASSWORD_HAS_EXPIRED 2)
 
 (define flags logior)
+
+;; export all symbols
+(module-map
+  (lambda (sym var)
+	(module-export! (current-module) (list sym)))
+  (current-module))

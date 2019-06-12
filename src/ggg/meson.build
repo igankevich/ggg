@@ -6,6 +6,7 @@ configure_file(
 
 subdir('core')
 subdir('ctl')
+subdir('guile')
 
 if with_nss
 	subdir('nss')
