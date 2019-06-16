@@ -8,9 +8,9 @@ ggg_guile_src = files([
 	'machine.cc',
 	'password.cc',
 	'store.cc',
-])
+]) + password_src
 
-ggg_guile_deps = [unistdx,ggg_core,guile,zxcvbn]
+ggg_guile_deps = [unistdx,ggg_core,guile,zxcvbn,ggg_crypt]
 
 ggg_guile_lib = shared_library(
 	'ggg-guile',

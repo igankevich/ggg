@@ -13,11 +13,13 @@ namespace ggg {
 
 	template <class T>
 	struct Guile_traits {
+
 		using array_type = std::vector<T>;
 		using string_array = std::vector<std::string>;
+
 		static T from(SCM x);
 		static SCM to(const T& x);
-		static SCM insert(SCM args);
+		static SCM insert0(SCM args);
 		static SCM remove(SCM args);
 		static SCM remove_all();
 		static SCM find();
@@ -26,7 +28,20 @@ namespace ggg {
 		static void to_guile(std::ostream& out, const array_type& list);
 		static array_type generate(const string_array& names);
 
-		inline static array_type
+		static inline SCM
+		insert(SCM args) {
+			try {
+				return insert0(args);
+			} catch (const std::exception& err) {
+				scm_throw(
+					scm_from_utf8_symbol("ggg-error"),
+					scm_list_1(scm_from_utf8_string(err.what()))
+				);
+				return SCM_UNSPECIFIED;
+			}
+		}
+
+		static inline array_type
 		from_guile(std::string guile) {
 			array_type result;
 			auto list = scm_c_eval_string(guile.data());

@@ -22,6 +22,7 @@
 
 (define-class <account> ()
   (name #:init-keyword #:name #:accessor account-name)
+  (password #:init-keyword #:password #:accessor account-password)
   (expiration-date #:init-keyword #:expiration-date #:accessor account-expiration-date
 				   #:init-value (current-time))
   (flags #:init-keyword #:flags #:accessor account-flags #:init-value 0))

@@ -223,9 +223,14 @@ ggg::Entity_header<ggg::account>::read_body(
 template <>
 ggg::account
 ggg::Guile_traits<ggg::account>::from(SCM obj) {
+	auto s_password = scm_from_latin1_symbol("password");
 	account acc;
 	acc._login = to_string(slot(obj, "name"));
 	acc._expire = account::clock_type::from_time_t(scm_to_uint64(slot(obj, "expiration-date")));
+	if (slot_is_bound(obj, s_password)) {
+		auto s = to_string(slot(obj, s_password));
+		acc.set_password(account::string(s.begin(), s.end()));
+	}
 	acc._flags = account_flags(scm_to_uint64(slot(obj, "flags")));
 	return acc;
 }
@@ -277,7 +282,7 @@ ggg::Guile_traits<ggg::account>::to_guile(std::ostream& guile, const array_type&
 
 template <>
 SCM
-ggg::Guile_traits<ggg::account>::insert(SCM obj) {
+ggg::Guile_traits<ggg::account>::insert0(SCM obj) {
 	Store store(Store::File::All, Store::Flag::Read_write);
 	Transaction tr(store);
 	store.add(from(obj));

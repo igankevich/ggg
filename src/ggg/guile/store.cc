@@ -18,7 +18,6 @@ ggg::Store::has(const form2& rhs) {
 void
 ggg::Store::add(const entity& rhs) {
 	insert(rhs);
-	insert(account(rhs.name().data()));
 }
 
 void

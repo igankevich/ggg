@@ -81,6 +81,17 @@ namespace {
 		return SCM_UNSPECIFIED;
 	}
 
+	SCM entity_exists(SCM a) {
+		using namespace ggg;
+		if (!is_string(a)) {
+			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
+				scm_from_utf8_string("ggg-entity-exists needs string argument"));
+			return SCM_UNSPECIFIED;
+		}
+		Store store(Store::File::Entities, Store::Flag::Read_only);
+		return scm_from_bool(store.has(entity(to_string(a).data())));
+	}
+
 }
 
 template <>
@@ -252,7 +263,7 @@ ggg::Guile_traits<ggg::entity>::to_guile(std::ostream& guile, const array_type& 
 
 template <>
 SCM
-ggg::Guile_traits<ggg::entity>::insert(SCM obj) {
+ggg::Guile_traits<ggg::entity>::insert0(SCM obj) {
 	Store store(Store::File::Entities, Store::Flag::Read_write);
 	Transaction tr(store);
 	store.add(from(obj));
@@ -317,4 +328,5 @@ ggg::Guile_traits<ggg::entity>::define_procedures() {
 	define_procedure("ggg-entity-untie", 1, 1, 0, entity_untie);
 	define_procedure("ggg-entity-attach", 2, 0, 0, entity_attach);
 	define_procedure("ggg-entity-detach", 1, 0, 0, entity_detach);
+	define_procedure("ggg-entity-exists", 1, 0, 0, entity_exists);
 }
