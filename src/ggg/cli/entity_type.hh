@@ -3,7 +3,7 @@
 
 namespace ggg {
 
-	enum class Entity_type {Account, Entity, Machine, Form};
+	enum class Entity_type {Account, Entity, Machine};
 
 	void operator>>(std::string name, Entity_type& type);
 

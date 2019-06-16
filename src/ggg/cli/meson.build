@@ -42,34 +42,7 @@ ggg_exe = executable(
 	install: true
 )
 
-ggg_form_src = files([
-	'ggg_form.cc',
-]) + forms_src + password_src
-
-executable(
-	'ggg-form',
-	sources: ggg_form_src,
-	include_directories: src,
-	dependencies: [unistdx,ggg_crypt,ggg_core,zxcvbn],
-	install: true
-)
-
-run_target(
-	'form-cli',
-	command: [
-		'env',
-		'LD_LIBRARY_PATH=' + guile_load_compiled_path,
-		'GUILE_LOAD_PATH=' + guile_load_path,
-		'GUILE_LOAD_COMPILED_PATH=' + guile_load_compiled_path,
-		'GUILE_AUTO_COMPILE=0',
-		find_program('guile2.2').path(),
-		'-s',
-		join_paths(meson.current_source_dir(), 'form-cli.scm')
-	],
-	depends: ggg_guile_forms
-)
-
-# guile_config {{{
+# guile environment variables {{{
 guile_config = configuration_data()
 guile_config.set('load_compiled_path', guile_load_compiled_path)
 guile_config.set('load_path', guile_load_path)

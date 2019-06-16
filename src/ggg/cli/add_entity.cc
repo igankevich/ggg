@@ -12,7 +12,6 @@
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/cli/tmpfile.hh>
 #include <ggg/config.hh>
-#include <ggg/core/form.hh>
 #include <ggg/core/native.hh>
 #include <ggg/guile/guile_traits.hh>
 #include <ggg/guile/init.hh>
@@ -53,10 +52,6 @@ ggg::Add_entity
 			break;
 		case Entity_type::Machine:
 			throw std::invalid_argument("not implemented");
-		case Entity_type::Form:
-			store.open(Store::File::All, Store::Flag::Read_write);
-			this->do_execute<account>(store);
-			break;
 	}
 }
 
@@ -144,10 +139,7 @@ ggg::Add_entity
 
 template void ggg::Add_entity::do_execute<ggg::entity>(Store&);
 template void ggg::Add_entity::do_execute<ggg::account>(Store&);
-template void ggg::Add_entity::do_execute<ggg::form2>(Store&);
 template void ggg::Add_entity::add_interactive<ggg::entity>(Store&);
 template void ggg::Add_entity::add_interactive<ggg::account>(Store&);
-template void ggg::Add_entity::add_interactive<ggg::form2>(Store&);
 template void ggg::Add_entity::insert<ggg::entity>(Store&, std::string);
 template void ggg::Add_entity::insert<ggg::account>(Store&, std::string);
-template void ggg::Add_entity::insert<ggg::form2>(Store&, std::string);

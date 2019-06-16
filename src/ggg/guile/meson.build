@@ -1,7 +1,6 @@
 ggg_guile_src = files([
 	'account.cc',
 	'entity.cc',
-	'form.cc',
 	'group.cc',
 	'guile_traits.cc',
 	'init.cc',

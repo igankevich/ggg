@@ -16,7 +16,6 @@
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/cli/tmpfile.hh>
 #include <ggg/config.hh>
-#include <ggg/core/form.hh>
 #include <ggg/core/native.hh>
 #include <ggg/guile/guile_traits.hh>
 #include <ggg/guile/init.hh>
@@ -55,10 +54,6 @@ ggg::Edit_entity::execute()  {
 			break;
 		case Entity_type::Machine:
 			throw std::invalid_argument("not implemented");
-		case Entity_type::Form:
-			db.open(Database::File::All, Database::Flag::Read_write);
-			this->edit_objects<form2>(db);
-			break;
 	}
 }
 

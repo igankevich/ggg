@@ -7,7 +7,6 @@
 
 #include <ggg/core/account.hh>
 #include <ggg/core/entity.hh>
-#include <ggg/core/form.hh>
 #include <ggg/core/group.hh>
 #include <ggg/core/host.hh>
 #include <ggg/core/host_address.hh>
@@ -289,9 +288,6 @@ namespace ggg {
 		void erase(const Machine& rhs);
 		void remove_all_machines();
 
-		void insert(const form2& rhs);
-		void erase(const form2& rhs);
-		void update(const form2& ent);
 		statement_type forms();
 		statement_type find_form(const char* name);
 
@@ -324,7 +320,6 @@ namespace ggg {
 	typedef sqlite::row_iterator<ggg::account> account_iterator;
 	typedef sqlite::row_iterator<ggg::host> host_iterator;
 	typedef sqlite::row_iterator<ggg::Machine> machine_iterator;
-	typedef sqlite::row_iterator<ggg::form2> form_iterator;
 
 	class Transaction: public sqlite::immediate_transaction {
 

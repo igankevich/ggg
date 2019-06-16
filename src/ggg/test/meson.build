@@ -144,14 +144,3 @@ test(
 	suite: 'gui',
 	timeout: 600
 )
-
-test(
-	'ggg-form-test',
-	executable(
-		'ggg-form-test',
-		sources: ['ggg_form_test.cc'] + test_src,
-		dependencies: [unistdx, gtest_nomain, pam, ggg_crypt, ggg_core]
-	),
-	suite: 'cli',
-	timeout: 600
-)

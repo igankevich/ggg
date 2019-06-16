@@ -1107,24 +1107,6 @@ ggg::Database::remove_all_machines() {
 	this->_db.execute("DELETE FROM hosts");
 }
 
-void
-ggg::Database::insert(const form2& f) {
-	this->_db.execute("INSERT INTO forms (name,content) VALUES (?,?)", f.name(), f.content());
-}
-
-void
-ggg::Database::erase(const form2& f) {
-	this->_db.execute("DELETE FROM forms WHERE name=?", f.name());
-}
-
-void
-ggg::Database::update(const form2& f) {
-	this->_db.execute("UPDATE forms SET content=? WHERE name=?", f.content());
-	if (this->_db.num_rows_modified() == 0) {
-		throw std::invalid_argument("bad form");
-	}
-}
-
 auto
 ggg::Database::forms() -> statement_type {
 	return this->_db.prepare("SELECT name,content FROM forms");

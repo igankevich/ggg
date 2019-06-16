@@ -13,11 +13,9 @@ namespace ggg {
 
 		bool has(const entity& rhs);
 		bool has(const account& rhs);
-		bool has(const form2& rhs);
 
 		void add(const entity& rhs);
 		void add(const account& rhs);
-		void add(const form2& rhs);
 
 	};
 

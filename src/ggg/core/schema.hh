@@ -6,6 +6,7 @@ namespace {
 constexpr const int64_t entities_schema_version = 2;
 
 constexpr const char* entities_schema[entities_schema_version] = {
+
 R"(
 CREATE TABLE entities (
          id  INTEGER  NOT NULL  PRIMARY KEY  AUTOINCREMENT,
@@ -52,6 +53,7 @@ CREATE TABLE hierarchy (
 
 CREATE UNIQUE INDEX hierarchy_index ON hierarchy (child_id,parent_id);
 )",
+
 R"(
 CREATE TABLE hosts (
 	ethernet_address  BLOB  NOT NULL  PRIMARY KEY,
@@ -75,7 +77,7 @@ CREATE UNIQUE INDEX network_index ON networks (number);
 )"
 };
 
-constexpr const int64_t accounts_schema_version = 2;
+constexpr const int64_t accounts_schema_version = 1;
 
 constexpr const char* accounts_schema[accounts_schema_version] = {
 
@@ -85,13 +87,6 @@ CREATE TABLE accounts (
        password  TEXT,
 expiration_date  INTEGER,
           flags  INTEGER   NOT NULL  DEFAULT 0
-);
-)",
-
-R"(
-CREATE TABLE forms (
-           name  TEXT  NOT NULL  PRIMARY KEY,
-        content  TEXT
 );
 )"
 
