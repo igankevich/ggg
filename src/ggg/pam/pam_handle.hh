@@ -5,10 +5,9 @@
 #include <security/pam_modules.h>
 #include <security/pam_ext.h>
 
-#include "pam_call.hh"
 #include <ggg/core/account.hh>
-#include <ggg/core/form_type.hh>
-#include "conversation.hh"
+#include <ggg/pam/conversation.hh>
+#include <ggg/pam/pam_call.hh>
 
 namespace ggg {
 
@@ -19,8 +18,6 @@ namespace ggg {
 
 		::pam_handle_t* _pamh = nullptr;
 		bool _debug = false;
-		bool _allowregister = false;
-		form_type _type = form_type::console;
 		unsigned int _nrounds = 0;
 		/// Minimal password entropy (as computed by zxcvbn library).
 		double _minentropy = 30.0;
@@ -48,11 +45,6 @@ namespace ggg {
 		inline bool
 		debug() const noexcept {
 			return this->_debug;
-		}
-
-		inline bool
-		allows_registration() const noexcept {
-			return this->_allowregister;
 		}
 
 		inline double

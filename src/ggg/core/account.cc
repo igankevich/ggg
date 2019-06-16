@@ -263,35 +263,6 @@ ggg::account::clear() {
 }
 
 void
-ggg::account::set(const form_field& field, const char* value) {
-	const std::string& t = field.target();
-	if (t == "account.login") {
-		this->_login = value;
-	} else if (t == "account.lastchange") {
-		read_field(this->_lastchange, value, "bad lastchange");
-	} else if (t == "account.minchange") {
-		read_field(this->_minchange, value, "bad minchange");
-	} else if (t == "account.maxchange") {
-		read_field(this->_maxchange, value, "bad maxchange");
-	} else if (t == "account.warnchange") {
-		read_field(this->_warnchange, value, "bad warnchange");
-	} else if (t == "account.maxinactive") {
-		read_field(this->_maxinactive, value, "bad maxinactive");
-	} else if (t == "account.expire") {
-		auto fmt_expire = make_formatted(&this->_expire);
-		read_field(fmt_expire, value, "bad expire");
-	} else if (t == "account.flags") {
-		read_field(this->_flags, value, "bad flags");
-	} else if (t == "account.origin") {
-		// ignore for backward compatibility
-	} else {
-		std::stringstream msg;
-		msg << "bad field target: \"" << t << "\"";
-		throw std::invalid_argument(msg.str());
-	}
-}
-
-void
 ggg::operator>>(const sqlite::statement& in, account& rhs) {
 	rhs.clear();
 	sqlite::cstream cstr(in);

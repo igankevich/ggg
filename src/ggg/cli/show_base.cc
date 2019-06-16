@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <iostream>
 
 #include <ggg/cli/align_columns.hh>

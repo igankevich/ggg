@@ -3,8 +3,6 @@ ggg_core_src = files([
 	'account_flags.cc',
 	'database.cc',
 	'entity.cc',
-	'form_field.cc',
-	'form_type.cc',
 	'group.cc',
 	'host_address.cc',
 	'host.cc',

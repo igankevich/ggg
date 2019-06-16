@@ -13,7 +13,6 @@
 #include <ggg/core/account_flags.hh>
 #include <ggg/core/entity_format.hh>
 #include <ggg/core/eq_traits.hh>
-#include <ggg/core/form_field.hh>
 #include <ggg/core/guile_traits.hh>
 #include <ggg/sec/secure_string.hh>
 
@@ -271,9 +270,6 @@ namespace ggg {
 
 		void
 		clear();
-
-		void
-		set(const form_field& field, const char* value);
 
 	private:
 		void

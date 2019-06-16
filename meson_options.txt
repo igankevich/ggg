@@ -20,13 +20,6 @@ option(
 )
 
 option(
-	'with_gtk3',
-	type: 'boolean',
-	value: true,
-	description: 'build GTK3 registration form'
-)
-
-option(
 	'with_tests',
 	type: 'boolean',
 	value: true,

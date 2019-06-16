@@ -20,10 +20,6 @@ if with_cli
 	subdir('cli')
 endif
 
-if with_gtk3
-	subdir('regform')
-endif
-
 if with_tests
 	subdir('test')
 endif

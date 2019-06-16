@@ -19,7 +19,6 @@ ggg_src = files([
 	'lock_entity.cc',
 	'remove_entity.cc',
 	'reset_password.cc',
-	'sanitise.cc',
 	'search.cc',
 	'show_base.cc',
 	'show_duplicates.cc',

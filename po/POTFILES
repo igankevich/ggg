@@ -9,10 +9,6 @@ src/ggg/core/account_flags.hh
 src/ggg/core/entity.cc
 src/ggg/core/entity.hh
 src/ggg/core/eq_traits.hh
-src/ggg/core/form_field.cc
-src/ggg/core/form_field.hh
-src/ggg/core/form_type.cc
-src/ggg/core/form_type.hh
 src/ggg/core/fs.hh
 src/ggg/core/group.cc
 src/ggg/core/group.hh
@@ -44,7 +40,6 @@ src/ggg/ggg/expire_entity.cc
 src/ggg/ggg/expire_entity.hh
 src/ggg/ggg/find_entities.cc
 src/ggg/ggg/find_entities.hh
-src/ggg/ggg/ggg_form.cc
 src/ggg/ggg/ggg_main.cc
 src/ggg/ggg/heal.cc
 src/ggg/ggg/heal.hh
@@ -99,7 +94,6 @@ src/ggg/pam/pam_errc.hh
 src/ggg/pam/pam_ggg.cc
 src/ggg/pam/pam_handle.cc
 src/ggg/pam/pam_handle.hh
-src/ggg/regform/regform.cc
 src/ggg/sec/echo_guard.hh
 src/ggg/sec/secure_allocator.hh
 src/ggg/sec/secure_sstream.hh

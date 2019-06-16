@@ -181,43 +181,6 @@ ggg::basic_entity<Ch>
 template <class Ch>
 void
 ggg::basic_entity<Ch>
-::set(const form_field& field, const Ch* value) {
-	typedef std::basic_stringstream<char_type, traits_type> sstream_type;
-	const std::string& t = field.target();
-	if (t == "entity.name") {
-		this->_name = value;
-	} else if (t == "entity.realname") {
-		this->_realname = value;
-	} else if (t == "entity.homedir") {
-		this->_homedir = value;
-	} else if (t == "entity.shell") {
-		this->_shell = value;
-	} else if (t == "entity.uid") {
-		sstream_type str(value);
-		str >> this->_uid;
-		if (str.fail()) {
-			throw std::invalid_argument("bad uid");
-		}
-	} else if (t == "entity.gid") {
-		sstream_type str(value);
-		str >> this->_gid;
-		if (str.fail()) {
-			throw std::invalid_argument("bad gid");
-		}
-	} else if (t == "entity.origin") {
-		// ignore for backward compatibility
-	} else if (t == "entity.parent") {
-		this->_parent = value;
-	} else {
-		std::stringstream msg;
-		msg << "bad field target: \"" << t << "\"";
-		throw std::invalid_argument(msg.str());
-	}
-}
-
-template <class Ch>
-void
-ggg::basic_entity<Ch>
 ::merge(const basic_entity& rhs) {
 	if (this->_name != rhs._name) {
 		return;

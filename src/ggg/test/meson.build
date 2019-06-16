@@ -54,17 +54,6 @@ test(
 	suite: 'unit'
 )
 
-test(
-	'form-field-test',
-	executable(
-		'form-field-test',
-		sources: ['form_field_test.cc'],
-		include_directories: src,
-		dependencies: [unistdx, gtest, pam, ggg_crypt, ggg_core, ggg_pam]
-	),
-	suite: 'unit'
-)
-
 if with_nss and not etc.startswith('/')
 	foreach service : ['passwd', 'group', 'shadow', 'hosts']
 		name = '-'.join(['nss', service, 'test'])
@@ -133,14 +122,3 @@ if not etc.startswith('/')
 		timeout: 120
 	)
 endif
-
-test(
-	'ggg-dm-test',
-	executable(
-		'ggg-dm-test',
-		sources: ['ggg_dm_test.cc'] + test_src,
-		dependencies: [unistdx, gtest_nomain, pam, ggg_crypt, ggg_core]
-	),
-	suite: 'gui',
-	timeout: 600
-)

@@ -29,10 +29,6 @@ msgstr ""
 msgid "bad field type"
 msgstr ""
 
-#: src/ggg/core/form_type.cc:32
-msgid "bad form type"
-msgstr ""
-
 #: src/ggg/core/hierarchy.cc:320
 msgid "bad name"
 msgstr ""
@@ -123,7 +119,7 @@ msgid "Entity _ already exists."
 msgstr ""
 
 #: src/ggg/ggg/add_entity.cc:88 src/ggg/ggg/edit_entity.cc:85
-#: src/ggg/ggg/edit_entity.cc:171 src/ggg/ggg/ggg_form.cc:196
+#: src/ggg/ggg/edit_entity.cc:171
 msgid "Press any key to continue..."
 msgstr ""
 
@@ -153,27 +149,6 @@ msgstr ""
 
 #: src/ggg/ggg/edit_entity.cc:170 src/ggg/ggg/editor.cc:37
 msgid "bad exit code from editor"
-msgstr ""
-
-#: src/ggg/ggg/ggg_form.cc:38 src/ggg/ggg/ggg_form.cc:91
-#: src/ggg/ggg/ggg_form.cc:162
-msgid "reached maximum number of attempts"
-msgstr ""
-
-#: src/ggg/ggg/ggg_form.cc:66 src/ggg/regform/regform.cc:312
-msgid "repeat"
-msgstr ""
-
-#: src/ggg/ggg/ggg_form.cc:87
-msgid "Passwords do not match."
-msgstr ""
-
-#: src/ggg/ggg/ggg_form.cc:165 src/ggg/regform/regform.cc:115
-msgid "Registered successfully!"
-msgstr ""
-
-#: src/ggg/ggg/ggg_form.cc:183 src/ggg/regform/regform.cc:388
-msgid "unable to find form"
 msgstr ""
 
 #: src/ggg/ggg/ggg_main.cc:37
@@ -246,39 +221,4 @@ msgstr ""
 
 #: src/ggg/ggg/tmpfile.cc:53
 msgid "unable to find temporary directory"
-msgstr ""
-
-#: src/ggg/regform/regform.cc:90
-msgid "Please wait..."
-msgstr ""
-
-#. widgets
-#: src/ggg/regform/regform.cc:123 src/ggg/regform/regform.cc:324
-#: src/ggg/regform/regform.cc:574
-msgid "Register"
-msgstr ""
-
-#: src/ggg/regform/regform.cc:163
-msgid "the name is taken"
-msgstr ""
-
-#: src/ggg/regform/regform.cc:463
-msgid "User _ not found via NSS."
-msgstr ""
-
-#. widgets
-#: src/ggg/regform/regform.cc:516
-msgid "Login"
-msgstr ""
-
-#: src/ggg/regform/regform.cc:519
-msgid "Password"
-msgstr ""
-
-#: src/ggg/regform/regform.cc:524 src/ggg/regform/regform.cc:571
-msgid "Log in"
-msgstr ""
-
-#: src/ggg/regform/regform.cc:608
-msgid "please, specify username as the first argument"
 msgstr ""

@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.1.2',
+	version: '1.2.0',
 	meson_version: '>=0.46',
 	default_options: ['cpp_std=c++11'],
 	license: ['GPLv2']
@@ -34,7 +34,6 @@ datadir = join_paths(
 with_nss = get_option('with_nss')
 with_pam = get_option('with_pam')
 with_cli = get_option('with_cli')
-with_gtk3 = get_option('with_gtk3')
 with_tests = get_option('with_tests')
 with_man = get_option('with_man')
 b_sanitize = get_option('b_sanitize')
@@ -47,7 +46,6 @@ config = configuration_data()
 config.set('module_name', module_name)
 config.set('root_directory', join_paths(etc, module_name))
 config.set('ent_root_directory', join_paths(etc, module_name, 'ent'))
-config.set('reg_root_directory', join_paths(etc, module_name, 'reg'))
 config.set('shadow_file', join_paths(etc, module_name, 'acc', 'shadow'))
 config.set('shadow_file_new', join_paths(etc, module_name, 'acc', '.shadow.new'))
 config.set('salt_length', '16')
@@ -93,10 +91,6 @@ if with_man
 	subdir('man')
 endif
 
-run_target(
-	'init-integration-tests',
-	command: join_paths(meson.source_root(), 'scripts', 'init-integration-tests')
-)
 # cppcheck {{{
 cppcheck = find_program('cppcheck', required: false)
 if cppcheck.found()

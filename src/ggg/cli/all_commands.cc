@@ -18,7 +18,6 @@
 #include <ggg/cli/lock_entity.hh>
 #include <ggg/cli/remove_entity.hh>
 #include <ggg/cli/reset_password.hh>
-#include <ggg/cli/sanitise.hh>
 #include <ggg/cli/show_duplicates.hh>
 #include <ggg/cli/show_entity.hh>
 #include <ggg/cli/show_expired.hh>
@@ -76,9 +75,6 @@ namespace {
 		MAKE_COMMAND("expired", Show_expired),
 		MAKE_COMMAND("locked", Show_locked),
 		MAKE_COMMAND("inactive", Show_locked),
-		MAKE_COMMAND("sanitise", Sanitise),
-		MAKE_COMMAND("sanitize", Sanitise),
-		MAKE_COMMAND("clean", Sanitise),
 		MAKE_COMMAND("expunge", Expunge),
 		MAKE_COMMAND("purge", Expunge),
 		MAKE_COMMAND("attach", Attach),

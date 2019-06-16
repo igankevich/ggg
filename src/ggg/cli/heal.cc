@@ -39,43 +39,6 @@ namespace {
 	}
 
 	void
-	heal_forms(ggg::Database& db) {
-		using namespace ggg;
-		sys::idirtree tree(sys::path(GGG_ROOT, "reg"));
-		std::for_each(
-			sys::idirtree_iterator<sys::directory_entry>(tree),
-			sys::idirtree_iterator<sys::directory_entry>(),
-			[&db,&tree] (const sys::directory_entry& entry) {
-			    sys::path f(tree.current_dir(), entry.name());
-			    sys::file_status st(f);
-			    if (st.type() == sys::file_type::regular) {
-			        auto rstr = db.find_user(entry.name());
-					user_iterator first(rstr), last;
-			        sys::uid_type uid = root_uid;
-			        sys::gid_type gid = root_gid;
-			        if (first == last) {
-						ggg::native_message(
-							std::cerr,
-							"Unable to find form entity _.",
-							entry.name()
-						);
-					} else {
-			            uid = first->id();
-			            gid = first->gid();
-					}
-					File file{f};
-					file.owner(uid, gid);
-					file.mode(form_file_mode);
-				} else if (st.type() == sys::file_type::directory) {
-					Directory dir{f};
-					dir.owner(root_uid, root_gid);
-					dir.mode(0755);
-				}
-			}
-		);
-	}
-
-	void
 	heal_access_control_lists() {
 		using namespace ggg::acl;
 		using namespace ggg;
@@ -110,9 +73,6 @@ namespace {
 		Directory root{GGG_ROOT};
 		root.make(root_directory_mode);
 		root.owner(root_uid, root_gid);
-		Directory reg{sys::path(GGG_ROOT, "reg")};
-		reg.make(0755);
-		reg.owner(root_uid, root_gid);
 	}
 
 	void
@@ -143,7 +103,6 @@ ggg::Heal
 	heal_database();
 	read_gid = group_id(db, GGG_READ_GROUP);
 	write_gid = group_id(db, GGG_WRITE_GROUP);
-	heal_forms(db);
 	heal_access_control_lists();
 	if (num_errors > 0) {
 		throw quiet_error();

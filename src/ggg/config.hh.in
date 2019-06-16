@@ -5,7 +5,6 @@
 
 #define GGG_ROOT "@root_directory@"
 #define GGG_ENT_ROOT "@ent_root_directory@"
-#define GGG_REG_ROOT "@reg_root_directory@"
 #define GGG_SHADOW "@shadow_file@"
 #define GGG_SHADOW_NEW "@shadow_file_new@"
 #define GGG_SALT_LENGTH @salt_length@

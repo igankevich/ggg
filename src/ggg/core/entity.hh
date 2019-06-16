@@ -15,15 +15,12 @@
 
 #include <ggg/core/entity_format.hh>
 #include <ggg/core/eq_traits.hh>
-#include <ggg/core/form_field.hh>
 #include <ggg/core/guile_traits.hh>
 
 namespace ggg {
 
 	constexpr const sys::uid_type bad_uid = -1;
 	constexpr const sys::gid_type bad_gid = -1;
-
-	class form_field;
 
 	template <class Ch>
 	class basic_entity {
@@ -132,9 +129,6 @@ namespace ggg {
 
 		friend void
 		operator>>(const sqlite::statement& in, basic_entity<char>& rhs);
-
-		void
-		set(const form_field& field, const char_type* value);
 
 		inline sys::uid_type
 		id() const noexcept {

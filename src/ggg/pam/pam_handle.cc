@@ -136,10 +136,6 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
 		std::string arg(argv[i]);
 		if (arg == "debug") {
 			this->_debug = true;
-		} else if (arg == "register") {
-			this->_allowregister = true;
-		} else if (arg.find("type=") == 0) {
-			this->_type = from_string(arg.data() + 5);
 		} else if (arg.find("entropy=") == 0) {
 			this->_minentropy = std::strtod(arg.data() + 8, nullptr);
 		} else if (arg.find("rounds=") == 0) {
