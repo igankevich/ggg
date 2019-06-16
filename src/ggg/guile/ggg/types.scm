@@ -39,6 +39,12 @@
 
 (define flags logior)
 
+(define %entities 1)
+(define %accounts 2)
+(define %all (logior 1 2))
+(define %read-only 1)
+(define %read-write 2)
+
 ;; export all symbols
 (module-map
   (lambda (sym var)

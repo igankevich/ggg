@@ -146,17 +146,22 @@
 			(set-tm:year date (+ (tm:year date) 1))))
 	  (catch 'ggg-error
 			 (lambda ()
-			   (ggg-entity-insert
-				 (make <entity>
-					   #:name username
-					   #:real-name (string-join (list last-name first-name) " ")
-					   #:home-directory (string-join (list %home-prefix username) "/")
-					   #:shell %shell))
-			   (ggg-account-insert
-				 (make <account>
-					   #:name username
-					   #:password (password-hash password)
-					   #:expiration-date (car (mktime date))))
+			   (with-transaction
+				 (flags %entities %accounts) %read-write
+				 (lambda (store)
+				   (store-add
+					 store
+					 (make <entity>
+						   #:name username
+						   #:real-name (string-join (list last-name first-name) " ")
+						   #:home-directory (string-join (list %home-prefix username) "/")
+						   #:shell %shell))
+				   (store-add
+					 store
+					 (make <account>
+						   #:name username
+						   #:password (password-hash password)
+						   #:expiration-date (car (mktime date))))))
 			   (success-page title))
 			 (lambda (key . parameters)
 			   (set! (field-error (find-field "userName"))

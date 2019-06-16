@@ -4,6 +4,7 @@
 #include <ggg/core/machine.hh>
 #include <ggg/guile/guile_traits.hh>
 #include <ggg/guile/password.hh>
+#include <ggg/guile/store.hh>
 
 extern "C" void
 scm_init_ggg() {
@@ -13,4 +14,5 @@ scm_init_ggg() {
 	Guile_traits<::ggg::group>::define_procedures();
 	Guile_traits<account>::define_procedures();
 	password_define_procedures();
+	store_define_procedures();
 }

@@ -11,6 +11,14 @@
 
 namespace ggg {
 
+	inline void
+	guile_throw(const std::exception& err) {
+		scm_throw(
+			scm_from_utf8_symbol("ggg-error"),
+			scm_list_1(scm_from_utf8_string(err.what()))
+		);
+	}
+
 	template <class T>
 	struct Guile_traits {
 
@@ -33,10 +41,7 @@ namespace ggg {
 			try {
 				return insert0(args);
 			} catch (const std::exception& err) {
-				scm_throw(
-					scm_from_utf8_symbol("ggg-error"),
-					scm_list_1(scm_from_utf8_string(err.what()))
-				);
+				guile_throw(err);
 				return SCM_UNSPECIFIED;
 			}
 		}
@@ -93,6 +98,11 @@ namespace ggg {
 	define_procedure(const char *name, int req, int opt, int rest, Pointer ptr) {
 		scm_c_define_gsubr(name, req, opt, rest, reinterpret_cast<scm_t_subr>(ptr));
 		scm_c_export(name);
+	}
+
+	inline SCM
+	from_pointer(void* ptr) {
+		return scm_from_intptr_t(reinterpret_cast<intptr_t>(ptr));
 	}
 
 }

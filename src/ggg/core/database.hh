@@ -25,15 +25,15 @@ namespace ggg {
 	class Database {
 
 	public:
-		enum class File: int {
-			Entities=0,
-			Accounts=1,
-			All=-1
+		enum class File: uint64_t {
+			Entities=1,
+			Accounts=2,
+			All=std::numeric_limits<uint64_t>::max()
 		};
 
-		enum class Flag {
-			Read_only,
-			Read_write
+		enum class Flag: uint64_t {
+			Read_only=1,
+			Read_write=2
 		};
 
 
@@ -335,6 +335,24 @@ namespace ggg {
 		sqlite::immediate_transaction(db._db) {}
 
 	};
+
+	inline Database::File
+	operator|(Database::File a, Database::File b) {
+		using tp = std::underlying_type<Database::File>::type;
+		return Database::File(tp(a) | tp(b));
+	}
+
+	inline std::underlying_type<Database::File>::type
+	operator&(Database::File a, Database::File b) {
+		using tp = std::underlying_type<Database::File>::type;
+		return tp(a) & tp(b);
+	}
+
+	inline Database::File
+	operator~(Database::File a) {
+		using tp = std::underlying_type<Database::File>::type;
+		return Database::File(~tp(a));
+	}
 
 }
 

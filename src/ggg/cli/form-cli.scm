@@ -23,14 +23,19 @@
 		(begin
 		  (set-tm:mon date 1)
 		  (set-tm:year date (+ (tm:year date) 1))))
-	(ggg-entity-insert
-	  (make <entity>
-			#:name username
-			#:real-name (string-join (list last-name first-name) " ")
-			#:home-directory (string-join (list "/home/" username) "")
-			#:shell "/bin/bash"))
-	(ggg-account-insert
-	  (make <account>
-			#:name username
-			#:password (password-hash password)
-			#:expiration-date (car (mktime date))))))
+	(with-transaction
+	  (flags %entities %accounts) %read-write
+	  (lambda (store)
+		(store-add
+		  store
+		  (make <entity>
+				#:name username
+				#:real-name (string-join (list last-name first-name) " ")
+				#:home-directory (string-join (list "/home/" username) "")
+				#:shell "/bin/bash"))
+		(store-add
+		  store
+		  (make <account>
+				#:name username
+				#:password (password-hash password)
+				#:expiration-date (car (mktime date))))))))

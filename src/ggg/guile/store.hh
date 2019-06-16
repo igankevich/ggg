@@ -21,6 +21,8 @@ namespace ggg {
 
 	};
 
+	void store_define_procedures();
+
 }
 
 #endif // vim:filetype=cpp

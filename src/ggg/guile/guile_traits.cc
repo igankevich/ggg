@@ -4,6 +4,7 @@
 
 #include <ggg/core/native.hh>
 #include <ggg/guile/guile_traits.hh>
+#include <ggg/guile/store.hh>
 
 std::string
 ggg::escape_string(const std::string& s) {
@@ -53,3 +54,4 @@ ggg::file_to_string(std::string filename) {
 	}
 	return guile.str();
 }
+

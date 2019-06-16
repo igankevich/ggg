@@ -442,27 +442,35 @@ JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
 void
 ggg::Database::open(File file, Flag flag) {
 	this->close();
-	if (file == File::All) {
-		this->open(File::Entities, flag);
-		this->attach(File::Accounts, flag);
-	} else {
-		const auto& params = configurations[static_cast<int>(file)];
-		sqlite::file_flag flags = sqlite::file_flag::read_only;
-		if (flag == Flag::Read_write) {
-			flags = sqlite::file_flag::read_write | sqlite::file_flag::create;
-		}
-		this->_db.open(params.filename, flags);
-		int64_t version = this->_db.user_version();
-		if (version < params.schema_version) {
-			if (flag == Flag::Read_only) {
-				throw std::invalid_argument(
-					"unable to update schema of read-only database"
-				);
+	// open entities implicitly
+	if (file & ~File::Entities) { file = file | File::Entities; }
+	// convert flags to sqlite
+	sqlite::file_flag flags = sqlite::file_flag::read_only;
+	if (flag == Flag::Read_write) {
+		flags = sqlite::file_flag::read_write | sqlite::file_flag::create;
+	}
+	int nfiles = 2;
+	int nopen = 0;
+	for (int i=0; i<nfiles; ++i) {
+		if (!(file & File(1<<i))) { continue; }
+		const auto& params = configurations[i];
+		if (nopen == 0) {
+			this->_db.open(params.filename, flags);
+			++nopen;
+			int64_t version = this->_db.user_version();
+			if (version < params.schema_version) {
+				if (flag == Flag::Read_only) {
+					throw std::invalid_argument(
+						"unable to update schema of read-only database"
+					);
+				}
+				for (int64_t v=version; v<params.schema_version; ++v) {
+					this->_db.execute(params.schema[v]);
+					this->_db.user_version(v+1);
+				}
 			}
-			for (int64_t v=version; v<params.schema_version; ++v) {
-				this->_db.execute(params.schema[v]);
-				this->_db.user_version(v+1);
-			}
+		} else {
+			this->_db.attach(params.filename, params.name);
 		}
 	}
 	this->_db.foreign_keys(true);

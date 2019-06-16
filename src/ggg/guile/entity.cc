@@ -265,9 +265,7 @@ template <>
 SCM
 ggg::Guile_traits<ggg::entity>::insert0(SCM obj) {
 	Store store(Store::File::Entities, Store::Flag::Read_write);
-	Transaction tr(store);
 	store.add(from(obj));
-	tr.commit();
 	return SCM_UNSPECIFIED;
 }
 
