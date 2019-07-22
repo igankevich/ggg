@@ -75,7 +75,7 @@ ggg_crypt_version = '>= 0.1.1'
 sqlitex_version = '>= 0.4.4'
 
 unistdx = dependency('unistdx', version: unistdx_version)
-zxcvbn = dependency('zxcvbn')
+zxcvbn = cpp.find_library('zxcvbn')
 pam = cpp.find_library('pam')
 ggg_crypt = dependency('ggg-crypt', version: ggg_crypt_version)
 libacl = cpp.find_library('acl')

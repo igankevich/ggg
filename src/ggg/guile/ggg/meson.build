@@ -9,7 +9,7 @@ foreach name : ['types', 'forms']
 			'GUILE_LOAD_PATH=' + guile_load_path,
 			'GUILE_LOAD_COMPILED_PATH=' + guile_load_compiled_path,
 			'GUILE_AUTO_COMPILE=0',
-			find_program('guild2.2').path(),
+			find_program('guild').path(),
 			'compile',
 			'-o', join_paths(meson.current_build_dir(), '@BASENAME@.go'),
 			'@INPUT@',

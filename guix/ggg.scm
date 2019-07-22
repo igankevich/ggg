@@ -22,6 +22,7 @@
 			 (stables unistdx)
 			 (stables zxcvbn-c)
 			 (stables sqlitex)
+			 (stables ggg)
 			 ((guix licenses) #:select (gpl3+)))
 
 (package
@@ -32,17 +33,27 @@
 			(uri (string-append (getenv "HOME") "/repos/subordination/ggg"))
 			(sha256 (base32 "1vyw795jxg7d9ac7hlybink0jgkrybjcbzh1gcq69ck4ggqc6bxn"))))
   (build-system meson-build-system)
+  ;; https://issues.guix.info/issue/30756
+  (arguments
+	'(#:phases (modify-phases
+				 %standard-phases
+				 (add-before 'configure 'fix-paths
+							 (lambda _
+							   (unsetenv "C_INCLUDE_PATH")
+							   (unsetenv "CPLUS_INCLUDE_PATH"))))))
   (inputs `(("unistdx" ,unistdx)
 			("zxcvbn-c" ,zxcvbn-c)
 			("sqlite" ,sqlite)
 			("sqlitex" ,sqlitex)
-			("guile-2.0" ,guile-2.0)
+			("ggg-crypt" ,ggg-crypt)
+			("guile-2.2" ,guile-2.2)
 			("acl" ,acl)
 			("linux-pam" ,linux-pam)))
   (native-inputs `(("googletest" ,googletest)
 				   ("gettext-minimal" ,gettext-minimal)
-				   ("gcc:lib" ,gcc-9 "lib")
-				   ("gcc-toolchain" ,gcc-toolchain-9)
+				   ("glibc" ,glibc)
+				   ("gcc-9:lib" ,gcc-9 "lib")
+				   ("gcc-toolchain-9" ,gcc-toolchain-9)
 				   ("pkg-config" ,pkg-config)))
   (synopsis "Groups of groups of groups")
   (description "NSS and PAM modules that support arbitrary nesting of users and groups.")
