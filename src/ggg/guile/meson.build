@@ -18,7 +18,6 @@ ggg_guile_lib = shared_library(
 	dependencies: ggg_guile_deps,
 	version: meson.project_version(),
 	install: true,
-	install_dir: guile.get_pkgconfig_variable('extensiondir')
 )
 
 ggg_guile = declare_dependency(
