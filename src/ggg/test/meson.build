@@ -102,23 +102,23 @@ if with_pam
 	endif
 endif
 
-if not etc.startswith('/')
-	test(
-		'cli-test',
-		executable(
-			'cli-test',
-			ggg_guile_types,
-			sources: ['cli_test.cc'] + test_src,
-			dependencies: [unistdx, gtest_nomain, pam, ggg_crypt, ggg_core]
-		),
-		env: [
-			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
-			'GGG_UNPRIVILEDGED=1',
-			'GUILE_LOAD_PATH=' + guile_load_path,
-			'GUILE_LOAD_COMPILED_PATH=' + guile_load_compiled_path,
-			'GUILE_AUTO_COMPILE=0'
-		],
-		suite: 'unit',
-		timeout: 120
-	)
-endif
+#if not etc.startswith('/')
+#	test(
+#		'cli-test',
+#		executable(
+#			'cli-test',
+#			ggg_guile_types,
+#			sources: ['cli_test.cc'] + test_src,
+#			dependencies: [unistdx, gtest_nomain, pam, ggg_crypt, ggg_core]
+#		),
+#		env: [
+#			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
+#			'GGG_UNPRIVILEDGED=1',
+#			'GUILE_LOAD_PATH=' + guile_load_path,
+#			'GUILE_LOAD_COMPILED_PATH=' + guile_load_compiled_path,
+#			'GUILE_AUTO_COMPILE=0'
+#		],
+#		suite: 'unit',
+#		timeout: 120
+#	)
+#endif
