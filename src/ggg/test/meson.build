@@ -54,7 +54,7 @@ test(
 	suite: 'unit'
 )
 
-if with_nss
+if with_nss and not state_dir.startswith('/')
 	foreach service : ['passwd', 'group', 'shadow', 'hosts']
 		name = '-'.join(['nss', service, 'test'])
 		test(
@@ -75,7 +75,7 @@ endif
 
 if with_pam
 	pam_wrapper = dependency('pam_wrapper', required: false)
-	if pam_wrapper.found() and b_sanitize != 'address'
+	if pam_wrapper.found() and not state_dir.startswith('/') and b_sanitize != 'address'
 		ld_preload_items = ['libpam_wrapper.so']
 		ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
 		test(
