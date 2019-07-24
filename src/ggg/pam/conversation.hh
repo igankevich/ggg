@@ -144,6 +144,8 @@ namespace ggg {
 		_size(n)
 		{}
 
+		responses(const responses&) = delete;
+
 		inline
 		responses(responses&& rhs):
 		_resp(rhs._resp),

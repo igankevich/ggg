@@ -41,32 +41,22 @@ developer = get_option('developer')
 
 module_name = 'ggg'
 executable_name = 'ggg'
-etc = get_option('sysconfdir')
+state_dir = get_option('sharedstatedir')
 config = configuration_data()
 config.set('module_name', module_name)
-config.set('root_directory', join_paths(etc, module_name))
-config.set('ent_root_directory', join_paths(etc, module_name, 'ent'))
-config.set('shadow_file', join_paths(etc, module_name, 'acc', 'shadow'))
-config.set('shadow_file_new', join_paths(etc, module_name, 'acc', '.shadow.new'))
+config.set('state_dir', join_paths(state_dir, module_name))
 config.set('salt_length', '16')
 config.set('executable_name', executable_name)
 config.set('version', debug_build ? 'debug' : meson.project_version())
 config.set('file_editor', 'vi')
 config.set('catalog', 'ggg')
-config.set('cache_directory', join_paths(get_option('localstatedir'), 'cache'))
 config.set('read_group', 'ggg.auth')
 config.set('write_group', 'ggg.write')
 config.set('max_depth', 1000)
-config.set('entities_path', join_paths(etc, module_name, 'entities.sqlite3'))
-config.set('accounts_path', join_paths(etc, module_name, 'accounts.sqlite3'))
+config.set('entities', 'entities.sqlite3')
+config.set('accounts', 'accounts.sqlite3')
 config.set('min_id', 1000)
 config.set('overflow_id', 65534)
-if developer
-	config.set('guile_root', join_paths(meson.source_root(), 'src', 'ggg', 'cli'))
-else
-	config.set('guile_root',
-		join_paths(get_option('prefix'), get_option('datadir'), meson.project_name()))
-endif
 config.set('default_home_prefix', '/home')
 config.set('default_shell', '/bin/sh')
 

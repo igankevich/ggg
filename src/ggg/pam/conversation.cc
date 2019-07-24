@@ -20,7 +20,7 @@ ggg::conversation::converse(int type, const char* text) {
 	m.emplace_back(type, text);
 	responses r(m.size());
 	this->converse(m, r);
-	return std::move(r);
+	return r;
 }
 
 std::ostream&
