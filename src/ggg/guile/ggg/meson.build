@@ -18,5 +18,7 @@ foreach name : ['types', 'forms']
 	set_variable('ggg_guile_' + name, tmp)
 endforeach
 
-guile_sitedir = guile.get_pkgconfig_variable('sitedir')
-install_data(['types.scm','forms.scm'], install_dir: join_paths(guile_sitedir, 'ggg'))
+install_data(
+	['types.scm','forms.scm'],
+	install_dir: join_paths(get_option('prefix'), get_option('datadir'), 'ggg')
+)
