@@ -1,7 +1,9 @@
+v = guile.version().split('.')
+guile_version = '.'.join([v[0],v[1]])
 scm_directory = join_paths(get_option('prefix'), get_option('datadir'), 'guile',
-    'site', guile.version())
+    'site', guile_version)
 go_directory = join_paths(get_option('prefix'), get_option('libdir'), 'guile',
-    guile.version(), 'site-ccache')
+    guile_version, 'site-ccache')
 
 types_scm = configuration_data()
 types_scm.set('prefix', join_paths(get_option('prefix'), get_option('libdir')))
