@@ -138,203 +138,207 @@ namespace chrono {
 }
 }
 
-template <>
-char
-ggg::Entity_header<ggg::account>::delimiter() {
-	return ':';
-}
+namespace ggg {
 
-template <>
-void
-ggg::Entity_header<ggg::account>::write_header(
-	std::ostream& out,
-	width_container width,
-	char delim
-) {
-	if (!width) {
-		out << "LOGIN:unused:MINCHANGE:MAXCHANGE:WARNCHANGE:MAXINACTIVE:EXPIRE\n";
-		return;
-	}
-	const char d[4] = {' ', delim, ' ', 0};
-	out << std::left << std::setw(width[0]) << "LOGIN" << d
-		<< std::left << std::setw(width[3]) << "MINCHANGE" << d
-		<< std::left << std::setw(width[4]) << "MAXCHANGE" << d
-		<< std::left << std::setw(width[5]) << "WARNCHANGE" << d
-		<< std::left << std::setw(width[6]) << "MAXINACTIVE" << d
-		<< std::left << std::setw(width[7]) << "EXPIRE" << '\n';
-}
+    template <>
+    char
+    Entity_header<ggg::account>::delimiter() {
+        return ':';
+    }
 
-template <>
-void
-ggg::Entity_header<ggg::account>::write_body(
-	std::ostream& out,
-	const account& ent,
-	width_container width,
-	entity_format fmt,
-	char delim
-) {
-	const char d[4] = {' ', delim, ' ', 0};
-	out << std::left << std::setw(width[0]) << ent._login << d;
-	if (fmt == entity_format::batch) {
-		out << std::left << std::setw(width[3]) << ent._minchange << d
-			<< std::left << std::setw(width[4]) << ent._maxchange << d
-			<< std::left << std::setw(width[5]) << ent._warnchange << d
-			<< std::left << std::setw(width[6]) << ent._maxinactive << d;
-	}
-	out << std::left << std::setw(width[7]) << make_formatted(&ent._expire) << '\n';
-}
+    template <>
+    void
+    Entity_header<ggg::account>::write_header(
+        std::ostream& out,
+        width_container width,
+        char delim
+    ) {
+        if (!width) {
+            out << "LOGIN:unused:MINCHANGE:MAXCHANGE:WARNCHANGE:MAXINACTIVE:EXPIRE\n";
+            return;
+        }
+        const char d[4] = {' ', delim, ' ', 0};
+        out << std::left << std::setw(width[0]) << "LOGIN" << d
+            << std::left << std::setw(width[3]) << "MINCHANGE" << d
+            << std::left << std::setw(width[4]) << "MAXCHANGE" << d
+            << std::left << std::setw(width[5]) << "WARNCHANGE" << d
+            << std::left << std::setw(width[6]) << "MAXINACTIVE" << d
+            << std::left << std::setw(width[7]) << "EXPIRE" << '\n';
+    }
 
-template <>
-std::istream&
-ggg::Entity_header<ggg::account>::read_body(
-	std::istream& in,
-	account& ent,
-	entity_format fmt
-) {
-	std::istream::sentry s(in);
-	if (!s) {
-		return in;
-	}
-	ent.clear();
-	auto fmt_expire = make_formatted(&ent._expire);
-	if (fmt == entity_format::batch) {
-		bits::read_all_fields(
-			in, account::delimiter,
-			ent._login,
-			ent._minchange,
-			ent._maxchange,
-			ent._warnchange,
-			ent._maxinactive,
-			fmt_expire
-		);
-	} else {
-		bits::read_all_fields(
-			in, account::delimiter,
-			ent._login,
-			fmt_expire
-		);
-	}
-	if (in.eof()) {
-		in.clear();
-	}
-	return in;
-}
+    template <>
+    void
+    Entity_header<ggg::account>::write_body(
+        std::ostream& out,
+        const account& ent,
+        width_container width,
+        entity_format fmt,
+        char delim
+    ) {
+        const char d[4] = {' ', delim, ' ', 0};
+        out << std::left << std::setw(width[0]) << ent._login << d;
+        if (fmt == entity_format::batch) {
+            out << std::left << std::setw(width[3]) << ent._minchange << d
+                << std::left << std::setw(width[4]) << ent._maxchange << d
+                << std::left << std::setw(width[5]) << ent._warnchange << d
+                << std::left << std::setw(width[6]) << ent._maxinactive << d;
+        }
+        out << std::left << std::setw(width[7]) << make_formatted(&ent._expire) << '\n';
+    }
 
-template <>
-ggg::account
-ggg::Guile_traits<ggg::account>::from(SCM obj) {
-	auto s_password = scm_from_latin1_symbol("password");
-	account acc;
-	acc._login = to_string(slot(obj, "name"));
-	acc._expire = account::clock_type::from_time_t(scm_to_uint64(slot(obj, "expiration-date")));
-	if (slot_is_bound(obj, s_password)) {
-		auto s = to_string(slot(obj, s_password));
-		acc.set_password(account::string(s.begin(), s.end()));
-	}
-	acc._flags = account_flags(scm_to_uint64(slot(obj, "flags")));
-	return acc;
-}
+    template <>
+    std::istream&
+    Entity_header<ggg::account>::read_body(
+        std::istream& in,
+        account& ent,
+        entity_format fmt
+    ) {
+        std::istream::sentry s(in);
+        if (!s) {
+            return in;
+        }
+        ent.clear();
+        auto fmt_expire = make_formatted(&ent._expire);
+        if (fmt == entity_format::batch) {
+            bits::read_all_fields(
+                in, account::delimiter,
+                ent._login,
+                ent._minchange,
+                ent._maxchange,
+                ent._warnchange,
+                ent._maxinactive,
+                fmt_expire
+            );
+        } else {
+            bits::read_all_fields(
+                in, account::delimiter,
+                ent._login,
+                fmt_expire
+            );
+        }
+        if (in.eof()) {
+            in.clear();
+        }
+        return in;
+    }
 
-template <>
-SCM
-ggg::Guile_traits<ggg::account>::to(const account& acc) {
-	static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
-	return scm_call(
-		scm_variable_ref(scm_c_lookup("make")),
-		scm_variable_ref(scm_c_lookup("<account>")),
-		scm_from_latin1_keyword("name"),
-		scm_from_utf8_string(acc.name().data()),
-		scm_from_latin1_keyword("expiration-date"),
-		scm_from_uint64(account::clock_type::to_time_t(acc.expire())),
-		scm_from_latin1_keyword("flags"),
-		scm_from_uint64(downcast(acc.flags())),
-		SCM_UNDEFINED
-	);
-}
+    template <>
+    ggg::account
+    Guile_traits<ggg::account>::from(SCM obj) {
+        auto s_password = scm_from_latin1_symbol("password");
+        account acc;
+        acc._login = to_string(slot(obj, "name"));
+        acc._expire = account::clock_type::from_time_t(scm_to_uint64(slot(obj, "expiration-date")));
+        if (slot_is_bound(obj, s_password)) {
+            auto s = to_string(slot(obj, s_password));
+            acc.set_password(account::string(s.begin(), s.end()));
+        }
+        acc._flags = account_flags(scm_to_uint64(slot(obj, "flags")));
+        return acc;
+    }
 
-template <>
-void
-ggg::Guile_traits<ggg::account>::to_guile(std::ostream& guile, const array_type& objects) {
-	const char format[] = "%Y-%m-%dT%H:%M:%S%z";
-	if (objects.empty()) { guile << "(list)"; return; }
-	std::string indent(2, ' ');
-	guile << "(list";
-	for (const auto& acc : objects) {
-		char expire_str[128] {};
-		auto t = account::clock_type::to_time_t(acc.expire());
-		std::strftime(expire_str, sizeof(expire_str), format, std::localtime(&t));
-		std::string flags_str;
-		if (acc.flags() & account_flags::suspended) {
-			flags_str += " SUSPENDED";
-		}
-		if (acc.flags() & account_flags::password_has_expired) {
-			flags_str += " PASSWORD_HAS_EXPIRED";
-		}
-		guile << '\n' << indent;
-		guile << "(make <account>\n";
-		guile << indent << "      #:name " << escape_string(acc.name()) << '\n';
-		guile << indent << "      #:expiration-date (time-point "
-			<< escape_string(expire_str) << ")\n";
-		guile << indent << "      #:flags (flags" << flags_str << "))";
-	}
-	guile << ")\n";
-}
+    template <>
+    SCM
+    Guile_traits<ggg::account>::to(const account& acc) {
+        static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
+        return scm_call(
+            scm_variable_ref(scm_c_lookup("make")),
+            scm_variable_ref(scm_c_lookup("<account>")),
+            scm_from_latin1_keyword("name"),
+            scm_from_utf8_string(acc.name().data()),
+            scm_from_latin1_keyword("expiration-date"),
+            scm_from_uint64(account::clock_type::to_time_t(acc.expire())),
+            scm_from_latin1_keyword("flags"),
+            scm_from_uint64(downcast(acc.flags())),
+            SCM_UNDEFINED
+        );
+    }
 
-template <>
-SCM
-ggg::Guile_traits<ggg::account>::insert0(SCM obj) {
-	Store store(Store::File::All, Store::Flag::Read_write);
-	store.add(from(obj));
-	return SCM_UNSPECIFIED;
-}
+    template <>
+    void
+    Guile_traits<ggg::account>::to_guile(std::ostream& guile, const array_type& objects) {
+        const char format[] = "%Y-%m-%dT%H:%M:%S%z";
+        if (objects.empty()) { guile << "(list)"; return; }
+        std::string indent(2, ' ');
+        guile << "(list";
+        for (const auto& acc : objects) {
+            char expire_str[128] {};
+            auto t = account::clock_type::to_time_t(acc.expire());
+            std::strftime(expire_str, sizeof(expire_str), format, std::localtime(&t));
+            std::string flags_str;
+            if (acc.flags() & account_flags::suspended) {
+                flags_str += " SUSPENDED";
+            }
+            if (acc.flags() & account_flags::password_has_expired) {
+                flags_str += " PASSWORD_HAS_EXPIRED";
+            }
+            guile << '\n' << indent;
+            guile << "(make <account>\n";
+            guile << indent << "      #:name " << escape_string(acc.name()) << '\n';
+            guile << indent << "      #:expiration-date (time-point "
+                << escape_string(expire_str) << ")\n";
+            guile << indent << "      #:flags (flags" << flags_str << "))";
+        }
+        guile << ")\n";
+    }
 
-template <>
-SCM
-ggg::Guile_traits<ggg::account>::remove(SCM obj) {
-	Store store(Store::File::All, Store::Flag::Read_write);
-	Transaction tr(store);
-	store.erase(from(obj));
-	tr.commit();
-	return SCM_UNSPECIFIED;
-}
+    template <>
+    SCM
+    Guile_traits<ggg::account>::insert0(SCM obj) {
+        Store store(Store::File::All, Store::Flag::Read_write);
+        store.add(from(obj));
+        return SCM_UNSPECIFIED;
+    }
 
-template <>
-auto
-ggg::Guile_traits<ggg::account>::select(std::string name) -> array_type {
-	Store store(Store::File::Accounts, Store::Flag::Read_only);
-	auto st = store.find_account(name.data());
-	return array_type(account_iterator(st), account_iterator());
-}
+    template <>
+    SCM
+    Guile_traits<ggg::account>::remove(SCM obj) {
+        Store store(Store::File::All, Store::Flag::Read_write);
+        Transaction tr(store);
+        store.erase(from(obj));
+        tr.commit();
+        return SCM_UNSPECIFIED;
+    }
 
-template <>
-SCM
-ggg::Guile_traits<ggg::account>::find() {
-	Store store(Store::File::Accounts, Store::Flag::Read_only);
-	auto st = store.accounts();
-	account_iterator first(st), last;
-	SCM list = SCM_EOL;
-	while (first != last) {
-		list = scm_append(scm_list_2(list, scm_list_1(to(*first))));
-		++first;
-	}
-	return list;
-}
+    template <>
+    auto
+    Guile_traits<ggg::account>::select(std::string name) -> array_type {
+        Store store(Store::File::Accounts, Store::Flag::Read_only);
+        auto st = store.find_account(name.data());
+        return array_type(account_iterator(st), account_iterator());
+    }
 
-template <>
-auto
-ggg::Guile_traits<ggg::account>::generate(const string_array& names) -> array_type {
-	std::vector<account> result;
-	result.reserve(names.size());
-	for (const auto& name : names) {
-		result.emplace_back(name.data());
-	}
-	return result;
-}
+    template <>
+    SCM
+    Guile_traits<ggg::account>::find() {
+        Store store(Store::File::Accounts, Store::Flag::Read_only);
+        auto st = store.accounts();
+        account_iterator first(st), last;
+        SCM list = SCM_EOL;
+        while (first != last) {
+            list = scm_append(scm_list_2(list, scm_list_1(to(*first))));
+            ++first;
+        }
+        return list;
+    }
 
-template <>
-void
-ggg::Guile_traits<ggg::account>::define_procedures() {
-	define_procedure("ggg-account-insert", 1, 0, 0, (scm_t_subr)&insert);
-	define_procedure("ggg-account-delete", 1, 0, 0, (scm_t_subr)&remove);
-	define_procedure("ggg-accounts", 0, 0, 0, (scm_t_subr)&find);
+    template <>
+    auto
+    Guile_traits<ggg::account>::generate(const string_array& names) -> array_type {
+        std::vector<account> result;
+        result.reserve(names.size());
+        for (const auto& name : names) {
+            result.emplace_back(name.data());
+        }
+        return result;
+    }
+
+    template <>
+    void
+    Guile_traits<ggg::account>::define_procedures() {
+        define_procedure("ggg-account-insert", 1, 0, 0, (scm_t_subr)&insert);
+        define_procedure("ggg-account-delete", 1, 0, 0, (scm_t_subr)&remove);
+        define_procedure("ggg-accounts", 0, 0, 0, (scm_t_subr)&find);
+    }
+
 }
