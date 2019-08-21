@@ -69,7 +69,7 @@ done
 %defattr(0755,root,root,0755)
 %{_bindir}/ggg
 %{_libdir}/libnss_ggg.so*
-%{_libdir}/libggg_core.so*
+%{_libdir}/libggg-core.so*
 %{_libdir}/security/pam_ggg.so
 %{guile_extension_dir}/libggg-guile.so*
 %defattr(0644,root,root,0755)

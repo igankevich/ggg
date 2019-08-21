@@ -15,7 +15,7 @@ ggg_core_src = files([
 ggg_core_deps = [unistdx,sqlitex,sqlite]
 
 ggg_core_lib = shared_library(
-	'ggg_core',
+	'ggg-core',
 	sources: ggg_core_src,
 	include_directories: src,
 	dependencies: ggg_core_deps,

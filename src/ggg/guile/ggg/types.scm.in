@@ -1,7 +1,7 @@
 (define-module (ggg types))
 (use-modules (oop goops))
 
-(load-extension "libggg-guile.so" "scm_init_ggg")
+(load-extension "@prefix@/libggg-guile.so" "scm_init_ggg")
 
 (define-class <machine> ()
   (name #:init-keyword #:name #:accessor machine-name)

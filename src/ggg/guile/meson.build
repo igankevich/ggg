@@ -26,6 +26,6 @@ ggg_guile = declare_dependency(
 	dependencies: ggg_guile_deps
 )
 
-guile_load_path = meson.current_source_dir()
+guile_load_path = ':'.join([meson.current_source_dir(),meson.current_build_dir()])
 guile_load_compiled_path = meson.current_build_dir()
 subdir('ggg')
