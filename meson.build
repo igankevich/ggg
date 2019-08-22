@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.2.6',
+	version: '1.2.7',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
 	license: ['GPLv3']
@@ -68,7 +68,6 @@ unistdx = dependency('unistdx', version: unistdx_version)
 zxcvbn = cpp.find_library('zxcvbn')
 pam = cpp.find_library('pam')
 ggg_crypt = dependency('ggg-crypt', version: ggg_crypt_version)
-libacl = cpp.find_library('acl')
 sqlite = dependency('sqlite3')
 sqlitex = dependency('sqlitex', version: sqlitex_version)
 guile = dependency('guile-2.2')

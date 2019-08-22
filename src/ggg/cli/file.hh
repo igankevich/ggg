@@ -1,9 +1,9 @@
 #ifndef GGG_CLI_FILE_HH
 #define GGG_CLI_FILE_HH
 
-#include <ggg/core/acl.hh>
 #include <unistdx/base/check>
 #include <unistdx/fs/file_mode>
+#include <unistdx/ipc/identity>
 
 namespace ggg {
 
@@ -19,15 +19,6 @@ namespace ggg {
 		inline void
 		mode(sys::file_mode m) {
 			UNISTDX_CHECK(::chmod(filename, m));
-		}
-
-		inline void
-		mode(
-			ggg::acl::access_control_list& acl,
-			ggg::acl::acl_type tp = ggg::acl::access_acl
-		) {
-			acl.add_mask();
-			acl.write(filename, tp);
 		}
 
 	};

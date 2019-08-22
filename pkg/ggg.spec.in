@@ -8,7 +8,6 @@ Source0:        @name@-%{version}.tar.xz
 
 Requires: ggg-crypt @ggg_crypt_version@
 Requires: guile22
-Requires: libacl
 Requires: sqlitex @sqlitex_version@
 Requires: unistdx @unistdx_version@
 Requires: zxcvbn-c
@@ -17,7 +16,6 @@ BuildRequires: gcc-c++
 BuildRequires: gettext
 BuildRequires: gtest-devel
 BuildRequires: guile22-devel
-BuildRequires: libacl-devel
 BuildRequires: meson
 BuildRequires: pam-devel
 BuildRequires: pam_wrapper

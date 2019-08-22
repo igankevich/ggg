@@ -39,23 +39,18 @@ namespace {
 	}
 
 	void
-	heal_access_control_lists() {
-		using namespace ggg::acl;
+	heal_owner_permissions() {
 		using namespace ggg;
-		access_control_list root(root_directory_mode);
-		access_control_list entities(entities_file_mode);
-		access_control_list accounts(accounts_file_mode);
-		if (write_gid != ggg::bad_gid) {
-			entities.add_group(write_gid, permission_type::read_write);
-			accounts.add_group(write_gid, permission_type::read_write);
-			root.add_group(write_gid, permission_type::read_write_execute);
-		}
-		if (read_gid != ggg::bad_gid) {
-			accounts.add_group(read_gid, permission_type::read);
-		}
-		File{GGG_ENTITIES_PATH}.mode(entities);
-		File{GGG_ACCOUNTS_PATH}.mode(accounts);
-		Directory{GGG_ROOT}.mode(root);
+        auto gid = (write_gid != bad_gid) ? write_gid : root_gid;
+		File entities{GGG_ENTITIES_PATH};
+        entities.owner(root_uid, gid);
+        entities.mode(entities_file_mode);
+		File accounts{GGG_ACCOUNTS_PATH};
+        accounts.owner(root_uid, gid);
+        accounts.mode(accounts_file_mode);
+		Directory root{GGG_ROOT};
+        root.owner(root_uid, gid);
+        root.mode(root_directory_mode);
 	}
 
 	void
@@ -73,13 +68,6 @@ namespace {
 		Directory root{GGG_ROOT};
 		root.make(root_directory_mode);
 		root.owner(root_uid, root_gid);
-	}
-
-	void
-	heal_database() {
-		using namespace ggg;
-		File{GGG_ENTITIES_PATH}.owner(root_uid, root_gid);
-		File{GGG_ACCOUNTS_PATH}.owner(root_uid, root_gid);
 	}
 
 }
@@ -100,10 +88,9 @@ ggg::Heal
 		native_sentence(std::cerr, "Entities are broken. ");
 		error_message(std::cerr, err);
 	}
-	heal_database();
 	read_gid = group_id(db, GGG_READ_GROUP);
 	write_gid = group_id(db, GGG_WRITE_GROUP);
-	heal_access_control_lists();
+	heal_owner_permissions();
 	if (num_errors > 0) {
 		throw quiet_error();
 	}
