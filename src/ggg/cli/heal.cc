@@ -17,10 +17,9 @@ namespace {
 
 	size_t num_errors = 0;
 
-	sys::file_mode root_directory_mode(0755);
-	sys::file_mode entities_file_mode(0644);
-	sys::file_mode accounts_file_mode(0000);
-	sys::file_mode form_file_mode(0600);
+	sys::file_mode root_directory_mode(0775);
+	sys::file_mode entities_file_mode(0664);
+	sys::file_mode accounts_file_mode(0660);
 
 	sys::gid_type read_gid = ggg::bad_gid;
 	sys::gid_type write_gid = ggg::bad_gid;
