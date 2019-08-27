@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.2.13',
+	version: '1.2.14',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
 	license: ['GPLv3']

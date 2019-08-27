@@ -25,8 +25,7 @@ namespace {
 		using namespace ggg;
 		int fd = scm_to_int32(scm_fileno(port));
 		if (fd != STDIN_FILENO) {
-			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
-				scm_from_utf8_string("only port=0 is supported"));
+            guile_throw("only port=0 is supported");
 			return SCM_UNSPECIFIED;
 		}
 		echo_guard g(fd);

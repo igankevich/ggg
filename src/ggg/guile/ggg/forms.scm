@@ -12,6 +12,10 @@
 		 (lambda () (getgrnam name))
 		 (lambda (key . parameters) #f)))
 
+(define-public (get-password-newline port)
+  (let ((pw (get-password port)))
+    (begin (newline) pw)))
+
 (define-public (input-value prompt read validate)
   (put-string (current-output-port) prompt)
   (let ((value (read (current-input-port))))
@@ -24,7 +28,7 @@
 
 (define-public (input-password prompt entropy)
   (input-value prompt
-			   get-password
+			   get-password-newline
 			   (lambda (value) (check-password value entropy))))
 
 (define-public (input-username prompt regex)
