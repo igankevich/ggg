@@ -54,13 +54,12 @@ namespace {
             account_iterator first(rstr), last;
             if (first == last) { return scm_from_bool(false); }
             account acc = *first;
-            db.close();
             auto encrypted = encrypt(to_string(password).data(), acc.password_prefix());
             return scm_from_bool(acc.password() == encrypted);
         } catch (const std::exception& err) {
-            scm_throw(scm_from_utf8_symbol("ggg-error"), scm_from_utf8_string(err.what()));
-            return SCM_UNSPECIFIED;
+			guile_throw(err);
         }
+        return SCM_UNSPECIFIED;
     }
 
 }

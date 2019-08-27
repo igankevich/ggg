@@ -443,7 +443,7 @@ void
 ggg::Database::open(File file, Flag flag) {
 	this->close();
 	// open entities implicitly
-	if (file & ~File::Entities) { file = file | File::Entities; }
+	// if (file & ~File::Entities) { file = file | File::Entities; }
 	// convert flags to sqlite
 	sqlite::file_flag flags = sqlite::file_flag::read_only;
 	if (flag == Flag::Read_write) {
