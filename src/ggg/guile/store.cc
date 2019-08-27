@@ -33,6 +33,21 @@ namespace {
 		return SCM_UNSPECIFIED;
 	}
 
+	SCM
+    store_tie(SCM store_in, SCM a, SCM b) {
+		using namespace ggg;
+		auto ptr = scm_to_intptr_t(store_in);
+		Store& store = *reinterpret_cast<Store*>(ptr);
+		if (scm_is_integer(a) && scm_is_integer(b)) {
+			store.tie(scm_to_uint32(a), scm_to_uint32(b));
+		} else if (is_string(a) && is_string(b)) {
+			store.tie(to_string(a).data(), to_string(b).data());
+		} else {
+            guile_throw("ggg-entity-tie needs either two IDs or two names");
+		}
+		return SCM_UNSPECIFIED;
+	}
+
 }
 
 
@@ -63,5 +78,6 @@ void
 ggg::store_define_procedures() {
 	define_procedure("with-transaction", 3, 0, 0, with_transaction);
 	define_procedure("store-add", 2, 0, 0, store_add);
+	define_procedure("store-tie", 3, 0, 0, store_tie);
 }
 

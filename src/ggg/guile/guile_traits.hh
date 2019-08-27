@@ -12,11 +12,16 @@
 namespace ggg {
 
 	inline void
-	guile_throw(const std::exception& err) {
+	guile_throw(const char* message) {
 		scm_throw(
 			scm_from_utf8_symbol("ggg-error"),
-			scm_list_1(scm_from_utf8_string(err.what()))
+			scm_list_1(scm_from_utf8_string(message))
 		);
+	}
+
+	inline void
+	guile_throw(const std::exception& err) {
+        guile_throw(err.what());
 	}
 
 	template <class T>
