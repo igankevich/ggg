@@ -53,7 +53,7 @@ namespace {
             auto rstr = db.find_account(to_string(username).data());
             account_iterator first(rstr), last;
             if (first == last) { return scm_from_bool(false); }
-            auto acc = *first;
+            account acc = *first;
             db.close();
             auto encrypted = encrypt(to_string(password).data(), acc.password_prefix());
             return scm_from_bool(acc.password() == encrypted);
