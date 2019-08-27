@@ -2,6 +2,7 @@
 #include <string>
 
 #include <ggg/core/account.hh>
+#include <ggg/core/database.hh>
 #include <ggg/ctl/password.hh>
 #include <ggg/guile/guile_traits.hh>
 #include <ggg/guile/password.hh>
@@ -44,12 +45,30 @@ namespace {
 		return scm_from_utf8_string(encrypted.data());
 	}
 
+	SCM
+	authenticate(SCM username, SCM password) {
+		using namespace ggg;
+        try {
+            Database db(Database::File::Accounts, Database::Flag::Read_only);
+            auto rstr = db.find_account(to_string(username).data());
+            account_iterator first(rstr), last;
+            if (first == last) { return scm_from_bool(false); }
+            db.close();
+            auto encrypted = encrypt(to_string(password).data(), first->password_prefix());
+            return scm_from_bool(first->password() == encrypted);
+        } catch (const std::exception& err) {
+            scm_throw(scm_from_utf8_symbol("ggg-error"), scm_from_utf8_string(err.what()));
+            return SCM_UNSPECIFIED;
+        }
+    }
+
 }
 
 void
 ggg::password_define_procedures() {
-	define_procedure("check-password", 2, 0, 0, check_password);
-	define_procedure("get-password", 1, 0, 0, get_password);
-	define_procedure("password-hash", 1, 0, 0, password_hash);
+    define_procedure("check-password", 2, 0, 0, check_password);
+    define_procedure("get-password", 1, 0, 0, get_password);
+    define_procedure("password-hash", 1, 0, 0, password_hash);
+    define_procedure("authenticate", 2, 0, 0, authenticate);
 }
 
