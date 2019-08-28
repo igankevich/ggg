@@ -76,10 +76,11 @@ ggg::operator<<(std::ostream& out, const password_match& rhs) {
 }
 
 void
-ggg::validate_password(const char* new_password, double min_entropy) {
+ggg::validate_password(secure_string new_password, double min_entropy) {
+    if (new_password.empty()) { throw std::invalid_argument("Empty password"); }
 	// TODO consider user name
 	ggg::password_match match;
-	if (match.find(new_password) &&
+	if (match.find(new_password.data()) &&
 		match.entropy() < min_entropy) {
 		std::stringstream msg;
 		msg << "Weak password. Password strength is "

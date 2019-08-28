@@ -80,7 +80,7 @@ namespace ggg {
 	operator<<(std::ostream& out, const password_match& rhs);
 
 	void
-	validate_password(const char* new_password, double min_entropy);
+	validate_password(secure_string new_password, double min_entropy);
 
 }
 

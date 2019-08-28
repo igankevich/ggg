@@ -155,16 +155,14 @@ int pam_sm_chauthtok(
 	if (flags & PAM_PRELIM_CHECK) {
 		ret = pam_errc::success;
 	} else if (flags & PAM_UPDATE_AUTHTOK) {
+        using namespace ggg;
 		try {
 			pamh.set_password_type("GGG");
 			const char* user = pamh.get_user();
 			pamh.debug("changing password for user \"%s\"", user);
-			ggg::Database db(
-				ggg::Database::File::Accounts,
-				ggg::Database::Flag::Read_write
-			);
-			ggg::account acc = find_account(db, user);
-			const ggg::account::time_point now = ggg::account::clock_type::now();
+			Database db(Database::File::Accounts, Database::Flag::Read_write);
+			account acc = find_account(db, user);
+			const account::time_point now = account::clock_type::now();
 			if (acc.has_expired(now)) {
 				pamh.debug(
 					"account \"%s\" has expired %ld day(s) ago",
@@ -181,21 +179,24 @@ int pam_sm_chauthtok(
 				);
 				throw_pam_error(pam_errc::authtok_error);
 			}
-			if (::getuid() != 0) {
+            auto uid = ::getuid();
+			if (uid != 0) {
 				const char* old = pamh.get_old_password();
 				check_password(old, acc);
 			}
 			const char* new_password = pamh.get_password(pam_errc::authtok_error);
-			try {
-				ggg::validate_password(new_password, pamh.min_entropy());
-			} catch (const std::exception& err) {
-				pamh.error("%s", err.what());
-				throw_pam_error(pam_errc::authtok_error);
-			}
-			ggg::secure_string encrypted = ggg::encrypt(
+			if (uid != 0) {
+			    try {
+			    	validate_password(new_password, pamh.min_entropy());
+			    } catch (const std::exception& err) {
+			    	pamh.error("%s", err.what());
+			    	throw_pam_error(pam_errc::authtok_error);
+			    }
+            }
+			secure_string encrypted = encrypt(
 				new_password,
-				ggg::account::password_prefix(
-					ggg::generate_salt(),
+				account::password_prefix(
+					generate_salt(),
 					pamh.password_id(),
 					pamh.num_rounds()
 				)
