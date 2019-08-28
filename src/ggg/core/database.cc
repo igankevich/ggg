@@ -652,6 +652,20 @@ ggg::Database::erase(const char* name) {
 	}
 }
 
+void
+ggg::Database::erase(const entity& ent) {
+	this->_db.execute(sql_delete_entity_by_name, ent.name());
+	auto nrows = this->_db.num_rows_modified();
+	if (nrows == 0) { throw std::invalid_argument("bad entity"); }
+}
+
+void
+ggg::Database::erase(const account& acc) {
+	this->_db.execute("DELETE FROM accounts WHERE name=?", acc.name());
+	auto nrows = this->_db.num_rows_modified();
+	if (nrows == 0) { throw std::invalid_argument("bad account"); }
+}
+
 sys::uid_type
 ggg::Database::find_id_nocheck(const char* name) {
 	sys::uid_type id = bad_uid;

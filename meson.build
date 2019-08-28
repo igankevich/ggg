@@ -1,10 +1,10 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.2.14',
+	version: '1.2.15',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
-	license: ['GPLv3']
+	license: ['gpl3+']
 )
 
 cpp = meson.get_compiler('cpp')

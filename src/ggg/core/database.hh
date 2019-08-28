@@ -151,7 +151,7 @@ namespace ggg {
 
 		void insert(const entity& ent);
 		void erase(const char* name);
-		inline void erase(const entity& ent) { this->erase(ent.name().data()); }
+		void erase(const entity& ent);
 
 		sys::uid_type
 		find_id(const char* name);
@@ -192,7 +192,7 @@ namespace ggg {
 
 		void insert(const account& acc);
 		void update(const account& acc);
-		inline void erase(const account& acc) { this->erase(acc.name().data()); }
+		void erase(const account& acc);
 
 		void
 		set_password(const account& acc);
