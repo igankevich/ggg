@@ -17,7 +17,9 @@ ggg::Attach::execute()  {
 	const auto& child = args().front();
 	const auto& parent = args().back();
 	Database db(Database::File::Entities, Database::Flag::Read_write);
+    Transaction tr(db);
 	db.attach(child.data(), parent.data());
+    tr.commit();
 }
 
 void
@@ -34,9 +36,9 @@ ggg::Detach::execute() {
 	}
 	remove_duplicate_arguments();
 	Database db(Database::File::Entities, Database::Flag::Read_write);
-	for (const auto& child : args()) {
-		db.detach(child.data());
-	}
+    Transaction tr(db);
+	for (const auto& child : args()) { db.detach(child.data()); }
+    tr.commit();
 }
 
 void
@@ -58,7 +60,9 @@ ggg::Tie::execute()  {
 	const auto& child = args().front();
 	const auto& parent = args().back();
 	Database db(Database::File::Entities, Database::Flag::Read_write);
+    Transaction tr(db);
 	db.tie(child.data(), parent.data());
+    tr.commit();
 }
 
 void

@@ -958,11 +958,9 @@ ggg::Database::attach(sys::uid_type child_id, sys::gid_type parent_id) {
 
 void
 ggg::Database::attach(const char* child, const char* parent) {
-	Transaction tr(*this);
 	auto child_id = find_id(child);
 	auto parent_id = find_id(parent);
 	attach(child_id, parent_id);
-	tr.commit();
 }
 
 void
