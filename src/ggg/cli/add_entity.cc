@@ -43,11 +43,11 @@ ggg::Add_entity
 	Store store;
 	switch (this->_type) {
 		case Entity_type::Entity:
-			store.open(Store::File::All, Store::Flag::Read_write);
+			store.open(Store::File::Entities, Store::Flag::Read_write);
 			this->do_execute<entity>(store);
 			break;
 		case Entity_type::Account:
-			store.open(Store::File::Accounts, Store::Flag::Read_write);
+			store.open(Store::File::All, Store::Flag::Read_write);
 			this->do_execute<account>(store);
 			break;
 		case Entity_type::Machine:
