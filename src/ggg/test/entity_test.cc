@@ -13,8 +13,8 @@ TEST_P(EntityTest, Read) {
 	EXPECT_TRUE(tmp.good());
 	EXPECT_EQ("root", ent.name());
 	EXPECT_EQ("x", ent.password());
-	EXPECT_EQ(12, ent.id());
-	EXPECT_EQ(34, ent.gid());
+	EXPECT_EQ(12u, ent.id());
+	EXPECT_EQ(34u, ent.gid());
 	#ifdef __linux__
 	EXPECT_EQ("root", ent.real_name());
 	#else
@@ -111,8 +111,8 @@ TEST(EntityTest, ReadEntryWithMissingFields) {
 	EXPECT_TRUE(tmp.good());
 	EXPECT_EQ("mygroup", ent.name());
 	EXPECT_EQ("x", ent.password());
-	EXPECT_EQ(2000, ent.id());
-	EXPECT_EQ(2000, ent.gid());
+	EXPECT_EQ(2000u, ent.id());
+	EXPECT_EQ(2000u, ent.gid());
 	EXPECT_EQ("/home", ent.home());
 	EXPECT_EQ("", ent.shell());
 }

@@ -77,7 +77,7 @@ TEST(Account2, GetRounds) {
 	EXPECT_EQ("6", acc.password_id());
 	EXPECT_EQ("hMYBE0GG", acc.password_salt());
 	EXPECT_EQ("$6$rounds=1000$hMYBE0GG$", acc.password_prefix());
-	EXPECT_EQ(1000, acc.num_rounds());
+	EXPECT_EQ(1000u, acc.num_rounds());
 }
 
 TEST(Account2, ExpireActive) {
