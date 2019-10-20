@@ -2,7 +2,8 @@
 #define SECURE_STRING_HH
 
 #include <string>
-#include "secure_allocator.hh"
+
+#include <ggg/sec/secure_allocator.hh>
 
 namespace ggg {
 

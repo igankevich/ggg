@@ -23,25 +23,21 @@ namespace ggg {
 	class account {
 
 	public:
-		typedef char char_type;
-		typedef std::char_traits<char_type> traits_type;
-		typedef std::basic_string<char_type, traits_type> string_type;
-		typedef secure_string string;
-		typedef std::chrono::system_clock clock_type;
-		typedef clock_type::time_point time_point;
-		typedef clock_type::duration duration;
-		typedef const size_t columns_type[9];
-		typedef sys::path path_type;
+		using char_type = char;
+		using traits_type = std::char_traits<char_type>;
+		using string_type = std::basic_string<char_type, traits_type>;
+		using string = string_type;
+		using clock_type = std::chrono::system_clock;
+		using time_point = clock_type::time_point;
+		using duration = clock_type::duration;
+		using path_type = sys::path;
 
 		static constexpr const char delimiter = ':';
 		static constexpr const char separator = '$';
 
 	private:
 		string_type _login;
-		string_type _id;
-		string_type _salt;
-		unsigned int _nrounds = 0;
-		string _password;
+		string_type _password;
 		time_point _lastchange = time_point(duration::zero());
 		duration _minchange = duration::zero();
 		duration _maxchange = duration::zero();
@@ -137,20 +133,9 @@ namespace ggg {
 
 		inline const string_type& login() const noexcept { return this->_login; }
 		inline const string_type& name() const noexcept { return this->_login; }
-		inline const string& password() const noexcept { return this->_password; }
-		inline const string_type& password_id() const noexcept { return this->_id; }
-		inline unsigned int num_rounds() const noexcept { return this->_nrounds; }
-		inline const string_type& password_salt() const noexcept { return this->_salt; }
-		string_type password_prefix() const;
+		inline const string_type& password() const noexcept { return this->_password; }
 
-		static string_type
-		password_prefix(
-			const string_type& new_salt,
-			const string_type& new_id,
-			unsigned int nrounds
-		);
-
-		void set_password(string&& rhs);
+		void set_password(string_type&& rhs);
 
 		inline bool has_password() const noexcept { return !this->_password.empty(); }
 		inline time_point last_change() const noexcept { return this->_lastchange; }

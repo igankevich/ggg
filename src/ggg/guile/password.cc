@@ -37,11 +37,9 @@ namespace {
 	SCM
 	password_hash(SCM password) {
 		using namespace ggg;
-		std::string password_id = "6";
-		unsigned int num_rounds = 0;
-		auto prefix = account::password_prefix(generate_salt(), password_id, num_rounds);
-		auto encrypted = encrypt(to_string(password).data(), prefix);
-		return scm_from_utf8_string(encrypted.data());
+        init_sodium();
+        sha512_password_hash hash;
+		return scm_from_utf8_string(hash(to_secure_string(password)).data());
 	}
 
 	SCM
@@ -53,8 +51,11 @@ namespace {
             account_iterator first(rstr), last;
             if (first == last) { return scm_from_bool(false); }
             account acc = *first;
-            auto encrypted = encrypt(to_string(password).data(), acc.password_prefix());
-            return scm_from_bool(acc.password() == encrypted);
+            init_sodium();
+            return scm_from_bool(sha512_password_hash::verify(
+                acc.password(),
+                to_secure_string(password)
+            ));
         } catch (const std::exception& err) {
 			guile_throw(err);
         }

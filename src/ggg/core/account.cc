@@ -163,7 +163,6 @@ ggg::operator>>(std::istream& in, account& rhs) {
 			rhs._expire,
 			rhs._flags
 		);
-		rhs.parse_password();
 		if (in.eof()) {
 			in.clear();
 		}
@@ -182,65 +181,7 @@ ggg::account::copy_from(const account& rhs) {
 }
 
 void
-ggg::account::parse_password() {
-	if (this->_password.empty() || this->_password.front() != separator) {
-		return;
-	}
-	typedef string::traits_type traits_type;
-	const char rounds[] = "rounds=";
-	const ptrdiff_t rounds_size = sizeof(rounds) - 1;
-	const char* first = this->_password.data() + 1;
-	const char* last = this->_password.data() + this->_password.size();
-	const char* prev = first;
-	size_t field_no = 0;
-	while (first != last) {
-		if (*first == separator) {
-			if (field_no == 0) {
-				this->_id.assign(prev, first);
-			} else if (0 == traits_type::compare(
-				rounds,
-				prev,
-				std::min(rounds_size, first-prev)
-			)) {
-                std::stringstream str(string_type(prev+rounds_size, first));
-				str >> this->_nrounds;
-			} else {
-				this->_salt.assign(prev, first);
-			}
-			++field_no;
-			prev = first;
-			++prev;
-		}
-		++first;
-	}
-}
-
-ggg::account::string_type
-ggg::account::password_prefix() const {
-	return password_prefix(this->_salt, this->_id, this->_nrounds);
-}
-
-ggg::account::string_type
-ggg::account::password_prefix(
-	const string_type& new_salt,
-	const string_type& new_id,
-	unsigned int nrounds
-) {
-	std::stringstream s;
-	s.put(separator);
-	s << new_id;
-	s.put(separator);
-	if (nrounds > 0) {
-		s << "rounds=" << nrounds;
-		s.put(separator);
-	}
-	s << new_salt;
-	s.put(separator);
-	return s.str();
-}
-
-void
-ggg::account::set_password(string&& rhs) {
+ggg::account::set_password(string_type&& rhs) {
 	this->_password = std::move(rhs);
 	this->_lastchange = clock_type::now();
 	this->unsetf(account_flags::password_has_expired);
@@ -249,9 +190,6 @@ ggg::account::set_password(string&& rhs) {
 void
 ggg::account::clear() {
 	this->_login.clear();
-	this->_id.clear();
-	this->_salt.clear();
-	this->_nrounds = 0;
 	this->_password.clear();
 	this->_lastchange = time_point(duration::zero());
 	this->_minchange = duration::zero();
@@ -269,6 +207,5 @@ ggg::operator>>(const sqlite::statement& in, account& rhs) {
 	uint64_t flags = 0;
 	cstr >> rhs._login >> rhs._password >> rhs._expire >> flags;
 	rhs._flags = static_cast<account_flags>(flags);
-	rhs.parse_password();
 }
 

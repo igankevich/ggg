@@ -52,11 +52,6 @@ namespace ggg {
 			return this->_minentropy;
 		}
 
-		static inline std::string
-		password_id() noexcept {
-			return "6";
-		}
-
 		const char*
 		get_user() const;
 

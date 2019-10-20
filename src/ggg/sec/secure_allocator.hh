@@ -2,6 +2,7 @@
 #define SECURE_ALLOCATOR_HH
 
 #include <memory>
+#include <stdexcept>
 
 #include <sodium.h>
 
@@ -54,6 +55,15 @@ namespace ggg {
         inline void unlock(pointer p, size_type n) { ::sodium_munlock(p, n); }
 
 	};
+
+    inline void shred(void* p, size_t n) { ::sodium_memzero(p, n); }
+
+    inline void
+    init_sodium() {
+        if (::sodium_init() == -1) {
+            throw std::runtime_error("failed to init libsodium");
+        }
+    }
 
 }
 

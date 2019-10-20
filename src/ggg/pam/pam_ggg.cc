@@ -49,11 +49,8 @@ namespace {
 
 	void
 	check_password(const char* password, const ggg::account& acc) {
-		ggg::secure_string encrypted = ggg::encrypt(
-			password,
-			acc.password_prefix()
-		);
-		if (acc.password() != encrypted) {
+        ggg::init_sodium();
+		if (!ggg::sha512_password_hash::verify(acc.password(), password)) {
 			throw_pam_error(pam_errc::permission_denied);
 		}
 	}
@@ -66,17 +63,16 @@ int pam_sm_authenticate(
 	int argc,
 	const char **argv
 ) {
+    using namespace ggg;
+    using ggg::pam_handle;
 	pam_errc ret = pam_errc::ignore;
-	ggg::pam_handle pamh(orig, argc, argv);
+	pam_handle pamh(orig, argc, argv);
 	try {
 		const char* user = pamh.get_user();
 		pamh.debug("authenticating user \"%s\"", user);
 		const char* password = pamh.get_password(pam_errc::authentication_error);
-		ggg::Database db(
-			ggg::Database::File::Accounts,
-			ggg::Database::Flag::Read_only
-		);
-		ggg::account acc = find_account(db, user);
+		Database db(Database::File::Accounts, Database::Flag::Read_only);
+		account acc = find_account(db, user);
 		db.close();
 		check_password(password, acc);
 		pamh.set_account(acc);
@@ -98,17 +94,19 @@ int pam_sm_acct_mgmt(
 	int argc,
 	const char **argv
 ) {
+    using namespace ggg;
+    using ggg::pam_handle;
 	pam_errc ret = pam_errc::ignore;
-	ggg::pam_handle pamh(orig, argc, argv);
-	ggg::account other;
+	pam_handle pamh(orig, argc, argv);
+	account other;
 	try {
 		const char* user = pamh.get_user();
 		pamh.debug("checking account \"%s\"", user);
-		const ggg::account* acc = nullptr;
+		const account* acc = nullptr;
 		try {
 			acc = pamh.get_account();
 		} catch (const std::system_error& err) {
-			ggg::Database db(ggg::Database::File::Accounts);
+			Database db(Database::File::Accounts);
 			other = find_account(db, user);
 			acc = &other;
 		}
@@ -116,7 +114,7 @@ int pam_sm_acct_mgmt(
 			pamh.debug("account \"%s\" has been suspended", user);
 			throw_pam_error(pam_errc::permission_denied);
 		}
-		const ggg::account::time_point now = ggg::account::clock_type::now();
+		const account::time_point now = account::clock_type::now();
 		if (acc->has_expired(now)) {
 			pamh.debug(
 				"account \"%s\" has expired %ld day(s) ago",
@@ -193,15 +191,10 @@ int pam_sm_chauthtok(
 			    	throw_pam_error(pam_errc::authtok_error);
 			    }
             }
-			secure_string encrypted = encrypt(
-				new_password,
-				account::password_prefix(
-					generate_salt(),
-					pamh.password_id(),
-					pamh.num_rounds()
-				)
-			);
-			acc.set_password(std::move(encrypted));
+            init_sodium();
+            sha512_password_hash hash;
+            hash.num_rounds(pamh.num_rounds());
+			acc.set_password(hash(new_password));
 			db.set_password(acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = pam_errc::success;

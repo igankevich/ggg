@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <ggg/core/guile_traits.hh>
+#include <ggg/sec/secure_string.hh>
 
 namespace ggg {
 
@@ -72,6 +73,16 @@ namespace ggg {
 	to_string(SCM s) {
 		char* tmp = scm_to_utf8_string(s);
 		std::string ret(tmp);
+		std::free(tmp);
+		return ret;
+	}
+
+	inline secure_string
+	to_secure_string(SCM s) {
+        // TODO not secure at all
+		char* tmp = scm_to_utf8_string(s);
+		secure_string ret(tmp);
+        shred(tmp, ret.size()*sizeof(char));
 		std::free(tmp);
 		return ret;
 	}
