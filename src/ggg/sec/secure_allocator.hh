@@ -8,6 +8,15 @@
 
 namespace ggg {
 
+    inline void
+    init_sodium() {
+        if (::sodium_init() == -1) {
+            throw std::runtime_error("failed to init libsodium");
+        }
+    }
+
+    inline void shred(void* p, size_t n) { ::sodium_memzero(p, n); }
+
 	template<class T>
 	class secure_allocator: public std::allocator<T> {
 
@@ -28,9 +37,10 @@ namespace ggg {
 		pointer
 		allocate(size_type n, const_pointer hint=0) {
 			n *= sizeof(T);
+            init_sodium();
 			pointer p = static_cast<pointer>(::sodium_malloc(n));
             if (!p) { throw std::bad_alloc(); }
-			//lock(p, n);
+			lock(p, n);
 			return p;
 		}
 
@@ -38,7 +48,7 @@ namespace ggg {
 		deallocate(pointer p, size_type n) {
 			n *= sizeof(T);
 			shred(p, n);
-			//unlock(p, n);
+			unlock(p, n);
 			free(p);
 		}
 
@@ -49,21 +59,11 @@ namespace ggg {
 
 	private:
 
-        inline void shred(pointer p, size_type n) { ::sodium_memzero(p, n); }
         inline void free(pointer p) { ::sodium_free(p); }
         inline void lock(pointer p, size_type n) { ::sodium_mlock(p, n); }
         inline void unlock(pointer p, size_type n) { ::sodium_munlock(p, n); }
 
 	};
-
-    inline void shred(void* p, size_t n) { ::sodium_memzero(p, n); }
-
-    inline void
-    init_sodium() {
-        if (::sodium_init() == -1) {
-            throw std::runtime_error("failed to init libsodium");
-        }
-    }
 
 }
 
