@@ -6,6 +6,7 @@
 #include <ggg/ctl/password.hh>
 #include <ggg/guile/guile_traits.hh>
 #include <ggg/guile/password.hh>
+#include <ggg/sec/argon2.hh>
 #include <ggg/sec/echo_guard.hh>
 
 namespace {
@@ -38,7 +39,7 @@ namespace {
 	password_hash(SCM password) {
 		using namespace ggg;
         init_sodium();
-        sha512_password_hash hash;
+        argon2_password_hash hash;
 		return scm_from_utf8_string(hash(to_secure_string(password)).data());
 	}
 
@@ -52,8 +53,23 @@ namespace {
             if (first == last) { return scm_from_bool(false); }
             account acc = *first;
             init_sodium();
-            return scm_from_bool(sha512_password_hash::verify(
+            return scm_from_bool(verify_password(
                 acc.password(),
+                to_secure_string(password)
+            ));
+        } catch (const std::exception& err) {
+			guile_throw(err);
+        }
+        return SCM_UNSPECIFIED;
+    }
+
+	SCM
+	scm_verify_password(SCM hashed_password, SCM password) {
+		using namespace ggg;
+        try {
+            init_sodium();
+            return scm_from_bool(verify_password(
+                to_string(hashed_password),
                 to_secure_string(password)
             ));
         } catch (const std::exception& err) {
@@ -70,5 +86,6 @@ ggg::password_define_procedures() {
     define_procedure("get-password", 1, 0, 0, get_password);
     define_procedure("password-hash", 1, 0, 0, password_hash);
     define_procedure("authenticate", 2, 0, 0, authenticate);
+    define_procedure("verify-password", 2, 0, 0, scm_verify_password);
 }
 

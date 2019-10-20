@@ -7,6 +7,7 @@
 #include <ggg/core/database.hh>
 #include <ggg/ctl/password.hh>
 #include <ggg/pam/pam_handle.hh>
+#include <ggg/sec/argon2.hh>
 #include <ggg/sec/secure_string.hh>
 
 using ggg::throw_pam_error;
@@ -48,12 +49,21 @@ namespace {
 	}
 
 	void
-	check_password(const char* password, const ggg::account& acc) {
-        ggg::init_sodium();
-		if (!ggg::sha512_password_hash::verify(acc.password(), password)) {
-			throw_pam_error(pam_errc::permission_denied);
-		}
+	check_password(const std::string& hashed_password, const char* password) {
+        if (!ggg::verify_password(hashed_password, password)) {
+            throw_pam_error(pam_errc::permission_denied);
+        }
 	}
+
+    void
+    migrate_to_argon2(ggg::account& acc, const char* password) {
+        using namespace ggg;
+		Database db(Database::File::Accounts, Database::Flag::Read_write);
+        argon2_password_hash hash;
+        acc.set_password(hash(password));
+        db.update(acc);
+        db.close();
+    }
 
 }
 
@@ -74,7 +84,13 @@ int pam_sm_authenticate(
 		Database db(Database::File::Accounts, Database::Flag::Read_only);
 		account acc = find_account(db, user);
 		db.close();
-		check_password(password, acc);
+		check_password(acc.password(), password);
+        std::string argon2_prefix = "$argon2id$";
+        if (acc.password().compare(0, argon2_prefix.size(), argon2_prefix) != 0) {
+            pamh.debug("migrating to argon2 for user \"%s\"", user);
+            migrate_to_argon2(acc, password);
+            pamh.debug("successfully migrated to argon2 for user \"%s\"", user);
+        }
 		pamh.set_account(acc);
 		pamh.debug("successfully authenticated user \"%s\"", user);
 		ret = pam_errc::success;
@@ -180,7 +196,7 @@ int pam_sm_chauthtok(
             auto uid = ::getuid();
 			if (uid != 0) {
 				const char* old = pamh.get_old_password();
-				check_password(old, acc);
+				check_password(acc.password(), old);
 			}
 			const char* new_password = pamh.get_password(pam_errc::authtok_error);
 			if (uid != 0) {
@@ -192,8 +208,7 @@ int pam_sm_chauthtok(
 			    }
             }
             init_sodium();
-            sha512_password_hash hash;
-            hash.num_rounds(pamh.num_rounds());
+            argon2_password_hash hash;
 			acc.set_password(hash(new_password));
 			db.set_password(acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);

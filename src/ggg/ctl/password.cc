@@ -9,12 +9,32 @@
 #include <ggg/config.hh>
 #include <ggg/core/account.hh>
 #include <ggg/ggg_crypt.hh>
+#include <ggg/sec/argon2.hh>
 #include <ggg/sec/random.hh>
 
 namespace {
+
 	using engine_type =
         std::independent_bits_engine<ggg::unpredictable_random_engine,
         8, unsigned char>;
+
+    std::string
+    algorithm(const std::string& hashed_password) {
+        if (hashed_password.empty() || hashed_password.front() != '$') { return "6"; }
+        auto first = hashed_password.begin();
+        auto last = hashed_password.end();
+        auto from = ++first;
+        std::string id("6");
+        while (first != last) {
+            if (*first == '$') {
+                id.assign(from, first);
+                break;
+            }
+            ++first;
+        }
+        return id;
+    }
+
 }
 
 std::string
@@ -140,5 +160,18 @@ ggg::validate_password(const secure_string& new_password, double min_entropy) {
 			<< "/100.";
 		throw std::invalid_argument(msg.str());
 	}
+}
+
+bool
+ggg::verify_password(const std::string& hashed_password, const char* password) {
+    auto algo = algorithm(hashed_password);
+    bool success = false;
+    if (algo == "6") {
+        success = ggg::sha512_password_hash::verify(hashed_password, password);
+    } else if (algo == "argon2id") {
+        ggg::init_sodium();
+        success = ggg::argon2_password_hash::verify(hashed_password, password);
+    }
+    return success;
 }
 

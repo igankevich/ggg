@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.2.18',
+	version: '1.3.0',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
 	license: ['gpl3+']
@@ -25,11 +25,7 @@ else
 	add_global_link_arguments('-rdynamic', language: 'cpp')
 endif
 
-datadir = join_paths(
-	get_option('prefix'),
-	get_option('datadir'),
-	meson.project_name()
-)
+datadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
 
 with_nss = get_option('with_nss')
 with_pam = get_option('with_pam')
@@ -38,6 +34,28 @@ with_tests = get_option('with_tests')
 with_man = get_option('with_man')
 b_sanitize = get_option('b_sanitize')
 developer = get_option('developer')
+
+unistdx_version = '>= 0.5.4'
+ggg_crypt_version = '>= 0.1.1'
+sqlitex_version = '>= 0.4.4'
+
+unistdx = dependency('unistdx', version: unistdx_version)
+zxcvbn = cpp.find_library('zxcvbn')
+pam = cpp.find_library('pam')
+ggg_crypt = dependency('ggg-crypt', version: ggg_crypt_version)
+sqlite = dependency('sqlite3')
+sqlitex = dependency('sqlitex', version: sqlitex_version)
+guile = dependency('guile-2.2')
+libsodium = dependency('libsodium')
+
+v = guile.version().split('.')
+guile_version = '.'.join([v[0],v[1]])
+site_directory = join_paths(get_option('prefix'), get_option('datadir'),
+    'guile', 'site', guile_version)
+scm_directory = join_paths(site_directory, 'ggg')
+site_ccache_directory = join_paths(get_option('prefix'), get_option('libdir'),
+    'guile', guile_version, 'site-ccache')
+go_directory = join_paths(site_ccache_directory, 'ggg')
 
 module_name = 'ggg'
 executable_name = 'ggg'
@@ -59,19 +77,8 @@ config.set('min_id', 1000)
 config.set('overflow_id', 65534)
 config.set('default_home_prefix', '/home')
 config.set('default_shell', '/bin/sh')
-
-unistdx_version = '>= 0.5.4'
-ggg_crypt_version = '>= 0.1.1'
-sqlitex_version = '>= 0.4.4'
-
-unistdx = dependency('unistdx', version: unistdx_version)
-zxcvbn = cpp.find_library('zxcvbn')
-pam = cpp.find_library('pam')
-ggg_crypt = dependency('ggg-crypt', version: ggg_crypt_version)
-sqlite = dependency('sqlite3')
-sqlitex = dependency('sqlitex', version: sqlitex_version)
-guile = dependency('guile-2.2')
-libsodium = dependency('libsodium')
+config.set('guile_load_path', site_directory)
+config.set('guile_load_compiled_path', site_ccache_directory)
 
 subdir('src')
 subdir('po')

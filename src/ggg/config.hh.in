@@ -18,5 +18,7 @@
 #define GGG_OVERFLOW_ID @overflow_id@
 #define GGG_DEFAULT_HOME_PREFIX "@default_home_prefix@"
 #define GGG_DEFAULT_SHELL "@default_shell@"
+#define GGG_GUILE_LOAD_PATH "@guile_load_path@"
+#define GGG_GUILE_LOAD_COMPILED_PATH "@guile_load_compiled_path@"
 
 #endif // vim:filetype=cpp

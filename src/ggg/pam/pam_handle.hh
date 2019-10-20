@@ -16,9 +16,9 @@ namespace ggg {
 
 	class pam_handle {
 
+    private:
 		::pam_handle_t* _pamh = nullptr;
 		bool _debug = false;
-		unsigned int _nrounds = 0;
 		/// Minimal password entropy (as computed by zxcvbn library).
 		double _minentropy = 30.0;
 
@@ -37,49 +37,22 @@ namespace ggg {
 			this->parse_args(argc, argv);
 		}
 
-		inline unsigned int
-		num_rounds() const noexcept {
-			return this->_nrounds;
-		}
-
-		inline bool
-		debug() const noexcept {
-			return this->_debug;
-		}
-
-		inline double
-		min_entropy() const noexcept {
-			return this->_minentropy;
-		}
-
-		const char*
-		get_user() const;
-
-		const char*
-		get_password(pam_errc err) const;
-
-		const char*
-		get_old_password() const;
-
-		const account*
-		get_account() const;
-
-		void
-		set_account(const ggg::account& acc);
+		inline bool debug() const noexcept { return this->_debug; }
+		inline double min_entropy() const noexcept { return this->_minentropy; }
+		const char* get_user() const;
+		const char* get_password(pam_errc err) const;
+		const char* get_old_password() const;
+		const account* get_account() const;
+		void set_account(const ggg::account& acc);
 
 		inline void
 		set_password_type(const void* word) {
 			this->set_item(PAM_AUTHTOK_TYPE, word);
 		}
 
-		void
-		set_item(int key, const void* value);
-
-		conversation_ptr
-		get_conversation() const;
-
-		pam_errc
-		handle_error(const std::system_error& e, pam_errc def) const;
+		void set_item(int key, const void* value);
+		conversation_ptr get_conversation() const;
+		pam_errc handle_error(const std::system_error& e, pam_errc def) const;
 
 		inline pam_errc
 		handle_error(const std::exception& e) const {
@@ -113,20 +86,10 @@ namespace ggg {
 			pam_info(this->_pamh, "%s", msg, args...);
 		}
 
-		void
-		parse_args(int argc, const char** argv);
-
-		inline operator ::pam_handle_t*() noexcept {
-			return this->_pamh;
-		}
-
-		inline operator ::pam_handle_t*() const noexcept {
-			return this->_pamh;
-		}
-
-		inline operator ::pam_handle_t**() noexcept {
-			return &this->_pamh;
-		}
+		void parse_args(int argc, const char** argv);
+		inline operator ::pam_handle_t*() noexcept { return this->_pamh; }
+		inline operator ::pam_handle_t*() const noexcept { return this->_pamh; }
+		inline operator ::pam_handle_t**() noexcept { return &this->_pamh; }
 
 	private:
 

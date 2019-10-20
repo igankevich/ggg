@@ -13,7 +13,7 @@ namespace ggg {
 
     public:
 
-        inline secure_string
+        inline std::string
         operator()(const secure_string& password) {
             return this->hash(password);
         }
@@ -23,15 +23,15 @@ namespace ggg {
         inline unsigned long long memory_limit() const { return this->_memlimit; }
         inline unsigned long long time_limit() const { return this->_opslimit; }
 
-        inline secure_string
+        inline std::string
         hash(const secure_string& password) const {
-            secure_string hashed_password(crypto_pwhash_STRBYTES, 0);
-            int ret = ::crypto_pwhash_str(hashed_password.data(),
+            std::string hashed_password(crypto_pwhash_STRBYTES, 0);
+            int ret = ::crypto_pwhash_str(&hashed_password[0],
                     password.data(), password.size(),
                     this->_opslimit, this->_memlimit);
-            if (ret != 0) { throw std::bad_alloc("argon2: out of memory"); }
+            if (ret != 0) { throw std::bad_alloc(); }
             using traits_type = secure_string::traits_type;
-            hashed_password.resize(traits_type::length(hashed_password.data()))
+            hashed_password.resize(traits_type::length(hashed_password.data()));
             return hashed_password;
         }
 

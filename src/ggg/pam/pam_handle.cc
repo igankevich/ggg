@@ -138,25 +138,8 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
 			this->_debug = true;
 		} else if (arg.find("entropy=") == 0) {
 			this->_minentropy = std::strtod(arg.data() + 8, nullptr);
-		} else if (arg.find("rounds=") == 0) {
-			const int tmp = std::atoi(arg.data() + 7);
-			if (tmp > 0) {
-				this->_nrounds = tmp;
-			} else {
-				pam_syslog(
-					*this,
-					LOG_ERR,
-					"bad module argument \"%s\"",
-					argv[i]
-				);
-			}
 		} else {
-			pam_syslog(
-				*this,
-				LOG_ERR,
-				"unknown module argument \"%s\"",
-				argv[i]
-			);
+			pam_syslog(*this, LOG_ERR, "unknown module argument \"%s\"", argv[i]);
 		}
 	}
 }

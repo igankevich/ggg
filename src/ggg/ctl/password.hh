@@ -140,8 +140,16 @@ namespace ggg {
 	std::ostream&
 	operator<<(std::ostream& out, const password_match& rhs);
 
-	void
-	validate_password(const secure_string& new_password, double min_entropy);
+	void validate_password(const secure_string& new_password, double min_entropy);
+	bool verify_password(const std::string& hashed_password, const char* password);
+
+	inline bool
+    verify_password(
+        const std::string& hashed_password,
+        const secure_string& password
+    ) {
+        return verify_password(hashed_password, password.data());
+    }
 
 }
 
