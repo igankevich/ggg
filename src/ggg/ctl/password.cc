@@ -78,9 +78,7 @@ ggg::sha512_password_hash::prefix(const std::string& salt) const {
 void ggg::sha512_password_hash::parse_hashed_password(const char* hashed_password) {
 	using traits_type = std::string::traits_type;
     auto length = traits_type::length(hashed_password);
-	if (length == 0 || *hashed_password != '$') {
-		return;
-	}
+	if (length == 0 || *hashed_password != '$') { return; }
 	const char rounds[] = "rounds=";
 	const ptrdiff_t rounds_size = sizeof(rounds) - 1;
 	const char* first = hashed_password + 1;

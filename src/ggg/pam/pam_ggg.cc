@@ -62,7 +62,7 @@ namespace {
 		Database db(Database::File::Accounts, Database::Flag::Read_write);
         argon2_password_hash hash;
         acc.set_password(hash(password));
-        db.update(acc);
+        db.set_password(acc);
         db.close();
     }
 
@@ -86,14 +86,12 @@ int pam_sm_authenticate(
 		account acc = find_account(db, user);
 		db.close();
 		check_password(acc.password(), password);
-        /*
         std::string argon2_prefix = "$argon2id$";
         if (acc.password().compare(0, argon2_prefix.size(), argon2_prefix) != 0) {
             pamh.debug("migrating to argon2 for user \"%s\"", user);
             migrate_to_argon2(acc, password);
             pamh.debug("successfully migrated to argon2 for user \"%s\"", user);
         }
-        */
 		pamh.set_account(acc);
 		pamh.debug("successfully authenticated user \"%s\"", user);
 		ret = pam_errc::success;

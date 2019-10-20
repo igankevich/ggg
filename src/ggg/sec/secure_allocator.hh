@@ -30,7 +30,7 @@ namespace ggg {
 			n *= sizeof(T);
 			pointer p = static_cast<pointer>(::sodium_malloc(n));
             if (!p) { throw std::bad_alloc(); }
-			lock(p, n);
+			//lock(p, n);
 			return p;
 		}
 
@@ -38,7 +38,7 @@ namespace ggg {
 		deallocate(pointer p, size_type n) {
 			n *= sizeof(T);
 			shred(p, n);
-			unlock(p, n);
+			//unlock(p, n);
 			free(p);
 		}
 

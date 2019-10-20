@@ -39,7 +39,8 @@ namespace {
 	password_hash(SCM password) {
 		using namespace ggg;
         init_sodium();
-        argon2_password_hash hash;
+        //argon2_password_hash hash;
+        sha512_password_hash hash;
 		return scm_from_utf8_string(hash(to_secure_string(password)).data());
 	}
 
@@ -67,7 +68,6 @@ namespace {
 	scm_verify_password(SCM hashed_password, SCM password) {
 		using namespace ggg;
         try {
-            init_sodium();
             return scm_from_bool(verify_password(
                 to_string(hashed_password),
                 to_secure_string(password)
