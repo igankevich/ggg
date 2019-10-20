@@ -135,38 +135,13 @@ namespace ggg {
 			return this->_login < rhs._login;
 		}
 
-		inline const string_type&
-		login() const noexcept {
-			return this->_login;
-		}
-
-		inline const string_type&
-		name() const noexcept {
-			return this->_login;
-		}
-
-		inline const string&
-		password() const noexcept {
-			return this->_password;
-		}
-
-		inline const string_type&
-		password_id() const noexcept {
-			return this->_id;
-		}
-
-		inline unsigned int
-		num_rounds() const noexcept {
-			return this->_nrounds;
-		}
-
-		inline const string_type&
-		password_salt() const noexcept {
-			return this->_salt;
-		}
-
-		string_type
-		password_prefix() const;
+		inline const string_type& login() const noexcept { return this->_login; }
+		inline const string_type& name() const noexcept { return this->_login; }
+		inline const string& password() const noexcept { return this->_password; }
+		inline const string_type& password_id() const noexcept { return this->_id; }
+		inline unsigned int num_rounds() const noexcept { return this->_nrounds; }
+		inline const string_type& password_salt() const noexcept { return this->_salt; }
+		string_type password_prefix() const;
 
 		static string_type
 		password_prefix(
@@ -175,28 +150,17 @@ namespace ggg {
 			unsigned int nrounds
 		);
 
-		void
-		set_password(const string& rhs);
+		void set_password(string&& rhs);
 
-		inline bool
-		has_password() const noexcept {
-			return !this->_password.empty();
-		}
-
-		inline time_point
-		last_change() const noexcept {
-			return this->_lastchange;
-		}
+		inline bool has_password() const noexcept { return !this->_password.empty(); }
+		inline time_point last_change() const noexcept { return this->_lastchange; }
 
 		inline bool
 		has_last_change() const noexcept {
 			return this->_lastchange > time_point(duration::zero());
 		}
 
-		inline duration
-		min_change() const noexcept {
-			return this->_minchange;
-		}
+		inline duration min_change() const noexcept { return this->_minchange; }
 
 		inline bool
 		has_min_change() const noexcept {

@@ -98,5 +98,3 @@ src/ggg/sec/echo_guard.hh
 src/ggg/sec/secure_allocator.hh
 src/ggg/sec/secure_sstream.hh
 src/ggg/sec/secure_string.hh
-src/ggg/sec/shred.cc
-src/ggg/sec/shred.hh

@@ -9,10 +9,9 @@ ggg_core_src = files([
 	'ip_address.cc',
 	'machine.cc',
 	'native.cc',
-	'shred.cc'
 ])
 
-ggg_core_deps = [unistdx,sqlitex,sqlite]
+ggg_core_deps = [unistdx,sqlitex,sqlite,libsodium]
 
 ggg_core_lib = shared_library(
 	'ggg-core',

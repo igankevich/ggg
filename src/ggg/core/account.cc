@@ -202,7 +202,7 @@ ggg::account::parse_password() {
 				prev,
 				std::min(rounds_size, first-prev)
 			)) {
-				secure_stringstream str(string(prev+rounds_size, first));
+                std::stringstream str(string_type(prev+rounds_size, first));
 				str >> this->_nrounds;
 			} else {
 				this->_salt.assign(prev, first);
@@ -240,8 +240,8 @@ ggg::account::password_prefix(
 }
 
 void
-ggg::account::set_password(const string& rhs) {
-	this->_password = rhs;
+ggg::account::set_password(string&& rhs) {
+	this->_password = std::move(rhs);
 	this->_lastchange = clock_type::now();
 	this->unsetf(account_flags::password_has_expired);
 }

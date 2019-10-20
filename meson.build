@@ -71,6 +71,7 @@ ggg_crypt = dependency('ggg-crypt', version: ggg_crypt_version)
 sqlite = dependency('sqlite3')
 sqlitex = dependency('sqlitex', version: sqlitex_version)
 guile = dependency('guile-2.2')
+libsodium = dependency('libsodium')
 
 subdir('src')
 subdir('po')

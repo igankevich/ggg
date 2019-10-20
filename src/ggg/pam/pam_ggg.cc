@@ -201,7 +201,7 @@ int pam_sm_chauthtok(
 					pamh.num_rounds()
 				)
 			);
-			acc.set_password(encrypted);
+			acc.set_password(std::move(encrypted));
 			db.set_password(acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = pam_errc::success;

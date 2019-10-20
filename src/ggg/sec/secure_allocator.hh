@@ -2,16 +2,8 @@
 #define SECURE_ALLOCATOR_HH
 
 #include <memory>
-#include <cstring>
-#include <system_error>
-#include <cstdlib>
 
-#include <unistd.h>
-#if defined(_POSIX_MEMLOCK_RANGE) || defined(_POSIX_MEMORY_PROTECTION)
-	#include <sys/mman.h>
-#endif
-
-#include <ggg/core/shred.hh>
+#include <sodium.h>
 
 namespace ggg {
 
@@ -35,12 +27,9 @@ namespace ggg {
 		pointer
 		allocate(size_type n, const_pointer hint=0) {
 			n *= sizeof(T);
-			pointer p = nullptr;
-		   	if (-1 == ::posix_memalign((void**)&p, page_size, n)) {
-				throw std::bad_alloc();
-			}
-			lock_and_protect(p, n);
-			shred(p, n);
+			pointer p = static_cast<pointer>(::sodium_malloc(n));
+            if (!p) { throw std::bad_alloc(); }
+			lock(p, n);
 			return p;
 		}
 
@@ -48,7 +37,8 @@ namespace ggg {
 		deallocate(pointer p, size_type n) {
 			n *= sizeof(T);
 			shred(p, n);
-			::free(p);
+			unlock(p, n);
+			free(p);
 		}
 
 		template <class U>
@@ -57,28 +47,13 @@ namespace ggg {
 		};
 
 	private:
-		void
-		lock_and_protect(void_ptr p, size_type n) {
-			#if defined(_POSIX_MEMLOCK_RANGE)
-			call("mlock", ::mlock(p, n));
-			#endif
-			#if defined(_POSIX_MEMORY_PROTECTION)
-			call("mprotect", ::mprotect(p, n, PROT_READ|PROT_WRITE));
-			#endif
-		}
 
-		void
-		call(const char* func, int ret) {
-			if (ret == -1) {
-				throw std::system_error(errno, std::system_category());
-			}
-		}
+        inline void shred(pointer p, size_type n) { ::sodium_memzero(p, n); }
+        inline void free(pointer p) { ::sodium_free(p); }
+        inline void lock(pointer p, size_type n) { ::sodium_mlock(p, n); }
+        inline void unlock(pointer p, size_type n) { ::sodium_munlock(p, n); }
 
-		static const size_t page_size;
 	};
-
-	template <class T>
-	const size_t secure_allocator<T>::page_size = ::sysconf(_SC_PAGESIZE);
 
 }
 

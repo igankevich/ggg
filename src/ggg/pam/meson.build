@@ -5,7 +5,7 @@ ggg_pam_src = files([
 	'conversation.cc',
 ]) + password_src
 
-ggg_pam_deps = [ggg_crypt, pam, unistdx, ggg_core, zxcvbn]
+ggg_pam_deps = [ggg_crypt,libsodium, pam, unistdx, ggg_core, zxcvbn]
 
 ggg_pam_lib = shared_library(
 	'pam_ggg',

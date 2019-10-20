@@ -37,7 +37,7 @@ ggg_exe = executable(
 	executable_name,
 	sources: ggg_src,
 	include_directories: src,
-	dependencies: [unistdx,ggg_crypt,ggg_core,guile,ggg_guile],
+	dependencies: [unistdx,ggg_crypt,libsodium,ggg_core,guile,ggg_guile],
 	install: true
 )
 

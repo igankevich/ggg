@@ -49,7 +49,7 @@ test(
 		'conversation-test',
 		sources: ['conversation_test.cc'],
 		include_directories: src,
-		dependencies: [unistdx, gtest, ggg_crypt, pam, ggg_core, ggg_pam]
+		dependencies: [unistdx, gtest, ggg_crypt,libsodium, pam, ggg_core, ggg_pam]
 	),
 	suite: 'unit'
 )
@@ -109,7 +109,7 @@ endif
 #			'cli-test',
 #			ggg_guile_types,
 #			sources: ['cli_test.cc'] + test_src,
-#			dependencies: [unistdx, gtest_nomain, pam, ggg_crypt, ggg_core]
+#			dependencies: [unistdx, gtest_nomain, pam, ggg_crypt,libsodium, ggg_core]
 #		),
 #		env: [
 #			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
