@@ -45,21 +45,22 @@ NSS and PAM modules that support arbitrary nesting of users and groups
 
 %install
 %meson_install
-# compile guile files
-mkdir -p ${RPM_BUILD_ROOT}%{guile_site_ccache_dir}/ggg
-cd ${RPM_BUILD_ROOT}%{guile_site_dir}/ggg
-for orig in *; do
-	file=$(basename -- "$orig")
-	name="${file%%.*}"
-	%{guild} compile \
-		-o ${RPM_BUILD_ROOT}%{guile_site_ccache_dir}/ggg/${name}.go \
-		${orig}
-done
 
 %check
 %meson_test
 
-%post -p /sbin/ldconfig
+%post
+/sbin/ldconfig
+# compile guile files
+mkdir -p %{guile_site_ccache_dir}/ggg
+cd %{guile_site_dir}/ggg
+for orig in *; do
+	file=$(basename -- "$orig")
+	name="${file%%.*}"
+    %{guild} compile \
+		-o ${RPM_BUILD_ROOT}%{guile_site_ccache_dir}/ggg/${name}.go \
+		${orig}
+done
 
 %postun -p /sbin/ldconfig
 
@@ -69,13 +70,12 @@ done
 %{_libdir}/libnss_ggg.so*
 %{_libdir}/libggg-core.so*
 %{_libdir}/security/pam_ggg.so
-%{guile_extension_dir}/libggg-guile.so*
+%{_libdir}/libggg-guile.so*
 %defattr(0644,root,root,0755)
 %{_datadir}/locale/ru/LC_MESSAGES/ggg.mo
 %{_datadir}/locale/en/LC_MESSAGES/ggg.mo
 %{_mandir}/man*/*ggg*
 %{guile_site_dir}/ggg
-%{guile_site_ccache_dir}/ggg
 
 %changelog
 * Sun Jun 16 2019 Ivan Gankevich <igankevich@ya.ru> 1.2.0-3
