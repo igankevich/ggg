@@ -18,7 +18,7 @@ BuildRequires: gtest-devel
 BuildRequires: guile22-devel
 BuildRequires: meson
 BuildRequires: pam-devel
-BuildRequires: pam_wrapper
+#BuildRequires: pam_wrapper
 BuildRequires: pkg-config
 BuildRequires: sqlitex-devel @sqlitex_version@
 BuildRequires: unistdx-devel @unistdx_version@
