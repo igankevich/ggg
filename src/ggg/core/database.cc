@@ -153,7 +153,7 @@ WITH RECURSIVE
 		  AND path.child_id <> path.parent_id
 		  AND path.depth < $depth
 	)
-SELECT id,name,description
+SELECT id,name,description,home,shell
 FROM entities
 WHERE id IN (SELECT DISTINCT parent_id FROM path)
 )";
@@ -177,7 +177,7 @@ WITH RECURSIVE
 		  AND path.child_id <> path.parent_id
 		  AND path.depth < $depth
 	)
-SELECT id,name,description
+SELECT id,name,description,home,shell
 FROM entities
 WHERE id IN (SELECT DISTINCT child_id FROM path)
 )";
