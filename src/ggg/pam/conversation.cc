@@ -39,13 +39,13 @@ ggg::operator<<(std::ostream& out, const response& rhs) {
 }
 
 std::ostream&
-ggg::operator<<(std::ostream& out, const message& rhs) {
+ggg::operator<<(std::ostream& out, const message_pam& rhs) {
 	return out << '"' << (rhs.text() ? rhs.text() : "null") << '"';
 }
 
 std::ostream&
 ggg::operator<<(std::ostream& out, const messages& rhs) {
-	for (const message* m : rhs) {
+	for (const message_pam* m : rhs) {
 		out << *m << ',';
 	}
 	return out;

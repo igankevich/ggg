@@ -1,11 +1,13 @@
 #ifndef PAM_PAM_HANDLE_HH
 #define PAM_PAM_HANDLE_HH
 
+#include <unistd.h>
 #include <syslog.h>
 #include <security/pam_modules.h>
 #include <security/pam_ext.h>
 
 #include <ggg/core/account.hh>
+#include <ggg/core/database.hh>
 #include <ggg/pam/conversation.hh>
 #include <ggg/pam/pam_call.hh>
 
@@ -14,7 +16,18 @@ namespace ggg {
 	void
 	delete_account(pam_handle_t *pamh, void *data, int error_status);
 
+    struct log_message {
+        char hostname[HOST_NAME_MAX];
+        account::time_point timestamp;
+        inline log_message(): timestamp(account::clock_type::now()) {
+            ::gethostname(this->hostname, HOST_NAME_MAX);
+        }
+    };
+
 	class pam_handle {
+
+    private:
+        using cleanup_type = void (*)(::pam_handle_t*,void*,int);
 
     private:
 		::pam_handle_t* _pamh = nullptr;
@@ -44,6 +57,20 @@ namespace ggg {
 		const char* get_old_password() const;
 		const account* get_account() const;
 		void set_account(const ggg::account& acc);
+		Database& get_database();
+        const log_message& get_message();
+
+        inline bool
+        get_data(const char* key, const void** ptr) const {
+            return ::pam_get_data(*this, key, ptr) == PAM_SUCCESS;
+        }
+
+        inline void
+        set_data(const char* key, void* ptr, cleanup_type cleanup) {
+            if (::pam_set_data(*this, key, ptr, cleanup) != PAM_SUCCESS) {
+                throw_pam_error(pam_errc::service_error);
+            }
+        }
 
 		inline void
 		set_password_type(const void* word) {

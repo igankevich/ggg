@@ -2,6 +2,7 @@
 
 #include <security/pam_ext.h>
 #include <security/pam_modules.h>
+#include <unistd.h>
 
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
@@ -56,14 +57,12 @@ namespace {
 	}
 
     void
-    migrate_to_argon2(ggg::account& acc, const char* password) {
+    migrate_to_argon2(ggg::Database& db, ggg::account& acc, const char* password) {
         using namespace ggg;
         init_sodium();
-		Database db(Database::File::Accounts, Database::Flag::Read_write);
         argon2_password_hash hash;
         acc.set_password(hash(password));
         db.set_password(acc);
-        db.close();
     }
 
 }
@@ -82,18 +81,22 @@ int pam_sm_authenticate(
 		const char* user = pamh.get_user();
 		pamh.debug("authenticating user \"%s\"", user);
 		const char* password = pamh.get_password(pam_errc::authentication_error);
-		Database db(Database::File::Accounts, Database::Flag::Read_only);
+        auto& db = pamh.get_database();
+        Transaction tr(db);
 		account acc = find_account(db, user);
-		db.close();
 		check_password(acc.password(), password);
+        const auto& msg = pamh.get_message();
         std::string argon2_prefix = "$argon2id$";
         if (acc.password().compare(0, argon2_prefix.size(), argon2_prefix) != 0) {
             pamh.debug("migrating to argon2 for user \"%s\"", user);
-            migrate_to_argon2(acc, password);
+            migrate_to_argon2(db, acc, password);
             pamh.debug("successfully migrated to argon2 for user \"%s\"", user);
+            db.message(user, msg.timestamp, msg.hostname, "migrated to argon2");
         }
 		pamh.set_account(acc);
 		pamh.debug("successfully authenticated user \"%s\"", user);
+        db.message(user, msg.timestamp, msg.hostname, "authenticated");
+        tr.commit();
 		ret = pam_errc::success;
 	} catch (const std::system_error& e) {
 		ret = pamh.handle_error(e, pam_errc::authentication_error);
@@ -123,7 +126,7 @@ int pam_sm_acct_mgmt(
 		try {
 			acc = pamh.get_account();
 		} catch (const std::system_error& err) {
-			Database db(Database::File::Accounts);
+            auto& db = pamh.get_database();
 			other = find_account(db, user);
 			acc = &other;
 		}
@@ -175,7 +178,7 @@ int pam_sm_chauthtok(
 			pamh.set_password_type("GGG");
 			const char* user = pamh.get_user();
 			pamh.debug("changing password for user \"%s\"", user);
-			Database db(Database::File::Accounts, Database::Flag::Read_write);
+            auto& db = pamh.get_database();
 			account acc = find_account(db, user);
 			const account::time_point now = account::clock_type::now();
 			if (acc.has_expired(now)) {
@@ -213,6 +216,8 @@ int pam_sm_chauthtok(
 			acc.set_password(hash(new_password));
 			db.set_password(acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);
+            const auto& msg = pamh.get_message();
+            db.message(user, msg.timestamp, msg.hostname, "changed password");
 			ret = pam_errc::success;
 		} catch (const std::system_error& e) {
 			ret = pamh.handle_error(e, pam_errc::authtok_error);
@@ -236,20 +241,42 @@ int pam_sm_setcred(
 }
 
 int pam_sm_open_session(
-	pam_handle_t *pamh,
+	pam_handle_t* orig,
 	int flags,
 	int argc,
 	const char **argv
 ) {
-	return PAM_SUCCESS;
+	pam_errc ret = pam_errc::ignore;
+	ggg::pam_handle pamh(orig, argc, argv);
+    try {
+		const char* user = pamh.get_user();
+        const auto& msg = pamh.get_message();
+        auto& db = pamh.get_database();
+        db.message(user, msg.timestamp, msg.hostname, "session opened");
+        ret = pam_errc::success;
+    } catch (const std::exception& e) {
+        ret = pamh.handle_error(e);
+    }
+	return std::make_error_condition(ret).value();
 }
 
 int pam_sm_close_session(
-	pam_handle_t *pamh,
+	pam_handle_t* orig,
 	int flags,
 	int argc,
 	const char **argv
 ) {
-	return PAM_SUCCESS;
+	pam_errc ret = pam_errc::ignore;
+	ggg::pam_handle pamh(orig, argc, argv);
+    try {
+		const char* user = pamh.get_user();
+        const auto& msg = pamh.get_message();
+        auto& db = pamh.get_database();
+        db.message(user, msg.timestamp, msg.hostname, "session closed");
+        ret = pam_errc::success;
+    } catch (const std::exception& e) {
+        ret = pamh.handle_error(e);
+    }
+	return std::make_error_condition(ret).value();
 }
 // }}}

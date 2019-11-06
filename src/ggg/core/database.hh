@@ -12,6 +12,7 @@
 #include <ggg/core/host_address.hh>
 #include <ggg/core/ip_address.hh>
 #include <ggg/core/machine.hh>
+#include <ggg/core/message.hh>
 
 #include <sqlitex/connection.hh>
 #include <sqlitex/transaction.hh>
@@ -37,9 +38,10 @@ namespace ggg {
 
 
 	public:
-		typedef sqlite::connection database_t;
-		typedef sqlite::statement statement_type;
-		typedef std::unordered_map<sys::gid_type,group> group_container_t;
+		using database_t = sqlite::connection;
+		using statement_type = sqlite::statement;
+		using group_container_t = std::unordered_map<sys::gid_type,group>;
+        using time_point = account::time_point;
 
 	private:
 		database_t _db;
@@ -291,6 +293,20 @@ namespace ggg {
 		statement_type forms();
 		statement_type find_form(const char* name);
 
+        void message(const char* username, time_point t, const char* hostname,
+                const char* text);
+
+        template <class ... Args>
+        inline void
+        message(const char* username, time_point t, const char* hostname,
+                const char* format, const Args& ... args) {
+            this->message(username, t, hostname,
+                    sqlite::format(format, std::forward<Args>(args)...).get());
+        }
+
+        statement_type messages();
+        statement_type messages(const char* user);
+
 	private:
 
 		std::string
@@ -320,6 +336,7 @@ namespace ggg {
 	typedef sqlite::row_iterator<ggg::account> account_iterator;
 	typedef sqlite::row_iterator<ggg::host> host_iterator;
 	typedef sqlite::row_iterator<ggg::Machine> machine_iterator;
+	typedef sqlite::row_iterator<ggg::message> message_iterator;
 
 	class Transaction: public sqlite::immediate_transaction {
 

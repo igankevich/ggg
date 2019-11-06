@@ -1129,3 +1129,22 @@ ggg::Database::find_form(const char* name) -> statement_type {
 	return this->_db.prepare("SELECT name,content FROM forms WHERE name=?", name);
 }
 
+void
+ggg::Database::message(const char* username, time_point t, const char* hostname,
+        const char* text) {
+    this->_db.execute("INSERT INTO messages "
+            "(account_name,timestamp,machine_name,message) "
+            "VALUES (?,?,?,?)", username, t, hostname, text);
+}
+
+auto
+ggg::Database::messages() -> statement_type {
+    return this->_db.prepare("SELECT account_name,timestamp,machine_name,message "
+            "FROM messages ORDER BY timestamp");
+}
+
+auto
+ggg::Database::messages(const char* user) -> statement_type {
+    return this->_db.prepare("SELECT account_name,timestamp,machine_name,message "
+            "FROM messages WHERE account_name=? ORDER BY timestamp", user);
+}

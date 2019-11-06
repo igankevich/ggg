@@ -25,6 +25,7 @@
 #include <ggg/cli/show_help.hh>
 #include <ggg/cli/show_locked.hh>
 #include <ggg/cli/show_members.hh>
+#include <ggg/cli/show_messages.hh>
 #include <ggg/cli/show_version.hh>
 #include <ggg/cli/unlock_entity.hh>
 
@@ -87,6 +88,8 @@ namespace {
 		MAKE_COMMAND("hosts", Find_machines),
 		MAKE_COMMAND("guile", Guile),
 		MAKE_COMMAND("script", Guile),
+		MAKE_COMMAND("messages", Show_messages),
+		MAKE_COMMAND("log", Show_messages),
 		MAKE_COMMAND("-v", Show_version),
 		MAKE_COMMAND("--version", Show_version),
 		MAKE_COMMAND("help", Show_help),

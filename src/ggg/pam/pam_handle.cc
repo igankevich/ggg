@@ -1,5 +1,3 @@
-#include "pam_handle.hh"
-
 #include <algorithm>
 #include <codecvt>
 #include <cstring>
@@ -14,16 +12,37 @@
 #include <vector>
 
 #include <ggg/core/entity.hh>
+#include <ggg/pam/pam_handle.hh>
 
 namespace {
 
 	const char* key_account = "ggg_account";
+	const char* key_database = "ggg_database";
+	const char* key_message = "ggg_message";
 
 	template<class T>
-	static const void**
+	const void**
 	void_ptr(const T** ptr) {
 		return reinterpret_cast<const void**>(ptr);
 	}
+
+	template<class T>
+	const void**
+	void_ptr(T** ptr) {
+		return reinterpret_cast<const void**>(const_cast<const T**>(ptr));
+	}
+
+    void
+    delete_database(::pam_handle_t*, void* data, int) {
+        auto* db = reinterpret_cast<ggg::Database*>(data);
+        if (db) { db->close(); }
+        delete db;
+    }
+
+    void
+    delete_log_message(::pam_handle_t*, void* data, int) {
+        delete reinterpret_cast<ggg::Database*>(data);
+    }
 
 }
 
@@ -82,6 +101,26 @@ ggg::pam_handle::get_account() const {
 		throw_pam_error(pam_errc::service_error);
 	}
 	return acc;
+}
+
+ggg::Database&
+ggg::pam_handle::get_database() {
+	Database* db = nullptr;
+	if (!get_data(key_database, void_ptr<Database>(&db)) || !db) {
+        db = new Database(Database::File::Accounts, Database::Flag::Read_write);
+        set_data(key_database, db, delete_database);
+	}
+	return *db;
+}
+
+const ggg::log_message&
+ggg::pam_handle::get_message() {
+	log_message* msg = nullptr;
+	if (!get_data(key_message, void_ptr<log_message>(&msg)) || !msg) {
+        msg = new log_message;
+        set_data(key_message, msg, delete_log_message);
+	}
+	return *msg;
 }
 
 void

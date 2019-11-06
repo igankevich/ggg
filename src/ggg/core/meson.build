@@ -8,6 +8,7 @@ ggg_core_src = files([
 	'host.cc',
 	'ip_address.cc',
 	'machine.cc',
+	'message.cc',
 	'native.cc',
 ])
 

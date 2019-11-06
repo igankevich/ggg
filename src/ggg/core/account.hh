@@ -47,19 +47,12 @@ namespace ggg {
 		account_flags _flags = account_flags(0);
 
 	public:
-		inline explicit
-		account(const char* login):
-		_login(login)
-		{}
 
+		inline explicit account(const char* name): _login(name) {}
 		account() = default;
-
 		account(const account&) = default;
-
 		account(account&&) = default;
-
-		account&
-		operator=(const account&) = default;
+		account& operator=(const account&) = default;
 
 		inline void
 		make_expired() noexcept {

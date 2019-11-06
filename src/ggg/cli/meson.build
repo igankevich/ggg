@@ -28,6 +28,7 @@ ggg_src = files([
 	'show_help.cc',
 	'show_locked.cc',
 	'show_members.cc',
+	'show_messages.cc',
 	'show_version.cc',
 	'tmpfile.cc',
 	'unlock_entity.cc',
