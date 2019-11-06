@@ -3,7 +3,7 @@
 #include <ggg/pam/conversation.hh>
 
 TEST(Messages, Invariants) {
-	ggg::messages m;
+	pam::messages m;
 	EXPECT_EQ(0u, m.size());
 	EXPECT_EQ(0, m.end() - m.begin());
 	EXPECT_EQ(nullptr, (const pam_message**)m);
@@ -14,7 +14,7 @@ TEST(Messages, Invariants) {
 }
 
 TEST(Response, Invariants) {
-	ggg::responses r(1);
+	pam::responses r(1);
 	EXPECT_EQ(1u, r.size());
 	EXPECT_EQ(1, r.end() - r.begin());
 	EXPECT_NE(nullptr, (pam_response**)r);

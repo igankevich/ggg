@@ -6,7 +6,7 @@
 #include <ostream>
 #include <string>
 
-namespace ggg {
+namespace pam {
 
 	class response: public ::pam_response {
 
@@ -39,14 +39,14 @@ namespace ggg {
 	std::ostream&
 	operator<<(std::ostream& out, const response& rhs);
 
-	class message_pam: public ::pam_message {
+	class message: public ::pam_message {
 
 	private:
 		std::string _text;
 
 	public:
 		inline
-		message_pam(int style, const std::string& text) noexcept:
+		message(int style, const std::string& text) noexcept:
 		::pam_message{style, nullptr},
 		_text(text)
 		{ this->msg = this->_text.data(); }
@@ -57,17 +57,17 @@ namespace ggg {
 		}
 
 		friend std::ostream&
-		operator<<(std::ostream& out, const message_pam& rhs);
+		operator<<(std::ostream& out, const message& rhs);
 
 	};
 
 	std::ostream&
-	operator<<(std::ostream& out, const message_pam& rhs);
+	operator<<(std::ostream& out, const message& rhs);
 
 	class messages {
 
 	public:
-		typedef std::vector<message_pam*> container_type;
+		typedef std::vector<message*> container_type;
 		typedef container_type::iterator iterator;
 		typedef container_type::const_iterator const_iterator;
 
@@ -88,13 +88,13 @@ namespace ggg {
 		}
 
 		inline void
-		push_back(message_pam* rhs) {
+		push_back(message* rhs) {
 			this->_msgs.push_back(rhs);
 		}
 
 		inline void
 		emplace_back(int style, const std::string& msg) {
-			this->_msgs.push_back(new message_pam(style, msg));
+			this->_msgs.push_back(new message(style, msg));
 		}
 
 		inline const_iterator
@@ -115,7 +115,7 @@ namespace ggg {
 		inline
 		operator const ::pam_message**() const noexcept {
 			return reinterpret_cast<const ::pam_message**>(
-				const_cast<const message_pam**>(this->_msgs.data())
+				const_cast<const message**>(this->_msgs.data())
 			);
 		}
 

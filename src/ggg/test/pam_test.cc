@@ -1,24 +1,26 @@
 #include <cstring>
-#include <ggg/ctl/password.hh>
-#include <ggg/pam/conversation.hh>
-#include <ggg/pam/pam_call.hh>
-#include <ggg/pam/pam_handle.hh>
-#include <ggg/test/clean_database.hh>
+
 #include <gtest/gtest.h>
+
+#include <ggg/ctl/password.hh>
+#include <ggg/pam/call.hh>
+#include <ggg/pam/conversation.hh>
+#include <ggg/pam/handle.hh>
+#include <ggg/pam/pam_handle.hh>
+#include <ggg/sec/argon2.hh>
+#include <ggg/test/clean_database.hh>
 
 const char* testuser_password = "jae3wahQue";
 const char* testuser_new_password = "gah9nuyeGh";
 
 void
 add_testuser_with_password(Clean_database& db, const char* password_id) {
+    using namespace ggg;
 	db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
-	ggg::account acc("testuser");
-	ggg::secure_string encrypted = ggg::encrypt(
-		testuser_password,
-		ggg::account::password_prefix(ggg::generate_salt(), password_id, 0)
-	);
-	acc.set_password(encrypted);
-	db.ggg::Database::insert(acc);
+	account acc("testuser");
+    argon2_password_hash hash;
+	acc.set_password(hash(testuser_password));
+	db.Database::insert(acc);
 }
 
 void
@@ -51,7 +53,7 @@ empty_conversation(
 	struct pam_response**,
 	void*
 ) {
-	return static_cast<int>(ggg::pam_errc::success);
+	return static_cast<int>(pam::errc::success);
 }
 
 int
@@ -61,14 +63,14 @@ default_conversation(
 	struct pam_response** resp,
 	void* appdata_ptr
 ) {
-	ggg::pam_errc ret;
+    pam::errc ret;
 	if (num_msg == 1 && msg[0]->msg_style == PAM_PROMPT_ECHO_OFF) {
 		*resp = allocate<struct pam_response>(1);
 		resp[0]->resp = strdup(testuser_password);
 		resp[0]->resp_retcode = 0;
-		ret = ggg::pam_errc::success;
+		ret = pam::errc::success;
 	} else {
-		ret = ggg::pam_errc::conversation_error;
+		ret = pam::errc::conversation_error;
 	}
 	return int(ret);
 }
@@ -89,7 +91,7 @@ conversation_with_state(
 	struct pam_response** resp,
 	void* appdata_ptr
 ) {
-	ggg::pam_errc ret;
+	pam::errc ret;
 	if (num_msg == 1 && msg[0]->msg_style == PAM_PROMPT_ECHO_OFF) {
 		*resp = allocate<struct pam_response>(1);
 		const char* password = testuser_password;
@@ -113,60 +115,60 @@ conversation_with_state(
 		}
 		resp[0]->resp = strdup(password);
 		resp[0]->resp_retcode = 0;
-		ret = ggg::pam_errc::success;
+		ret = pam::errc::success;
 	} else {
-		ret = ggg::pam_errc::conversation_error;
+		ret = pam::errc::conversation_error;
 	}
 	return int(ret);
 }
 
 TEST(pam, start_end) {
-	ggg::pam_handle pamh;
-	ggg::conversation conv(empty_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_end(pamh, 0));
+	pam::handle h;
+	pam::conversation conv(empty_conversation);
+	h.start("ggg", "testuser", conv);
+	h.end();
 }
 
 TEST(pam, authenticate_without_database) {
+    using namespace ggg;
+    using pam::handle;
 	std::remove(GGG_ENTITIES_PATH);
 	std::remove(GGG_ACCOUNTS_PATH);
-	ggg::pam_handle pamh;
-	ggg::conversation conv(default_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
+    pam::handle h;
+    pam::conversation conv(default_conversation);
+	h.start("ggg", "testuser", conv);
 	try {
-		ggg::pam::call(::pam_authenticate(pamh, 0));
+		pam::call(::pam_authenticate(h, 0));
 	} catch (const std::system_error& err) {
-		EXPECT_EQ(
-			ggg::pam_errc::authentication_error,
-			ggg::pam_errc(err.code().value())
-		) << err.what();
+		EXPECT_EQ(pam::errc::unknown_user, pam::errc(err.code().value()))
+            << err.what();
 	}
-	ggg::pam::call(::pam_end(pamh, 0));
+	h.end();
 }
 
 TEST(pam, authenticate_without_password) {
 	add_testuser_without_password();
-	ggg::pam_handle pamh;
-	ggg::conversation conv(default_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
+	pam::handle h;
+	pam::conversation conv(default_conversation);
+	h.start("ggg", "testuser", conv);
 	try {
-		ggg::pam::call(::pam_authenticate(pamh, 0));
+		pam::call(::pam_authenticate(h, 0));
 	} catch (const std::system_error& err) {
 		EXPECT_EQ(
-			ggg::pam_errc::unknown_user,
-			ggg::pam_errc(err.code().value())
+			pam::errc::unknown_user,
+			pam::errc(err.code().value())
 		) << err.what();
 	}
-	ggg::pam::call(::pam_end(pamh, 0));
+	h.end();
 }
 
 TEST(pam, authenticate_with_password) {
 	add_testuser_with_password("6");
-	ggg::pam_handle pamh;
-	ggg::conversation conv(default_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_authenticate(pamh, 0));
-	ggg::pam::call(::pam_end(pamh, 0));
+	pam::handle h;
+	pam::conversation conv(default_conversation);
+	h.start("ggg", "testuser", conv);
+	pam::call(::pam_authenticate(h, 0));
+	h.end();
 }
 
 TEST(pam, authenticate_with_expired_password) {
@@ -175,19 +177,19 @@ TEST(pam, authenticate_with_expired_password) {
 		add_testuser_with_password(db, "6");
 		db.expire_password("testuser");
 	}
-	ggg::pam_handle pamh;
-	ggg::conversation conv(default_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_authenticate(pamh, 0));
+	pam::handle h;
+	pam::conversation conv(default_conversation);
+	h.start("ggg", "testuser", conv);
+	pam::call(::pam_authenticate(h, 0));
 	try {
-		ggg::pam::call(::pam_acct_mgmt(pamh, 0));
+		pam::call(::pam_acct_mgmt(h, 0));
 	} catch (const std::system_error& err) {
 		EXPECT_EQ(
-			ggg::pam_errc::new_password_required,
-			ggg::pam_errc(err.code().value())
+			pam::errc::new_password_required,
+			pam::errc(err.code().value())
 		) << err.what();
 	}
-	ggg::pam::call(::pam_end(pamh, 0));
+	h.end();
 }
 
 TEST(pam, authenticate_with_expired_password_and_change_it) {
@@ -197,34 +199,34 @@ TEST(pam, authenticate_with_expired_password_and_change_it) {
 		db.expire_password("testuser");
 	}
 	conversation_state = Conversation_state::Authenticate;
-	ggg::pam_handle pamh;
-	ggg::conversation conv(conversation_with_state);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_authenticate(pamh, 0));
+	pam::handle h;
+	pam::conversation conv(conversation_with_state);
+	h.start("ggg", "testuser", conv);
+	pam::call(::pam_authenticate(h, 0));
 	try {
-		ggg::pam::call(::pam_acct_mgmt(pamh, 0));
+		pam::call(::pam_acct_mgmt(h, 0));
 	} catch (const std::system_error& err) {
 		EXPECT_EQ(
-			ggg::pam_errc::new_password_required,
-			ggg::pam_errc(err.code().value())
+			pam::errc::new_password_required,
+			pam::errc(err.code().value())
 		) << err.what();
 		conversation_state = Conversation_state::Get_old_password;
-		ggg::pam::call(::pam_chauthtok(pamh, 0));
+		pam::call(::pam_chauthtok(h, 0));
 		conversation_state = Conversation_state::Authenticate_with_new_password;
-		ggg::pam::call(::pam_authenticate(pamh, 0));
-		ggg::pam::call(::pam_acct_mgmt(pamh, 0));
+		pam::call(::pam_authenticate(h, 0));
+		pam::call(::pam_acct_mgmt(h, 0));
 	}
-	ggg::pam::call(::pam_end(pamh, 0));
+	h.end();
 }
 
 TEST(pam, authenticate_with_valid_account) {
 	add_testuser_with_password("6");
-	ggg::pam_handle pamh;
-	ggg::conversation conv(default_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_authenticate(pamh, 0));
-	ggg::pam::call(::pam_acct_mgmt(pamh, 0));
-	ggg::pam::call(::pam_end(pamh, 0));
+	pam::handle h;
+	pam::conversation conv(default_conversation);
+	h.start("ggg", "testuser", conv);
+	pam::call(::pam_authenticate(h, 0));
+	pam::call(::pam_acct_mgmt(h, 0));
+	h.end();
 }
 
 TEST(pam, authenticate_with_suspended_account) {
@@ -233,19 +235,19 @@ TEST(pam, authenticate_with_suspended_account) {
 		add_testuser_with_password(db, "6");
 		db.deactivate("testuser");
 	}
-	ggg::pam_handle pamh;
-	ggg::conversation conv(default_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_authenticate(pamh, 0));
+	pam::handle h;
+	pam::conversation conv(default_conversation);
+	h.start("ggg", "testuser", conv);
+	pam::call(::pam_authenticate(h, 0));
 	try {
-		ggg::pam::call(::pam_acct_mgmt(pamh, 0));
+		pam::call(::pam_acct_mgmt(h, 0));
 	} catch (const std::system_error& err) {
 		EXPECT_EQ(
-			ggg::pam_errc::permission_denied,
-			ggg::pam_errc(err.code().value())
+			pam::errc::permission_denied,
+			pam::errc(err.code().value())
 		) << err.what();
 	}
-	ggg::pam::call(::pam_end(pamh, 0));
+	h.end();
 }
 
 TEST(pam, authenticate_with_expired_account) {
@@ -254,32 +256,32 @@ TEST(pam, authenticate_with_expired_account) {
 		add_testuser_with_password(db, "6");
 		db.expire("testuser");
 	}
-	ggg::pam_handle pamh;
-	ggg::conversation conv(default_conversation);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_authenticate(pamh, 0));
+	pam::handle h;
+	pam::conversation conv(default_conversation);
+	h.start("ggg", "testuser", conv);
+	pam::call(::pam_authenticate(h, 0));
 	try {
-		ggg::pam::call(::pam_acct_mgmt(pamh, 0));
+		pam::call(::pam_acct_mgmt(h, 0));
 	} catch (const std::system_error& err) {
 		EXPECT_EQ(
-			ggg::pam_errc::account_expired,
-			ggg::pam_errc(err.code().value())
+			pam::errc::account_expired,
+			pam::errc(err.code().value())
 		) << err.what();
 	}
-	ggg::pam::call(::pam_end(pamh, 0));
+	h.end();
 }
 
 TEST(pam, change_password_and_authenticate) {
 	conversation_state = Conversation_state::Get_old_password;
 	add_testuser_with_password("6");
-	ggg::pam_handle pamh;
-	ggg::conversation conv(conversation_with_state);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
-	ggg::pam::call(::pam_chauthtok(pamh, 0));
+	pam::handle h;
+	pam::conversation conv(conversation_with_state);
+	h.start("ggg", "testuser", conv);
+    h.change_password();
 	conversation_state = Conversation_state::Authenticate_with_new_password;
-	ggg::pam::call(::pam_authenticate(pamh, 0));
-	ggg::pam::call(::pam_acct_mgmt(pamh, 0));
-	ggg::pam::call(::pam_end(pamh, 0));
+    h.authenticate();
+    h.verify_account();
+	h.end();
 }
 
 TEST(pam, change_password_of_expired_account) {
@@ -289,16 +291,14 @@ TEST(pam, change_password_of_expired_account) {
 		db.expire("testuser");
 	}
 	conversation_state = Conversation_state::Get_old_password;
-	ggg::pam_handle pamh;
-	ggg::conversation conv(conversation_with_state);
-	ggg::pam::call(::pam_start("ggg", "testuser", &conv, pamh));
+	pam::handle h;
+	pam::conversation conv(conversation_with_state);
+	h.start("ggg", "testuser", conv);
 	try {
-		ggg::pam::call(::pam_chauthtok(pamh, 0));
+        h.change_password();
 	} catch (const std::system_error& err) {
-		EXPECT_EQ(
-			ggg::pam_errc::account_expired,
-			ggg::pam_errc(err.code().value())
-		) << err.what();
+		EXPECT_EQ(pam::errc::account_expired, pam::errc(err.code().value()))
+            << err.what();
 	}
-	ggg::pam::call(::pam_end(pamh, 0));
+	h.end();
 }

@@ -1,13 +1,15 @@
 #ifndef PAM_PAM_ERROR_CATEGORY_HH
 #define PAM_PAM_ERROR_CATEGORY_HH
 
-#include <system_error>
 #include <security/pam_appl.h>
-#include "pam_errc.hh"
 
-namespace ggg {
+#include <system_error>
 
-	class pam_error_catergory: public std::error_category {
+#include <ggg/pam/errc.hh>
+
+namespace pam {
+
+	class error_category: public std::error_category {
 
 	public:
 		const char*
@@ -31,24 +33,24 @@ namespace ggg {
 
 	};
 
-	extern pam_error_catergory pam_category;
+	extern error_category pam_category;
 
 }
 
 namespace std {
 	inline error_condition
-	make_error_condition(ggg::pam_errc e) noexcept {
+	make_error_condition(pam::errc e) noexcept {
 		return std::error_condition(
 			static_cast<int>(e),
-			ggg::pam_category
+			pam::pam_category
 		);
 	}
 }
 
-namespace ggg {
+namespace pam {
 	inline std::error_condition
-	pam_error_catergory::default_error_condition(int ev) const noexcept {
-		return std::error_condition(ev, ggg::pam_category);
+	error_category::default_error_condition(int ev) const noexcept {
+		return std::error_condition(ev, pam::pam_category);
 	}
 }
 #endif // PAM_PAM_ERROR_CATEGORY_HH

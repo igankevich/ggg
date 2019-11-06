@@ -1,21 +1,22 @@
-#include "conversation.hh"
-
-#include "pam_errc.hh"
-#include "pam_call.hh"
-#include <unistdx/it/intersperse_iterator>
 #include <algorithm>
 #include <iostream>
 
+#include <unistdx/it/intersperse_iterator>
+
+#include <ggg/pam/conversation.hh>
+#include <ggg/pam/errc.hh>
+#include <ggg/pam/call.hh>
+
 void
-ggg::conversation::converse(const messages& m, responses& r) {
+pam::conversation::converse(const messages& m, responses& r) {
 	int ret = this->conv(m.size(), m, r, this->appdata_ptr);
 	if (ret != PAM_SUCCESS) {
-		throw_pam_error(pam_errc(ret));
+		throw_pam_error(errc(ret));
 	}
 }
 
-ggg::responses
-ggg::conversation::converse(int type, const char* text) {
+pam::responses
+pam::conversation::converse(int type, const char* text) {
 	messages m;
 	m.emplace_back(type, text);
 	responses r(m.size());
@@ -24,7 +25,7 @@ ggg::conversation::converse(int type, const char* text) {
 }
 
 std::ostream&
-ggg::operator<<(std::ostream& out, const response& rhs) {
+pam::operator<<(std::ostream& out, const response& rhs) {
 	const char* txt;
 	if (rhs.text()) {
 		if (rhs.text()[0]) {
@@ -39,20 +40,20 @@ ggg::operator<<(std::ostream& out, const response& rhs) {
 }
 
 std::ostream&
-ggg::operator<<(std::ostream& out, const message_pam& rhs) {
+pam::operator<<(std::ostream& out, const message& rhs) {
 	return out << '"' << (rhs.text() ? rhs.text() : "null") << '"';
 }
 
 std::ostream&
-ggg::operator<<(std::ostream& out, const messages& rhs) {
-	for (const message_pam* m : rhs) {
+pam::operator<<(std::ostream& out, const messages& rhs) {
+	for (const message* m : rhs) {
 		out << *m << ',';
 	}
 	return out;
 }
 
 std::ostream&
-ggg::operator<<(std::ostream& out, const responses& rhs) {
+pam::operator<<(std::ostream& out, const responses& rhs) {
 	if (rhs.ok()) {
 		std::copy(
 			rhs.begin(),

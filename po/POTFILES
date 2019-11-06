@@ -87,10 +87,10 @@ src/ggg/nss/shadow.hh
 src/ggg/nss/sp_guard.hh
 src/ggg/pam/conversation.cc
 src/ggg/pam/conversation.hh
-src/ggg/pam/pam_call.hh
+src/ggg/pam/call.hh
 src/ggg/pam/pam_category.cc
 src/ggg/pam/pam_category.hh
-src/ggg/pam/pam_errc.hh
+src/ggg/pam/errc.hh
 src/ggg/pam/pam_ggg.cc
 src/ggg/pam/pam_handle.cc
 src/ggg/pam/pam_handle.hh

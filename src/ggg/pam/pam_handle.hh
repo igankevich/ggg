@@ -8,13 +8,11 @@
 
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
+#include <ggg/pam/call.hh>
 #include <ggg/pam/conversation.hh>
-#include <ggg/pam/pam_call.hh>
+#include <ggg/pam/handle.hh>
 
 namespace ggg {
-
-	void
-	delete_account(pam_handle_t *pamh, void *data, int error_status);
 
     struct log_message {
         char hostname[HOST_NAME_MAX];
@@ -24,111 +22,54 @@ namespace ggg {
         }
     };
 
-	class pam_handle {
+	class pam_handle: public pam::handle {
 
     private:
         using cleanup_type = void (*)(::pam_handle_t*,void*,int);
+        using errc = pam::errc;
+        using conversation_ptr = pam::conversation_ptr;
 
     private:
-		::pam_handle_t* _pamh = nullptr;
 		bool _debug = false;
 		/// Minimal password entropy (as computed by zxcvbn library).
 		double _minentropy = 30.0;
 
 	public:
 
-		pam_handle() = default;
-
-		inline explicit
-		pam_handle(::pam_handle_t* pamh):
-		_pamh(pamh)
-		{}
-
 		inline
 		pam_handle(::pam_handle_t* pamh, int argc, const char** argv):
-		_pamh(pamh) {
+		pam::handle(pamh) {
 			this->parse_args(argc, argv);
 		}
 
 		inline bool debug() const noexcept { return this->_debug; }
 		inline double min_entropy() const noexcept { return this->_minentropy; }
-		const char* get_user() const;
-		const char* get_password(pam_errc err) const;
-		const char* get_old_password() const;
 		const account* get_account() const;
 		void set_account(const ggg::account& acc);
 		Database& get_database();
         const log_message& get_message();
 
-        inline bool
-        get_data(const char* key, const void** ptr) const {
-            return ::pam_get_data(*this, key, ptr) == PAM_SUCCESS;
-        }
-
-        inline void
-        set_data(const char* key, void* ptr, cleanup_type cleanup) {
-            if (::pam_set_data(*this, key, ptr, cleanup) != PAM_SUCCESS) {
-                throw_pam_error(pam_errc::service_error);
-            }
-        }
-
-		inline void
-		set_password_type(const void* word) {
-			this->set_item(PAM_AUTHTOK_TYPE, word);
-		}
-
-		void set_item(int key, const void* value);
-		conversation_ptr get_conversation() const;
-		pam_errc handle_error(const std::system_error& e, pam_errc def) const;
-
-		inline pam_errc
-		handle_error(const std::exception& e) const {
-			pam_syslog(*this, LOG_ERR, "%s", e.what());
-			return pam_errc::service_error;
-		}
-
-		inline pam_errc
-		handle_error(const std::bad_alloc& e) const {
-			pam_syslog(*this, LOG_CRIT, "memory allocation error");
-			return pam_errc::system_error;
-		}
-
 		template <class ... Args>
 		inline void
 		debug(const char* msg, Args ... args) {
 			if (this->_debug) {
-				pam_syslog(this->_pamh, LOG_DEBUG, msg, args...);
+				pam_syslog(get(), LOG_DEBUG, msg, args...);
 			}
 		}
 
 		template <class ... Args>
 		inline void
 		error(const char* msg, Args ... args) {
-			pam_error(this->_pamh, msg, args...);
+			pam_error(get(), msg, args...);
 		}
 
 		template <class ... Args>
 		inline void
 		info(const char* msg, Args ... args) {
-			pam_info(this->_pamh, "%s", msg, args...);
+			pam_info(get(), "%s", msg, args...);
 		}
 
 		void parse_args(int argc, const char** argv);
-		inline operator ::pam_handle_t*() noexcept { return this->_pamh; }
-		inline operator ::pam_handle_t*() const noexcept { return this->_pamh; }
-		inline operator ::pam_handle_t**() noexcept { return &this->_pamh; }
-
-	private:
-
-		inline void
-		print_error(const std::system_error& e) const {
-			pam_syslog(
-				*this,
-				e.code().value() == PAM_PERM_DENIED ? LOG_NOTICE : LOG_ERR,
-				"%s",
-				e.code().message().data()
-			);
-		}
 
 	};
 

@@ -1,12 +1,12 @@
-#ifndef PAM_PAM_ERRC_HH
-#define PAM_PAM_ERRC_HH
+#ifndef GGG_PAM_ERRC_HH
+#define GGG_PAM_ERRC_HH
 
 #include <security/pam_modules.h>
 #include <system_error>
 
-namespace ggg {
+namespace pam {
 
-	enum struct pam_errc: int {
+	enum struct errc: int {
 		success=PAM_SUCCESS,
 		open_error=PAM_OPEN_ERR,
 		symbol_not_found=PAM_SYMBOL_ERR,
@@ -46,11 +46,11 @@ namespace ggg {
 namespace std {
 
 	template<>
-	struct is_error_condition_enum<ggg::pam_errc>: true_type {};
+	struct is_error_condition_enum<pam::errc>: true_type {};
 
 	inline error_condition
-	make_error_condition(ggg::pam_errc e) noexcept;
+	make_error_condition(pam::errc e) noexcept;
 
 }
 
-#endif // PAM_PAM_ERRC_HH
+#endif // vim:filetype=cpp

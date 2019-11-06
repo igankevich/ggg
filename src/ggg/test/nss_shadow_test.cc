@@ -1,8 +1,12 @@
+#include <shadow.h>
+
+#include <cstring>
+
+#include <gtest/gtest.h>
+
 #include <ggg/core/days.hh>
 #include <ggg/nss/entity_traits.hh>
 #include <ggg/test/clean_database.hh>
-#include <gtest/gtest.h>
-#include <shadow.h>
 
 struct sp_guard {
 	sp_guard() { ::setspent(); }

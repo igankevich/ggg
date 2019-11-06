@@ -3,6 +3,7 @@ ggg_pam_src = files([
 	'pam_handle.cc',
 	'pam_category.cc',
 	'conversation.cc',
+	'handle.cc',
 ]) + password_src
 
 ggg_pam_deps = [ggg_crypt,libsodium, pam, unistdx, ggg_core, zxcvbn]

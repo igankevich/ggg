@@ -1,7 +1,7 @@
-#include "pam_category.hh"
+#include <ggg/pam/pam_category.hh>
 
-namespace ggg {
+namespace pam {
 
-	pam_error_catergory pam_category;
+	error_category pam_category;
 
 }
