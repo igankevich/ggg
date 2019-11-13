@@ -36,15 +36,15 @@ TEST(passwd, getpwnam) {
 	struct passwd* user1 = getpwnam("testuser");
 	ASSERT_NE(nullptr, user1);
 	EXPECT_STREQ("testuser", user1->pw_name);
-	EXPECT_EQ(2000, user1->pw_uid);
+	EXPECT_EQ(2000u, user1->pw_uid);
 	struct passwd* user2 = getpwnam("user2");
 	EXPECT_STREQ("user2", user2->pw_name);
-	EXPECT_EQ(2001, user2->pw_uid);
+	EXPECT_EQ(2001u, user2->pw_uid);
 	ASSERT_NE(nullptr, user2);
 	struct passwd* user3 = getpwnam("user3");
 	ASSERT_NE(nullptr, user3);
 	EXPECT_STREQ("user3", user3->pw_name);
-	EXPECT_EQ(2002, user3->pw_uid);
+	EXPECT_EQ(2002u, user3->pw_uid);
 	struct passwd* user4 = getpwnam("nonexistent");
 	ASSERT_EQ(nullptr, user4);
 }
@@ -59,15 +59,15 @@ TEST(passwd, getpwuid) {
 	struct passwd* user1 = getpwuid(2000);
 	ASSERT_NE(nullptr, user1);
 	EXPECT_STREQ("testuser", user1->pw_name);
-	EXPECT_EQ(2000, user1->pw_uid);
+	EXPECT_EQ(2000u, user1->pw_uid);
 	struct passwd* user2 = getpwuid(2001);
 	EXPECT_STREQ("user2", user2->pw_name);
-	EXPECT_EQ(2001, user2->pw_uid);
+	EXPECT_EQ(2001u, user2->pw_uid);
 	ASSERT_NE(nullptr, user2);
 	struct passwd* user3 = getpwuid(2002);
 	ASSERT_NE(nullptr, user3);
 	EXPECT_STREQ("user3", user3->pw_name);
-	EXPECT_EQ(2002, user3->pw_uid);
+	EXPECT_EQ(2002u, user3->pw_uid);
 	struct passwd* user4 = getpwuid(12345);
 	ASSERT_EQ(nullptr, user4);
 }

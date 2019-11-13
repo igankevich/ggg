@@ -36,15 +36,15 @@ TEST(group, getgrnam) {
 	struct group* user1 = getgrnam("testuser");
 	ASSERT_NE(nullptr, user1);
 	EXPECT_STREQ("testuser", user1->gr_name);
-	EXPECT_EQ(2000, user1->gr_gid);
+	EXPECT_EQ(2000u, user1->gr_gid);
 	struct group* user2 = getgrnam("user2");
 	EXPECT_STREQ("user2", user2->gr_name);
-	EXPECT_EQ(2001, user2->gr_gid);
+	EXPECT_EQ(2001u, user2->gr_gid);
 	ASSERT_NE(nullptr, user2);
 	struct group* user3 = getgrnam("user3");
 	ASSERT_NE(nullptr, user3);
 	EXPECT_STREQ("user3", user3->gr_name);
-	EXPECT_EQ(2002, user3->gr_gid);
+	EXPECT_EQ(2002u, user3->gr_gid);
 	struct group* user4 = getgrnam("nonexistent");
 	ASSERT_EQ(nullptr, user4);
 }
@@ -59,15 +59,15 @@ TEST(group, getgrgid) {
 	struct group* user1 = getgrgid(2000);
 	ASSERT_NE(nullptr, user1);
 	EXPECT_STREQ("testuser", user1->gr_name);
-	EXPECT_EQ(2000, user1->gr_gid);
+	EXPECT_EQ(2000u, user1->gr_gid);
 	struct group* user2 = getgrgid(2001);
 	EXPECT_STREQ("user2", user2->gr_name);
-	EXPECT_EQ(2001, user2->gr_gid);
+	EXPECT_EQ(2001u, user2->gr_gid);
 	ASSERT_NE(nullptr, user2);
 	struct group* user3 = getgrgid(2002);
 	ASSERT_NE(nullptr, user3);
 	EXPECT_STREQ("user3", user3->gr_name);
-	EXPECT_EQ(2002, user3->gr_gid);
+	EXPECT_EQ(2002u, user3->gr_gid);
 	struct group* user4 = getgrgid(12345);
 	ASSERT_EQ(nullptr, user4);
 }
@@ -102,9 +102,9 @@ TEST(group, group_member_via_tie) {
 	}
 	ASSERT_EQ(2, ret);
 	if (groups[0] == 2000) {
-		EXPECT_EQ(2001, groups[1]);
+		EXPECT_EQ(2001u, groups[1]);
 	} else if (groups[0] == 2001) {
-		EXPECT_EQ(2000, groups[1]);
+		EXPECT_EQ(2000u, groups[1]);
 	} else {
 		FAIL() << "groups=" << groups[0] << ',' << groups[1];
 	}

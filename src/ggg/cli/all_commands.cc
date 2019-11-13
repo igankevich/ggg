@@ -84,6 +84,7 @@ namespace {
 		MAKE_COMMAND("untie", Untie),
 		MAKE_COMMAND("dot", Dot),
 		MAKE_COMMAND("graphviz", Dot),
+		MAKE_COMMAND("graph", Dot),
 		MAKE_COMMAND("machines", Find_machines),
 		MAKE_COMMAND("hosts", Find_machines),
 		MAKE_COMMAND("guile", Guile),

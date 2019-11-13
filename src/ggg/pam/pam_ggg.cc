@@ -85,17 +85,16 @@ int pam_sm_authenticate(
         Transaction tr(db);
 		account acc = find_account(db, user);
 		check_password(acc.password(), password);
-        const auto& msg = pamh.get_message();
         std::string argon2_prefix = "$argon2id$";
         if (acc.password().compare(0, argon2_prefix.size(), argon2_prefix) != 0) {
             pamh.debug("migrating to argon2 for user \"%s\"", user);
             migrate_to_argon2(db, acc, password);
             pamh.debug("successfully migrated to argon2 for user \"%s\"", user);
-            db.message(user, msg.timestamp, msg.hostname, "migrated to argon2");
+            db.message(user, "migrated to argon2");
         }
 		pamh.set_account(acc);
 		pamh.debug("successfully authenticated user \"%s\"", user);
-        db.message(user, msg.timestamp, msg.hostname, "authenticated");
+        db.message(user, "authenticated");
         tr.commit();
 		ret = errc::success;
 	} catch (const std::system_error& e) {
@@ -216,8 +215,6 @@ int pam_sm_chauthtok(
 			acc.set_password(hash(new_password));
 			db.set_password(acc);
 			pamh.debug("successfully changed password for user \"%s\"", user);
-            const auto& msg = pamh.get_message();
-            db.message(user, msg.timestamp, msg.hostname, "changed password");
 			ret = errc::success;
 		} catch (const std::system_error& e) {
 			ret = pamh.handle_error(e, errc::authtok_error);
@@ -249,9 +246,8 @@ int pam_sm_open_session(
 	ggg::pam_handle pamh(orig, argc, argv);
     try {
 		const char* user = pamh.user();
-        const auto& msg = pamh.get_message();
         auto& db = pamh.get_database();
-        db.message(user, msg.timestamp, msg.hostname, "session opened");
+        db.message(user, "session opened");
         ret = errc::success;
     } catch (const std::exception& e) {
         ret = pamh.handle_error(e);
@@ -269,9 +265,8 @@ int pam_sm_close_session(
 	ggg::pam_handle pamh(orig, argc, argv);
     try {
 		const char* user = pamh.user();
-        const auto& msg = pamh.get_message();
         auto& db = pamh.get_database();
-        db.message(user, msg.timestamp, msg.hostname, "session closed");
+        db.message(user, "session closed");
         ret = errc::success;
     } catch (const std::exception& e) {
         ret = pamh.handle_error(e);

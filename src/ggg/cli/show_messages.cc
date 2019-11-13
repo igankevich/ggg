@@ -9,32 +9,26 @@
 void
 ggg::Show_messages::execute() {
     auto nargs = this->_args.size();
+    using Statement = Database::statement_type;
     Database db(Database::File::Accounts, Database::Flag::Read_only);
+    Statement st;
 	if (nargs == 0) {
-        for (const auto& msg : db.messages().rows<message>()) {
-            auto t = message::clock_type::to_time_t(msg.timestamp());
-            char buf[1024];
-            std::strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S%z", std::localtime(&t));
-            std::cout << buf << "  " << msg.hostname() << "  "
-                << msg.name() << "  " << msg.text() << "  " << '\n';
-        }
+        st = db.messages();
     } else if (nargs == 1) {
         const auto& name = args().front();
-        for (const auto& msg : db.messages(name.data()).rows<message>()) {
-            auto t = message::clock_type::to_time_t(msg.timestamp());
-            char buf[1024];
-            std::strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S%z", std::localtime(&t));
-            std::cout << buf << "  " << msg.hostname() << "  "
-                << msg.text() << "  " << '\n';
-        }
+        st = db.messages(name.data());
+    } else {
+        st = db.messages(args().begin(), args().end());
     }
+    for (const auto& msg : st.rows<message>()) {
+        std::cout << msg << '\n';
+    }
+    st.close();
     db.close();
 }
 
 void
 ggg::Show_messages::print_usage() {
 	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-		<< this->prefix() << " [ENTITY]\n";
+		<< this->prefix() << " [ENTITY...]\n";
 }
-
-

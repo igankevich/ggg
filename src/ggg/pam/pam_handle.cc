@@ -18,7 +18,6 @@ namespace {
 
 	const char* key_account = "ggg_account";
 	const char* key_database = "ggg_database";
-	const char* key_message = "ggg_message";
 
 	template<class T>
 	const void**
@@ -69,16 +68,6 @@ ggg::pam_handle::get_database() {
         set_data(key_database, db, delete_database);
 	}
 	return *db;
-}
-
-const ggg::log_message&
-ggg::pam_handle::get_message() {
-	log_message* msg = nullptr;
-	if (!get_data(key_message, void_ptr<log_message>(&msg)) || !msg) {
-        msg = new log_message;
-        set_data(key_message, msg, delete_object<log_message>);
-	}
-	return *msg;
 }
 
 void

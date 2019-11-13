@@ -1,6 +1,8 @@
 #ifndef GGG_CORE_DATABASE_HH
 #define GGG_CORE_DATABASE_HH
 
+#include <unistd.h>
+
 #include <ostream>
 #include <string>
 #include <unordered_map>
@@ -42,9 +44,14 @@ namespace ggg {
 		using statement_type = sqlite::statement;
 		using group_container_t = std::unordered_map<sys::gid_type,group>;
         using time_point = account::time_point;
+        using duration = account::duration;
+        using clock_type = account::clock_type;
 
 	private:
 		database_t _db;
+        time_point _timestamp{duration::zero()};
+        char _hostname[HOST_NAME_MAX];
+        File _files = File(0);
 
 	public:
 
@@ -293,8 +300,21 @@ namespace ggg {
 		statement_type forms();
 		statement_type find_form(const char* name);
 
+        inline void
+        prepare_message() {
+            if (this->_timestamp != time_point(duration::zero())) return;
+            this->_timestamp = clock_type::now();
+            ::gethostname(this->_hostname, HOST_NAME_MAX);
+        }
+
         void message(const char* username, time_point t, const char* hostname,
                 const char* text);
+
+        inline void
+        message(const char* username, const char* text) {
+            this->prepare_message();
+            this->message(username, this->_timestamp, this->_hostname, text);
+        }
 
         template <class ... Args>
         inline void
@@ -304,8 +324,25 @@ namespace ggg {
                     sqlite::format(format, std::forward<Args>(args)...).get());
         }
 
+        template <class ... Args>
+        inline void
+        message(const char* username, const char* format, const Args& ... args) {
+            this->message(username,
+                    sqlite::format(format, std::forward<Args>(args)...).get());
+        }
+
         statement_type messages();
         statement_type messages(const char* user);
+
+		template <class Iterator>
+		inline statement_type
+		messages(Iterator first, Iterator last) {
+			auto n = std::distance(first, last);
+			auto st = this->_db.prepare(this->select_messages_by_name(n).data());
+			int i = 0;
+			while (first != last) { st.bind(++i, *first); ++first; }
+            return st;
+		}
 
 	private:
 
@@ -326,6 +363,8 @@ namespace ggg {
 
 		std::string
 		find_name_nocheck(sys::uid_type id);
+
+		std::string select_messages_by_name(int n);
 
 		friend class Transaction;
 

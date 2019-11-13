@@ -88,6 +88,13 @@ if with_man
 	subdir('man')
 endif
 
+# env {{{
+env = configuration_data()
+env.set('build_root', meson.build_root())
+env.set('prefix', join_paths(meson.build_root(), 'usr'))
+configure_file(input: 'env.in', output: 'env', configuration: env)
+# }}}
+
 # cppcheck {{{
 cppcheck = find_program('cppcheck', required: false)
 if cppcheck.found()

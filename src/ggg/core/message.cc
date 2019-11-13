@@ -20,8 +20,8 @@ ggg::operator>>(const sqlite::statement& in, message& rhs) {
 std::ostream&
 ggg::operator<<(std::ostream& out, const message& rhs) {
     auto t = message::clock_type::to_time_t(rhs._timestamp);
-    char buf[1024];
-    std::strftime(buf, sizeof(buf), "%A %c", std::localtime(&t));
+    char buf[25];
+    std::strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S%z", std::localtime(&t));
 	return out
 		<< buf << message::delimiter
 		<< rhs._hostname << message::delimiter

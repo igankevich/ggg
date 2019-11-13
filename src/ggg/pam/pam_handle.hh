@@ -14,14 +14,6 @@
 
 namespace ggg {
 
-    struct log_message {
-        char hostname[HOST_NAME_MAX];
-        account::time_point timestamp;
-        inline log_message(): timestamp(account::clock_type::now()) {
-            ::gethostname(this->hostname, HOST_NAME_MAX);
-        }
-    };
-
 	class pam_handle: public pam::handle {
 
     private:
@@ -47,7 +39,6 @@ namespace ggg {
 		const account* get_account() const;
 		void set_account(const ggg::account& acc);
 		Database& get_database();
-        const log_message& get_message();
 
 		template <class ... Args>
 		inline void

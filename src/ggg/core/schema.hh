@@ -95,11 +95,7 @@ CREATE TABLE messages (
     account_name TEXT NOT NULL,
     timestamp INTEGER NOT NULL,
     machine_name TEXT NOT NULL,
-    message TEXT NOT NULL,
-	FOREIGN KEY (account_name)
-		REFERENCES accounts (name)
-		ON DELETE CASCADE
-		ON UPDATE CASCADE
+    message TEXT NOT NULL
 );
 CREATE INDEX account_name_index ON messages (account_name);
 CREATE INDEX timestamp_index ON messages (timestamp);

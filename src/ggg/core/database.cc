@@ -442,6 +442,7 @@ JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
 void
 ggg::Database::open(File file, Flag flag) {
 	this->close();
+    this->_files = file;
 	// open entities implicitly
 	// if (file & ~File::Entities) { file = file | File::Entities; }
 	// convert flags to sqlite
@@ -479,8 +480,13 @@ ggg::Database::open(File file, Flag flag) {
 
 void
 ggg::Database::attach(File file, Flag flag) {
-	const auto& params = configurations[static_cast<int>(file)];
-	this->_db.attach(params.filename, params.name);
+    int nfiles = 2;
+	for (int i=0; i<nfiles; ++i) {
+		if (!(file & File(1<<i))) { continue; }
+		const auto& params = configurations[i];
+        this->_db.attach(params.filename, params.name);
+        this->_files = this->_files | file;
+    }
 }
 
 auto
@@ -635,6 +641,7 @@ ggg::Database::insert(const entity& ent) {
 		home,
 		shell
 	);
+    message(ent.name().data(), "entity created");
 	if (ent.has_valid_parent()) {
 		auto parent_id = find_id(ent.parent().data());
 		attach(id, parent_id);
@@ -650,6 +657,8 @@ ggg::Database::erase(const char* name) {
 	if (nrows1 == 0 && nrows2 == 0) {
 		throw std::invalid_argument("bad entity");
 	}
+    message(name, "entity removed");
+    message(name, "account removed");
 }
 
 void
@@ -657,6 +666,7 @@ ggg::Database::erase(const entity& ent) {
 	this->_db.execute(sql_delete_entity_by_name, ent.name());
 	auto nrows = this->_db.num_rows_modified();
 	if (nrows == 0) { throw std::invalid_argument("bad entity"); }
+    message(ent.name().data(), "entity removed");
 }
 
 void
@@ -664,6 +674,7 @@ ggg::Database::erase(const account& acc) {
 	this->_db.execute("DELETE FROM accounts WHERE name=?", acc.name());
 	auto nrows = this->_db.num_rows_modified();
 	if (nrows == 0) { throw std::invalid_argument("bad account"); }
+    message(acc.name().data(), "account removed");
 }
 
 sys::uid_type
@@ -771,6 +782,7 @@ ggg::Database::insert(const account& acc) {
 		acc.expire(),
 		static_cast<int_t>(acc.flags())
 	);
+    message(acc.name().data(), "account created");
 }
 
 void
@@ -786,6 +798,7 @@ ggg::Database::update(const account& acc) {
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad account");
 	}
+    message(acc.name().data(), "account updated");
 }
 
 void
@@ -800,6 +813,7 @@ ggg::Database::set_password(const account& acc) {
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad account");
 	}
+    message(acc.name().data(), "password changed");
 }
 
 void
@@ -808,19 +822,19 @@ ggg::Database::expire(const char* name) {
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad account name");
 	}
+    message(name, "account expired");
 }
 
 void
 ggg::Database::set_account_flag(const char* name, account_flags flag) {
 	typedef std::underlying_type<account_flags>::type int_t;
-	this->_db.execute(
-		sql_set_account_flag_by_name,
-		static_cast<int_t>(flag),
-		name
-	);
+	this->_db.execute(sql_set_account_flag_by_name, static_cast<int_t>(flag), name);
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad account name");
 	}
+    if (flag & account_flags::suspended) {
+        message(name, "account locked");
+    }
 }
 
 void
@@ -834,6 +848,9 @@ ggg::Database::unset_account_flag(const char* name, account_flags flag) {
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad account name");
 	}
+    if (flag & account_flags::suspended) {
+        message(name, "account unlocked");
+    }
 }
 
 std::string
@@ -891,6 +908,7 @@ ggg::Database::update(const entity& ent) {
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad entity");
 	}
+    message(name.data(), "entity updated");
 }
 
 auto
@@ -1132,9 +1150,13 @@ ggg::Database::find_form(const char* name) -> statement_type {
 void
 ggg::Database::message(const char* username, time_point t, const char* hostname,
         const char* text) {
-    this->_db.execute("INSERT INTO messages "
+    if (!(this->_files & File::Accounts)) {
+        attach(File::Accounts, Flag::Read_write);
+    }
+    auto st = this->_db.prepare("INSERT INTO messages "
             "(account_name,timestamp,machine_name,message) "
             "VALUES (?,?,?,?)", username, t, hostname, text);
+    st.step();
 }
 
 auto
@@ -1148,3 +1170,19 @@ ggg::Database::messages(const char* user) -> statement_type {
     return this->_db.prepare("SELECT account_name,timestamp,machine_name,message "
             "FROM messages WHERE account_name=? ORDER BY timestamp", user);
 }
+
+std::string
+ggg::Database::select_messages_by_name(int n) {
+	std::string sql;
+    sql.reserve(4096);
+    sql += "SELECT account_name,timestamp,machine_name,message "
+        "FROM messages WHERE account_name IN (";
+	for (int i=0; i<n; ++i) {
+		sql += '?';
+		sql += ',';
+	}
+	sql.back() = ')';
+    sql += " ORDER BY timestamp";
+	return sql;
+}
+
