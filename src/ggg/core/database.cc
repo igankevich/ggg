@@ -677,6 +677,22 @@ ggg::Database::erase(const account& acc) {
     message(acc.name().data(), "account removed");
 }
 
+ggg::entity
+ggg::Database::find_entity_nocheck(const char* name) {
+    entity ent;
+	auto st = this->find_entity(name);
+	if (st.step() != sqlite::errc::done) { st >> ent; }
+	return ent;
+}
+
+ggg::entity
+ggg::Database::find_entity_nocheck(int64_t id) {
+    entity ent;
+	auto st = this->find_entity(id);
+	if (st.step() != sqlite::errc::done) { st >> ent; }
+	return ent;
+}
+
 sys::uid_type
 ggg::Database::find_id_nocheck(const char* name) {
 	sys::uid_type id = bad_uid;
@@ -884,6 +900,7 @@ ggg::Database::update(const entity& ent) {
 	validate_entity(ent);
 	auto id = ent.id();
 	auto name = ent.name();
+    entity old_ent;
 	if (ent.has_id() && ent.has_name()) {
 		auto existing_id = find_id_nocheck(ent.name().data());
 		auto existing_name = find_name_nocheck(ent.id());
@@ -892,23 +909,33 @@ ggg::Database::update(const entity& ent) {
 			existing_name == ent.name()) {
 			throw std::invalid_argument("changing id is not allowed");
 		}
+        old_ent = find_entity_nocheck(ent.id());
 	} else if (!ent.has_id()) {
-		id = find_id(ent.name().data());
+        old_ent = find_entity_nocheck(ent.name().data());
+		id = old_ent.id();
 	} else if (!ent.has_name()) {
-		name = find_name(id);
+        old_ent = find_entity_nocheck(ent.id());
+		name = old_ent.name();
 	}
-	this->_db.execute(
-		sql_update_user_by_id,
-		name,
-		ent.real_name(),
-		ent.home(),
-		ent.shell(),
-		id
-	);
+	this->_db.execute(sql_update_user_by_id, name, ent.real_name(),
+            ent.home(), ent.shell(), id);
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad entity");
 	}
-    message(name.data(), "entity updated");
+    if (name != old_ent.name()) {
+        auto old_name = old_ent.name().data();
+        message(old_name, "entity name changed to %s", name.data());
+        message(name.data(), "entity renamed from %s", old_name);
+    }
+    if (ent.real_name() != old_ent.real_name()) {
+        message(name.data(), "entity real name changed to %s", ent.real_name().data());
+    }
+    if (ent.home() != old_ent.home()) {
+        message(name.data(), "entity home directory changed to %s", ent.home().data());
+    }
+    if (ent.shell() != old_ent.shell()) {
+        message(name.data(), "entity shell changed to %s", ent.shell().data());
+    }
 }
 
 auto
@@ -1184,5 +1211,33 @@ ggg::Database::select_messages_by_name(int n) {
 	sql.back() = ')';
     sql += " ORDER BY timestamp";
 	return sql;
+}
+
+std::string
+ggg::Database::rotate_messages(int n) {
+	std::string sql;
+    sql.reserve(4096);
+    sql += "DELETE FROM messages WHERE timestamp < strftime('%s', 'now'";
+	for (int i=0; i<n; ++i) {
+		sql += ',';
+		sql += '?';
+	}
+    sql += ')';
+	return sql;
+}
+
+int64_t
+ggg::Database::messages_size() {
+    int64_t size = -1;
+	auto st = this->_db.prepare("SELECT SUM(pgsize) FROM dbstat WHERE name='messages'");
+	if (st.step() == sqlite::errc::done) { throw std::runtime_error("bad size"); }
+    st.column(0, size);
+    return size;
+}
+
+void
+ggg::Database::optimise() {
+    this->_db.vacuum();
+    this->_db.optimize();
 }
 

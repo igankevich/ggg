@@ -25,7 +25,7 @@ ggg::operator<<(std::ostream& out, const message& rhs) {
 	return out
 		<< buf << message::delimiter
 		<< rhs._hostname << message::delimiter
-		<< rhs._name << message::delimiter
+		<< rhs._name << ": "
 		<< rhs._text;
 }
 

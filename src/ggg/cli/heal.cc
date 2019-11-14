@@ -69,6 +69,17 @@ namespace {
 		root.owner(root_uid, root_gid);
 	}
 
+    void
+    compact(ggg::Database& db) {
+        using namespace ggg;
+        db.open(Database::File::Entities, Database::Flag::Read_write);
+        db.optimise();
+        db.close();
+        db.open(Database::File::Accounts, Database::Flag::Read_write);
+        db.optimise();
+        db.close();
+    }
+
 }
 
 void
@@ -79,8 +90,7 @@ ggg::Heal
 	heal_root_directory();
 	Database db;
 	try {
-		{ Database(Database::File::Entities, Database::Flag::Read_write); }
-		{ Database(Database::File::Accounts, Database::Flag::Read_write); }
+        compact(db);
 		db.open(Database::File::All, Database::Flag::Read_write);
 	} catch (const std::exception& err) {
 		++num_errors;
@@ -90,7 +100,6 @@ ggg::Heal
 	read_gid = group_id(db, GGG_READ_GROUP);
 	write_gid = group_id(db, GGG_WRITE_GROUP);
 	heal_owner_permissions();
-	if (num_errors > 0) {
-		throw quiet_error();
-	}
+    db.close();
+	if (num_errors > 0) { throw quiet_error(); }
 }

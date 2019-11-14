@@ -75,20 +75,11 @@ namespace ggg {
 			return this->_db.get() != nullptr;
 		}
 
-		inline void
-		close() {
-			this->_db.close();
-		}
+		inline void close() { this->_db.close(); }
+		inline database_t* db() { return &this->_db; }
+		inline const database_t* db() const { return &this->_db; }
 
-		inline database_t*
-		db() {
-			return &this->_db;
-		}
-
-		inline const database_t*
-		db() const {
-			return &this->_db;
-		}
+        void optimise();
 
 		statement_type
 		find_entity(int64_t id);
@@ -320,15 +311,13 @@ namespace ggg {
         inline void
         message(const char* username, time_point t, const char* hostname,
                 const char* format, const Args& ... args) {
-            this->message(username, t, hostname,
-                    sqlite::format(format, std::forward<Args>(args)...).get());
+            this->message(username, t, hostname, sqlite::format(format, args...).get());
         }
 
         template <class ... Args>
         inline void
         message(const char* username, const char* format, const Args& ... args) {
-            this->message(username,
-                    sqlite::format(format, std::forward<Args>(args)...).get());
+            this->message(username, sqlite::format(format, args...).get());
         }
 
         statement_type messages();
@@ -344,27 +333,31 @@ namespace ggg {
             return st;
 		}
 
+		template <class Iterator>
+		inline void
+		rotate_messages(Iterator first, Iterator last) {
+			auto n = std::distance(first, last);
+			auto st = this->_db.prepare(this->rotate_messages(n).data());
+			int i = 0;
+			while (first != last) { st.bind(++i, *first); ++first; }
+            st.step();
+            st.close();
+		}
+
+        int64_t messages_size();
+
 	private:
 
-		std::string
-		select_users_by_names(int n);
-
-		std::string
-		select_accounts_by_names(int n);
-
-		void
-		attach(File file, Flag flag=Flag::Read_only);
-
-		void
-		validate_entity(const entity& ent);
-
-		sys::uid_type
-		find_id_nocheck(const char* name);
-
-		std::string
-		find_name_nocheck(sys::uid_type id);
-
+		std::string select_users_by_names(int n);
+		std::string select_accounts_by_names(int n);
 		std::string select_messages_by_name(int n);
+		std::string rotate_messages(int n);
+		void attach(File file, Flag flag=Flag::Read_only);
+		void validate_entity(const entity& ent);
+		sys::uid_type find_id_nocheck(const char* name);
+        entity find_entity_nocheck(int64_t id);
+        entity find_entity_nocheck(const char* name);
+		std::string find_name_nocheck(sys::uid_type id);
 
 		friend class Transaction;
 
