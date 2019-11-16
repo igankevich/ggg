@@ -60,9 +60,11 @@ INSTANTIATE_TEST_CASE_P(
 TEST(Account2, ExpireActive) {
 	ggg::account acc;
 	acc.make_expired();
-	EXPECT_TRUE(acc.has_expired());
+    auto now = ggg::account::clock_type::now();
+	EXPECT_TRUE(acc.has_expired(now));
 	acc.make_active();
-	EXPECT_FALSE(acc.has_expired());
+    now = ggg::account::clock_type::now();
+	EXPECT_FALSE(acc.has_expired(now));
 }
 
 TEST(Account2, ReadDefaultConstructed) {

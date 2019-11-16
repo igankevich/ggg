@@ -18,34 +18,11 @@ using pam::pam_category;
 
 namespace {
 
-	typedef std::chrono::duration<long,std::ratio<60*60*24,1>> days;
-
-	ggg::account::clock_type::rep
-	num_days_since_expired(
-		const ggg::account* acc,
-		ggg::account::time_point now
-	) {
-		using std::chrono::duration_cast;
-		return duration_cast<days>(now - acc->expire()).count();
-	}
-
-	ggg::account::clock_type::rep
-	num_days_since_password_expired(
-		const ggg::account* acc,
-		ggg::account::time_point now
-	) {
-		using std::chrono::duration_cast;
-		const auto tmp = now - acc->last_change() - acc->max_change();
-		return duration_cast<days>(tmp).count();
-	}
-
 	ggg::account
 	find_account(ggg::Database& db, const char* user) {
 		auto rstr = db.find_account(user);
 		ggg::account_iterator first(rstr), last;
-		if (first == last) {
-			throw_pam_error(errc::unknown_user);
-		}
+		if (first == last) { throw_pam_error(errc::unknown_user); }
 		return *first;
 	}
 
@@ -135,18 +112,12 @@ int pam_sm_acct_mgmt(
 		}
 		const account::time_point now = account::clock_type::now();
 		if (acc->has_expired(now)) {
-			pamh.debug(
-				"account \"%s\" has expired %ld day(s) ago",
-				user, num_days_since_expired(acc, now)
-			);
+			pamh.debug("account \"%s\" has expired", user);
 			throw_pam_error(errc::account_expired);
 		}
 		if (acc->password_has_expired(now)) {
 			pamh.info("Password has expired.");
-			pamh.debug(
-				"password of account \"%s\" has expired %ld day(s) ago",
-				user, num_days_since_password_expired(acc, now)
-			);
+			pamh.debug("password of account \"%s\" has expired", user);
 			throw_pam_error(errc::new_password_required);
 		}
 		pamh.debug("account \"%s\" is valid", user);
@@ -181,10 +152,7 @@ int pam_sm_chauthtok(
 			account acc = find_account(db, user);
 			const account::time_point now = account::clock_type::now();
 			if (acc.has_expired(now)) {
-				pamh.debug(
-					"account \"%s\" has expired %ld day(s) ago",
-					user, num_days_since_expired(&acc, now)
-				);
+				pamh.debug("account \"%s\" has expired", user);
 				throw_pam_error(errc::account_expired);
 			}
 			if ((flags & PAM_CHANGE_EXPIRED_AUTHTOK) &&

@@ -14,7 +14,6 @@
 #include <sqlitex/statement.hh>
 
 #include <ggg/core/entity_format.hh>
-#include <ggg/core/eq_traits.hh>
 #include <ggg/core/guile_traits.hh>
 
 namespace ggg {
@@ -242,18 +241,6 @@ namespace ggg {
 	operator>>(const sqlite::statement& in, basic_entity<char>& rhs);
 
 	typedef basic_entity<char> entity;
-
-	template <class Ch>
-	struct eq_traits<basic_entity<Ch>> {
-
-		typedef basic_entity<Ch> entity_type;
-
-		inline static bool
-		eq(const entity_type& lhs, const entity_type& rhs) {
-			return lhs.id() == rhs.id() || lhs.name() == rhs.name();
-		}
-
-	};
 
 }
 

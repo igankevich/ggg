@@ -12,7 +12,6 @@
 
 #include <ggg/core/account_flags.hh>
 #include <ggg/core/entity_format.hh>
-#include <ggg/core/eq_traits.hh>
 #include <ggg/core/guile_traits.hh>
 #include <ggg/sec/secure_string.hh>
 
@@ -34,6 +33,9 @@ namespace ggg {
 
 		static constexpr const char delimiter = ':';
 		static constexpr const char separator = '$';
+
+        static constexpr bool isset(time_point t) { return t > time_point(duration::zero()); }
+        static constexpr bool isset(duration d) { return d > duration::zero(); }
 
 	private:
 		string_type _login;
@@ -64,30 +66,16 @@ namespace ggg {
 			this->_expire = time_point(duration::zero());
 		}
 
-		inline bool
-		has_expiration_date() const noexcept {
-			return this->_expire > time_point(duration::zero());
-		}
+		inline bool has_expiration_date() const { return isset(this->_expire); }
 
 		inline bool
-		has_expired() const noexcept {
-			return this->has_expired(clock_type::now());
-		}
-
-		inline bool
-		has_expired(time_point now) const noexcept {
+		has_expired(time_point now) const {
 			return this->has_expiration_date() && this->_expire < now;
 		}
 
 		inline bool
-		password_has_expired() const noexcept {
-			return this->password_has_expired(clock_type::now());
-		}
-
-		inline bool
-		password_has_expired(time_point now) const noexcept {
-			return (this->_lastchange > time_point(duration::zero())
-			        && this->_maxchange > duration::zero()
+		password_has_expired(time_point now) const {
+			return (isset(this->_lastchange) && isset(this->_maxchange)
 			        && this->_lastchange < now - this->_maxchange)
 			       || (this->_flags & account_flags::password_has_expired);
 		}
@@ -124,98 +112,39 @@ namespace ggg {
 			return this->_login < rhs._login;
 		}
 
-		inline const string_type& login() const noexcept { return this->_login; }
-		inline const string_type& name() const noexcept { return this->_login; }
-		inline const string_type& password() const noexcept { return this->_password; }
+		inline const string_type& login() const { return this->_login; }
+		inline const string_type& name() const { return this->_login; }
+		inline const string_type& password() const { return this->_password; }
 
 		void set_password(string_type&& rhs);
 
-		inline bool has_password() const noexcept { return !this->_password.empty(); }
-		inline time_point last_change() const noexcept { return this->_lastchange; }
+		inline bool has_password() const { return !this->_password.empty(); }
+		inline time_point last_change() const { return this->_lastchange; }
+		inline bool has_last_change() const { return isset(this->_lastchange); }
+		inline duration min_change() const { return this->_minchange; }
+		inline bool has_min_change() const { return isset(this->_minchange); }
+		inline duration max_change() const { return this->_maxchange; }
+		inline bool has_max_change() const { return isset(this->_maxchange); }
+		inline void max_change(duration rhs) { this->_maxchange = rhs; }
+		inline duration warn_change() const { return this->_warnchange; }
+		inline bool has_warn_change() const { return isset(this->_warnchange); }
+		inline duration max_inactive() const { return this->_maxinactive; }
+		inline bool has_max_inactive() const { return isset(this->_maxinactive); }
+		inline time_point expire() const { return this->_expire; }
 
-		inline bool
-		has_last_change() const noexcept {
-			return this->_lastchange > time_point(duration::zero());
-		}
-
-		inline duration min_change() const noexcept { return this->_minchange; }
-
-		inline bool
-		has_min_change() const noexcept {
-			return this->_minchange > duration::zero();
-		}
-
-		inline duration
-		max_change() const noexcept {
-			return this->_maxchange;
-		}
-
-		inline bool
-		has_max_change() const noexcept {
-			return this->_maxchange > duration::zero();
-		}
-
-		inline duration
-		warn_change() const noexcept {
-			return this->_warnchange;
-		}
-
-		inline bool
-		has_warn_change() const noexcept {
-			return this->_warnchange > duration::zero();
-		}
-
-		inline duration
-		max_inactive() const noexcept {
-			return this->_maxinactive;
-		}
-
-		inline bool
-		has_max_inactive() const noexcept {
-			return this->_maxinactive > duration::zero();
-		}
-
-		inline time_point
-		expire() const noexcept {
-			return this->_expire;
-		}
-
-		inline account_flags
-		flags() const noexcept {
-			return this->_flags;
-		}
-
-		inline void
-		setf(account_flags rhs) noexcept {
-			this->_flags = this->_flags | rhs;
-		}
-
-		inline void
-		unsetf(account_flags rhs) noexcept {
-			this->_flags = this->_flags & (~rhs);
-		}
-
-		inline void
-		clear(account_flags rhs) noexcept {
-			this->_flags = rhs;
-		}
+		inline account_flags flags() const { return this->_flags; }
+		inline void setf(account_flags rhs) { this->_flags = this->_flags | rhs; }
+		inline void unsetf(account_flags rhs) { this->_flags = this->_flags & (~rhs); }
+		inline void clear(account_flags rhs) { this->_flags = rhs; }
 
 		inline bool
 		has_been_suspended() const noexcept {
 			return this->_flags & account_flags::suspended;
 		}
 
-		inline void
-		set_max_change(duration rhs) noexcept {
-			this->_maxchange = rhs;
-		}
-
-		void
-		clear();
+		void clear();
 
 	private:
-		void
-		parse_password();
 
 		friend struct Entity_header<account>;
 		friend struct Guile_traits<account>;
@@ -230,16 +159,6 @@ namespace ggg {
 
 	void
 	operator>>(const sqlite::statement& in, account& rhs);
-
-	template <>
-	struct eq_traits<account> {
-
-		inline static bool
-		eq(const account& lhs, const account& rhs) {
-			return lhs.name() == rhs.name();
-		}
-
-	};
 
 }
 
