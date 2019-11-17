@@ -246,14 +246,10 @@ namespace ggg {
 		statement_type
 		hierarchy();
 
-		void
-		attach(const char* child, const char* parent);
-
-		void
-		attach(sys::uid_type child_id, sys::gid_type parent_id);
-
-		void
-		detach(const char* child);
+		void attach(const char* child, const char* parent);
+		void attach(sys::uid_type child_id, sys::gid_type parent_id);
+		void detach(sys::uid_type child_id);
+		void detach(const char* child);
 
 		bool
 		entities_are_attached(sys::uid_type child_id, sys::gid_type parent_id);
@@ -358,6 +354,8 @@ namespace ggg {
         entity find_entity_nocheck(int64_t id);
         entity find_entity_nocheck(const char* name);
 		std::string find_name_nocheck(sys::uid_type id);
+        void validate_hierarchy(sys::uid_type child_id);
+        void detect_loops(sys::uid_type child_id);
 
 		friend class Transaction;
 

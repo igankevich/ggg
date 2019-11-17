@@ -11,6 +11,8 @@
 
 struct Clean_database: public ggg::Database {
 
+    using ggg::Database::insert;
+
 	Clean_database() {
 		sys::mkdirs(sys::path(GGG_ROOT));
 		std::remove(GGG_ENTITIES_PATH);

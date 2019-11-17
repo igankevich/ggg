@@ -44,6 +44,17 @@ test(
 )
 
 test(
+	'database-test',
+	executable(
+		'database-test',
+		sources: ['database_test.cc'],
+		include_directories: src,
+		dependencies: [unistdx, gtest, ggg_core]
+	),
+	suite: 'unit'
+)
+
+test(
 	'conversation-test',
 	executable(
 		'conversation-test',

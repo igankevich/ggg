@@ -9,6 +9,7 @@
 #include <ggg/core/schema.hh>
 
 #include <iostream>
+#include <iomanip>
 
 namespace {
 
@@ -201,6 +202,95 @@ WITH RECURSIVE
 		  AND path.depth < $depth
 	)
 SELECT child_id,initial_id FROM path
+)";
+
+const char* sql_select_all_loops = R"(
+WITH RECURSIVE
+	-- merge hierarchy and ties
+	edges(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM hierarchy
+		UNION
+		SELECT child_id,parent_id FROM ties
+	),
+	path(child_id,parent_id,loop) AS (
+		SELECT child_id,parent_id,0 FROM edges
+		WHERE child_id=$id
+		UNION ALL
+		SELECT edges.child_id, edges.parent_id,
+            (CASE WHEN path.child_id=edges.parent_id THEN 1 ELSE 0 END)
+		FROM path, edges
+		WHERE path.parent_id=edges.child_id
+          AND path.loop = 0
+    )
+SELECT MAX(loop) FROM path
+)";
+
+const char* sql_select_hierarchy_loops = R"(
+WITH RECURSIVE
+    edges(child_id,parent_id) AS (
+        SELECT child_id,parent_id FROM hierarchy
+        UNION
+        SELECT parent_id,child_id FROM hierarchy),
+	path(child_id,parent_id,loop) AS (
+	    -- find outbound edges
+		SELECT child_id,parent_id,(CASE WHEN child_id=parent_id THEN 1 ELSE 0 END)
+        FROM edges
+		WHERE child_id=$id
+		UNION
+		SELECT edges.child_id, edges.parent_id,
+            (CASE WHEN path.child_id=edges.parent_id THEN 1 ELSE 0 END)
+		FROM path, edges
+		WHERE path.parent_id=edges.child_id
+          AND path.loop = 0
+    ),
+    vertices(id) AS (SELECT DISTINCT child_id FROM path),
+    outbound(id,num_edges) AS (
+        SELECT vertices.id,COUNT(hierarchy.parent_id)
+        FROM vertices JOIN hierarchy ON vertices.id=hierarchy.child_id
+        GROUP BY vertices.id),
+    inbound(id,num_edges) AS (
+        SELECT vertices.id,COUNT(hierarchy.child_id)
+        FROM vertices JOIN hierarchy ON vertices.id=hierarchy.parent_id
+        GROUP BY vertices.id)
+SELECT
+    (SELECT MAX(num_edges) FROM outbound),
+    (SELECT MAX(num_edges) FROM inbound)
+)";
+
+const char* sql_select_hierarchy_loops_debug = R"(
+WITH RECURSIVE
+    edges(child_id,parent_id) AS (
+        SELECT child_id,parent_id FROM hierarchy
+        UNION
+        SELECT parent_id,child_id FROM hierarchy),
+	path(child_id,parent_id,loop) AS (
+	    -- find outbound edges
+		SELECT child_id,parent_id,(CASE WHEN child_id=parent_id THEN 1 ELSE 0 END)
+        FROM edges
+		WHERE child_id=$id
+		UNION
+		SELECT edges.child_id, edges.parent_id,
+            (CASE WHEN path.child_id=edges.parent_id THEN 1 ELSE 0 END)
+		FROM path, edges
+		WHERE path.parent_id=edges.child_id
+          AND path.loop = 0
+    ),
+    vertices(id) AS (SELECT DISTINCT child_id FROM path),
+    outbound(id,num_edges) AS (
+        SELECT vertices.id,COUNT(hierarchy.parent_id)
+        FROM vertices JOIN hierarchy ON vertices.id=hierarchy.child_id
+        GROUP BY vertices.id),
+    inbound(id,num_edges) AS (
+        SELECT vertices.id,COUNT(hierarchy.child_id)
+        FROM vertices JOIN hierarchy ON vertices.id=hierarchy.parent_id
+        GROUP BY vertices.id)
+SELECT
+    (SELECT name FROM entities WHERE id=child_id),
+    (SELECT name FROM entities WHERE id=parent_id),
+    (SELECT MAX(num_edges) FROM outbound),
+    (SELECT MAX(num_edges) FROM inbound),
+    loop
+FROM path
 )";
 
 const char* sql_select_all_groups = R"(
@@ -704,9 +794,7 @@ ggg::Database::find_id_nocheck(const char* name) {
 sys::uid_type
 ggg::Database::find_id(const char* name) {
 	sys::uid_type id = find_id_nocheck(name);
-	if (id == bad_uid) {
-		throw std::invalid_argument("bad name");
-	}
+	if (id == bad_uid) { throw std::invalid_argument("bad name"); }
 	return id;
 }
 
@@ -982,6 +1070,14 @@ ggg::Database::find_hierarchy_root(sys::uid_type child_id) {
 }
 
 void
+ggg::Database::detach(sys::uid_type id) {
+	this->_db.execute(sql_hierarchy_detach_child_by_id, id);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("bad id");
+	}
+}
+
+void
 ggg::Database::detach(const char* name) {
 	this->_db.execute(sql_hierarchy_detach_child_by_name, name);
 	if (this->_db.num_rows_modified() == 0) {
@@ -991,14 +1087,62 @@ ggg::Database::detach(const char* name) {
 
 void
 ggg::Database::attach(sys::uid_type child_id, sys::gid_type parent_id) {
+    if (child_id == parent_id) { throw std::invalid_argument("self-loop"); }
 	if (entities_are_attached(child_id, parent_id)) {
 		throw std::invalid_argument("entities are attached");
 	}
 	if (entities_are_tied(child_id, parent_id)) {
 		throw std::invalid_argument("entities are tied");
 	}
-	this->_db.execute(sql_hierarchy_detach_child_by_id, child_id);
 	this->_db.execute(sql_hierarchy_attach, child_id, parent_id);
+    validate_hierarchy(child_id);
+    detect_loops(child_id);
+}
+
+void
+ggg::Database::validate_hierarchy(sys::uid_type id) {
+    {
+        auto st = this->_db.prepare(sql_select_hierarchy_loops_debug, id);
+        std::clog << "forward\n";
+        while (st.step() != sqlite::errc::done) {
+            std::string from, to;
+            int64_t outbound=0, inbound=0, loop=0;
+            st.column(0, from);
+            st.column(1, to);
+            st.column(2, outbound);
+            st.column(3, inbound);
+            st.column(4, loop);
+            std::clog << std::setw(20) << from;
+            std::clog << std::setw(20) << to;
+            std::clog << std::setw(20) << outbound;
+            std::clog << std::setw(20) << inbound;
+            std::clog << std::setw(20) << loop;
+            std::clog << '\n';
+        }
+    }
+    auto st = this->_db.prepare(sql_select_hierarchy_loops, id);
+    bool loop = false;
+    int64_t num_outbound_edges = 0, num_inbound_edges = 0;
+    if (st.step() != sqlite::errc::done) {
+        st.column(0, num_outbound_edges);
+        st.column(1, num_inbound_edges);
+    }
+    if (!(num_outbound_edges <= 1 || num_inbound_edges <= 1)) {
+        throw std::invalid_argument("entities in the hierarchy should "
+                "either all have <= 1 outbound edges "
+                "or all have <= 1 inbound edges");
+    }
+}
+
+void
+ggg::Database::detect_loops(sys::uid_type id) {
+    auto st = this->_db.prepare(sql_select_all_loops);
+	if (st.step() == sqlite::errc::done) { return; }
+    bool loop = false;
+    st.column(0, loop);
+    if (loop) {
+        throw std::invalid_argument("this operation creates loops in the graph");
+    }
 }
 
 void
@@ -1010,21 +1154,20 @@ ggg::Database::attach(const char* child, const char* parent) {
 
 void
 ggg::Database::tie(sys::uid_type uid, sys::gid_type gid) {
+    if (uid == gid) { throw std::invalid_argument("self-loop"); }
+	if (entities_are_attached(uid, gid)) {
+		throw std::invalid_argument("entities are attached");
+	}
+    if (entities_are_tied(uid, gid)) {
+        throw std::invalid_argument("entities are tied");
+    }
 	this->_db.execute(sql_insert_tie, uid, gid);
+    detect_loops(uid);
 }
 
 void
 ggg::Database::tie(const char* child, const char* parent) {
-	auto child_id = find_id(child);
-	auto parent_id = find_id(parent);
-	auto child_root = find_hierarchy_root(child_id);
-	auto parent_root = find_hierarchy_root(parent_id);
-	if (child_root == parent_root) {
-		std::clog << "child_root=" << child_root << std::endl;
-		std::clog << "parent_root=" << parent_root << std::endl;
-		throw std::invalid_argument("same hierarchy root");
-	}
-	this->tie(child_id, parent_id);
+	this->tie(find_id(child), find_id(parent));
 }
 
 void

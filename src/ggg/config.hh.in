@@ -21,4 +21,6 @@
 #define GGG_GUILE_LOAD_PATH "@guile_load_path@"
 #define GGG_GUILE_LOAD_COMPILED_PATH "@guile_load_compiled_path@"
 
+#mesondefine GGG_DEVELOPER_BUILD
+
 #endif // vim:filetype=cpp

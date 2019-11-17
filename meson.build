@@ -79,6 +79,7 @@ config.set('default_home_prefix', '/home')
 config.set('default_shell', '/bin/sh')
 config.set('guile_load_path', site_directory)
 config.set('guile_load_compiled_path', site_ccache_directory)
+config.set('GGG_DEVELOPER_BUILD', developer)
 
 subdir('src')
 subdir('po')
