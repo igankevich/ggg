@@ -62,7 +62,19 @@ TEST(database, detect_loops) {
     expect_throw(db.attach("m3", "m3"), std::invalid_argument);
     // ties should not create loops
     expect_no_throw(db.tie("users", "machines"));
-    expect_throw(db.tie("u1", "m1"), std::invalid_argument);
     expect_throw(db.tie("m1", "u1"), std::invalid_argument);
+    // find hierarchy root should work in both directions
+    {
+        auto st = db.find_entity(db.find_hierarchy_root(db.find_id("u1")));
+        EXPECT_NE(sqlite::errc::done, st.step());
+        entity ent; st >> ent;
+        EXPECT_EQ("users", ent.name());
+    }
+    {
+        auto st = db.find_entity(db.find_hierarchy_root(db.find_id("m1")));
+        EXPECT_NE(sqlite::errc::done, st.step());
+        entity ent; st >> ent;
+        EXPECT_EQ("machines", ent.name());
+    }
 }
 

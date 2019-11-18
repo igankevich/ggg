@@ -1,6 +1,3 @@
-gtest = dependency('gtest', main: true)
-gtest_nomain = dependency('gtest', main: false)
-
 test_src = files([
 	'chroot_environment.cc',
 	'execute_command.cc',
@@ -37,17 +34,6 @@ test(
 	executable(
 		'account-test',
 		sources: ['account_test.cc'],
-		include_directories: src,
-		dependencies: [unistdx, gtest, ggg_core]
-	),
-	suite: 'unit'
-)
-
-test(
-	'database-test',
-	executable(
-		'database-test',
-		sources: ['database_test.cc'],
 		include_directories: src,
 		dependencies: [unistdx, gtest, ggg_core]
 	),

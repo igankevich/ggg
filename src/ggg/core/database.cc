@@ -92,15 +92,14 @@ WITH RECURSIVE
 		SELECT child_id,parent_id FROM ties
 	),
 	-- find all upstream entities in the graph
-	path(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1 FROM edges
+	path(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM edges
 		WHERE parent_id = $id
 		UNION ALL
-		SELECT edges.child_id, edges.parent_id, path.depth+1
+		SELECT edges.child_id, edges.parent_id
 		FROM path, edges
 		WHERE path.child_id = edges.parent_id
-		  AND path.child_id <> path.parent_id
-		  AND path.depth < $depth
+        LIMIT (SELECT COUNT(*) FROM edges)
 	)
 SELECT id,name,description
 FROM entities
@@ -120,15 +119,14 @@ WITH RECURSIVE
 		SELECT child_id,parent_id FROM ties
 	),
 	-- find all upstream entities in the graph
-	path(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1 FROM edges
+	path(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM edges
 		WHERE parent_id IN (SELECT id FROM ids)
 		UNION ALL
-		SELECT edges.child_id, edges.parent_id, path.depth+1
+		SELECT edges.child_id, edges.parent_id
 		FROM path, edges
 		WHERE path.child_id = edges.parent_id
-		  AND path.child_id <> path.parent_id
-		  AND path.depth < $depth
+        LIMIT (SELECT COUNT(*) FROM edges)
 	)
 SELECT id,name,description
 FROM entities
@@ -144,15 +142,14 @@ WITH RECURSIVE
 		SELECT child_id,parent_id FROM ties
 	),
 	-- find all downstream entities in the graph
-	path(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1 FROM edges
+	path(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM edges
 		WHERE child_id = $id
 		UNION ALL
-		SELECT edges.child_id, edges.parent_id, path.depth+1
+		SELECT edges.child_id, edges.parent_id
 		FROM path, edges
 		WHERE path.parent_id = edges.child_id
-		  AND path.child_id <> path.parent_id
-		  AND path.depth < $depth
+        LIMIT (SELECT COUNT(*) FROM edges)
 	)
 SELECT id,name,description,home,shell
 FROM entities
@@ -168,15 +165,14 @@ WITH RECURSIVE
 		SELECT child_id,parent_id FROM ties
 	),
 	-- find all upstream entities in the graph
-	path(child_id,parent_id,depth) AS (
-		SELECT child_id,parent_id,1 FROM edges
+	path(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM edges
 		WHERE parent_id = $id
 		UNION ALL
-		SELECT edges.child_id, edges.parent_id, path.depth+1
+		SELECT edges.child_id, edges.parent_id
 		FROM path, edges
 		WHERE path.child_id = edges.parent_id
-		  AND path.child_id <> path.parent_id
-		  AND path.depth < $depth
+        LIMIT (SELECT COUNT(*) FROM edges)
 	)
 SELECT id,name,description,home,shell
 FROM entities
@@ -192,14 +188,15 @@ WITH RECURSIVE
 		SELECT child_id,parent_id FROM ties
 	),
 	-- find all upstream entities in the graph
-	path(child_id,parent_id,depth,initial_id) AS (
-		SELECT child_id,parent_id,1,parent_id FROM edges
+	path(child_id,parent_id,initial_id) AS (
+		SELECT child_id,parent_id,parent_id FROM edges
 		UNION ALL
-		SELECT edges.child_id, edges.parent_id, path.depth+1, path.initial_id
+		SELECT edges.child_id, edges.parent_id, path.initial_id
 		FROM path, edges
 		WHERE path.child_id = edges.parent_id
-		  AND path.child_id <> path.parent_id
-		  AND path.depth < $depth
+        -- otherwise the maximum number of rows is square of the number of edges
+        -- which is too large
+        LIMIT $depth
 	)
 SELECT child_id,initial_id FROM path
 )";
@@ -212,36 +209,32 @@ WITH RECURSIVE
 		UNION
 		SELECT child_id,parent_id FROM ties
 	),
-	path(child_id,parent_id,loop) AS (
-		SELECT child_id,parent_id,0 FROM edges
-		WHERE child_id=$id
+	path(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM edges WHERE child_id=$id
 		UNION ALL
-		SELECT edges.child_id, edges.parent_id,
-            (CASE WHEN path.child_id=edges.parent_id THEN 1 ELSE 0 END)
+		SELECT edges.child_id, edges.parent_id
 		FROM path, edges
 		WHERE path.parent_id=edges.child_id
-          AND path.loop = 0
+        LIMIT (SELECT COUNT(*) FROM edges)
     )
-SELECT MAX(loop) FROM path
+SELECT
+    (SELECT COUNT(*) FROM path),
+    (SELECT COUNT(*) FROM (SELECT DISTINCT child_id,parent_id FROM path))
 )";
 
-const char* sql_select_hierarchy_loops = R"(
+const char* sql_hierarchy_invariant = R"(
 WITH RECURSIVE
     edges(child_id,parent_id) AS (
         SELECT child_id,parent_id FROM hierarchy
         UNION
         SELECT parent_id,child_id FROM hierarchy),
-	path(child_id,parent_id,loop) AS (
-	    -- find outbound edges
-		SELECT child_id,parent_id,(CASE WHEN child_id=parent_id THEN 1 ELSE 0 END)
-        FROM edges
-		WHERE child_id=$id
-		UNION
-		SELECT edges.child_id, edges.parent_id,
-            (CASE WHEN path.child_id=edges.parent_id THEN 1 ELSE 0 END)
+	path(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM edges WHERE child_id=$id
+		UNION ALL
+		SELECT edges.child_id, edges.parent_id
 		FROM path, edges
 		WHERE path.parent_id=edges.child_id
-          AND path.loop = 0
+        LIMIT (SELECT COUNT(*) FROM edges)
     ),
     vertices(id) AS (SELECT DISTINCT child_id FROM path),
     outbound(id,num_edges) AS (
@@ -255,42 +248,6 @@ WITH RECURSIVE
 SELECT
     (SELECT MAX(num_edges) FROM outbound),
     (SELECT MAX(num_edges) FROM inbound)
-)";
-
-const char* sql_select_hierarchy_loops_debug = R"(
-WITH RECURSIVE
-    edges(child_id,parent_id) AS (
-        SELECT child_id,parent_id FROM hierarchy
-        UNION
-        SELECT parent_id,child_id FROM hierarchy),
-	path(child_id,parent_id,loop) AS (
-	    -- find outbound edges
-		SELECT child_id,parent_id,(CASE WHEN child_id=parent_id THEN 1 ELSE 0 END)
-        FROM edges
-		WHERE child_id=$id
-		UNION
-		SELECT edges.child_id, edges.parent_id,
-            (CASE WHEN path.child_id=edges.parent_id THEN 1 ELSE 0 END)
-		FROM path, edges
-		WHERE path.parent_id=edges.child_id
-          AND path.loop = 0
-    ),
-    vertices(id) AS (SELECT DISTINCT child_id FROM path),
-    outbound(id,num_edges) AS (
-        SELECT vertices.id,COUNT(hierarchy.parent_id)
-        FROM vertices JOIN hierarchy ON vertices.id=hierarchy.child_id
-        GROUP BY vertices.id),
-    inbound(id,num_edges) AS (
-        SELECT vertices.id,COUNT(hierarchy.child_id)
-        FROM vertices JOIN hierarchy ON vertices.id=hierarchy.parent_id
-        GROUP BY vertices.id)
-SELECT
-    (SELECT name FROM entities WHERE id=child_id),
-    (SELECT name FROM entities WHERE id=parent_id),
-    (SELECT MAX(num_edges) FROM outbound),
-    (SELECT MAX(num_edges) FROM inbound),
-    loop
-FROM path
 )";
 
 const char* sql_select_all_groups = R"(
@@ -401,24 +358,37 @@ const char* sql_select_whole_hierarchy = R"(
 SELECT child_id,parent_id FROM hierarchy
 )";
 
-const char* sql_select_hierarchy_root_by_child_id = R"(
+const char* sql_select_hierarchy_root_by_id = R"(
 WITH RECURSIVE
-	hierarchy_path(child_id,parent_id,depth) AS (
+    -- forward
+	path(child_id,parent_id,depth) AS (
 		SELECT child_id,parent_id,1 FROM hierarchy
-		WHERE child_id = $child_id
+		WHERE child_id = $id
 		UNION ALL
-		SELECT
-			hierarchy.child_id,
-			hierarchy.parent_id,
-			hierarchy_path.depth+1
-		FROM hierarchy_path, hierarchy
-		WHERE hierarchy_path.parent_id = hierarchy.child_id
-		  AND hierarchy_path.child_id <> hierarchy_path.parent_id
-		  AND hierarchy_path.depth < $depth
-	)
-SELECT DISTINCT parent_id
-FROM hierarchy_path
-WHERE depth IN (SELECT MAX(depth) FROM hierarchy_path)
+		SELECT hierarchy.child_id, hierarchy.parent_id, path.depth+1
+		FROM path, hierarchy
+		WHERE path.parent_id = hierarchy.child_id
+        LIMIT (SELECT COUNT(*) FROM hierarchy)
+	),
+    -- backward
+	rpath(parent_id,child_id,depth) AS (
+		SELECT parent_id,child_id,1 FROM hierarchy
+		WHERE parent_id = $id
+		UNION ALL
+		SELECT hierarchy.parent_id, hierarchy.child_id, rpath.depth+1
+		FROM rpath, hierarchy
+		WHERE rpath.child_id = hierarchy.parent_id
+        LIMIT (SELECT COUNT(*) FROM hierarchy)
+	),
+    cnt(n) AS (SELECT COUNT(*) FROM path GROUP BY depth),
+    rcnt(n) AS (SELECT COUNT(*) FROM rpath GROUP BY depth)
+SELECT
+    (SELECT MAX(n) FROM cnt),
+    (SELECT MAX(n) FROM rcnt),
+    (SELECT DISTINCT parent_id FROM path
+     WHERE depth IN (SELECT MAX(depth) FROM path)),
+    (SELECT DISTINCT child_id FROM rpath
+     WHERE depth IN (SELECT MAX(depth) FROM rpath))
 )";
 
 const char* sql_hierarchy_attach = R"(
@@ -601,8 +571,7 @@ ggg::Database::search_entities() -> statement_type {
 
 bool
 ggg::Database::find_group(sys::gid_type gid, ggg::group& result) {
-	statement_type rstr =
-		this->_db.prepare(sql_select_group_by_id, gid, GGG_MAX_DEPTH);
+	statement_type rstr = this->_db.prepare(sql_select_group_by_id, gid);
 	ggg::group::container_type members;
 	ggg::group tmp;
 	bool found = false;
@@ -620,8 +589,7 @@ ggg::Database::find_group(sys::gid_type gid, ggg::group& result) {
 
 bool
 ggg::Database::find_group(const char* name, ggg::group& result) {
-	statement_type rstr =
-		this->_db.prepare(sql_select_group_by_name, name, GGG_MAX_DEPTH);
+	statement_type rstr = this->_db.prepare(sql_select_group_by_name, name);
 	ggg::group::container_type members;
 	ggg::group tmp;
 	bool found = false;
@@ -640,13 +608,13 @@ ggg::Database::find_group(const char* name, ggg::group& result) {
 auto
 ggg::Database::find_parent_entities(const char* name) -> statement_type {
 	auto id = find_id(name);
-	return this->_db.prepare(sql_select_parent_entities_by_id, id, GGG_MAX_DEPTH);
+	return this->_db.prepare(sql_select_parent_entities_by_id, id);
 }
 
 auto
 ggg::Database::find_child_entities(const char* name) -> statement_type {
 	auto id = find_id(name);
-	return this->_db.prepare(sql_select_child_entities_by_id, id, GGG_MAX_DEPTH);
+	return this->_db.prepare(sql_select_child_entities_by_id, id);
 }
 
 auto
@@ -823,44 +791,30 @@ ggg::Database::ties() -> statement_type {
 void
 ggg::Database::dot(std::ostream& out) {
 	sqlite::deferred_transaction tr(this->_db);
+    sqlite::statement st;
 	out << "digraph GGG {\n";
 	out << "rankdir=LR;\n";
-	{
-		auto rstr = entities();
-		sqlite::row_iterator<entity> first(rstr), last;
-		while (first != last) {
-			out << "id" << first->id() << " [label=\"" << first->name() << "\"];\n";
-			++first;
-		}
+	st = entities();
+    for (const auto& ent : st.rows<entity>()) {
+		out << "id" << ent.id() << " [label=\"" << ent.name() << "\"];\n";
+    }
+    st = ties();
+    for (const auto& tie : st.rows<Tie>()) { tie.dot(out); }
+	std::unordered_map<sys::uid_type,std::vector<Tie>> hierarchies;
+	st = hierarchy();
+    for (const auto& tie : st.rows<Tie>()) {
+		auto root_id = find_hierarchy_root(tie.child_id);
+		hierarchies[root_id].emplace_back(tie.child_id, tie.parent_id);
 	}
-	{
-		auto rstr = ties();
-		sqlite::row_iterator<Tie> first(rstr), last;
-		while (first != last) {
-			first->dot(out);
-			++first;
-		}
-	}
-	{
-		std::unordered_map<sys::uid_type,std::vector<Tie>> hierarchies;
-		auto rstr = hierarchy();
-		sqlite::row_iterator<Tie> first(rstr), last;
-		while (first != last) {
-			auto root_id = find_hierarchy_root(first->child_id);
-			hierarchies[root_id].emplace_back(first->child_id, first->parent_id);
-			++first;
-		}
-		for (const auto& entry : hierarchies) {
-			auto root_id = entry.first;
-			auto root_name = find_name(root_id);
-			const auto& ties = entry.second;
-			out << "subgraph cluster_" << root_id << " {\n";
-			out << "label=\"" << root_name << "\";\n";
-			for (const auto& tie : ties) {
-				tie.dot(out);
-			}
-			out << "}\n";
-		}
+    st.close();
+	for (const auto& entry : hierarchies) {
+		auto root_id = entry.first;
+		auto root_name = find_name(root_id);
+		const auto& ties = entry.second;
+		out << "subgraph cluster_" << root_id << " {\n";
+		out << "label=\"" << root_name << "\";\n";
+		for (const auto& tie : ties) { tie.dot(out); }
+		out << "}\n";
 	}
 	out << "}\n";
 	tr.commit();
@@ -1057,16 +1011,18 @@ ggg::Database::hierarchy() -> statement_type {
 }
 
 sys::uid_type
-ggg::Database::find_hierarchy_root(sys::uid_type child_id) {
-	sys::uid_type id = bad_uid;
-	auto rstr = this->_db.prepare(sql_select_hierarchy_root_by_child_id, child_id);
-	if (rstr.step() != sqlite::errc::done) {
-		rstr.column(0, id);
+ggg::Database::find_hierarchy_root(sys::uid_type id) {
+	sys::uid_type root_id = bad_uid;
+	auto st = this->_db.prepare(sql_select_hierarchy_root_by_id, id);
+	if (st.step() != sqlite::errc::done) {
+        int count_forward = 0, count_backward = 0;
+        st.column(0, count_forward);
+        st.column(1, count_backward);
+        if (count_forward == 1) { st.column(2, root_id); }
+        else if (count_backward == 1) { st.column(3, root_id); }
 	}
-	if (id == bad_uid) {
-		id = child_id;
-	}
-	return id;
+	if (root_id == bad_uid) { root_id = id; }
+	return root_id;
 }
 
 void
@@ -1101,27 +1057,7 @@ ggg::Database::attach(sys::uid_type child_id, sys::gid_type parent_id) {
 
 void
 ggg::Database::validate_hierarchy(sys::uid_type id) {
-    {
-        auto st = this->_db.prepare(sql_select_hierarchy_loops_debug, id);
-        std::clog << "forward\n";
-        while (st.step() != sqlite::errc::done) {
-            std::string from, to;
-            int64_t outbound=0, inbound=0, loop=0;
-            st.column(0, from);
-            st.column(1, to);
-            st.column(2, outbound);
-            st.column(3, inbound);
-            st.column(4, loop);
-            std::clog << std::setw(20) << from;
-            std::clog << std::setw(20) << to;
-            std::clog << std::setw(20) << outbound;
-            std::clog << std::setw(20) << inbound;
-            std::clog << std::setw(20) << loop;
-            std::clog << '\n';
-        }
-    }
-    auto st = this->_db.prepare(sql_select_hierarchy_loops, id);
-    bool loop = false;
+    auto st = this->_db.prepare(sql_hierarchy_invariant, id);
     int64_t num_outbound_edges = 0, num_inbound_edges = 0;
     if (st.step() != sqlite::errc::done) {
         st.column(0, num_outbound_edges);
@@ -1136,11 +1072,12 @@ ggg::Database::validate_hierarchy(sys::uid_type id) {
 
 void
 ggg::Database::detect_loops(sys::uid_type id) {
-    auto st = this->_db.prepare(sql_select_all_loops);
+    auto st = this->_db.prepare(sql_select_all_loops, id);
 	if (st.step() == sqlite::errc::done) { return; }
-    bool loop = false;
-    st.column(0, loop);
-    if (loop) {
+    int64_t actual_count = 0, expected_count = 0;
+    st.column(0, actual_count);
+    st.column(1, expected_count);
+    if (actual_count != expected_count) {
         throw std::invalid_argument("this operation creates loops in the graph");
     }
 }

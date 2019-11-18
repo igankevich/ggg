@@ -28,3 +28,15 @@ ggg_core = declare_dependency(
 	include_directories: src,
 	dependencies: ggg_core_deps
 )
+
+test(
+	'database-test',
+	executable(
+		'database-test',
+		sources: ['database_test.cc'],
+		include_directories: src,
+		dependencies: [unistdx, gtest, ggg_core]
+	),
+	suite: 'unit'
+)
+

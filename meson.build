@@ -47,6 +47,8 @@ sqlite = dependency('sqlite3')
 sqlitex = dependency('sqlitex', version: sqlitex_version)
 guile = dependency('guile-2.2')
 libsodium = dependency('libsodium')
+gtest = dependency('gtest', main: true)
+gtest_nomain = dependency('gtest', main: false)
 
 v = guile.version().split('.')
 guile_version = '.'.join([v[0],v[1]])
