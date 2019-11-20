@@ -29,14 +29,12 @@ ggg_core = declare_dependency(
 	dependencies: ggg_core_deps
 )
 
-test(
-	'database-test',
-	executable(
-		'database-test',
-		sources: ['database_test.cc'],
-		include_directories: src,
-		dependencies: [unistdx, gtest, ggg_core]
-	),
-	suite: 'unit'
-)
-
+foreach name : ['entity', 'group', 'account', 'database']
+    exe = executable(
+        name + '-test',
+        sources: [name + '_test.cc'],
+        include_directories: src,
+        dependencies: [unistdx, gtest, ggg_core]
+    )
+    test(name + '-test', exe, suite: 'unit')
+endforeach

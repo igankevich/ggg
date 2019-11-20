@@ -8,39 +8,6 @@ override_nss_src = files([
 ])
 
 test(
-	'entity-test',
-	executable(
-		'entity-test',
-		sources: ['entity_test.cc'],
-		include_directories: src,
-		dependencies: [unistdx, gtest, ggg_core]
-	),
-	suite: 'unit'
-)
-
-test(
-	'group-test',
-	executable(
-		'group-test',
-		sources: ['group_test.cc'],
-		include_directories: src,
-		dependencies: [unistdx, gtest, ggg_core]
-	),
-	suite: 'unit'
-)
-
-test(
-	'account-test',
-	executable(
-		'account-test',
-		sources: ['account_test.cc'],
-		include_directories: src,
-		dependencies: [unistdx, gtest, ggg_core]
-	),
-	suite: 'unit'
-)
-
-test(
 	'conversation-test',
 	executable(
 		'conversation-test',
@@ -99,23 +66,29 @@ if with_pam
 	endif
 endif
 
-#if not etc.startswith('/')
-#	test(
-#		'cli-test',
-#		executable(
-#			'cli-test',
-#			ggg_guile_types,
-#			sources: ['cli_test.cc'] + test_src,
-#			dependencies: [unistdx, gtest_nomain, pam, ggg_crypt,libsodium, ggg_core]
-#		),
-#		env: [
-#			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
-#			'GGG_UNPRIVILEDGED=1',
-#			'GUILE_LOAD_PATH=' + guile_load_path,
-#			'GUILE_LOAD_COMPILED_PATH=' + guile_load_compiled_path,
-#			'GUILE_AUTO_COMPILE=0'
-#		],
-#		suite: 'unit',
-#		timeout: 120
-#	)
-#endif
+libdl = cpp.find_library('dl', required: false)
+if libdl.found()
+    override_fs = shared_library(
+        'override-fs',
+        sources: 'override_fs.cc',
+        dependencies: libdl
+    )
+	test(
+		'cli-test',
+		executable(
+			'cli-test',
+			sources: ['cli_test.cc'] + test_src,
+			dependencies: [unistdx, gtest_nomain, pam, ggg_crypt, libsodium, ggg_core],
+            link_with: override_fs,
+		),
+		env: [
+            'LD_PRELOAD=' + override_fs.full_path(),
+			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
+			#'GUILE_LOAD_PATH=' + guile_load_path,
+			#'GUILE_LOAD_COMPILED_PATH=' + guile_load_compiled_path,
+			#'GUILE_AUTO_COMPILE=0'
+		],
+		suite: 'unit',
+		timeout: 120
+	)
+endif

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 #include <unistdx/fs/file_status>
 #include <unistdx/fs/path>
@@ -196,21 +197,27 @@ TEST_F(Commands, TiesAndHierarchies) {
 
 int
 main(int argc, char* argv[]) {
+    std::ofstream("/tmp/zxc") << "hello";
+    return 0;
+}
+
+/*
+int
+main(int argc, char* argv[]) {
 	const char* ggg_executable = getenv("GGG_EXECUTABLE");
-	if (!ggg_executable) {
-		return 77;
-	}
+	if (!ggg_executable) { return 77; }
 	sys::canonical_path ggg_exe(ggg_executable);
 	if (const char* path = getenv("PATH")) {
 		std::string new_path = ggg_exe.dirname();
 		new_path += ':';
 		new_path += path;
-		setenv("PATH", new_path.data(), 1);
+		::setenv("PATH", new_path.data(), 1);
 	} else {
-		setenv("PATH", ggg_exe.dirname(), 1);
+		::setenv("PATH", ggg_exe.dirname(), 1);
 	}
 //	skip_test_if_unpriviledged();
 	::testing::InitGoogleTest(&argc, argv);
-//	::testing::AddGlobalTestEnvironment(new ChrootEnvironment);
+	//::testing::AddGlobalTestEnvironment(new ChrootEnvironment);
 	return RUN_ALL_TESTS();
 }
+*/
