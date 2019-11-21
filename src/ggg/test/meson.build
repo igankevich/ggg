@@ -68,9 +68,27 @@ endif
 
 libdl = cpp.find_library('dl', required: false)
 if libdl.found()
+    override_fs_config = configuration_data()
+    foreach f : ['stat', 'lstat', 'fstat', 'fstatat',
+        '__xstat', '__lxstat', '__fxstat', '__fxstatat']
+        if cpp.has_function(f)
+            override_fs_config.set('HAVE_' + f.to_upper(), 1)
+        endif
+    endforeach
+    override_fs_config.set('workdir', meson.build_root())
+    override_fs_config.set(
+        'ggg_guile_prefix',
+        join_paths(get_option('prefix'), get_option('libdir'))
+    )
+    configure_file(
+        input: 'override_fs.hh.in',
+        output: 'override_fs.hh',
+        configuration: override_fs_config
+    )
     override_fs = shared_library(
         'override-fs',
         sources: 'override_fs.cc',
+        include_directories: src,
         dependencies: libdl
     )
 	test(
@@ -84,11 +102,10 @@ if libdl.found()
 		env: [
             'LD_PRELOAD=' + override_fs.full_path(),
 			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
-			#'GUILE_LOAD_PATH=' + guile_load_path,
-			#'GUILE_LOAD_COMPILED_PATH=' + guile_load_compiled_path,
-			#'GUILE_AUTO_COMPILE=0'
+			'GUILE_AUTO_COMPILE=0'
 		],
 		suite: 'unit',
-		timeout: 120
+		timeout: 120,
+        workdir: meson.build_root()
 	)
 endif

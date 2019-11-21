@@ -16,26 +16,6 @@ ggg
 void
 ggg
 ::init_locale(std::locale rhs) {
-	// enforce UTF-8 encoding
-	{
-		bool change = false;
-		std::string name(rhs.name());
-		auto idx = name.find('.');
-		if (idx == std::string::npos) {
-			change = true;
-		} else {
-			std::string suffix(name.substr(idx+1));
-			for (char& ch : suffix) {
-				ch = std::tolower(ch);
-			}
-			if (suffix != "utf8" && suffix != "utf-8") {
-				change = true;
-			}
-		}
-		if (change) {
-			rhs = std::locale(name + ".UTF-8");
-		}
-	}
 	std::locale::global(rhs);
 	std::cout.imbue(std::locale::classic());
 	std::cerr.imbue(std::locale::classic());

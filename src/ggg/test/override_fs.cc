@@ -2,123 +2,127 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 //#define _GNU_SOURCE
 #include <dlfcn.h>
 
 #include <iostream>
 
+#include <ggg/config.hh>
+#include <ggg/test/override_fs.hh>
+
+#define GGG_DEBUG 0
+
 #ifdef __USE_LARGEFILE64
-using open64_type = decltype(&::open64);
-using openat64_type = decltype(&::openat64);
-using creat64_type = decltype(&::creat64);
-using fopen64_type = decltype(&::fopen64);
-using freopen64_type = decltype(&::freopen64);
-using stat64_type = decltype(&::stat64);
-using lstat64_type = decltype(&::lstat64);
-using fstatat64_type = decltype(&::fstatat64);
+#define LIBC_NAME(name) name##64
 #else
-using open_type = decltype(&::open);
-using openat_type = decltype(&::openat);
-using creat_type = decltype(&::creat);
-using fopen_type = decltype(&::fopen);
-using freopen_type = decltype(&::freopen);
-using stat_type = decltype(&::stat);
-using lstat_type = decltype(&::lstat);
-using fstatat_type = decltype(&::fstatat);
+#define LIBC_NAME(name) name
 #endif
-using remove_type = decltype(&::remove);
+
+#define STRINGIFY(s) #s
 
 #define CALL_NEXT(name, ...) \
-    reinterpret_cast<name##_type>(::dlsym(RTLD_NEXT,#name))(__VA_ARGS__);
+    reinterpret_cast<system_call_type>(::dlsym(RTLD_NEXT,STRINGIFY(name)))(__VA_ARGS__);
 
-#ifdef __USE_LARGEFILE64
+#define LIBC_OPEN LIBC_NAME(open)
+#define LIBC_OPENAT LIBC_NAME(openat)
+#define LIBC_FSTATAT LIBC_NAME(fstatat)
+#define LIBC_FXSTATAT LIBC_NAME(__fxstatat)
+#define LIBC_STAT LIBC_NAME(stat)
+#define LIBC_XSTAT LIBC_NAME(__xstat)
+#define LIBC_LSTAT LIBC_NAME(lstat)
+#define LIBC_LXSTAT LIBC_NAME(__lxstat)
+#define LIBC_CREAT LIBC_NAME(creat)
 
-extern "C" int open64(const char* file, int flag, ...) {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(open64, file, flag);
+typedef int (*system_call_type)(...);
+
+void override_file(const char* func, const char** file) {
+    std::string path(*file);
+    if (path == GGG_ENTITIES_PATH || path == GGG_WORKDIR "/" GGG_ENTITIES_PATH) {
+        *file = GGG_NEW_ENTITIES_PATH;
+    }
+    if (path == GGG_ACCOUNTS_PATH || path == GGG_WORKDIR "/" GGG_ACCOUNTS_PATH) {
+        *file = GGG_NEW_ACCOUNTS_PATH;
+    }
+    if (path == GGG_GUILE) { *file = GGG_NEW_GUILE; }
+    #if GGG_DEBUG
+    if (path != *file) { std::clog << func << ' ' << *file << std::endl; }
+    #endif
 }
 
-extern "C" int openat64(int fd, const char* file, int flag, ...) {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(openat64, fd, file, flag);
+extern "C" int LIBC_OPEN(const char* file, int flag, ...) {
+    override_file(__func__, &file);
+    // from musl libc
+    mode_t mode = 0;
+    if ((flag & O_CREAT) || (flag & O_TMPFILE) == O_TMPFILE) {
+        va_list ap;
+        va_start(ap, flag);
+        mode = va_arg(ap, mode_t);
+        va_end(ap);
+    }
+    return CALL_NEXT(LIBC_OPEN, file, flag, mode);
 }
 
-extern "C" int creat64(const char* file, mode_t mode) {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(creat64, file, mode);
+extern "C" int LIBC_OPENAT(int fd, const char* file, int flag, ...) {
+    override_file(__func__, &file);
+    // from musl libc
+    mode_t mode = 0;
+    if ((flag & O_CREAT) || (flag & O_TMPFILE) == O_TMPFILE) {
+        va_list ap;
+        va_start(ap, flag);
+        mode = va_arg(ap, mode_t);
+        va_end(ap);
+    }
+    return CALL_NEXT(LIBC_OPENAT, fd, file, flag, mode);
 }
 
-extern "C" FILE* fopen64(const char* file, const char* mode) {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(fopen64, file, mode);
+extern "C" int LIBC_CREAT(const char* file, mode_t mode) {
+    override_file(__func__, &file);
+    return CALL_NEXT(LIBC_CREAT, file, mode);
 }
 
-extern "C" FILE* freopen64(const char* file, const char* mode, FILE* stream) {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(freopen64, file, mode, stream);
+#if defined(HAVE___FXSTATAT)
+extern "C" int
+LIBC_FXSTATAT(int version, int fd, const char* file, struct LIBC_STAT* buf, int flag) noexcept {
+    override_file(__func__, &file);
+    return CALL_NEXT(LIBC_FXSTATAT, version, fd, file, buf, flag);
 }
-
-extern "C" int stat64(const char* file, struct stat64* buf) noexcept {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(stat64, file, buf);
+#elif defined(HAVE_FSTATAT)
+extern "C" int
+LIBC_FSTATAT(int fd, const char* file, struct LIBC_STAT* buf, int flag) noexcept {
+    override_file(__func__, &file);
+    return CALL_NEXT(LIBC_FSTATAT, fd, file, buf, flag);
 }
+#endif
 
-extern "C" int lstat64(const char* file, struct stat64* buf) noexcept {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(lstat64, file, buf);
+#if defined(HAVE___XSTAT)
+extern "C" int LIBC_XSTAT(int ver, const char* file, struct LIBC_STAT* buf) noexcept {
+    override_file(__func__, &file);
+    return CALL_NEXT(LIBC_XSTAT, ver, file, buf);
 }
-
-extern "C" int fstatat64(int fd, const char* file, struct stat64* buf, int flag) noexcept {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(fstatat64, fd, file, buf, flag);
+#elif defined(HAVE_STAT)
+extern "C" int LIBC_STAT(const char* file, struct LIBC_STAT* buf) noexcept {
+    override_file(__func__, &file);
+    return CALL_NEXT(LIBC_STAT, file, buf);
 }
+#endif
 
-#else
-
-extern "C" int open(const char* file, int flag, ...) {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(open, file, flag);
+#if defined(HAVE___LXSTAT)
+extern "C" int
+LIBC_LXSTAT(int ver, const char* file, struct LIBC_STAT* buf) noexcept {
+    override_file(__func__, &file);
+    return CALL_NEXT(LIBC_LXSTAT, ver, file, buf);
 }
-
-extern "C" int openat(int fd, const char* file, int flag, ...) {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(openat, fd, file, flag);
+#elif defined(HAVE_LSTAT)
+extern "C" int
+LIBC_LSTAT(const char* file, struct LIBC_STAT* buf) noexcept {
+    override_file(__func__, &file);
+    return CALL_NEXT(LIBC_LSTAT, file, buf);
 }
-
-extern "C" int creat(const char* file, mode_t mode) {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(creat, file, mode);
-}
-
-extern "C" FILE* fopen(const char* file, const char* mode) {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(fopen, file, mode);
-}
-
-extern "C" FILE* freopen(const char* file, const char* mode, FILE* stream) {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(freopen, file, mode, stream);
-}
-
-extern "C" int stat(const char* file, struct stat* buf) noexcept {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(stat, file, buf);
-}
-
-extern "C" int lstat(const char* file, struct stat* buf) noexcept {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(lstat, file, buf);
-}
-
-extern "C" int fstatat(int fd, const char* file, struct stat* buf, int flag) noexcept {
-    std::clog << __func__ << ' ' << file << std::endl;
-    return CALL_NEXT(fstatat, fd, file, buf, flag);
-}
-
 #endif
 
 extern "C" int remove(const char* file) noexcept {
-    std::clog << __func__ << ' ' << file << std::endl;
+    override_file(__func__, &file);
     return CALL_NEXT(remove, file);
 }

@@ -1,7 +1,3 @@
-#include <sched.h>
-#include <sys/mount.h>
-
-
 #include <algorithm>
 #include <stdlib.h>
 #include <iostream>
@@ -12,10 +8,9 @@
 #include <unistdx/fs/path>
 #include <unistdx/fs/canonical_path>
 
-#include <ggg/config.hh>
-
 #include <gtest/gtest.h>
 
+#include <ggg/config.hh>
 #include <ggg/test/clean_database.hh>
 #include <ggg/test/execute_command.hh>
 
@@ -23,38 +18,52 @@ class Commands: public ::testing::Test {
 
 protected:
 
-	void
-	SetUp() override {
-		EXPECT_ZERO("rm -rf " GGG_ROOT);
-		EXPECT_ZERO("ggg init");
-		Clean_database db;
-	}
+    void
+    SetUp() override {
+        int ret;
+        ret = std::remove(GGG_ENTITIES_PATH);
+        EXPECT_TRUE(ret == 0 || (ret == -1 && errno == ENOENT));
+        ret = std::remove(GGG_ACCOUNTS_PATH);
+        EXPECT_TRUE(ret == 0 || (ret == -1 && errno == ENOENT));
+        EXPECT_ZERO("ggg init");
+        Clean_database db;
+    }
 
 };
 
 TEST(CommandsBase, Init) {
-	EXPECT_ZERO("rm -rf " GGG_ROOT);
-	EXPECT_ZERO("ggg init");
-	sys::file_status root(GGG_ROOT);
-	EXPECT_TRUE(root.exists());
-	EXPECT_TRUE(root.is_directory());
-	for (const auto* path : {GGG_ENTITIES_PATH, GGG_ACCOUNTS_PATH}) {
-		sys::file_status db(path);
-		EXPECT_TRUE(db.exists());
-		EXPECT_TRUE(db.is_regular());
-	}
+    int ret;
+    ret = std::remove(GGG_ENTITIES_PATH);
+    EXPECT_TRUE(ret == 0 || (ret == -1 && errno == ENOENT));
+    ret = std::remove(GGG_ACCOUNTS_PATH);
+    EXPECT_TRUE(ret == 0 || (ret == -1 && errno == ENOENT));
+    EXPECT_ZERO("ggg init");
+    sys::file_status root(GGG_ROOT);
+    EXPECT_TRUE(root.exists());
+    EXPECT_TRUE(root.is_directory());
+    for (const auto* path : {GGG_ENTITIES_PATH, GGG_ACCOUNTS_PATH}) {
+        sys::file_status db(path);
+        EXPECT_TRUE(db.exists());
+        EXPECT_TRUE(db.is_regular());
+    }
 }
 
 TEST_F(Commands, Add) {
 	EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 2001)' | ggg add -f-)");
 	EXPECT_ZERO(R"(echo '(make <entity> #:name "u2" #:id 2002)' | ggg add -f-)");
 	EXPECT_ZERO(R"(echo '(make <entity> #:name "u3" #:id 2003)' | ggg add -f-)");
-	EXPECT_NON_ZERO(R"(echo '(list (make <entity> #:name "u3" #:id 2003))' | ggg add -f-)")
-	    << "added the same user twice";
-	EXPECT_NON_ZERO(R"(echo '(list (make <entity> #:name "uu" #:id 2001))' | ggg add -f-)")
-	    << "added a user with the same UID twice";
-	EXPECT_NON_ZERO(R"(echo '(list (make <entity> #:name "u1" #:id 2222))' | ggg add -f-)")
-	    << "added a user with the same USERNAME twice";
+	EXPECT_NON_ZERO2(
+        R"(echo '(list (make <entity> #:name "u3" #:id 2003))' | ggg add -f-)",
+        "added the same user twice"
+	);
+	EXPECT_NON_ZERO2(
+        R"(echo '(list (make <entity> #:name "uu" #:id 2001))' | ggg add -f-)",
+	    "added a user with the same UID twice"
+	);
+	EXPECT_NON_ZERO2(
+        R"(echo '(list (make <entity> #:name "u1" #:id 2222))' | ggg add -f-)",
+	    "added a user with the same USERNAME twice"
+	);
 }
 
 TEST_F(Commands, Remove) {
@@ -163,8 +172,10 @@ TEST_F(Commands, Edit) {
 	EXPECT_OUTPUT("u1::2001:2001:Nx:Hx:S\n", "ggg find -t u1");
 	EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2001 #:real-name "Nx" #:home-directory "Hx" #:shell "Sx")')");
 	EXPECT_OUTPUT("u1::2001:2001:Nx:Hx:Sx\n", "ggg find -t u1");
-	EXPECT_NON_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2222 #:real-name "Nx" #:home-directory "Hx" #:shell "Sx")')")
-		<< "changed entity id but it is not allowed";
+	EXPECT_NON_ZERO2(
+        R"(ggg edit -e '(make <entity> #:name "u1" #:id 2222 #:real-name "Nx" #:home-directory "Hx" #:shell "Sx")')",
+		"changed entity id but it is not allowed"
+	);
 	EXPECT_OUTPUT("u1::2001:2001:Nx:Hx:Sx\n", "ggg find -t u1");
 	EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u2" #:id 2001 #:real-name "Nx" #:home-directory "Hx" #:shell "Sx")')");
 	EXPECT_OUTPUT("", "ggg find -t u1");
@@ -175,8 +186,12 @@ TEST_F(Commands, Locale) {
 	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u1" #:id 2001 #:real-name "U1")')");
 	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u2" #:id 2002 #:real-name "Ю2")')");
 	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u3" #:id 2003 #:real-name "U3")')");
+	EXPECT_ZERO(R"(ggg add -t account -e '(make <account> #:name "u1")')");
+	EXPECT_ZERO(R"(ggg add -t account -e '(make <account> #:name "u2")')");
+	EXPECT_ZERO(R"(ggg add -t account -e '(make <account> #:name "u3")')");
 	EXPECT_ZERO("ggg lock u1 u2 u3");
-	EXPECT_OUTPUT("u1\nu2\nu3\n", "env -i LC_ALL=C PATH=$PATH ggg locked");
+	EXPECT_OUTPUT("u1\nu2\nu3\n", "ggg locked");
+	EXPECT_OUTPUT("u1\nu2\nu3\n", "env LC_ALL=C ggg locked");
 }
 
 TEST_F(Commands, TiesAndHierarchies) {
@@ -184,24 +199,15 @@ TEST_F(Commands, TiesAndHierarchies) {
 	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u2" #:id 2002 #:real-name "Ю2")')");
 	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u3" #:id 2003 #:real-name "U3")')");
 	EXPECT_ZERO("ggg attach u1 u2");
-	EXPECT_NON_ZERO("ggg attach u1 u2")
-		<< "attached same entities multiple times";
-	EXPECT_NON_ZERO("ggg tie u1 u2")
-		<< "tied entitites with the same hierarhy root";
+	EXPECT_NON_ZERO2("ggg attach u1 u2", "attached same entities multiple times");
+	EXPECT_NON_ZERO2("ggg tie u1 u2", "tied entitites with the same hierarhy root");
 	EXPECT_ZERO("ggg detach u1");
 	EXPECT_ZERO("ggg tie u1 u2");
-	EXPECT_NON_ZERO("ggg attach u1 u2") << "attached tied entities";
+	EXPECT_NON_ZERO2("ggg attach u1 u2", "attached tied entities");
 	EXPECT_ZERO("ggg untie u1 u2");
 	EXPECT_ZERO("ggg attach u1 u2");
 }
 
-int
-main(int argc, char* argv[]) {
-    std::ofstream("/tmp/zxc") << "hello";
-    return 0;
-}
-
-/*
 int
 main(int argc, char* argv[]) {
 	const char* ggg_executable = getenv("GGG_EXECUTABLE");
@@ -220,4 +226,3 @@ main(int argc, char* argv[]) {
 	//::testing::AddGlobalTestEnvironment(new ChrootEnvironment);
 	return RUN_ALL_TESTS();
 }
-*/
