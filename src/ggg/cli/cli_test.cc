@@ -11,7 +11,6 @@
 #include <gtest/gtest.h>
 
 #include <ggg/config.hh>
-#include <ggg/test/clean_database.hh>
 #include <ggg/test/execute_command.hh>
 
 class Commands: public ::testing::Test {
@@ -26,7 +25,6 @@ protected:
         ret = std::remove(GGG_ACCOUNTS_PATH);
         EXPECT_TRUE(ret == 0 || (ret == -1 && errno == ENOENT));
         EXPECT_ZERO("ggg init");
-        Clean_database db;
     }
 
 };
@@ -221,8 +219,6 @@ main(int argc, char* argv[]) {
 	} else {
 		::setenv("PATH", ggg_exe.dirname(), 1);
 	}
-//	skip_test_if_unpriviledged();
 	::testing::InitGoogleTest(&argc, argv);
-	//::testing::AddGlobalTestEnvironment(new ChrootEnvironment);
 	return RUN_ALL_TESTS();
 }

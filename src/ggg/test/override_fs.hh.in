@@ -16,5 +16,6 @@
 #define GGG_NEW_GUILE "@workdir@/src/ggg/guile/libggg-guile.so"
 #define GGG_NEW_ENTITIES_PATH "entities.tmp"
 #define GGG_NEW_ACCOUNTS_PATH "accounts.tmp"
+#define GGG_NEW_GUILE_LOAD_PATH "@guile_load_path@"
 
 #endif // vim:filetype=cpp

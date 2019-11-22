@@ -29,12 +29,28 @@ ggg_core = declare_dependency(
 	dependencies: ggg_core_deps
 )
 
-foreach name : ['entity', 'group', 'account', 'database']
+foreach name : ['entity', 'group', 'account']
     exe = executable(
         name + '-test',
         sources: [name + '_test.cc'],
         include_directories: src,
         dependencies: [unistdx, gtest, ggg_core]
     )
-    test(name + '-test', exe, suite: 'unit')
+    test(name + '-test', exe)
 endforeach
+
+if has_override_fs
+    name = 'database'
+    exe = executable(
+        name + '-test',
+        sources: [name + '_test.cc'],
+        include_directories: src,
+        dependencies: [unistdx, gtest, ggg_core],
+    )
+    test(
+        name + '-test', exe,
+		env: ['LD_PRELOAD='+override_fs.full_path()],
+        workdir: meson.build_root(),
+        is_parallel: false,
+    )
+endif

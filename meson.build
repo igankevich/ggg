@@ -49,6 +49,7 @@ guile = dependency('guile-2.2')
 libsodium = dependency('libsodium')
 gtest = dependency('gtest', main: true)
 gtest_nomain = dependency('gtest', main: false)
+libdl = cpp.find_library('dl', required: false)
 
 v = guile.version().split('.')
 guile_version = '.'.join([v[0],v[1]])

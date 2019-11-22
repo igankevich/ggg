@@ -52,3 +52,26 @@ configure_file(
 	configuration: guile_config
 )
 # }}}
+
+if has_override_fs
+    test(
+		'cli-test',
+		executable(
+			'cli-test',
+			sources: ['cli_test.cc'],
+			dependencies: [
+                unistdx, gtest_nomain, pam, libsodium,
+                ggg_crypt, ggg_core, ggg_test
+			],
+		),
+		env: [
+            'LD_PRELOAD=' + override_fs.full_path(),
+			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
+			'GUILE_AUTO_COMPILE=0',
+            'GUILE_LOAD_PATH=' + guile_load_path,
+		],
+		timeout: 120,
+        workdir: meson.build_root(),
+        is_parallel: false,
+	)
+endif

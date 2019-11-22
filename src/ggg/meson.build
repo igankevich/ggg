@@ -4,6 +4,10 @@ configure_file(
 	configuration: config
 )
 
+if with_tests
+	subdir('test')
+endif
+
 subdir('core')
 subdir('ctl')
 subdir('guile')
@@ -20,6 +24,3 @@ if with_cli
 	subdir('cli')
 endif
 
-if with_tests
-	subdir('test')
-endif

@@ -27,3 +27,40 @@ meson.add_install_script(
 	join_paths(get_option('libdir'), 'security'),
 	'pam_' + module_name + '.so'
 )
+
+test(
+	'conversation-test',
+	executable(
+		'conversation-test',
+		sources: ['conversation_test.cc'],
+		include_directories: src,
+		dependencies: [unistdx, gtest, ggg_crypt, libsodium, pam, ggg_core, ggg_pam]
+	)
+)
+
+pam_wrapper = dependency('pam_wrapper', required: false)
+if pam_wrapper.found() and not state_dir.startswith('/') and b_sanitize != 'address'
+    ld_preload_items = ['libpam_wrapper.so']
+    ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
+    test(
+        'pam-test',
+        executable(
+            'pam-test',
+            sources: ['pam_test.cc'],
+            include_directories: src,
+            dependencies: [unistdx, gtest, ggg_pam]
+        ),
+        env: [
+            ld_preload,
+            'PAM_WRAPPER=1',
+            'PAM_WRAPPER_DEBUGLEVEL=3',
+            'PAM_WRAPPER_SERVICE_DIR=' + join_paths(
+                meson.current_build_dir(),
+                'pam.d'
+            )
+        ],
+        is_parallel: false
+    )
+    subdir('pam.d')
+endif
+
