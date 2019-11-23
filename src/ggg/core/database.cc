@@ -583,6 +583,15 @@ ggg::Database::search_entities() -> statement_type {
 	return this->_db.prepare(sql_search_entities);
 }
 
+auto
+ggg::Database::search_accounts() -> statement_type {
+	return this->_db.prepare(R"(
+SELECT name,password,expiration_date,flags
+FROM accounts
+WHERE search(name)
+)");
+}
+
 bool
 ggg::Database::find_group(sys::gid_type gid, ggg::group& result) {
 	statement_type rstr = this->_db.prepare(sql_select_group_by_id, gid);

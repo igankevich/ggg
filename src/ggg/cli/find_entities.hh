@@ -1,12 +1,16 @@
 #ifndef GGG_FIND_ENTITIES_HH
 #define GGG_FIND_ENTITIES_HH
 
-#include <ggg/cli/show_base.hh>
-#include <ggg/core/entity.hh>
+#include <ggg/cli/command.hh>
+#include <ggg/cli/entity_type.hh>
 
 namespace ggg {
 
-	class Find_entities: public Show_base<entity> {
+	class Find_entities: public Command {
+
+	private:
+        Entity_type _type = Entity_type::Entity;
+        Entity_output_format _oformat = Entity_output_format::TSV;
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;

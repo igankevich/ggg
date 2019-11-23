@@ -90,8 +90,8 @@ namespace ggg {
 		statement_type
 		entities();
 
-		statement_type
-		search_entities();
+		statement_type search_entities();
+		statement_type search_accounts();
 
 		inline statement_type
 		find_user(sys::uid_type uid) {
