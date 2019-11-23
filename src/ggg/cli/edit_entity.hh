@@ -4,7 +4,6 @@
 #include <ggg/cli/command.hh>
 #include <ggg/cli/entity_type.hh>
 #include <ggg/core/database.hh>
-#include <ggg/core/entity_format.hh>
 
 namespace ggg {
 

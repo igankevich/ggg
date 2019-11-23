@@ -13,7 +13,6 @@
 
 #include <sqlitex/statement.hh>
 
-#include <ggg/core/entity_format.hh>
 #include <ggg/core/guile_traits.hh>
 
 namespace ggg {
@@ -163,7 +162,7 @@ namespace ggg {
 		}
 
 		inline const string_type&
-		real_name() const noexcept {
+		description() const noexcept {
 			return this->_realname;
 		}
 
@@ -212,7 +211,6 @@ namespace ggg {
 		void
 		merge(const basic_entity& rhs);
 
-		friend struct Entity_header<basic_entity>;
 		friend struct Guile_traits<basic_entity>;
 
 	};

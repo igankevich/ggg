@@ -97,104 +97,11 @@ namespace {
 namespace ggg {
 
     template <>
-    char
-    Entity_header<ggg::entity>::delimiter() {
-    	return ':';
-    }
-
-    template <>
-    void
-    Entity_header<ggg::entity>::write_header(
-    	std::ostream& out,
-    	width_container width,
-    	char delim
-    ) {
-    	if (!width) {
-    		out << "USERNAME:unused:ID:unused:REALNAME:HOME:SHELL\n";
-    		return;
-    	}
-    	const char d[4] = {
-    		' ',
-    		delim,
-    		delim == ' ' ? char(0) : ' ',
-    		0
-    	};
-    	out << std::left << std::setw(width[0]) << "USERNAME" << d
-    		<< std::right << std::setw(width[2]) << "ID" << d
-    		<< std::left << std::setw(width[4]) << "REALNAME" << d
-    		<< std::left << std::setw(width[5]) << "HOME" << d
-    		<< std::left << std::setw(width[6]) << "SHELL" << '\n';
-    }
-
-    template <>
-    void
-    Entity_header<ggg::entity>::write_body(
-    	std::ostream& out,
-    	const entity& ent,
-    	const width_container width,
-    	entity_format fmt,
-    	char delim
-    ) {
-    	const char d[4] = {
-    		' ',
-    		delim,
-    		delim == ' ' ? char(0) : ' ',
-    		0
-    	};
-    	out << std::left << std::setw(width[0]) << ent.name() << d;
-    	if (fmt == entity_format::batch) {
-    		out << std::right << std::setw(width[2]) << ent.id() << d;
-    	}
-    	out << std::left << std::setw(width[4]) << ent.real_name() << d
-    	    << std::left << std::setw(width[5]) << ent.home() << d
-    	    << std::left << std::setw(width[6]) << ent.shell() << '\n';
-    }
-
-    template <>
-    std::istream&
-    Entity_header<ggg::entity>::read_body(
-    	std::istream& in,
-    	entity& ent,
-    	entity_format fmt
-    ) {
-    	std::istream::sentry s(in);
-    	if (!s) {
-    		return in;
-    	}
-    	ent.clear();
-    	if (fmt == entity_format::batch) {
-    		bits::read_all_fields(
-    			in,
-    			entity::delimiter,
-    			ent._name,
-    			ent._uid,
-    			ent._realname,
-    			ent._homedir,
-    			ent._shell
-    		);
-    		ent._gid = ent._uid;
-    	} else {
-    		bits::read_all_fields(
-    			in,
-    			entity::delimiter,
-    			ent._name,
-    			ent._realname,
-    			ent._homedir,
-    			ent._shell
-    		);
-    	}
-    	if (in.eof()) {
-    		in.clear();
-    	}
-    	return in;
-    }
-
-    template <>
     ggg::entity
     Guile_traits<ggg::entity>::from(SCM obj) {
     	static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
-    	auto s_real_name = scm_from_latin1_symbol("real-name");
-    	auto s_home = scm_from_latin1_symbol("home-directory");
+    	auto s_real_name = scm_from_latin1_symbol("description");
+    	auto s_home = scm_from_latin1_symbol("home");
     	auto s_shell = scm_from_latin1_symbol("shell");
     	auto s_id = scm_from_latin1_symbol("id");
     	entity ent;
@@ -228,9 +135,9 @@ namespace ggg {
             scm_variable_ref(scm_c_lookup("<entity>")),
             scm_from_latin1_keyword("name"),
             scm_from_utf8_string(ent.name().data()),
-            scm_from_latin1_keyword("real-name"),
-            scm_from_utf8_string(ent.real_name().data()),
-            scm_from_latin1_keyword("home-directory"),
+            scm_from_latin1_keyword("description"),
+            scm_from_utf8_string(ent.description().data()),
+            scm_from_latin1_keyword("home"),
             scm_from_utf8_string(ent.home().data()),
             scm_from_latin1_keyword("shell"),
             scm_from_utf8_string(ent.shell().data()),
@@ -250,8 +157,8 @@ namespace ggg {
             guile << '\n' << indent;
             guile << "(make <entity>\n";
             guile << indent << "      #:name " << escape_string(ent.name()) << '\n';
-            guile << indent << "      #:real-name " << escape_string(ent.real_name()) << '\n';
-            guile << indent << "      #:home-directory " << escape_string(ent.home()) << '\n';
+            guile << indent << "      #:description " << escape_string(ent.description()) << '\n';
+            guile << indent << "      #:home " << escape_string(ent.home()) << '\n';
             guile << indent << "      #:shell " << escape_string(ent.shell());
             if (ent.has_id()) {
                 guile << '\n';

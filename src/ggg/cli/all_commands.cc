@@ -67,6 +67,7 @@ namespace {
 		MAKE_COMMAND("version", Show_version),
 		MAKE_COMMAND("show", Show_entity),
 		MAKE_COMMAND("info", Show_entity),
+		MAKE_COMMAND("list", Show_entity),
 		MAKE_COMMAND("members", Show_members),
 		MAKE_COMMAND("children", Show_members),
 		MAKE_COMMAND("groups", Show_groups),

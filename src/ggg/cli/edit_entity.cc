@@ -9,16 +9,33 @@
 #include <unistdx/fs/path>
 #include <unistdx/io/fdstream>
 
-#include <ggg/cli/align_columns.hh>
 #include <ggg/cli/edit_entity.hh>
 #include <ggg/cli/editor.hh>
-#include <ggg/cli/object_traits.hh>
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/cli/tmpfile.hh>
 #include <ggg/config.hh>
 #include <ggg/core/native.hh>
 #include <ggg/guile/guile_traits.hh>
 #include <ggg/guile/init.hh>
+
+namespace {
+
+    template <class Container>
+    void
+    check_duplicates(const Container& objs) {
+    	const size_t n = objs.size();
+    	for (size_t i=0; i<n; ++i) {
+    		const auto& lhs = objs[i];
+    		for (size_t j=i+1; j<n; ++j) {
+    			const auto& rhs = objs[j];
+    			if (lhs == rhs) {
+    				throw std::invalid_argument("duplicate names/ids");
+    			}
+    		}
+    	}
+    }
+
+}
 
 void
 ggg::Edit_entity::parse_arguments(int argc, char* argv[]) {
@@ -54,6 +71,8 @@ ggg::Edit_entity::execute()  {
 			break;
 		case Entity_type::Machine:
 			throw std::invalid_argument("not implemented");
+		case Entity_type::Message:
+			throw std::invalid_argument("editing messages is not allowed");
 	}
 }
 
@@ -137,9 +156,8 @@ template <class T>
 void
 ggg::Edit_entity::update(Database& db, const std::string& guile) {
 	using guile_traits_type = Guile_traits<T>;
-	using traits_type = Object_traits<T>;
 	auto ents = guile_traits_type::from_guile(guile);
-	check_duplicates(ents, traits_type::equal_names);
+	check_duplicates(ents);
 	Transaction tr(db);
 	for (const auto& ent : ents) { db.update(ent); }
 	tr.commit();

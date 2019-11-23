@@ -43,7 +43,7 @@ namespace {
 		}
 
 		inline static const char_type*
-		real_name() noexcept {
+		description() noexcept {
 			return "REALNAME";
 		}
 
@@ -98,7 +98,7 @@ ggg::operator<<(std::basic_ostream<Ch>& out, const basic_entity<Ch>& rhs) {
 	       << rhs.password() << basic_entity<Ch>::delimiter
 	       << rhs.id() << basic_entity<Ch>::delimiter
 	       << rhs.gid() << basic_entity<Ch>::delimiter
-	       << rhs.real_name() << basic_entity<Ch>::delimiter
+	       << rhs.description() << basic_entity<Ch>::delimiter
 	       << rhs.home() << basic_entity<Ch>::delimiter
 	       << rhs.shell();
 }

@@ -1,20 +1,16 @@
 #ifndef GGG_SHOW_ENTITY_HH
 #define GGG_SHOW_ENTITY_HH
 
-#include "command.hh"
+#include <ggg/cli/command.hh>
+#include <ggg/cli/entity_type.hh>
 
 namespace ggg {
 
 	class Show_entity: public Command {
 
-	public:
-		enum struct Type {
-			Account,
-			Entity
-		};
-
 	private:
-		Type _type = Type::Entity;
+        Entity_type _type = Entity_type::Entity;
+        Entity_output_format _oformat = Entity_output_format::Rec;
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;

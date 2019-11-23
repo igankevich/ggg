@@ -30,8 +30,8 @@
 		  store
 		  (make <entity>
 				#:name username
-				#:real-name (string-join (list last-name first-name) " ")
-				#:home-directory (string-join (list "/home/" username) "")
+				#:description (string-join (list last-name first-name) " ")
+				#:home (string-join (list "/home/" username) "")
 				#:shell "/bin/bash"))
 		(store-add
 		  store

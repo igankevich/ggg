@@ -14,9 +14,7 @@ void
 ggg::Find_entities::execute() {
 	Database db(Database::File::Entities);
 	Search search(&db, this->args_begin(), this->args_end());
-	auto rstr = this->args().empty() ? db.entities() : db.search_entities();
-	user_iterator first(rstr), last;
-	std::move(first, last, std::inserter(this->_result, this->_result.begin()));
+	this->_result = this->args().empty() ? db.entities() : db.search_entities();
 	Show_base::execute();
 }
 

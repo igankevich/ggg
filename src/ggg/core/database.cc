@@ -452,6 +452,20 @@ FROM hosts
 JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
 )";
 
+const char* sql_select_machine_by_name = R"(
+SELECT name, addresses.ethernet_address, addresses.ip_address
+FROM hosts
+JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
+WHERE name=?
+)";
+
+const char* sql_select_machines_by_multiple_names = R"(
+SELECT name, addresses.ethernet_address, addresses.ip_address
+FROM hosts
+JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address
+WHERE name IN (
+)";
+
 	struct Tie {
 
 		sys::uid_type child_id = ggg::bad_uid;
@@ -695,7 +709,7 @@ ggg::Database::insert(const entity& ent) {
 		sql_insert_user,
 		id,
 		ent.name(),
-		ent.real_name(),
+		ent.description(),
 		home,
 		shell
 	);
@@ -922,6 +936,18 @@ ggg::Database::select_users_by_names(int n) {
 	return sql;
 }
 
+std::string
+ggg::Database::select_machines_by_names(int n) {
+	std::string sql(sql_select_machines_by_multiple_names);
+	for (int i=0; i<n; ++i) {
+		sql += '?';
+		sql += ',';
+	}
+	sql.back() = ')';
+	return sql;
+}
+
+
 
 std::string
 ggg::Database::select_accounts_by_names(int n) {
@@ -959,7 +985,7 @@ ggg::Database::update(const entity& ent) {
         old_ent = find_entity_nocheck(ent.id());
 		name = old_ent.name();
 	}
-	this->_db.execute(sql_update_user_by_id, name, ent.real_name(),
+	this->_db.execute(sql_update_user_by_id, name, ent.description(),
             ent.home(), ent.shell(), id);
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad entity");
@@ -969,8 +995,8 @@ ggg::Database::update(const entity& ent) {
         message(old_name, "entity name changed to %s", name.data());
         message(name.data(), "entity renamed from %s", old_name);
     }
-    if (ent.real_name() != old_ent.real_name()) {
-        message(name.data(), "entity real name changed to %s", ent.real_name().data());
+    if (ent.description() != old_ent.description()) {
+        message(name.data(), "entity real name changed to %s", ent.description().data());
     }
     if (ent.home() != old_ent.home()) {
         message(name.data(), "entity home directory changed to %s", ent.home().data());
@@ -1147,6 +1173,11 @@ ggg::Database::hosts() -> statement_type {
 auto
 ggg::Database::find_host(const char* name) -> statement_type {
 	return this->_db.prepare(sql_select_host_by_name, name);
+}
+
+auto
+ggg::Database::find_machine(const char* name) -> statement_type {
+	return this->_db.prepare(sql_select_machine_by_name, name);
 }
 
 auto

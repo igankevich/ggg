@@ -3,7 +3,6 @@
 
 #include <string>
 
-#include <ggg/core/entity_format.hh>
 #include <ggg/core/guile_traits.hh>
 #include <ggg/core/host.hh>
 #include <ggg/core/ip_address.hh>
@@ -79,7 +78,6 @@ namespace ggg {
 		friend bool
 		operator<(const Machine& lhs, const Machine& rhs);
 
-		friend struct Entity_header<Machine>;
 		friend struct Guile_traits<Machine>;
 
 	};

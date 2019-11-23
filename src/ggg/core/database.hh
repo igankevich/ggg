@@ -103,21 +103,14 @@ namespace ggg {
 			return this->find_entity(name);
 		}
 
-		template <class Iterator, class Result>
-		inline void
-		find_users(Iterator first, Iterator last, Result result) {
+		template <class Iterator>
+		inline statement_type
+		find_entities(Iterator first, Iterator last) {
 			auto n = std::distance(first, last);
-			auto rstr = this->_db.prepare(
-				this->select_users_by_names(n).data()
-			);
-			int i = 0;
-			while (first != last) {
-				rstr.bind(++i, *first);
-				++first;
-			}
-			for (const auto& tmp : rstr.template rows<entity>()) {
-				*result++ = tmp;
-			}
+            if (n == 0) { return entities(); }
+			auto st = this->_db.prepare(this->select_users_by_names(n).data());
+            bind_all(st, first, last);
+            return st;
 		}
 
 		inline statement_type
@@ -168,27 +161,20 @@ namespace ggg {
 		dot(std::ostream& out);
 
 		statement_type
-		find_account(const char* name);
-
-		template <class Iterator, class Result>
-		inline void
-		find_accounts(Iterator first, Iterator last, Result result) {
-			auto n = std::distance(first, last);
-			auto rstr = this->_db.prepare(
-				this->select_accounts_by_names(n).data()
-			);
-			int i = 0;
-			while (first != last) {
-				rstr.bind(++i, *first);
-				++first;
-			}
-			for (const auto& tmp : rstr.template rows<account>()) {
-				*result++ = tmp;
-			}
-		}
+		accounts();
 
 		statement_type
-		accounts();
+		find_account(const char* name);
+
+		template <class Iterator>
+		inline statement_type
+		find_accounts(Iterator first, Iterator last) {
+			auto n = std::distance(first, last);
+            if (n == 0) { return accounts(); }
+			auto st = this->_db.prepare(this->select_accounts_by_names(n).data());
+            bind_all(st, first, last);
+            return st;
+		}
 
 		void insert(const account& acc);
 		void update(const account& acc);
@@ -279,10 +265,21 @@ namespace ggg {
 		statement_type find_ip_address(const char* name, sys::family_type family);
 		statement_type find_ip_address(const sys::ethernet_address& hwaddr);
 		statement_type find_host_name(const ip_address& address);
+		statement_type find_machine(const char* name);
 		statement_type machines();
 		void insert(const Machine& rhs);
 		void erase(const Machine& rhs);
 		void remove_all_machines();
+
+		template <class Iterator>
+		inline statement_type
+		find_machines(Iterator first, Iterator last) {
+			auto n = std::distance(first, last);
+            if (n == 0) { return machines(); }
+			auto st = this->_db.prepare(this->select_machines_by_names(n).data());
+            bind_all(st, first, last);
+            return st;
+		}
 
 		statement_type forms();
 		statement_type find_form(const char* name);
@@ -323,6 +320,7 @@ namespace ggg {
 		inline statement_type
 		messages(Iterator first, Iterator last) {
 			auto n = std::distance(first, last);
+            if (n == 0) { return messages(); }
 			auto st = this->_db.prepare(this->select_messages_by_name(n).data());
 			int i = 0;
 			while (first != last) { st.bind(++i, *first); ++first; }
@@ -344,10 +342,18 @@ namespace ggg {
 
 	private:
 
+		template <class Iterator>
+        inline void
+		bind_all(statement_type& st, Iterator first, Iterator last) {
+			int i = 0;
+			while (first != last) { st.bind(++i, *first); ++first; }
+        }
+
 		std::string select_users_by_names(int n);
 		std::string select_accounts_by_names(int n);
 		std::string select_messages_by_name(int n);
 		std::string rotate_messages(int n);
+        std::string select_machines_by_names(int n);
 		void attach(File file, Flag flag=Flag::Read_only);
 		void validate_entity(const entity& ent);
 		sys::uid_type find_id_nocheck(const char* name);

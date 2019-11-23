@@ -8,7 +8,6 @@
 
 #include <ggg/cli/add_entity.hh>
 #include <ggg/cli/editor.hh>
-#include <ggg/cli/object_traits.hh>
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/cli/tmpfile.hh>
 #include <ggg/config.hh>
@@ -52,6 +51,8 @@ ggg::Add_entity
 			break;
 		case Entity_type::Machine:
 			throw std::invalid_argument("not implemented");
+		case Entity_type::Message:
+			throw std::invalid_argument("adding messages is not allowed");
 	}
 }
 
@@ -116,9 +117,7 @@ void
 ggg::Add_entity
 ::insert(Store& store, std::string guile) {
 	using guile_traits_type = Guile_traits<T>;
-	using traits_type = Object_traits<T>;
 	auto ents = guile_traits_type::from_guile(guile);
-	check_duplicates(ents, traits_type::eq);
 	Transaction tr(store);
 	for (const auto& ent : ents) { store.add(ent); }
 	tr.commit();

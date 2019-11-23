@@ -16,13 +16,8 @@ void
 ggg::Show_groups::execute() {
 	Database db(Database::File::Entities);
 	for (const std::string& a : this->args()) {
-		auto rstr = db.find_parent_entities(a.data());
-		user_iterator first(rstr), last;
-		while (first != last) {
-			this->_result.insert(*first);
-			++first;
-		}
+		this->_result = db.find_parent_entities(a.data());
+        Show_base::execute();
 	}
-	Show_base::execute();
 }
 

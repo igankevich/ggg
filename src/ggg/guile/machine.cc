@@ -10,44 +10,6 @@
 namespace ggg {
 
     template <>
-    char
-    Entity_header<ggg::Machine>::delimiter() {
-    	return ' ';
-    }
-
-    template <>
-    void
-    Entity_header<ggg::Machine>::write_header(
-    	std::ostream& out,
-    	width_container width,
-    	char delim
-    ) {
-    	if (!width) {
-    		out << "NAME HWADDR IPADDR\n";
-    		return;
-    	}
-    	const char d[4] = {' ', delim, ' ', 0};
-    	out << std::left << std::setw(width[0]) << "NAME" << d
-    		<< std::left << std::setw(width[3]) << "HWADDR" << d
-    		<< std::left << std::setw(width[4]) << "IPADDR" << '\n';
-    }
-
-    template <>
-    void
-    Entity_header<ggg::Machine>::write_body(
-    	std::ostream& out,
-    	const Machine& ent,
-    	width_container width,
-    	entity_format fmt,
-    	char delim
-    ) {
-    	const char d[4] = {' ', delim, ' ', 0};
-    	out << std::left << std::setw(width[0]) << ent.name() << d
-    		<< std::left << std::setw(width[1]) << ent.ethernet_address() << d
-    		<< std::left << std::setw(width[2]) << ent.address() << '\n';
-    }
-
-    template <>
     ggg::Machine
     Guile_traits<ggg::Machine>::from(SCM obj) {
         Machine m;
@@ -73,6 +35,23 @@ namespace ggg {
             scm_from_utf8_string(s2.str().data()),
             SCM_UNDEFINED
         );
+    }
+
+    template <>
+    void
+    Guile_traits<ggg::Machine>::to_guile(std::ostream& guile, const array_type& objects) {
+        if (objects.empty()) { guile << "(list)"; return; }
+        std::string indent(2, ' ');
+        guile << "(list";
+        for (const auto& m : objects) {
+            guile << '\n' << indent;
+            guile << "(make <machine>\n";
+            guile << indent << "      #:name " << escape_string(m.name()) << '\n';
+            guile << indent << "      #:ethernet-address \""
+                << m.ethernet_address() << "\"\n";
+            guile << indent << "      #:ip-address \"" << m.address() << "\")";
+        }
+        guile << ")\n";
     }
 
     template <>

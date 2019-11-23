@@ -20,11 +20,6 @@ ggg::Show_expired::parse_arguments(int argc, char* argv[]) {
 void
 ggg::Show_expired::execute() {
 	Database db(Database::File::All);
-	auto rstr = db.expired_entities();
-	user_iterator first(rstr), last;
-	while (first != last) {
-		this->_result.insert(*first);
-		++first;
-	}
+	this->_result = db.expired_entities();
 	Show_base::execute();
 }

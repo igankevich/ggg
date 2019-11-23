@@ -45,7 +45,7 @@ ggg::Show_help::print_usage() {
 		<< std::left << "add entity\n"
 		<< std::setw(col1) << std::right << "find,search  "
 		<< std::left << "find entity by name\n"
-		<< std::setw(col1) << std::right << "info,show  "
+		<< std::setw(col1) << std::right << "list,info,show  "
 		<< std::left << "show entity information\n"
 		<< std::setw(col1) << std::right << "groups,parents  "
 		<< std::left << "list entity groups\n"

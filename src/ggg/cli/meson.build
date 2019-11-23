@@ -1,9 +1,9 @@
 ggg_src = files([
 	'add_entity.cc',
-	'align_columns.cc',
 	'all_commands.cc',
 	'attach.cc',
 	'backup.cc',
+	'cli_traits.cc',
 	'command.cc',
 	'dot.cc',
 	'edit_entity.cc',

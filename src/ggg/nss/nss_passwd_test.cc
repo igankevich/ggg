@@ -86,6 +86,6 @@ TEST(passwd, copy) {
 	EXPECT_STREQ(ent.shell().data(), pw.pw_shell);
 	EXPECT_STREQ(ent.home().data(), pw.pw_dir);
 	#ifdef __linux__
-	EXPECT_STREQ(ent.real_name().data(), pw.pw_gecos);
+	EXPECT_STREQ(ent.description().data(), pw.pw_gecos);
 	#endif
 }

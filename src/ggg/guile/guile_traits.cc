@@ -22,13 +22,7 @@ ggg::escape_string(const std::string& s) {
 			case 11: result += R"(\v)"; break;
 			case 12: result += R"(\f)"; break;
 			case 13: result += R"(\r)"; break;
-			default: if (std::isprint(ch)) { result += ch; }
-					 else {
-						 std::stringstream tmp;
-						 tmp << std::hex << int(ch);
-						 result += tmp.str();
-					 }
-					 break;
+            default: result += ch;
 		}
 	}
 	result += '"';

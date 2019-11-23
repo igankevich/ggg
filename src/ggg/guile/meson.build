@@ -5,6 +5,7 @@ ggg_guile_src = files([
 	'guile_traits.cc',
 	'init.cc',
 	'machine.cc',
+	'message.cc',
 	'password.cc',
 	'store.cc',
 ]) + password_src

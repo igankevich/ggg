@@ -1,9 +1,12 @@
 #ifndef GGG_SHOW_BASE_HH
 #define GGG_SHOW_BASE_HH
 
-#include <set>
+#include <vector>
+
+#include <sqlitex/statement.hh>
 
 #include <ggg/cli/command.hh>
+#include <ggg/cli/entity_type.hh>
 
 namespace ggg {
 
@@ -15,14 +18,13 @@ namespace ggg {
 		typedef T value_type;
 
 	protected:
-		bool _long = false;
-		bool _table = false;
-		std::set<T> _result;
+        Entity_type _type = Entity_type::Entity;
+        Entity_output_format _oformat = Entity_output_format::Name;
+        sqlite::statement _result;
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;
 		void execute() override;
-		void print_usage() override;
 	};
 
 }

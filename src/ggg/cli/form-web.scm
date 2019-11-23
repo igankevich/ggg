@@ -153,8 +153,8 @@
 					 store
 					 (make <entity>
 						   #:name username
-						   #:real-name (string-join (list last-name first-name) " ")
-						   #:home-directory (string-join (list %home-prefix username) "/")
+						   #:description (string-join (list last-name first-name) " ")
+						   #:home (string-join (list %home-prefix username) "/")
 						   #:shell %shell))
 				   (store-add
 					 store

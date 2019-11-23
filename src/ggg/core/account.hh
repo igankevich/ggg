@@ -11,7 +11,6 @@
 #include <unistdx/fs/path>
 
 #include <ggg/core/account_flags.hh>
-#include <ggg/core/entity_format.hh>
 #include <ggg/core/guile_traits.hh>
 #include <ggg/sec/secure_string.hh>
 
@@ -29,7 +28,6 @@ namespace ggg {
 		using clock_type = std::chrono::system_clock;
 		using time_point = clock_type::time_point;
 		using duration = clock_type::duration;
-		using path_type = sys::path;
 
 		static constexpr const char delimiter = ':';
 		static constexpr const char separator = '$';
@@ -131,6 +129,7 @@ namespace ggg {
 		inline duration max_inactive() const { return this->_maxinactive; }
 		inline bool has_max_inactive() const { return isset(this->_maxinactive); }
 		inline time_point expire() const { return this->_expire; }
+		inline time_point expiration_date() const { return this->_expire; }
 
 		inline account_flags flags() const { return this->_flags; }
 		inline void setf(account_flags rhs) { this->_flags = this->_flags | rhs; }
@@ -146,7 +145,6 @@ namespace ggg {
 
 	private:
 
-		friend struct Entity_header<account>;
 		friend struct Guile_traits<account>;
 
 	};

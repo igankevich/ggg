@@ -26,8 +26,6 @@ src/ggg/ctl/password.cc
 src/ggg/ctl/password.hh
 src/ggg/ggg/add_entity.cc
 src/ggg/ggg/add_entity.hh
-src/ggg/ggg/align_columns.cc
-src/ggg/ggg/align_columns.hh
 src/ggg/ggg/all_commands.cc
 src/ggg/ggg/all_commands.hh
 src/ggg/ggg/command.cc

@@ -16,9 +16,9 @@ TEST_P(EntityTest, Read) {
 	EXPECT_EQ(12u, ent.id());
 	EXPECT_EQ(34u, ent.gid());
 	#ifdef __linux__
-	EXPECT_EQ("root", ent.real_name());
+	EXPECT_EQ("root", ent.description());
 	#else
-	EXPECT_EQ("", ent.real_name());
+	EXPECT_EQ("", ent.description());
 	#endif
 	EXPECT_EQ("/root", ent.home());
 	EXPECT_EQ("/bin/bash", ent.shell());
@@ -36,9 +36,9 @@ TEST_P(EntityTest, Clear) {
 	EXPECT_EQ(sys::uid_type(-1), ent.id());
 	EXPECT_EQ(sys::gid_type(-1), ent.gid());
 	#ifdef __linux__
-	EXPECT_EQ("", ent.real_name());
+	EXPECT_EQ("", ent.description());
 	#else
-	EXPECT_EQ("", ent.real_name());
+	EXPECT_EQ("", ent.description());
 	#endif
 	EXPECT_EQ("", ent.home());
 	EXPECT_EQ("", ent.shell());
@@ -87,7 +87,7 @@ TEST_P(BareEntityTest, Read) {
 	EXPECT_EQ("", ent.password());
 	EXPECT_EQ(sys::uid_type(-1), ent.id());
 	EXPECT_EQ(sys::gid_type(-1), ent.gid());
-	EXPECT_EQ("", ent.real_name());
+	EXPECT_EQ("", ent.description());
 	EXPECT_EQ("", ent.home());
 	EXPECT_EQ("", ent.shell());
 }

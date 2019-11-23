@@ -8,7 +8,6 @@
 #include <unistdx/fs/file_status>
 
 #include <ggg/config.hh>
-#include <ggg/core/fs.hh>
 
 namespace {
 
@@ -23,6 +22,21 @@ namespace {
 			);
 		}
 		return fd;
+	}
+
+	inline bool
+	can_read(const sys::path& path) {
+		return ::eaccess(path, R_OK) != -1;
+	}
+
+	inline bool
+	can_write(const sys::path& path) {
+		return ::eaccess(path, W_OK) != -1;
+	}
+
+	inline bool
+	can_write(const char* rhs) {
+		return ::eaccess(rhs, W_OK) != -1;
 	}
 
 }
@@ -46,7 +60,7 @@ sys::find_temporary_directory() {
 		possible_dirs.end(),
 		[] (const std::string& rhs) {
 			sys::file_status st(rhs.data());
-			return st.is_directory() && ggg::can_write(sys::path(rhs));
+			return st.is_directory() && can_write(sys::path(rhs));
 		}
 	);
 	if (result == possible_dirs.end()) {

@@ -12,9 +12,7 @@ ggg::Find_machines::parse_arguments(int argc, char* argv[]) {
 void
 ggg::Find_machines::execute() {
 	Database db(Database::File::Entities);
-	auto rstr = db.machines();
-	machine_iterator first(rstr), last;
-	std::move(first, last, std::inserter(this->_result, this->_result.begin()));
+	this->_result =db.machines();
 	Show_base::execute();
 }
 
