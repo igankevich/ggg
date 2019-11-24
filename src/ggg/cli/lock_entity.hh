@@ -1,5 +1,5 @@
-#ifndef GGG_GGG_LOCK_ENTITY_HH
-#define GGG_GGG_LOCK_ENTITY_HH
+#ifndef GGG_CLI_LOCK_ENTITY_HH
+#define GGG_CLI_LOCK_ENTITY_HH
 
 #include <ggg/cli/command.hh>
 

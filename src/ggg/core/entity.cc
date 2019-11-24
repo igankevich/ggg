@@ -1,70 +1,9 @@
 #include <ggg/bits/read_field.hh>
-#include <ggg/bits/to_bytes.hh>
 #include <ggg/core/entity.hh>
 
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
-
-namespace {
-
-	template <class String>
-	inline void
-	merge_str(String& lhs, const String& rhs) {
-		if (lhs.empty() && !rhs.empty()) {
-			lhs = rhs;
-		}
-	}
-
-	template <class String>
-	inline void
-	merge_origin(String& lhs, const String& rhs) {
-		if (!rhs.empty()) {
-			lhs = rhs;
-		}
-	}
-
-	template <class Ch>
-	struct entity_headers;
-
-	template <>
-	struct entity_headers<char> {
-
-		typedef char char_type;
-
-		inline static const char_type*
-		name() noexcept {
-			return "USERNAME";
-		}
-
-		inline static const char_type*
-		id() noexcept {
-			return "ID";
-		}
-
-		inline static const char_type*
-		description() noexcept {
-			return "REALNAME";
-		}
-
-		inline static const char_type*
-		home() noexcept {
-			return "HOME";
-		}
-
-		inline static const char_type*
-		shell() noexcept {
-			return "SHELL";
-		}
-
-		inline static const char_type*
-		all() noexcept {
-			return "USERNAME:unused:ID:unused:REALNAME:HOME:SHELL";
-		}
-
-	};
-
-}
 
 template <class Ch>
 std::basic_istream<Ch>&
@@ -176,26 +115,6 @@ ggg::basic_entity<Ch>
 	this->_uid = -1;
 	this->_gid = -1;
 	this->_parent.clear();
-}
-
-template <class Ch>
-void
-ggg::basic_entity<Ch>
-::merge(const basic_entity& rhs) {
-	if (this->_name != rhs._name) {
-		return;
-	}
-	merge_str(this->_password, rhs._password);
-	merge_str(this->_realname, rhs._realname);
-	merge_str(this->_homedir, rhs._homedir);
-	merge_str(this->_shell, rhs._shell);
-	merge_str(this->_parent, rhs._parent);
-	if (!this->has_id() && rhs.has_id()) {
-		this->_uid = rhs._uid;
-	}
-	if (!this->has_gid() && rhs.has_gid()) {
-		this->_gid = rhs._gid;
-	}
 }
 
 template <class Ch>

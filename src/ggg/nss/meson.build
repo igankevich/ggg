@@ -21,7 +21,7 @@ if has_override_fs
 		name = '-'.join(['nss', service, 'test'])
         exe = executable(
             name,
-            sources: ['nss_' + service + '_test.cc'] + override_nss_src,
+            sources: [service + '_test.cc'] + override_nss_src,
             include_directories: src,
             dependencies: [unistdx, gtest, ggg_core],
             link_with: [libnss_ggg,override_fs],

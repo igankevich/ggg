@@ -3,11 +3,11 @@
 
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
-#include <ggg/ctl/password.hh>
 #include <ggg/guile/guile_traits.hh>
 #include <ggg/guile/password.hh>
 #include <ggg/sec/argon2.hh>
 #include <ggg/sec/echo_guard.hh>
+#include <ggg/sec/password.hh>
 
 namespace {
 

@@ -9,7 +9,7 @@ if with_tests
 endif
 
 subdir('core')
-subdir('ctl')
+subdir('sec')
 subdir('guile')
 
 if with_nss

@@ -1,5 +1,5 @@
-#ifndef GGG_EDIT_ENTITY_HH
-#define GGG_EDIT_ENTITY_HH
+#ifndef GGG_CLI_EDIT_ENTITY_HH
+#define GGG_CLI_EDIT_ENTITY_HH
 
 #include <ggg/cli/command.hh>
 #include <ggg/cli/entity_type.hh>
@@ -40,7 +40,7 @@ namespace ggg {
 
 }
 
-#endif // GGG_EDIT_ENTITY_HH
+#endif // vim:filetype=cpp
 
 
 

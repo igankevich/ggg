@@ -1,5 +1,5 @@
-#ifndef GGG_HEAL_HH
-#define GGG_HEAL_HH
+#ifndef GGG_CLI_HEAL_HH
+#define GGG_CLI_HEAL_HH
 
 #include <ostream>
 #include <string>

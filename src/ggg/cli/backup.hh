@@ -1,5 +1,5 @@
-#ifndef GGG_GGG_BACKUP_HH
-#define GGG_GGG_BACKUP_HH
+#ifndef GGG_CLI_BACKUP_HH
+#define GGG_CLI_BACKUP_HH
 
 #include <ggg/cli/command.hh>
 

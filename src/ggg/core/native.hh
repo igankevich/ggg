@@ -1,5 +1,5 @@
-#ifndef GGG_NATIVE_HH
-#define GGG_NATIVE_HH
+#ifndef GGG_CORE_NATIVE_HH
+#define GGG_CORE_NATIVE_HH
 
 #include <locale>
 #include <ostream>
@@ -8,7 +8,6 @@
 
 #include <unistdx/base/check>
 
-#include <ggg/bits/to_bytes.hh>
 #include <ggg/config.hh>
 
 namespace ggg {
@@ -190,4 +189,4 @@ namespace ggg {
 
 }
 
-#endif // GGG_NATIVE_HH
+#endif // vim:filetype=cpp

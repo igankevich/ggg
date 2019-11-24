@@ -1,5 +1,5 @@
-#ifndef GGG_COMMAND_HH
-#define GGG_COMMAND_HH
+#ifndef GGG_CLI_COMMAND_HH
+#define GGG_CLI_COMMAND_HH
 
 #include <string>
 #include <vector>
@@ -70,4 +70,4 @@ namespace ggg {
 
 }
 
-#endif // GGG_COMMAND_HH
+#endif // vim:filetype=cpp

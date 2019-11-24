@@ -1,5 +1,5 @@
-#ifndef GROUP_HH
-#define GROUP_HH
+#ifndef GGG_CORE_GROUP_HH
+#define GGG_CORE_GROUP_HH
 
 #include <grp.h>
 #include <unistd.h>
@@ -185,4 +185,4 @@ namespace std {
 
 }
 
-#endif // GROUP_HH
+#endif // vim:filetype=cpp

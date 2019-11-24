@@ -8,7 +8,6 @@
 #include <sstream>
 #include <istream>
 
-#include <ggg/bits/read_field.hh>
 #include <ggg/core/account.hh>
 #include <ggg/core/days.hh>
 #include <ggg/guile/guile_traits.hh>

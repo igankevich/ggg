@@ -1,5 +1,5 @@
-#ifndef PAM_PAM_ERROR_CATEGORY_HH
-#define PAM_PAM_ERROR_CATEGORY_HH
+#ifndef GGG_PAM_PAM_CATEGORY_HH
+#define GGG_PAM_PAM_CATEGORY_HH
 
 #include <security/pam_appl.h>
 
@@ -53,4 +53,4 @@ namespace pam {
 		return std::error_condition(ev, pam::pam_category);
 	}
 }
-#endif // PAM_PAM_ERROR_CATEGORY_HH
+#endif // vim:filetype=cpp

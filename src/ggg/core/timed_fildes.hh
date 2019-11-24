@@ -1,5 +1,5 @@
-#ifndef GGG_CORE_TIMED_IFDSTREAM_HH
-#define GGG_CORE_TIMED_IFDSTREAM_HH
+#ifndef GGG_CORE_TIMED_FILDES_HH
+#define GGG_CORE_TIMED_FILDES_HH
 
 #include <chrono>
 #include <stdexcept>

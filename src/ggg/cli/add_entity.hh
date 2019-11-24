@@ -1,5 +1,5 @@
-#ifndef GGG_ADD_ENTITY_HH
-#define GGG_ADD_ENTITY_HH
+#ifndef GGG_CLI_ADD_ENTITY_HH
+#define GGG_CLI_ADD_ENTITY_HH
 
 #include <ostream>
 #include <string>
@@ -36,7 +36,7 @@ namespace ggg {
 
 }
 
-#endif // GGG_ADD_ENTITY_HH
+#endif // vim:filetype=cpp
 
 
 

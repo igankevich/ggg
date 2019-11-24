@@ -1,5 +1,5 @@
-#ifndef PAM_CONVERSATION_HH
-#define PAM_CONVERSATION_HH
+#ifndef GGG_PAM_CONVERSATION_HH
+#define GGG_PAM_CONVERSATION_HH
 
 #include <security/pam_appl.h>
 #include <vector>
@@ -245,4 +245,4 @@ namespace pam {
 
 }
 
-#endif // PAM_CONVERSATION_HH
+#endif // vim:filetype=cpp

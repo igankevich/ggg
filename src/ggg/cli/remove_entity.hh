@@ -1,5 +1,5 @@
-#ifndef GGG_REMOVE_ENTITY_HH
-#define GGG_REMOVE_ENTITY_HH
+#ifndef GGG_CLI_REMOVE_ENTITY_HH
+#define GGG_CLI_REMOVE_ENTITY_HH
 
 #include "command.hh"
 
@@ -13,6 +13,6 @@ namespace ggg {
 
 }
 
-#endif // GGG_REMOVE_ENTITY_HH
+#endif // vim:filetype=cpp
 
 

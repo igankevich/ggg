@@ -1,5 +1,5 @@
-#ifndef SECURE_STRING_HH
-#define SECURE_STRING_HH
+#ifndef GGG_SEC_SECURE_STRING_HH
+#define GGG_SEC_SECURE_STRING_HH
 
 #include <string>
 
@@ -15,4 +15,4 @@ namespace ggg {
 
 }
 
-#endif // SECURE_STRING_HH
+#endif // vim:filetype=cpp

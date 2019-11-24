@@ -1,5 +1,5 @@
-#ifndef GGG_SHOW_DUPLICATES_HH
-#define GGG_SHOW_DUPLICATES_HH
+#ifndef GGG_CLI_SHOW_DUPLICATES_HH
+#define GGG_CLI_SHOW_DUPLICATES_HH
 
 #include <ggg/cli/command.hh>
 

@@ -1,5 +1,5 @@
-#ifndef ENTITY_HH
-#define ENTITY_HH
+#ifndef GGG_CORE_ENTITY_HH
+#define GGG_CORE_ENTITY_HH
 
 #include <codecvt>
 #include <functional>
@@ -208,9 +208,6 @@ namespace ggg {
 
 		void clear();
 
-		void
-		merge(const basic_entity& rhs);
-
 		friend struct Guile_traits<basic_entity>;
 
 	};
@@ -259,4 +256,4 @@ namespace std {
 
 }
 
-#endif // ENTITY_HH
+#endif // vim:filetype=cpp

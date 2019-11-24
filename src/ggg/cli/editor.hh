@@ -1,5 +1,5 @@
-#ifndef GGG_EDITOR_HH
-#define GGG_EDITOR_HH
+#ifndef GGG_CLI_EDITOR_HH
+#define GGG_CLI_EDITOR_HH
 
 #include <string>
 #include <unistdx/ipc/process_status>
@@ -18,4 +18,4 @@ namespace ggg {
 
 }
 
-#endif // GGG_EDITOR_HH
+#endif // vim:filetype=cpp

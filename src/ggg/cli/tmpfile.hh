@@ -1,5 +1,5 @@
-#ifndef GGG_TMPFILE_HH
-#define GGG_TMPFILE_HH
+#ifndef GGG_CLI_TMPFILE_HH
+#define GGG_CLI_TMPFILE_HH
 
 #include <unistdx/io/fdstream>
 #include <unistdx/fs/path>
@@ -38,4 +38,4 @@ namespace sys {
 
 }
 
-#endif // GGG_TMPFILE_HH
+#endif // vim:filetype=cpp

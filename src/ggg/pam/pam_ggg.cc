@@ -6,9 +6,9 @@
 
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
-#include <ggg/ctl/password.hh>
 #include <ggg/pam/pam_handle.hh>
 #include <ggg/sec/argon2.hh>
+#include <ggg/sec/password.hh>
 #include <ggg/sec/secure_string.hh>
 
 using pam::throw_pam_error;

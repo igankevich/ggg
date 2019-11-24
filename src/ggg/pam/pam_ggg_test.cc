@@ -2,12 +2,12 @@
 
 #include <gtest/gtest.h>
 
-#include <ggg/ctl/password.hh>
 #include <ggg/pam/call.hh>
 #include <ggg/pam/conversation.hh>
 #include <ggg/pam/handle.hh>
 #include <ggg/pam/pam_handle.hh>
 #include <ggg/sec/argon2.hh>
+#include <ggg/sec/password.hh>
 #include <ggg/test/clean_database.hh>
 
 const char* testuser_password = "jae3wahQue";

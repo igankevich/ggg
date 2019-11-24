@@ -3,7 +3,6 @@
 #include <type_traits>
 #include <vector>
 
-#include <ggg/bits/to_bytes.hh>
 #include <ggg/config.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/schema.hh>

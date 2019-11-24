@@ -1,5 +1,5 @@
-#ifndef SECURE_SSTREAM_HH
-#define SECURE_SSTREAM_HH
+#ifndef GGG_SEC_SECURE_SSTREAM_HH
+#define GGG_SEC_SECURE_SSTREAM_HH
 
 #include <sstream>
 #include "secure_allocator.hh"
@@ -14,5 +14,5 @@ namespace ggg {
 
 }
 
-#endif // SECURE_SSTREAM_HH
+#endif // vim:filetype=cpp
 

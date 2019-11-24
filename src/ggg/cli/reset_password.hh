@@ -1,5 +1,5 @@
-#ifndef GGG_RESET_PASSWORD_HH
-#define GGG_RESET_PASSWORD_HH
+#ifndef GGG_CLI_RESET_PASSWORD_HH
+#define GGG_CLI_RESET_PASSWORD_HH
 
 #include "command.hh"
 

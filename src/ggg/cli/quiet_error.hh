@@ -1,5 +1,5 @@
-#ifndef GGG_QUIET_ERROR_HH
-#define GGG_QUIET_ERROR_HH
+#ifndef GGG_CLI_QUIET_ERROR_HH
+#define GGG_CLI_QUIET_ERROR_HH
 
 #include <exception>
 
@@ -9,4 +9,4 @@ namespace ggg {
 
 }
 
-#endif // GGG_QUIET_ERROR_HH
+#endif // vim:filetype=cpp

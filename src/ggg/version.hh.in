@@ -1,6 +1,0 @@
-#ifndef VERSION_HH
-#define VERSION_HH
-
-#define GGG_REVISION "@VCS_TAG@"
-
-#endif // VERSION_HH vim:filetype=cpp

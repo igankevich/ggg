@@ -1,5 +1,5 @@
-#ifndef SECURE_ALLOCATOR_HH
-#define SECURE_ALLOCATOR_HH
+#ifndef GGG_SEC_SECURE_ALLOCATOR_HH
+#define GGG_SEC_SECURE_ALLOCATOR_HH
 
 #include <memory>
 #include <stdexcept>
@@ -67,4 +67,4 @@ namespace ggg {
 
 }
 
-#endif // SECURE_ALLOCATOR_HH
+#endif // vim:filetype=cpp

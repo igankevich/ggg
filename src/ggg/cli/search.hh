@@ -1,18 +1,20 @@
-#ifndef GGG_GGG_SEARCH_HH
-#define GGG_GGG_SEARCH_HH
+#ifndef GGG_CLI_SEARCH_HH
+#define GGG_CLI_SEARCH_HH
 
 #include <regex>
 #include <vector>
 
-#include <ggg/bits/to_bytes.hh>
 #include <ggg/core/database.hh>
 
 namespace ggg {
 
 struct Search {
 
+    using ccvt_type = std::codecvt_utf8<wchar_t>;
+    using wcvt_type = std::wstring_convert<ccvt_type, wchar_t>;
+
 	std::vector<std::wregex> wexpr;
-	ggg::bits::wcvt_type cv;
+	wcvt_type cv;
 	Database* db = nullptr;
 
     Search() = default;

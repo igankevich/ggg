@@ -1,5 +1,5 @@
-#ifndef GGG_GGG_EXPUNGE_HH
-#define GGG_GGG_EXPUNGE_HH
+#ifndef GGG_CLI_EXPUNGE_HH
+#define GGG_CLI_EXPUNGE_HH
 
 #include <unordered_set>
 #include <vector>

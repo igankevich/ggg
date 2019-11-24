@@ -1,5 +1,5 @@
-#ifndef CTL_PASSWORD_HH
-#define CTL_PASSWORD_HH
+#ifndef GGG_SEC_PASSWORD_HH
+#define GGG_SEC_PASSWORD_HH
 
 #include <iosfwd>
 #include <string>
@@ -153,4 +153,4 @@ namespace ggg {
 
 }
 
-#endif // CTL_PASSWORD_HH vim:filetype=cpp
+#endif // vim:filetype=cpp

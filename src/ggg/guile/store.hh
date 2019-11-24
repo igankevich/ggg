@@ -1,5 +1,5 @@
-#ifndef GGG_CLI_STORE_HH
-#define GGG_CLI_STORE_HH
+#ifndef GGG_GUILE_STORE_HH
+#define GGG_GUILE_STORE_HH
 
 #include <ggg/core/database.hh>
 #include <ggg/cli/entity_type.hh>

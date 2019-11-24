@@ -1,5 +1,5 @@
-#ifndef GGG_CLI_GUILE_TRAITS_HH
-#define GGG_CLI_GUILE_TRAITS_HH
+#ifndef GGG_GUILE_GUILE_TRAITS_HH
+#define GGG_GUILE_GUILE_TRAITS_HH
 
 #include <libguile.h>
 

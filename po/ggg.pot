@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ggg\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-14 12:40+0300\n"
+"POT-Creation-Date: 2019-11-24 19:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,206 +16,240 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: src/ggg/core/entity.cc:330 src/ggg/core/hierarchy.cc:314
-msgid "bad uid"
+#: src/ggg/cli/add_entity.cc:33 src/ggg/cli/edit_entity.cc:54
+msgid "please, specify entity names, filename or Guile expression"
 msgstr ""
 
-#: src/ggg/core/entity.cc:336 src/ggg/core/hierarchy.cc:317
-msgid "bad gid"
+#: src/ggg/cli/add_entity.cc:53 src/ggg/cli/edit_entity.cc:73
+#: src/ggg/cli/select_by_name.cc:66 src/ggg/cli/select_by_regex.cc:30
+#: src/ggg/cli/select_by_regex.cc:33
+msgid "not implemented"
 msgstr ""
 
-#: src/ggg/core/hierarchy.cc:320
-msgid "bad name"
+#: src/ggg/cli/add_entity.cc:55
+msgid "adding messages is not allowed"
 msgstr ""
 
-#: src/ggg/core/hierarchy.cc:323
-msgid "bad home directory"
-msgstr ""
-
-#: src/ggg/core/hierarchy.cc:326
-msgid "bad shell"
-msgstr ""
-
-#: src/ggg/core/hierarchy.cc:341
-msgid "bad entity"
-msgstr ""
-
-#: src/ggg/core/hierarchy.cc:344
-msgid "conflicting name/uid pair"
-msgstr ""
-
-#: src/ggg/core/hierarchy.cc:348 src/ggg/ctl/account_ctl.cc:77
-#: src/ggg/ctl/account_ctl.cc:115 src/ggg/ctl/account_ctl.cc:138
-msgid "bad origin"
-msgstr ""
-
-#: src/ggg/core/hierarchy.cc:354 src/ggg/core/hierarchy.cc:425
-msgid "conflicting system user"
-msgstr ""
-
-#: src/ggg/core/hierarchy.cc:410
-msgid "empty filename"
-msgstr ""
-
-#: src/ggg/core/hierarchy.cc:419
-msgid "entity with the same name/uid already exists"
-msgstr ""
-
-#: src/ggg/ctl/account_ctl.cc:81 src/ggg/ctl/account_ctl.cc:129
-#: src/ggg/ctl/account_ctl.cc:196 src/ggg/ctl/account_ctl.cc:218
-#: src/ggg/ctl/account_ctl.cc:240
-msgid "bad account"
-msgstr ""
-
-#: src/ggg/ctl/account_ctl.cc:94
-msgid "Updating _."
-msgstr ""
-
-#: src/ggg/ctl/account_ctl.cc:125
-msgid "bad login"
-msgstr ""
-
-#: src/ggg/ctl/account_ctl.cc:144
-msgid "Appeding _ to _."
-msgstr ""
-
-#: src/ggg/ctl/account_ctl.cc:204
-msgid "Deactivating _."
-msgstr ""
-
-#: src/ggg/ctl/account_ctl.cc:226
-msgid "Activating _."
-msgstr ""
-
-#: src/ggg/ctl/account_ctl.cc:248
-msgid "Resetting password for _."
-msgstr ""
-
-#: src/ggg/ctl/form.cc:26
-msgid "bad form"
-msgstr ""
-
-#: src/ggg/ctl/form.cc:42
-msgid "Bad entropy \"_\"."
-msgstr ""
-
-#: src/ggg/ctl/form.cc:50
-msgid "Bad locale \"_\"."
-msgstr ""
-
-#: src/ggg/ggg/add_entity.cc:40 src/ggg/ggg/edit_entity.cc:48
-#: src/ggg/ggg/select_by_name.cc:153 src/ggg/ggg/show_groups.cc:20
-#: src/ggg/ggg/show_members.cc:21
-msgid "please, specify entity names"
-msgstr ""
-
-#: src/ggg/ggg/add_entity.cc:69
+#: src/ggg/cli/add_entity.cc:94
 msgid "Entity _ already exists."
 msgstr ""
 
-#: src/ggg/ggg/add_entity.cc:88 src/ggg/ggg/edit_entity.cc:85
-#: src/ggg/ggg/edit_entity.cc:171
+#: src/ggg/cli/add_entity.cc:108 src/ggg/cli/edit_entity.cc:102
+msgid "_"
+msgstr ""
+
+#: src/ggg/cli/add_entity.cc:109 src/ggg/cli/edit_entity.cc:103
 msgid "Press any key to continue..."
 msgstr ""
 
-#: src/ggg/ggg/add_entity.cc:124
-msgid "Unable to read entities."
-msgstr ""
-
-#: src/ggg/ggg/add_entity.cc:143
-msgid "Error adding _. "
-msgstr ""
-
-#: src/ggg/ggg/all_commands.cc:79 src/ggg/ggg/ggg_main.cc:18
+#: src/ggg/cli/all_commands.cc:107 src/ggg/cli/ggg_main.cc:18
 msgid "bad command"
 msgstr ""
 
-#: src/ggg/ggg/edit_entity.cc:43
-msgid "arguments are not allowed when editing directory"
+#: src/ggg/cli/attach.cc:12 src/ggg/cli/attach.cc:55
+msgid "please, specify exactly two names"
 msgstr ""
 
-#: src/ggg/ggg/edit_entity.cc:109 src/ggg/ggg/select_by_name.cc:125
-msgid "not found"
+#: src/ggg/cli/attach.cc:15 src/ggg/cli/attach.cc:58
+msgid "please, specify different names"
 msgstr ""
 
-#: src/ggg/ggg/edit_entity.cc:151
-msgid "error updating _: _"
+#: src/ggg/cli/attach.cc:35
+msgid "please, specify at least one name"
 msgstr ""
 
-#: src/ggg/ggg/edit_entity.cc:170 src/ggg/ggg/editor.cc:37
-msgid "bad exit code from editor"
+#: src/ggg/cli/attach.cc:79
+msgid "please, specify one or two names"
 msgstr ""
 
-#: src/ggg/ggg/ggg_main.cc:37
-msgid "memory allocation error"
+#: src/ggg/cli/backup.cc:62
+msgid "please, specify only one directory"
 msgstr ""
 
-#: src/ggg/ggg/heal.cc:33
-msgid "Changing permissions of _ to _."
+#: src/ggg/cli/backup.cc:79
+msgid "destination file already exists"
 msgstr ""
 
-#: src/ggg/ggg/heal.cc:44
-msgid "Failed to change permissions of _ to _. "
+#: src/ggg/cli/cli_traits.cc:232
+msgid "messages do not have NSS format"
 msgstr ""
 
-#: src/ggg/ggg/heal.cc:69
-msgid "Changing owner of _ to _:_."
-msgstr ""
-
-#: src/ggg/ggg/heal.cc:80
-msgid "Failed to change owner of _ to _:_. "
-msgstr ""
-
-#: src/ggg/ggg/heal.cc:107
-msgid "_ is not a regular file."
-msgstr ""
-
-#: src/ggg/ggg/heal.cc:138
-msgid "Failed to create _. "
-msgstr ""
-
-#: src/ggg/ggg/heal.cc:148
-msgid "_ is not a directory."
-msgstr ""
-
-#: src/ggg/ggg/heal.cc:221
-msgid "Unable to find form entity _."
-msgstr ""
-
-#: src/ggg/ggg/heal.cc:319
-msgid "Entities are broken."
-msgstr ""
-
-#: src/ggg/ggg/object_traits.hh:107
+#: src/ggg/cli/edit_entity.cc:32
 msgid "duplicate names/ids"
 msgstr ""
 
-#: src/ggg/ggg/sanitise.cc:35
-msgid "Removing empty file _."
+#: src/ggg/cli/edit_entity.cc:75
+msgid "editing messages is not allowed"
 msgstr ""
 
-#: src/ggg/ggg/show_base.cc:37
-msgid "_ entities."
-msgid_plural "_ entities."
-msgstr[0] ""
-msgstr[1] ""
+#: src/ggg/cli/edit_entity.cc:137
+msgid "not found"
+msgstr ""
 
-#: src/ggg/ggg/select_all.cc:21
+#: src/ggg/cli/editor.cc:40
+msgid "bad exit code from editor"
+msgstr ""
+
+#: src/ggg/cli/entity_type.cc:11
+msgid "unknown entity type"
+msgstr ""
+
+#: src/ggg/cli/entity_type.cc:22
+msgid "unknown entity output format"
+msgstr ""
+
+#: src/ggg/cli/expunge.cc:20
+msgid "Failed to send \"_\" signal process _ owned by _: _"
+msgstr ""
+
+#: src/ggg/cli/expunge.cc:36
 msgid "please, do not specify entity names"
 msgstr ""
 
-#: src/ggg/ggg/select_all.cc:36 src/ggg/ggg/show_groups.cc:36
-#: src/ggg/ggg/show_groups.cc:44 src/ggg/ggg/show_members.cc:37
-#: src/ggg/ggg/show_members.cc:43
-msgid "Unable to find _."
+#: src/ggg/cli/expunge.cc:50
+msgid "terminating process _ owned by _"
 msgstr ""
 
-#: src/ggg/ggg/tmpfile.cc:22
+#: src/ggg/cli/expunge.cc:79
+msgid "unable to open _ directory for reading"
+msgstr ""
+
+#: src/ggg/cli/expunge.cc:96
+msgid "Error getting files status of _: _."
+msgstr ""
+
+#: src/ggg/cli/ggg_main.cc:42
+msgid "memory allocation error"
+msgstr ""
+
+#: src/ggg/cli/heal.cc:97
+msgid "Entities are broken. "
+msgstr ""
+
+#: src/ggg/cli/lock_entity.cc:16
+msgid "Failed to lock _: _"
+msgstr ""
+
+#: src/ggg/cli/messages.cc:48
+msgid "please, do not specify arguments"
+msgstr ""
+
+#: src/ggg/cli/messages.cc:77
+msgid "please, specify at least one modifier"
+msgstr ""
+
+#: src/ggg/cli/remove_entity.cc:17
+msgid "Failed to remove _: _"
+msgstr ""
+
+#: src/ggg/cli/reset_password.cc:15
+msgid "Failed to expire password for _: _"
+msgstr ""
+
+#: src/ggg/cli/select_all.cc:24 src/ggg/cli/select_all.cc:36
+msgid "please, do not specify names"
+msgstr ""
+
+#: src/ggg/cli/select_all.cc:49
+msgid "please, specify names"
+msgstr ""
+
+#: src/ggg/cli/tmpfile.cc:21
 msgid "unable to create a file in temporary directory"
 msgstr ""
 
-#: src/ggg/ggg/tmpfile.cc:53
+#: src/ggg/cli/tmpfile.cc:67
 msgid "unable to find temporary directory"
+msgstr ""
+
+#: src/ggg/cli/unlock_entity.cc:16
+msgid "Failed to unlock _: _"
+msgstr ""
+
+#: src/ggg/core/database.cc:538
+msgid "unable to update schema of read-only database"
+msgstr ""
+
+#: src/ggg/core/database.cc:674
+msgid "failed to generate new id"
+msgstr ""
+
+#: src/ggg/core/database.cc:693 src/ggg/core/database.cc:787
+#: src/ggg/core/database.cc:1074
+msgid "bad name"
+msgstr ""
+
+#: src/ggg/core/database.cc:697
+msgid "conflicting system user"
+msgstr ""
+
+#: src/ggg/core/database.cc:711 src/ggg/core/database.cc:803
+#: src/ggg/core/database.cc:1066
+msgid "bad id"
+msgstr ""
+
+#: src/ggg/core/database.cc:738 src/ggg/core/database.cc:748
+#: src/ggg/core/database.cc:974 src/ggg/core/database.cc:999
+msgid "bad entity"
+msgstr ""
+
+#: src/ggg/core/database.cc:756 src/ggg/core/database.cc:879
+#: src/ggg/core/database.cc:894 src/ggg/guile/store.cc:129
+msgid "bad account"
+msgstr ""
+
+#: src/ggg/core/database.cc:903 src/ggg/core/database.cc:913
+#: src/ggg/core/database.cc:929
+msgid "bad account name"
+msgstr ""
+
+#: src/ggg/core/database.cc:986
+msgid "changing id is not allowed"
+msgstr ""
+
+#: src/ggg/core/database.cc:1080 src/ggg/core/database.cc:1128
+msgid "self-loop"
+msgstr ""
+
+#: src/ggg/core/database.cc:1082 src/ggg/core/database.cc:1130
+msgid "entities are attached"
+msgstr ""
+
+#: src/ggg/core/database.cc:1085 src/ggg/core/database.cc:1133
+msgid "entities are tied"
+msgstr ""
+
+#: src/ggg/core/database.cc:1101
+msgid ""
+"entities in the hierarchy should either all have <= 1 outbound edges or all "
+"have <= 1 inbound edges"
+msgstr ""
+
+#: src/ggg/core/database.cc:1115
+msgid "this operation creates loops in the graph"
+msgstr ""
+
+#: src/ggg/core/database.cc:1148
+msgid "bad names"
+msgstr ""
+
+#: src/ggg/core/database.cc:1240
+msgid "bad machine"
+msgstr ""
+
+#: src/ggg/core/database.cc:1352
+msgid "bad size"
+msgstr ""
+
+#: src/ggg/guile/guile_traits.cc:46
+msgid "Unable to read entities."
+msgstr ""
+
+#: src/ggg/sec/password.cc:150
+msgid "Empty password"
+msgstr ""
+
+#: src/ggg/sec/secure_allocator.hh:14
+msgid "failed to init libsodium"
 msgstr ""

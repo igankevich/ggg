@@ -1,5 +1,5 @@
-#ifndef GGG_INSTANCE_HH
-#define GGG_INSTANCE_HH
+#ifndef GGG_NSS_DATABASE_HH
+#define GGG_NSS_DATABASE_HH
 
 #include <ggg/core/database.hh>
 #include <ggg/nss/entity_traits.hh>
@@ -98,4 +98,4 @@ namespace ggg {
 
 }
 
-#endif // GGG_INSTANCE_HH
+#endif // vim:filetype=cpp

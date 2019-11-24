@@ -1,5 +1,5 @@
-#ifndef ACCOUNT_HH
-#define ACCOUNT_HH
+#ifndef GGG_CORE_ACCOUNT_HH
+#define GGG_CORE_ACCOUNT_HH
 
 #include <shadow.h>
 
@@ -177,4 +177,4 @@ namespace std {
 
 }
 
-#endif // ACCOUNT_HH
+#endif // vim:filetype=cpp

@@ -1,5 +1,5 @@
-#ifndef PAM_PAM_HANDLE_HH
-#define PAM_PAM_HANDLE_HH
+#ifndef GGG_PAM_PAM_HANDLE_HH
+#define GGG_PAM_PAM_HANDLE_HH
 
 #include <unistd.h>
 #include <syslog.h>
@@ -66,4 +66,4 @@ namespace ggg {
 
 }
 
-#endif // PAM_PAM_HANDLE_HH
+#endif // vim:filetype=cpp

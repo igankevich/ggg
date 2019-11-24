@@ -1,5 +1,5 @@
-#ifndef GGG_EXPIRE_ENTITY_HH
-#define GGG_EXPIRE_ENTITY_HH
+#ifndef GGG_CLI_EXPIRE_ENTITY_HH
+#define GGG_CLI_EXPIRE_ENTITY_HH
 
 #include "command.hh"
 
@@ -13,7 +13,7 @@ namespace ggg {
 
 }
 
-#endif // GGG_EXPIRE_ENTITY_HH
+#endif // vim:filetype=cpp
 
 
 

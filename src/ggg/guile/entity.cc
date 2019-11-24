@@ -3,7 +3,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <ggg/bits/read_field.hh>
 #include <ggg/config.hh>
 #include <ggg/core/entity.hh>
 #include <ggg/guile/guile_traits.hh>

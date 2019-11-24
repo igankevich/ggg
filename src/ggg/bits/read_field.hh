@@ -1,5 +1,5 @@
-#ifndef READ_FIELD_HH
-#define READ_FIELD_HH
+#ifndef GGG_BITS_READ_FIELD_HH
+#define GGG_BITS_READ_FIELD_HH
 
 #include <ostream>
 #include <istream>
@@ -114,4 +114,4 @@ namespace ggg {
 
 }
 
-#endif // READ_FIELD_HH
+#endif // vim:filetype=cpp

@@ -1,6 +1,0 @@
-#ifndef BUILD_DATE_HH
-#define BUILD_DATE_HH
-
-#define GGG_BUILD_DATE "@VCS_TAG@"
-
-#endif // BUILD_DATE_HH vim:filetype=cpp

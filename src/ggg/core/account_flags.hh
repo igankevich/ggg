@@ -1,5 +1,5 @@
-#ifndef ACCOUNT_FLAGS_HH
-#define ACCOUNT_FLAGS_HH
+#ifndef GGG_CORE_ACCOUNT_FLAGS_HH
+#define GGG_CORE_ACCOUNT_FLAGS_HH
 
 #include <istream>
 #include <ostream>
@@ -46,4 +46,4 @@ namespace ggg {
 
 }
 
-#endif // ACCOUNT_FLAGS_HH
+#endif // vim:filetype=cpp

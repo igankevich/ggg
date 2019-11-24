@@ -43,10 +43,10 @@ if pam_wrapper.found() and not state_dir.startswith('/') and b_sanitize != 'addr
     ld_preload_items = ['libpam_wrapper.so']
     ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
     test(
-        'pam-test',
+        'pam-ggg-test',
         executable(
-            'pam-test',
-            sources: ['pam_test.cc'],
+            'pam-ggg-test',
+            sources: ['pam_ggg_test.cc'],
             include_directories: src,
             dependencies: [unistdx, gtest, ggg_pam]
         ),

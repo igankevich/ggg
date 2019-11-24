@@ -1,5 +1,5 @@
-#ifndef SHOW_HELP_HH
-#define SHOW_HELP_HH
+#ifndef GGG_CLI_SHOW_HELP_HH
+#define GGG_CLI_SHOW_HELP_HH
 
 #include "command.hh"
 #include "all_commands.hh"
@@ -19,5 +19,5 @@ namespace ggg {
 
 }
 
-#endif // SHOW_HELP_HH
+#endif // vim:filetype=cpp
 

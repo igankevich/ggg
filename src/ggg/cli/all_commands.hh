@@ -1,5 +1,5 @@
-#ifndef GGG_ALL_COMMANDS_HH
-#define GGG_ALL_COMMANDS_HH
+#ifndef GGG_CLI_ALL_COMMANDS_HH
+#define GGG_CLI_ALL_COMMANDS_HH
 
 #include <string>
 #include <memory>
@@ -14,4 +14,4 @@ namespace ggg {
 
 }
 
-#endif // GGG_ALL_COMMANDS_HH
+#endif // vim:filetype=cpp
