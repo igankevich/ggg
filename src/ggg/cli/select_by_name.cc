@@ -5,11 +5,9 @@
 #include <string>
 #include <vector>
 
-#include <unistdx/it/intersperse_iterator>
-
 #include <ggg/cli/cli_traits.hh>
 #include <ggg/cli/quiet_error.hh>
-#include <ggg/cli/show_entity.hh>
+#include <ggg/cli/select_by_name.hh>
 #include <ggg/config.hh>
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
@@ -53,45 +51,31 @@ namespace {
 }
 
 void
-ggg::Show_entity::parse_arguments(int argc, char* argv[]) {
-	int opt;
-	while ((opt = getopt(argc, argv, "t:o:")) != -1) {
-		switch (opt) {
-			case 't': std::string(::optarg) >> this->_type; break;
-			case 'o': std::string(::optarg) >> this->_oformat; break;
-		}
-	}
-	for (int i=::optind; i<argc; ++i) {
-		this->_args.emplace_back(argv[i]);
-	}
-}
-
-void
-ggg::Show_entity::execute() {
+ggg::Select_by_name::execute() {
 	Database db;
-	switch (this->_type) {
+	switch (type()) {
 		case Entity_type::Entity:
 			db.open(Database::File::Entities);
-			show_objects<entity>(db, this->args(), this->_oformat);
+			show_objects<entity>(db, this->args(), this->output_format());
 			break;
 		case Entity_type::Account:
 			db.open(Database::File::Accounts);
-			show_objects<account>(db, this->args(), this->_oformat);
+			show_objects<account>(db, this->args(), this->output_format());
 			break;
 		case Entity_type::Machine:
             throw std::runtime_error("not implemented");
 			break;
 		case Entity_type::Message:
 			db.open(Database::File::Accounts);
-			show_objects<message>(db, this->args(), this->_oformat);
+			show_objects<message>(db, this->args(), this->output_format());
 			break;
 	}
     db.close();
 }
 
 void
-ggg::Show_entity::print_usage() {
-	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-	          << this->prefix() << " [-t TYPE] [-o FORMAT] NAME..." << '\n';
+ggg::Select_by_name::print_usage() {
+	std::cout << "usage: " GGG_EXECUTABLE_NAME " " << this->prefix()
+        << " [-t TYPE] [-o FORMAT] NAME..." << '\n';
 }
 

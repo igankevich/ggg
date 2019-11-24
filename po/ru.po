@@ -110,7 +110,7 @@ msgid "Bad locale \"_\"."
 msgstr "Неверное значение локали \"_\"."
 
 #: src/ggg/ggg/add_entity.cc:40 src/ggg/ggg/edit_entity.cc:48
-#: src/ggg/ggg/show_entity.cc:153 src/ggg/ggg/show_groups.cc:20
+#: src/ggg/ggg/select_by_name.cc:153 src/ggg/ggg/show_groups.cc:20
 #: src/ggg/ggg/show_members.cc:21
 msgid "please, specify entity names"
 msgstr "Укажите имена сущностей."
@@ -140,7 +140,7 @@ msgstr "Неизвестная команда."
 msgid "arguments are not allowed when editing directory"
 msgstr "Аргументы не нужны, когда редактируется директория."
 
-#: src/ggg/ggg/edit_entity.cc:109 src/ggg/ggg/show_entity.cc:125
+#: src/ggg/ggg/edit_entity.cc:109 src/ggg/ggg/select_by_name.cc:125
 msgid "not found"
 msgstr "Не найдено."
 
@@ -207,11 +207,11 @@ msgstr[0] "_ сущность."
 msgstr[1] "_ сущности."
 msgstr[2] "_ сущностей."
 
-#: src/ggg/ggg/show_expired.cc:21
+#: src/ggg/ggg/select_all.cc:21
 msgid "please, do not specify entity names"
 msgstr "Не надо указывать сущности."
 
-#: src/ggg/ggg/show_expired.cc:36 src/ggg/ggg/show_groups.cc:36
+#: src/ggg/ggg/select_all.cc:36 src/ggg/ggg/show_groups.cc:36
 #: src/ggg/ggg/show_groups.cc:44 src/ggg/ggg/show_members.cc:37
 #: src/ggg/ggg/show_members.cc:43
 msgid "Unable to find _."

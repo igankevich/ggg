@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <ggg/cli/cli_traits.hh>
-#include <ggg/cli/find_entities.hh>
+#include <ggg/cli/select_by_regex.hh>
 #include <ggg/cli/search.hh>
 #include <ggg/config.hh>
 #include <ggg/core/account.hh>
@@ -9,36 +9,22 @@
 #include <ggg/core/entity.hh>
 
 void
-ggg::Find_entities::parse_arguments(int argc, char* argv[]) {
-	int opt;
-	while ((opt = getopt(argc, argv, "t:o:")) != -1) {
-		switch (opt) {
-			case 't': std::string(::optarg) >> this->_type; break;
-			case 'o': std::string(::optarg) >> this->_oformat; break;
-		}
-	}
-	for (int i=::optind; i<argc; ++i) {
-		this->_args.emplace_back(argv[i]);
-	}
-}
-
-void
-ggg::Find_entities::execute() {
+ggg::Select_by_regex::execute() {
 	Database db;
     Search search;
     Database::statement_type st;
-	switch (this->_type) {
+	switch (type()) {
 		case Entity_type::Entity:
 			db.open(Database::File::Entities);
             search.open(&db, this->args_begin(), this->args_end());
             st = db.search_entities();
-            write<entity>(std::cout, st, this->_oformat);
+            write<entity>(std::cout, st, this->output_format());
 			break;
 		case Entity_type::Account:
 			db.open(Database::File::Accounts);
             search.open(&db, this->args_begin(), this->args_end());
             st = db.search_accounts();
-            write<account>(std::cout, st, this->_oformat);
+            write<account>(std::cout, st, this->output_format());
 			break;
 		case Entity_type::Machine:
             throw std::runtime_error("not implemented");
@@ -50,7 +36,7 @@ ggg::Find_entities::execute() {
 }
 
 void
-ggg::Find_entities::print_usage() {
-	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-	          << this->prefix() << " REGEX..." << '\n';
+ggg::Select_by_regex::print_usage() {
+	std::cout << "usage: " GGG_EXECUTABLE_NAME " " << this->prefix()
+        << " [-t TYPE] [-o FORMAT] REGEX..." << '\n';
 }

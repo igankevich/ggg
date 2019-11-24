@@ -11,20 +11,16 @@
 #include <ggg/cli/edit_entity.hh>
 #include <ggg/cli/expire_entity.hh>
 #include <ggg/cli/expunge.hh>
-#include <ggg/cli/find_entities.hh>
-#include <ggg/cli/find_machines.hh>
+#include <ggg/cli/select_by_regex.hh>
 #include <ggg/cli/guile.hh>
 #include <ggg/cli/heal.hh>
 #include <ggg/cli/lock_entity.hh>
 #include <ggg/cli/remove_entity.hh>
 #include <ggg/cli/reset_password.hh>
 #include <ggg/cli/show_duplicates.hh>
-#include <ggg/cli/show_entity.hh>
-#include <ggg/cli/show_expired.hh>
-#include <ggg/cli/show_groups.hh>
+#include <ggg/cli/select_by_name.hh>
+#include <ggg/cli/select_all.hh>
 #include <ggg/cli/show_help.hh>
-#include <ggg/cli/show_locked.hh>
-#include <ggg/cli/show_members.hh>
 #include <ggg/cli/messages.hh>
 #include <ggg/cli/show_version.hh>
 #include <ggg/cli/unlock_entity.hh>
@@ -65,18 +61,18 @@ namespace {
 		MAKE_COMMAND("insert", Add_entity),
 		MAKE_COMMAND("new", Add_entity),
 		MAKE_COMMAND("version", Show_version),
-		MAKE_COMMAND("show", Show_entity),
-		MAKE_COMMAND("info", Show_entity),
-		MAKE_COMMAND("list", Show_entity),
-		MAKE_COMMAND("members", Show_members),
-		MAKE_COMMAND("children", Show_members),
-		MAKE_COMMAND("groups", Show_groups),
-		MAKE_COMMAND("parents", Show_groups),
-		MAKE_COMMAND("find", Find_entities),
-		MAKE_COMMAND("search", Find_entities),
-		MAKE_COMMAND("expired", Show_expired),
-		MAKE_COMMAND("locked", Show_locked),
-		MAKE_COMMAND("inactive", Show_locked),
+		MAKE_COMMAND("show", Select_by_name),
+		MAKE_COMMAND("info", Select_by_name),
+		MAKE_COMMAND("list", Select_by_name),
+		MAKE_COMMAND("members", Select_children),
+		MAKE_COMMAND("children", Select_children),
+		MAKE_COMMAND("groups", Select_parents),
+		MAKE_COMMAND("parents", Select_parents),
+		MAKE_COMMAND("find", Select_by_regex),
+		MAKE_COMMAND("search", Select_by_regex),
+		MAKE_COMMAND("expired", Select_expired),
+		MAKE_COMMAND("locked", Select_locked),
+		MAKE_COMMAND("inactive", Select_locked),
 		MAKE_COMMAND("expunge", Expunge),
 		MAKE_COMMAND("purge", Expunge),
 		MAKE_COMMAND("attach", Attach),
@@ -86,8 +82,8 @@ namespace {
 		MAKE_COMMAND("dot", Dot),
 		MAKE_COMMAND("graphviz", Dot),
 		MAKE_COMMAND("graph", Dot),
-		MAKE_COMMAND("machines", Find_machines),
-		MAKE_COMMAND("hosts", Find_machines),
+		MAKE_COMMAND("machines", Select_machines),
+		MAKE_COMMAND("hosts", Select_machines),
 		MAKE_COMMAND("guile", Guile),
 		MAKE_COMMAND("script", Guile),
 		MAKE_COMMAND("messages", Messages),

@@ -1,32 +1,26 @@
-#ifndef GGG_SHOW_BASE_HH
-#define GGG_SHOW_BASE_HH
-
-#include <vector>
-
-#include <sqlitex/statement.hh>
+#ifndef GGG_CLI_SELECT_BASE_HH
+#define GGG_CLI_SELECT_BASE_HH
 
 #include <ggg/cli/command.hh>
 #include <ggg/cli/entity_type.hh>
 
 namespace ggg {
 
-	/// Base class for all "show" commands.
-	template <class T>
-	class Show_base: public Command {
-
-	public:
-		typedef T value_type;
+	class Select_base: public Command {
 
 	protected:
         Entity_type _type = Entity_type::Entity;
         Entity_output_format _oformat = Entity_output_format::Name;
-        sqlite::statement _result;
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;
-		void execute() override;
+
+        inline Entity_type type() const { return this->_type; }
+        inline Entity_output_format output_format() const { return this->_oformat; }
+
 	};
 
 }
 
 #endif // vim:filetype=cpp
+

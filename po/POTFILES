@@ -36,8 +36,8 @@ src/ggg/ggg/editor.cc
 src/ggg/ggg/editor.hh
 src/ggg/ggg/expire_entity.cc
 src/ggg/ggg/expire_entity.hh
-src/ggg/ggg/find_entities.cc
-src/ggg/ggg/find_entities.hh
+src/ggg/ggg/select_by_regex.cc
+src/ggg/ggg/select_by_regex.hh
 src/ggg/ggg/ggg_main.cc
 src/ggg/ggg/heal.cc
 src/ggg/ggg/heal.hh
@@ -55,10 +55,10 @@ src/ggg/ggg/show_base.cc
 src/ggg/ggg/show_base.hh
 src/ggg/ggg/show_duplicates.cc
 src/ggg/ggg/show_duplicates.hh
-src/ggg/ggg/show_entity.cc
-src/ggg/ggg/show_entity.hh
-src/ggg/ggg/show_expired.cc
-src/ggg/ggg/show_expired.hh
+src/ggg/ggg/select_by_name.cc
+src/ggg/ggg/select_by_name.hh
+src/ggg/ggg/select_all.cc
+src/ggg/ggg/select_all.hh
 src/ggg/ggg/show_groups.cc
 src/ggg/ggg/show_groups.hh
 src/ggg/ggg/show_help.cc

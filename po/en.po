@@ -109,7 +109,7 @@ msgid "Bad locale \"_\"."
 msgstr ""
 
 #: src/ggg/ggg/add_entity.cc:40 src/ggg/ggg/edit_entity.cc:48
-#: src/ggg/ggg/show_entity.cc:153 src/ggg/ggg/show_groups.cc:20
+#: src/ggg/ggg/select_by_name.cc:153 src/ggg/ggg/show_groups.cc:20
 #: src/ggg/ggg/show_members.cc:21
 msgid "please, specify entity names"
 msgstr ""
@@ -139,7 +139,7 @@ msgstr ""
 msgid "arguments are not allowed when editing directory"
 msgstr ""
 
-#: src/ggg/ggg/edit_entity.cc:109 src/ggg/ggg/show_entity.cc:125
+#: src/ggg/ggg/edit_entity.cc:109 src/ggg/ggg/select_by_name.cc:125
 msgid "not found"
 msgstr ""
 
@@ -205,11 +205,11 @@ msgid_plural "_ entities."
 msgstr[0] "_ entity."
 msgstr[1] "_ entities."
 
-#: src/ggg/ggg/show_expired.cc:21
+#: src/ggg/ggg/select_all.cc:21
 msgid "please, do not specify entity names"
 msgstr ""
 
-#: src/ggg/ggg/show_expired.cc:36 src/ggg/ggg/show_groups.cc:36
+#: src/ggg/ggg/select_all.cc:36 src/ggg/ggg/show_groups.cc:36
 #: src/ggg/ggg/show_groups.cc:44 src/ggg/ggg/show_members.cc:37
 #: src/ggg/ggg/show_members.cc:43
 msgid "Unable to find _."
