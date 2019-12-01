@@ -24,7 +24,7 @@ if has_override_fs
             sources: [service + '_test.cc'] + override_nss_src,
             include_directories: src,
             dependencies: [unistdx, gtest, ggg_core],
-            link_with: [libnss_ggg,override_fs],
+            link_with: [libnss_ggg],
             cpp_args: ['-DGGG_NSS_SERVICE="' + service + '"']
         )
 		test(name, exe, env: ['LD_PRELOAD=' + override_fs.full_path()],

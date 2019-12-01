@@ -113,6 +113,14 @@ namespace ggg {
         Database& db,
         const string_array& names
     ) -> statement_type {
+        auto st = db.find_non_existing_entities(names.begin(), names.end());
+        std::string msg, name;
+        while (st.step() != sqlite::errc::done) {
+            st.column(0, name);
+            msg += name;
+            msg += " not found\n";
+        }
+        if (!msg.empty()) { msg.pop_back(); throw std::invalid_argument(msg); }
         return db.find_entities(names.begin(), names.end());
     }
 

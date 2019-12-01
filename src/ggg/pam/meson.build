@@ -39,8 +39,8 @@ test(
 )
 
 pam_wrapper = dependency('pam_wrapper', required: false)
-if pam_wrapper.found() and not state_dir.startswith('/') and b_sanitize != 'address'
-    ld_preload_items = ['libpam_wrapper.so']
+if pam_wrapper.found() and not state_dir.startswith('/') and b_sanitize != 'address' and has_override_fs
+    ld_preload_items = ['libpam_wrapper.so', override_fs.full_path()]
     ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
     test(
         'pam-ggg-test',

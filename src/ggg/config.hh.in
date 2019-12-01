@@ -3,7 +3,7 @@
 
 #define MODULE_NAME @module_name@
 
-#define GGG_ROOT "@state_dir@"
+#define GGG_ROOT "@ggg_root@"
 #define GGG_SALT_LENGTH @salt_length@
 #define GGG_EXECUTABLE_NAME "@executable_name@"
 #define GGG_VERSION "@version@"
@@ -12,8 +12,8 @@
 #define GGG_READ_GROUP "@read_group@"
 #define GGG_WRITE_GROUP "@write_group@"
 #define GGG_MAX_DEPTH @max_depth@
-#define GGG_ENTITIES_PATH "@state_dir@/@entities@"
-#define GGG_ACCOUNTS_PATH "@state_dir@/@accounts@"
+#define GGG_ENTITIES_PATH "@ggg_root@/@entities@"
+#define GGG_ACCOUNTS_PATH "@ggg_root@/@accounts@"
 #define GGG_MIN_ID @min_id@
 #define GGG_OVERFLOW_ID @overflow_id@
 #define GGG_DEFAULT_HOME_PREFIX "@default_home_prefix@"

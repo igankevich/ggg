@@ -934,6 +934,21 @@ ggg::Database::unset_account_flag(const char* name, account_flags flag) {
 }
 
 std::string
+ggg::Database::select_non_existing_users_by_names(int n) {
+    if (n == 0) { return "SELECT name FROM entities WHERE FALSE"; }
+	std::string sql;
+    sql.reserve(4096);
+    sql += "WITH needed(name) AS (";
+	for (int i=0; i<n; ++i) {
+        sql += "\nVALUES (?) UNION ALL";
+    }
+    for (int i=0; i<9; ++i) { sql.pop_back(); }
+    sql.back() = ')';
+    sql += "\nSELECT name FROM needed WHERE name NOT IN (SELECT name FROM entities)";
+	return sql;
+}
+
+std::string
 ggg::Database::select_users_by_names(int n) {
 	std::string sql(sql_select_users_by_multiple_names);
 	for (int i=0; i<n; ++i) {

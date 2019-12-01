@@ -105,6 +105,16 @@ namespace ggg {
 
 		template <class Iterator>
 		inline statement_type
+		find_non_existing_entities(Iterator first, Iterator last) {
+			auto n = std::distance(first, last);
+			auto st = this->_db.prepare(
+                this->select_non_existing_users_by_names(n).data());
+            bind_all(st, first, last);
+            return st;
+        }
+
+		template <class Iterator>
+        inline statement_type
 		find_entities(Iterator first, Iterator last) {
 			auto n = std::distance(first, last);
             if (n == 0) { return entities(); }
@@ -349,6 +359,7 @@ namespace ggg {
 			while (first != last) { st.bind(++i, *first); ++first; }
         }
 
+		std::string select_non_existing_users_by_names(int n);
 		std::string select_users_by_names(int n);
 		std::string select_accounts_by_names(int n);
 		std::string select_messages_by_name(int n);

@@ -63,9 +63,12 @@ go_directory = join_paths(site_ccache_directory, 'ggg')
 module_name = 'ggg'
 executable_name = 'ggg'
 state_dir = get_option('sharedstatedir')
+ggg_root = join_paths(state_dir, module_name)
+if not ggg_root.startswith('/')
+    ggg_root = join_paths(get_option('prefix'), ggg_root)
+endif
 config = configuration_data()
 config.set('module_name', module_name)
-config.set('state_dir', join_paths(state_dir, module_name))
 config.set('salt_length', '16')
 config.set('executable_name', executable_name)
 config.set('version', debug_build ? 'debug' : meson.project_version())
@@ -83,6 +86,7 @@ config.set('default_shell', '/bin/sh')
 config.set('guile_load_path', site_directory)
 config.set('guile_load_compiled_path', site_ccache_directory)
 config.set('GGG_DEVELOPER_BUILD', developer)
+config.set('ggg_root', ggg_root)
 
 subdir('src')
 subdir('po')
@@ -96,6 +100,7 @@ endif
 env = configuration_data()
 env.set('build_root', meson.build_root())
 env.set('prefix', join_paths(meson.build_root(), 'usr'))
+env.set('override_fs', override_fs.full_path())
 configure_file(input: 'env.in', output: 'env', configuration: env)
 # }}}
 

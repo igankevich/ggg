@@ -25,26 +25,6 @@ namespace {
 	) {
 		using namespace ggg;
         auto cnt = CLI_traits<T>::select(db, args);
-        /* TODO this is not efficient anymore
-		if (!args.empty() &&
-            cnt.size() != args.size() &&
-            !std::is_same<T,message>::value) {
-            std::vector<std::string> names, not_found;
-            names.reserve(cnt.size());
-            for (const auto& obj : cnt) { names.emplace_back(obj.name()); }
-            std::sort(names.begin(), names.end());
-            auto new_args = args;
-            std::sort(new_args.begin(), new_args.end());
-            std::set_difference(
-                new_args.begin(), new_args.end(),
-                names.begin(), names.end(),
-                std::back_inserter(not_found)
-            );
-            for (const auto& name : not_found) {
-                std::clog << name << " not found\n";
-            }
-            throw quiet_error();
-		}*/
         write<T>(std::cout, cnt, format);
 	}
 
