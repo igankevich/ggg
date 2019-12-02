@@ -21,8 +21,13 @@ namespace ggg {
         using string_array = std::vector<std::string>;
         using statement_type = sqlite::statement;
 
-        template <Entity_output_format format>
+        template <Format format>
         static void write(std::ostream& out, statement_type& st);
+
+        template <Format format>
+        inline static void read(std::istream& in, object_array& result) {
+            throw std::invalid_argument("not supported");
+        }
 
         static auto select(Database& db, const string_array& names) -> statement_type;
 
@@ -33,26 +38,51 @@ namespace ggg {
     write(
         std::ostream& out,
         typename CLI_traits<T>::statement_type& st,
-        Entity_output_format format
+        Format format
     ) {
         switch (format) {
-            case Entity_output_format::Rec:
-                CLI_traits<T>::template write<Entity_output_format::Rec>(out, st);
+            case Format::Rec:
+                CLI_traits<T>::template write<Format::Rec>(out, st);
                 break;
-            case Entity_output_format::Guile:
-                CLI_traits<T>::template write<Entity_output_format::Guile>(out, st);
+            case Format::SCM:
+                CLI_traits<T>::template write<Format::SCM>(out, st);
                 break;
-            case Entity_output_format::TSV:
-                CLI_traits<T>::template write<Entity_output_format::TSV>(out, st);
+            case Format::TSV:
+                CLI_traits<T>::template write<Format::TSV>(out, st);
                 break;
-            case Entity_output_format::NSS:
-                CLI_traits<T>::template write<Entity_output_format::NSS>(out, st);
+            case Format::NSS:
+                CLI_traits<T>::template write<Format::NSS>(out, st);
                 break;
-            case Entity_output_format::Name:
+            case Format::SSH:
+                CLI_traits<T>::template write<Format::SSH>(out, st);
+                break;
+            case Format::Name:
                 for (const auto& obj : st.template rows<T>()) {
                     out << obj.name() << '\n';
                 }
                 break;
+        }
+    }
+
+    template <class T>
+    inline void
+    read(
+        std::istream& in,
+        typename CLI_traits<T>::object_array& result,
+        Format format
+    ) {
+        switch (format) {
+            case Format::SCM:
+                CLI_traits<T>::template read<Format::SCM>(in, result);
+                break;
+            case Format::NSS:
+                CLI_traits<T>::template read<Format::NSS>(in, result);
+                break;
+            case Format::SSH:
+                CLI_traits<T>::template read<Format::SSH>(in, result);
+                break;
+            default:
+                throw std::invalid_argument("not supported");
         }
     }
 

@@ -7,6 +7,7 @@
 #include <unistdx/ipc/identity>
 
 #include <ggg/cli/add_entity.hh>
+#include <ggg/cli/cli_traits.hh>
 #include <ggg/cli/editor.hh>
 #include <ggg/cli/quiet_error.hh>
 #include <ggg/cli/tmpfile.hh>
@@ -19,11 +20,12 @@ void
 ggg::Add_entity
 ::parse_arguments(int argc, char* argv[]) {
 	int opt;
-	while ((opt = getopt(argc, argv, "t:f:e:")) != -1) {
+	while ((opt = getopt(argc, argv, "t:f:e:i:")) != -1) {
 		switch (opt) {
 			case 't': std::string(::optarg) >> this->_type; break;
 			case 'f': this->_filename = ::optarg; break;
 			case 'e': this->_expression = ::optarg; break;
+            case 'i': std::string(::optarg) >> this->_iformat; break;
 		}
 	}
 	for (int i=::optind; i<argc; ++i) {
@@ -48,6 +50,10 @@ ggg::Add_entity
 		case Entity_type::Account:
 			store.open(Store::File::All, Store::Flag::Read_write);
 			this->do_execute<account>(store);
+			break;
+		case Entity_type::Public_key:
+			store.open(Store::File::Accounts, Store::Flag::Read_write);
+			this->do_execute<public_key>(store);
 			break;
 		case Entity_type::Machine:
 			throw std::invalid_argument("not implemented");
@@ -86,6 +92,7 @@ ggg::Add_entity
 ::add_interactive(Store& store) {
 	using traits_type = Guile_traits<T>;
 	bool success = true;
+    /* TODO this check is not universal (does not work for public keys)
 	for (const std::string& ent : this->args()) {
 		if (store.has(T(ent.data()))) {
 			success = false;
@@ -93,7 +100,7 @@ ggg::Add_entity
 			tmp << ent;
 			native_message(std::cerr, "Entity _ already exists.", tmp.str());
 		}
-	}
+	}*/
 	if (!success) { throw quiet_error(); }
 	do {
 		sys::tmpfile tmp(".scm");
@@ -116,11 +123,42 @@ template <class T>
 void
 ggg::Add_entity
 ::insert(Store& store, std::string guile) {
-	using guile_traits_type = Guile_traits<T>;
-	auto ents = guile_traits_type::from_guile(guile);
+	using traits_type = CLI_traits<T>;
+    using object_array = typename traits_type::object_array;
+    // TODO this is inefficient
+    std::stringstream tmp(guile);
+    object_array objects;
+    read<T>(tmp, objects, input_format());
+	//auto ents = guile_traits_type::from_guile(guile);
 	Transaction tr(store);
-	for (const auto& ent : ents) { store.add(ent); }
+	for (const auto& o : objects) { store.add(o); }
 	tr.commit();
+}
+
+namespace ggg {
+
+    template <>
+    void
+    Add_entity
+    ::insert<public_key>(Store& store, std::string guile) {
+    	using traits_type = CLI_traits<public_key>;
+        using object_array = typename traits_type::object_array;
+        // TODO this is inefficient
+        std::stringstream tmp(guile);
+        object_array objects;
+        read<public_key>(tmp, objects, input_format());
+        if (args().size() != 1) {
+            throw std::invalid_argument("please, specify exactly one name");
+        }
+        for (auto& o : objects) {
+            o.name(args().front());
+        }
+    	//auto ents = guile_traits_type::from_guile(guile);
+    	Transaction tr(store);
+    	for (const auto& o : objects) { store.add(o); }
+    	tr.commit();
+    }
+
 }
 
 void
@@ -129,16 +167,11 @@ ggg::Add_entity
 	const int w = 20;
 	std::cout
 		<< "usage: " GGG_EXECUTABLE_NAME " "
-		<< this->prefix() << " [-t TYPE] [-e EXPR] [NAME...]\n"
+		<< this->prefix() << " [-t TYPE] [-i FORMAT] [-e EXPR] [NAME...]\n"
 		<< std::setw(w) << std::left << "  -t TYPE"
-		<< "entity type (account, entity, machine, form)\n"
+		<< "entity type (account, entity, machine, public-key)\n"
+		<< std::setw(w) << std::left << "  -i FORMAT"
+		<< "input format (scm, nss, ssh)\n"
 		<< std::setw(w) << std::left << "  -f FILE"
 		<< "file to read entities from\n";
 }
-
-template void ggg::Add_entity::do_execute<ggg::entity>(Store&);
-template void ggg::Add_entity::do_execute<ggg::account>(Store&);
-template void ggg::Add_entity::add_interactive<ggg::entity>(Store&);
-template void ggg::Add_entity::add_interactive<ggg::account>(Store&);
-template void ggg::Add_entity::insert<ggg::entity>(Store&, std::string);
-template void ggg::Add_entity::insert<ggg::account>(Store&, std::string);

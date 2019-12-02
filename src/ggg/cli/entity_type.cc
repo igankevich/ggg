@@ -1,3 +1,4 @@
+#include <locale>
 #include <stdexcept>
 
 #include <ggg/cli/entity_type.hh>
@@ -8,16 +9,19 @@ ggg::operator>>(std::string name, Entity_type& type) {
 	else if (name == "account") { type = Entity_type::Account; }
 	else if (name == "machine") { type = Entity_type::Machine; }
 	else if (name == "message") { type = Entity_type::Message; }
+	else if (name == "public-key") { type = Entity_type::Public_key; }
 	else throw std::invalid_argument("unknown entity type");
 }
 
 void
-ggg::operator>>(std::string name, Entity_output_format& type) {
+ggg::operator>>(std::string name, Format& type) {
+    for (auto& ch : name) { ch = std::tolower(ch, std::locale::classic()); }
 	if (name == "scm" || name == "guile" || name == "scheme") {
-        type = Entity_output_format::Guile;
-    } else if (name == "rec") { type = Entity_output_format::Rec; }
-    else if (name == "tsv") { type = Entity_output_format::TSV; }
-    else if (name == "name") { type = Entity_output_format::Name; }
-    else if (name == "nss") { type = Entity_output_format::NSS; }
-	else throw std::invalid_argument("unknown entity output format");
+        type = Format::SCM;
+    } else if (name == "rec") { type = Format::Rec; }
+    else if (name == "tsv") { type = Format::TSV; }
+    else if (name == "name") { type = Format::Name; }
+    else if (name == "nss") { type = Format::NSS; }
+    else if (name == "ssh") { type = Format::SSH; }
+	else throw std::invalid_argument("unknown format");
 }

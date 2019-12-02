@@ -3,13 +3,13 @@
 
 namespace ggg {
 
-	enum class Entity_type {Account, Entity, Machine, Message};
+	enum class Entity_type {Account, Entity, Machine, Message, Public_key};
 
 	void operator>>(std::string name, Entity_type& type);
 
-	enum class Entity_output_format {Guile, Rec, TSV, Name, NSS};
+	enum class Format {SCM, Rec, TSV, Name, NSS, SSH};
 
-	void operator>>(std::string name, Entity_output_format& type);
+	void operator>>(std::string name, Format& type);
 
 }
 

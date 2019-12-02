@@ -132,6 +132,11 @@ ggg::Store::add(const account& rhs) {
 }
 
 void
+ggg::Store::add(const public_key& rhs) {
+	insert(rhs);
+}
+
+void
 ggg::store_define_procedures() {
 	define_procedure("with-transaction", 3, 0, 0, with_transaction);
 	define_procedure("add", 2, 0, 0, store_add);

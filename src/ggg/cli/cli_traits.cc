@@ -1,6 +1,9 @@
+#include <iomanip>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
@@ -51,7 +54,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<entity>::write<Entity_output_format::Rec>(
+    void CLI_traits<entity>::write<Format::Rec>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -67,7 +70,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<entity>::write<Entity_output_format::TSV>(
+    void CLI_traits<entity>::write<Format::TSV>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -83,7 +86,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<entity>::write<Entity_output_format::NSS>(
+    void CLI_traits<entity>::write<Format::NSS>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -100,12 +103,32 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<entity>::write<Entity_output_format::Guile>(
+    void CLI_traits<entity>::write<Format::SSH>(
+        std::ostream& out,
+        statement_type& st
+    ) {
+        throw std::invalid_argument("not supported");
+    }
+
+    template <>
+    template <>
+    void CLI_traits<entity>::write<Format::SCM>(
         std::ostream& out,
         statement_type& st
     ) {
         auto rows = st.rows<object_type>();
         Guile_traits<object_type>::to_guile(out, object_array{rows.begin(),rows.end()});
+    }
+
+    template <>
+    template <>
+    void CLI_traits<entity>::read<Format::SCM>(
+        std::istream& in,
+        object_array& result
+    ) {
+        std::stringstream tmp;
+        tmp << in.rdbuf();
+        result = Guile_traits<object_type>::from_guile(tmp.str());
     }
 
     template <>
@@ -126,7 +149,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<account>::write<Entity_output_format::Rec>(
+    void CLI_traits<account>::write<Format::Rec>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -148,7 +171,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<account>::write<Entity_output_format::TSV>(
+    void CLI_traits<account>::write<Format::TSV>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -166,7 +189,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<account>::write<Entity_output_format::NSS>(
+    void CLI_traits<account>::write<Format::NSS>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -182,12 +205,32 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<account>::write<Entity_output_format::Guile>(
+    void CLI_traits<account>::write<Format::SSH>(
+        std::ostream& out,
+        statement_type& st
+    ) {
+        throw std::invalid_argument("not supported");
+    }
+
+    template <>
+    template <>
+    void CLI_traits<account>::write<Format::SCM>(
         std::ostream& out,
         statement_type& st
     ) {
         auto rows = st.rows<object_type>();
         Guile_traits<object_type>::to_guile(out, object_array{rows.begin(),rows.end()});
+    }
+
+    template <>
+    template <>
+    void CLI_traits<account>::read<Format::SCM>(
+        std::istream& in,
+        object_array& result
+    ) {
+        std::stringstream tmp;
+        tmp << in.rdbuf();
+        result = Guile_traits<object_type>::from_guile(tmp.str());
     }
 
     template <>
@@ -200,7 +243,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<message>::write<Entity_output_format::Rec>(
+    void CLI_traits<message>::write<Format::Rec>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -217,7 +260,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<message>::write<Entity_output_format::TSV>(
+    void CLI_traits<message>::write<Format::TSV>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -233,21 +276,39 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<message>::write<Entity_output_format::NSS>(
+    void CLI_traits<message>::write<Format::NSS>(
         std::ostream& out,
         statement_type& st
     ) {
-        throw std::runtime_error("messages do not have NSS format");
+        throw std::invalid_argument("messages do not have NSS format");
     }
 
     template <>
     template <>
-    void CLI_traits<message>::write<Entity_output_format::Guile>(
+    void CLI_traits<message>::write<Format::SSH>(
+        std::ostream& out,
+        statement_type& st
+    ) {
+        throw std::invalid_argument("not supported");
+    }
+
+    template <>
+    template <>
+    void CLI_traits<message>::write<Format::SCM>(
         std::ostream& out,
         statement_type& st
     ) {
         auto rows = st.rows<object_type>();
         Guile_traits<object_type>::to_guile(out, object_array{rows.begin(),rows.end()});
+    }
+
+    template <>
+    template <>
+    void CLI_traits<message>::read<Format::SCM>(
+        std::istream& in,
+        object_array& result
+    ) {
+        throw std::invalid_argument("not supported");
     }
 
     template <>
@@ -260,7 +321,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<Machine>::write<Entity_output_format::Rec>(
+    void CLI_traits<Machine>::write<Format::Rec>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -274,7 +335,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<Machine>::write<Entity_output_format::TSV>(
+    void CLI_traits<Machine>::write<Format::TSV>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -288,7 +349,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<Machine>::write<Entity_output_format::NSS>(
+    void CLI_traits<Machine>::write<Format::NSS>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -301,7 +362,16 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<Machine>::write<Entity_output_format::Guile>(
+    void CLI_traits<Machine>::write<Format::SSH>(
+        std::ostream& out,
+        statement_type& st
+    ) {
+        throw std::invalid_argument("not supported");
+    }
+
+    template <>
+    template <>
+    void CLI_traits<Machine>::write<Format::SCM>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -310,11 +380,162 @@ namespace ggg {
     }
 
     template <>
+    template <>
+    void CLI_traits<Machine>::read<Format::SCM>(
+        std::istream& in,
+        object_array& result
+    ) {
+        std::stringstream tmp;
+        tmp << in.rdbuf();
+        result = Guile_traits<object_type>::from_guile(tmp.str());
+    }
+
+    template <>
     auto CLI_traits<Machine>::select(
         Database& db,
         const string_array& names
     ) -> statement_type {
         return db.find_machines(names.begin(), names.end());
+    }
+
+    template <>
+    template <>
+    void CLI_traits<public_key>::write<Format::Rec>(
+        std::ostream& out,
+        statement_type& st
+    ) {
+        for (const auto& o : st.rows<object_type>()) {
+            out << "name: " << o.name() << '\n';
+            out << "options: " << o.options() << '\n';
+            out << "type: " << o.type() << '\n';
+            out << "key: " << o.key() << '\n';
+            out << "comment: " << o.comment() << '\n';
+            out << '\n';
+        }
+    }
+
+    template <>
+    template <>
+    void CLI_traits<public_key>::write<Format::TSV>(
+        std::ostream& out,
+        statement_type& st
+    ) {
+        for (const auto& o : st.rows<object_type>()) {
+            out << o.name() << '\t';
+            out << o.options() << '\t';
+            out << o.type() << '\t';
+            out << o.key() << '\t';
+            out << o.comment();
+            out << '\n';
+        }
+    }
+
+    template <>
+    template <>
+    void CLI_traits<public_key>::write<Format::NSS>(
+        std::ostream& out,
+        statement_type& st
+    ) {
+        throw std::invalid_argument("not supported");
+    }
+
+    template <>
+    template <>
+    void CLI_traits<public_key>::write<Format::SSH>(
+        std::ostream& out,
+        statement_type& st
+    ) {
+        for (const auto& o : st.rows<object_type>()) {
+            if (!o.options().empty()) { out << o.options() << ' '; }
+            out << o.type() << ' ';
+            out << o.key() << ' ';
+            if (!o.comment().empty()) { out << o.comment(); }
+            else { out << o.name() << "-key"; }
+            out << '\n';
+        }
+    }
+
+    template <>
+    template <>
+    void CLI_traits<public_key>::write<Format::SCM>(
+        std::ostream& out,
+        statement_type& st
+    ) {
+        auto rows = st.rows<object_type>();
+        Guile_traits<object_type>::to_guile(out, object_array{rows.begin(),rows.end()});
+    }
+
+    template <>
+    template <>
+    void CLI_traits<public_key>::read<Format::SCM>(
+        std::istream& in,
+        object_array& result
+    ) {
+        std::stringstream tmp;
+        tmp << in.rdbuf();
+        result = Guile_traits<object_type>::from_guile(tmp.str());
+    }
+
+    template <>
+    template <>
+    void CLI_traits<public_key>::read<Format::SSH>(
+        std::istream& in,
+        object_array& result
+    ) {
+        std::string line;
+        int line_no = 0;
+        while (in >> std::ws && std::getline(in, line)) {
+            ++line_no;
+            // remove trailing spaces
+            while (!line.empty() && std::isspace(line.back())) { line.pop_back(); }
+            std::istringstream tmp(line);
+            char ch = 0;
+            bool inside_quotes = false;
+            std::vector<std::string> values;
+            std::string value;
+            while (tmp.get(ch)) {
+                value += ch;
+                if (ch == '"') { inside_quotes = !inside_quotes; }
+                else if (!inside_quotes && std::isspace(ch)) {
+                    value.pop_back();
+                    in >> std::ws;
+                    values.emplace_back(std::move(value));
+                    value.clear();
+                }
+            }
+            if (!value.empty()) { values.emplace_back(std::move(value)); }
+            public_key o;
+            switch (values.size()) {
+                case 2:
+                    o.type(values[0]);
+                    o.key(values[1]);
+                    break;
+                case 3:
+                    o.type(values[0]);
+                    o.key(values[1]);
+                    o.comment(values[2]);
+                    break;
+                case 4:
+                    o.options(values[0]);
+                    o.type(values[1]);
+                    o.key(values[2]);
+                    o.comment(values[3]);
+                    break;
+                default:
+                    std::ostringstream msg;
+                    msg << "bad key at line " << line_no << ": " << line;
+                    throw std::invalid_argument(msg.str());
+            }
+            result.emplace_back(std::move(o));
+        }
+    }
+
+    template <>
+    auto CLI_traits<public_key>::select(
+        Database& db,
+        const string_array& names
+    ) -> statement_type {
+        return db.public_keys(names.begin(), names.end());
     }
 
 }

@@ -49,7 +49,8 @@ std::string override_file(const char* func, const char* file) {
     if (path == GGG_ROOT) { path = GGG_WORKDIR; }
     auto n = traits_type::length(GGG_ROOT);
     if (path.compare(0, n, GGG_ROOT, n) == 0) { path = path.substr(n+1); }
-    if (path == GGG_NEW_GUILE_LOAD_PATH "/ggg/types.scm") {
+    if (path == GGG_NEW_GUILE_LOAD_PATH "/ggg/types.scm" ||
+        path == GGG_GUILE_LOAD_PATH "/ggg/types.scm") {
         path = GGG_NEW_GUILE_LOAD_PATH "/ggg/types_test.scm";
     }
     #if GGG_DEBUG

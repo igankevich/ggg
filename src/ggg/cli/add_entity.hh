@@ -17,6 +17,7 @@ namespace ggg {
 
 	private:
 		Entity_type _type = Entity_type::Entity;
+        Format _iformat = Format::SCM;
 		std::string _filename;
 		std::string _expression;
 
@@ -31,6 +32,7 @@ namespace ggg {
 		template <class T> void insert(Store& db, std::string guile);
 
 		inline Entity_type type() const { return this->_type; }
+        inline Format input_format() const { return this->_iformat; }
 
 	};
 

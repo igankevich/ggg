@@ -38,6 +38,14 @@ ggg_exe = executable(
 	install: true
 )
 
+ggg_public_keys_exe = executable(
+	'ggg-public-keys',
+	sources: ['ggg_public_keys_main.cc', 'cli_traits.cc'],
+	include_directories: src,
+	dependencies: [unistdx,ggg_crypt,libsodium,ggg_core,guile,ggg_guile],
+	install: true
+)
+
 # guile environment variables {{{
 guile_config = configuration_data()
 guile_config.set('load_compiled_path', guile_load_compiled_path)

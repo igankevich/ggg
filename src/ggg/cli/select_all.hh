@@ -9,11 +9,11 @@ namespace ggg {
     class Select_all: public Command {
 
 	protected:
-        Entity_output_format _oformat = Entity_output_format::Name;
+        Format _oformat = Format::Name;
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;
-        inline Entity_output_format output_format() const { return this->_oformat; }
+        inline Format output_format() const { return this->_oformat; }
 
     };
 

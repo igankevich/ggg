@@ -7,6 +7,7 @@ ggg_guile_src = files([
 	'machine.cc',
 	'message.cc',
 	'password.cc',
+	'public_key.cc',
 	'store.cc',
 ]) + password_src
 

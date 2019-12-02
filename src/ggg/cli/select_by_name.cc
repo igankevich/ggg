@@ -21,7 +21,7 @@ namespace {
 	show_objects(
         ggg::Database& db,
         const Container& args,
-        ggg::Entity_output_format format
+        ggg::Format format
 	) {
 		using namespace ggg;
         auto cnt = CLI_traits<T>::select(db, args);
@@ -41,6 +41,10 @@ ggg::Select_by_name::execute() {
 		case Entity_type::Account:
 			db.open(Database::File::Accounts);
 			show_objects<account>(db, this->args(), this->output_format());
+			break;
+		case Entity_type::Public_key:
+			db.open(Database::File::Accounts);
+			show_objects<public_key>(db, this->args(), this->output_format());
 			break;
 		case Entity_type::Machine:
             throw std::runtime_error("not implemented");

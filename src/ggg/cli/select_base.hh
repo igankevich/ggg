@@ -10,13 +10,13 @@ namespace ggg {
 
 	protected:
         Entity_type _type = Entity_type::Entity;
-        Entity_output_format _oformat = Entity_output_format::Name;
+        Format _oformat = Format::Name;
 
 	public:
 		void parse_arguments(int argc, char* argv[]) override;
 
         inline Entity_type type() const { return this->_type; }
-        inline Entity_output_format output_format() const { return this->_oformat; }
+        inline Format output_format() const { return this->_oformat; }
 
 	};
 

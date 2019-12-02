@@ -16,6 +16,7 @@ namespace ggg {
 
 		void add(const entity& rhs);
 		void add(const account& rhs);
+		void add(const public_key& rhs);
 
 	};
 

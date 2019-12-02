@@ -69,6 +69,10 @@ ggg::Edit_entity::execute()  {
 			db.open(Database::File::Accounts, Database::Flag::Read_write);
 			this->edit_objects<account>(db);
 			break;
+		case Entity_type::Public_key:
+			db.open(Database::File::Accounts, Database::Flag::Read_write);
+			this->edit_objects<public_key>(db);
+			break;
 		case Entity_type::Machine:
 			throw std::invalid_argument("not implemented");
 		case Entity_type::Message:
@@ -145,11 +149,11 @@ ggg::Edit_entity::print_usage() {
 	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
 		<< this->prefix() << " [-t TYPE] [-f FILE] [-e EXPR] [NAME...]\n"
 		<< std::setw(w) << std::left << "  -t TYPE"
-		<< "entity type (account, entity, machine, form)\n"
+		<< "entity type (account, entity, machine, public-key)\n"
 		<< std::setw(w) << std::left << "  -f FILE"
-		<< "file to read entities from\n"
+		<< "file to read objects from\n"
 		<< std::setw(w) << std::left << "  -e EXPR"
-		<< "read entities by evaluating Guile expression\n";
+		<< "read objects by evaluating Guile expression\n";
 }
 
 template <class T>

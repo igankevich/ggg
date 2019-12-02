@@ -15,6 +15,7 @@
 #include <ggg/core/ip_address.hh>
 #include <ggg/core/machine.hh>
 #include <ggg/core/message.hh>
+#include <ggg/core/public_key.hh>
 
 #include <sqlitex/connection.hh>
 #include <sqlitex/transaction.hh>
@@ -350,6 +351,21 @@ namespace ggg {
 
         int64_t messages_size();
 
+        statement_type public_keys();
+        statement_type public_keys(const char* user);
+		void insert(const public_key& rhs);
+		void update(const public_key& rhs);
+
+		template <class Iterator>
+        inline statement_type
+		public_keys(Iterator first, Iterator last) {
+			auto n = std::distance(first, last);
+            if (n == 0) { return public_keys(); }
+			auto st = this->_db.prepare(this->select_public_keys_by_names(n).data());
+            bind_all(st, first, last);
+            return st;
+		}
+
 	private:
 
 		template <class Iterator>
@@ -365,6 +381,7 @@ namespace ggg {
 		std::string select_messages_by_name(int n);
 		std::string rotate_messages(int n);
         std::string select_machines_by_names(int n);
+		std::string select_public_keys_by_names(int n);
 		void attach(File file, Flag flag=Flag::Read_only);
 		void validate_entity(const entity& ent);
 		sys::uid_type find_id_nocheck(const char* name);

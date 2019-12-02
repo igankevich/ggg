@@ -1,11 +1,12 @@
-(define-module (ggg types))
-(use-modules (oop goops))
+(define-module (ggg types)
+  #:use-module (oop goops))
 
 (load-extension "@prefix@/libggg-guile.so" "scm_init_ggg")
 
 (define-class <machine> ()
   (name #:init-keyword #:name #:accessor machine-name)
-  (ethernet-address #:init-keyword #:ethernet-address #:accessor machine-ethernet-address)
+  (ethernet-address #:init-keyword #:ethernet-address
+                    #:accessor machine-ethernet-address)
   (ip-address #:init-keyword #:ip-address #:accessor machine-ip-address))
 
 (define-class <entity> ()
@@ -24,15 +25,22 @@
   (name #:init-keyword #:name #:accessor account-name)
   (password #:init-keyword #:password #:accessor account-password)
   (expiration-date #:init-keyword #:expiration-date #:accessor account-expiration-date
-				   #:init-value (current-time))
+                   #:init-value (current-time))
   (flags #:init-keyword #:flags #:accessor account-flags #:init-value 0))
+
+(define-class <public-key> ()
+  (name #:init-keyword #:name #:accessor public-key-name)
+  (options #:init-keyword #:options #:accessor public-key-options)
+  (type #:init-keyword #:type #:accessor public-key-type)
+  (key #:init-keyword #:key #:accessor public-key-key)
+  (comment #:init-keyword #:comment #:accessor public-key-comment))
 
 (define iso-time-format "%Y-%m-%dT%H:%M:%S%z")
 
 (define time-point
   (lambda* (string #:optional (format iso-time-format))
-		   "Convert string to UNIX timestamp"
-	(car (mktime (car (strptime format string))))))
+    "Convert string to UNIX timestamp"
+    (car (mktime (car (strptime format string))))))
 
 (define SUSPENDED 1)
 (define PASSWORD_HAS_EXPIRED 2)
@@ -47,6 +55,6 @@
 
 ;; export all symbols
 (module-map
-  (lambda (sym var)
-	(module-export! (current-module) (list sym)))
-  (current-module))
+ (lambda (sym var)
+   (module-export! (current-module) (list sym)))
+ (current-module))

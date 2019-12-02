@@ -77,7 +77,7 @@ CREATE UNIQUE INDEX network_index ON networks (number);
 )"
 };
 
-constexpr const int64_t accounts_schema_version = 2;
+constexpr const int64_t accounts_schema_version = 3;
 
 constexpr const char* accounts_schema[accounts_schema_version] = {
 
@@ -97,8 +97,24 @@ CREATE TABLE messages (
     machine_name TEXT NOT NULL,
     message TEXT NOT NULL
 );
-CREATE INDEX account_name_index ON messages (account_name);
-CREATE INDEX timestamp_index ON messages (timestamp);
+CREATE INDEX messages_account_name_index ON messages (account_name);
+CREATE INDEX messages_timestamp_index ON messages (timestamp);
+)",
+
+R"(
+CREATE TABLE public_keys (
+    account_name TEXT NOT NULL,
+    options TEXT,
+    type TEXT NOT NULL,
+    key TEXT NOT NULL,
+    comment TEXT,
+	FOREIGN KEY (account_name)
+		REFERENCES accounts (name)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE,
+    UNIQUE (account_name,key)
+);
+CREATE INDEX public_keys_account_name_index ON public_keys (account_name);
 )"
 
 };

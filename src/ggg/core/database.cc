@@ -1375,3 +1375,46 @@ ggg::Database::optimise() {
     this->_db.optimize();
 }
 
+void
+ggg::Database::insert(const public_key& rhs) {
+	this->_db.execute("INSERT INTO public_keys "
+            "(account_name,options,type,key,comment) "
+            "VALUES (?,?,?,?,?)", rhs.name(),
+            rhs.options(), rhs.type(), rhs.key(), rhs.comment());
+}
+
+void
+ggg::Database::update(const public_key& rhs) {
+	this->_db.execute("UPDATE public_keys "
+            "SET options=?,type=?,key=?,comment=? "
+            "WHERE account_name=?", rhs.options(),
+            rhs.type(), rhs.key(), rhs.comment(),
+            rhs.name());
+}
+
+auto
+ggg::Database::public_keys(const char* user) -> statement_type {
+    return this->_db.prepare("SELECT account_name,options,type,key,comment "
+            "FROM public_keys WHERE account_name=?", user);
+}
+
+auto
+ggg::Database::public_keys() -> statement_type {
+    return this->_db.prepare("SELECT account_name,options,type,key,comment "
+            "FROM public_keys");
+}
+
+std::string
+ggg::Database::select_public_keys_by_names(int n) {
+	std::string sql;
+    sql.reserve(4096);
+    sql += "SELECT account_name,options,type,key,comment "
+        "FROM public_keys WHERE account_name IN (";
+	for (int i=0; i<n; ++i) {
+		sql += '?';
+		sql += ',';
+	}
+	sql.back() = ')';
+	return sql;
+}
+
