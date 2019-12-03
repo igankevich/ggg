@@ -26,7 +26,7 @@ namespace ggg {
 	size_t
 	buffer_size<entity>(const entity& rhs) noexcept {
 		return rhs.name().size() + 1
-			   + rhs.password().size() + 1
+			   + 1 + 1
 			   + rhs.description().size() + 1
 			   + rhs.home().size() + 1
 			   + rhs.shell().size() + 1;
@@ -37,14 +37,14 @@ namespace ggg {
 	copy_to<entity,::passwd>(const entity& ent, passwd* lhs, char* buffer) {
 		Buffer buf(buffer);
 		lhs->pw_name = buf.write(ent.name());
-		lhs->pw_passwd = buf.write(ent.password());
+		lhs->pw_passwd = buf.write('x');
 		#ifdef __linux__
 		lhs->pw_gecos = buf.write(ent.description());
 		#endif
 		lhs->pw_dir = buf.write(ent.home());
 		lhs->pw_shell = buf.write(ent.shell());
 		lhs->pw_uid = ent.id();
-		lhs->pw_gid = ent.gid();
+		lhs->pw_gid = ent.id();
 	}
 
 }

@@ -39,6 +39,13 @@ namespace ggg {
 		}
 
 		inline char*
+		write(char ch) {
+			char* old = this->_buffer;
+			*this->_buffer++ = ch;
+			return old;
+		}
+
+		inline char*
 		write(const char* src) {
 			char* old = this->_buffer;
 			while ((*this->_buffer++ = *src++));

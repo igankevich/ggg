@@ -99,14 +99,14 @@ namespace ggg {
     ggg::entity
     Guile_traits<ggg::entity>::from(SCM obj) {
     	static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
-    	auto s_real_name = scm_from_latin1_symbol("description");
+    	auto s_description = scm_from_latin1_symbol("description");
     	auto s_home = scm_from_latin1_symbol("home");
     	auto s_shell = scm_from_latin1_symbol("shell");
     	auto s_id = scm_from_latin1_symbol("id");
     	entity ent;
     	ent._name = to_string(slot(obj, "name"));
-    	if (slot_is_bound(obj, s_real_name)) {
-    		ent._realname = to_string(slot(obj, s_real_name));
+    	if (slot_is_bound(obj, s_description)) {
+    		ent._description = to_string(slot(obj, s_description));
     	}
     	if (slot_is_bound(obj, s_home)) {
     		ent._homedir = to_string(slot(obj, s_home));
@@ -119,8 +119,7 @@ namespace ggg {
     		ent._shell = GGG_DEFAULT_SHELL;
     	}
     	if (slot_is_bound(obj, s_id)) {
-    		ent._uid = scm_to_uint32(slot(obj, "id"));
-    		ent._gid = ent._uid;
+    		ent._id = scm_to_uint32(slot(obj, "id"));
     	}
     	return ent;
     }

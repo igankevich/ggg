@@ -21,7 +21,10 @@ ggg::operator>>(std::string name, Format& type) {
     } else if (name == "rec") { type = Format::Rec; }
     else if (name == "tsv") { type = Format::TSV; }
     else if (name == "name") { type = Format::Name; }
-    else if (name == "nss") { type = Format::NSS; }
+    else if (name == "passwd") { type = Format::Passwd; }
+    else if (name == "group") { type = Format::Group; }
+    else if (name == "shadow") { type = Format::Shadow; }
+    else if (name == "hosts") { type = Format::Hosts; }
     else if (name == "ssh") { type = Format::SSH; }
 	else throw std::invalid_argument("unknown format");
 }

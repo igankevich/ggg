@@ -430,6 +430,8 @@ namespace ggg {
 		return Database::File(~tp(a));
 	}
 
+    auto children(sqlite::connection_base& conn, int64_t id) -> sqlite::statement;
+
 }
 
 #endif // vim:filetype=cpp

@@ -7,7 +7,7 @@ namespace ggg {
 
 	void operator>>(std::string name, Entity_type& type);
 
-	enum class Format {SCM, Rec, TSV, Name, NSS, SSH};
+	enum class Format {SCM, Rec, TSV, Name, Passwd, Group, Shadow, Hosts, SSH};
 
 	void operator>>(std::string name, Format& type);
 

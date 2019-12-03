@@ -178,6 +178,29 @@ FROM entities
 WHERE id IN (SELECT DISTINCT child_id FROM path)
 )";
 
+const char* sql_select_child_names_by_id = R"(
+WITH RECURSIVE
+	-- merge hierarchy and ties
+	edges(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM hierarchy
+		UNION
+		SELECT child_id,parent_id FROM ties
+	),
+	-- find all upstream entities in the graph
+	path(child_id,parent_id) AS (
+		SELECT child_id,parent_id FROM edges
+		WHERE parent_id = $id
+		UNION ALL
+		SELECT edges.child_id, edges.parent_id
+		FROM path, edges
+		WHERE path.child_id = edges.parent_id
+        LIMIT (SELECT COUNT(*) FROM edges)
+	)
+SELECT name
+FROM entities
+WHERE id IN (SELECT DISTINCT child_id FROM path)
+)";
+
 const char* sql_select_all_group_members = R"(
 WITH RECURSIVE
 	-- merge hierarchy and ties
@@ -637,6 +660,11 @@ auto
 ggg::Database::find_child_entities(const char* name) -> statement_type {
 	auto id = find_id(name);
 	return this->_db.prepare(sql_select_child_entities_by_id, id);
+}
+
+auto
+ggg::children(sqlite::connection_base& conn, int64_t id) -> sqlite::statement {
+	return conn.prepare(sql_select_child_names_by_id, id);
 }
 
 auto

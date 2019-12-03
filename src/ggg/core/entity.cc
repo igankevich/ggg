@@ -5,20 +5,20 @@
 #include <iomanip>
 #include <sstream>
 
-template <class Ch>
-std::basic_istream<Ch>&
-ggg::operator>>(std::basic_istream<Ch>& in, basic_entity<Ch>& rhs) {
-	typename std::basic_istream<Ch>::sentry s(in);
+std::istream&
+ggg::operator>>(std::istream& in, entity& rhs) {
+	typename std::istream::sentry s(in);
 	if (s) {
 		rhs.clear();
+        ggg::bits::ignore_field ignore;
 		bits::read_all_fields(
 			in,
-			basic_entity<Ch>::delimiter,
+			entity::delimiter,
 			rhs._name,
-			rhs._password,
-			rhs._uid,
-			rhs._gid,
-			rhs._realname,
+            ignore,
+			rhs._id,
+            ignore,
+			rhs._description,
 			rhs._homedir,
 			rhs._shell
 		);
@@ -29,48 +29,40 @@ ggg::operator>>(std::basic_istream<Ch>& in, basic_entity<Ch>& rhs) {
 	return in;
 }
 
-template <class Ch>
-std::basic_ostream<Ch>&
-ggg::operator<<(std::basic_ostream<Ch>& out, const basic_entity<Ch>& rhs) {
+std::ostream&
+ggg::operator<<(std::ostream& out, const entity& rhs) {
 	return out
-	       << rhs.name() << basic_entity<Ch>::delimiter
-	       << rhs.password() << basic_entity<Ch>::delimiter
-	       << rhs.id() << basic_entity<Ch>::delimiter
-	       << rhs.gid() << basic_entity<Ch>::delimiter
-	       << rhs.description() << basic_entity<Ch>::delimiter
-	       << rhs.home() << basic_entity<Ch>::delimiter
+	       << rhs.name() << entity::delimiter
+	       << 'x' << entity::delimiter
+	       << rhs.id() << entity::delimiter
+	       << rhs.id() << entity::delimiter
+	       << rhs.description() << entity::delimiter
+	       << rhs.home() << entity::delimiter
 	       << rhs.shell();
 }
 
-template <class Ch>
-sys::basic_bstream<Ch>&
-ggg::operator<<(sys::basic_bstream<Ch>& out, const basic_entity<Ch>& rhs) {
+sys::bstream&
+ggg::operator<<(sys::bstream& out, const entity& rhs) {
 	return out << rhs._name
-	           << rhs._password
-	           << rhs._realname
+	           << rhs._description
 	           << rhs._homedir
 	           << rhs._shell
-	           << rhs._uid
-	           << rhs._gid;
+	           << rhs._id;
 }
 
-template <class Ch>
-sys::basic_bstream<Ch>&
-ggg::operator>>(sys::basic_bstream<Ch>& in, basic_entity<Ch>& rhs) {
+sys::bstream&
+ggg::operator>>(sys::bstream& in, entity& rhs) {
 	rhs.clear();
 	return in
 	       >> rhs._name
-	       >> rhs._password
-	       >> rhs._realname
+	       >> rhs._description
 	       >> rhs._homedir
 	       >> rhs._shell
-	       >> rhs._uid
-	       >> rhs._gid;
+	       >> rhs._id;
 }
 
-template <class Ch>
 bool
-ggg::basic_entity<Ch>
+ggg::entity
 ::has_valid_name() const noexcept {
 	bool ret = !this->_name.empty();
 	if (ret) {
@@ -103,61 +95,35 @@ ggg::basic_entity<Ch>
 	return ret;
 }
 
-template <class Ch>
 void
-ggg::basic_entity<Ch>
-::clear() {
+ggg::entity::clear() {
 	this->_name.clear();
-	this->_password.clear();
-	this->_realname.clear();
+	this->_description.clear();
 	this->_homedir.clear();
 	this->_shell.clear();
-	this->_uid = -1;
-	this->_gid = -1;
+	this->_id = -1;
 	this->_parent.clear();
 }
 
-template <class Ch>
-void
-ggg
-::assign(basic_entity<Ch>& lhs, const struct ::passwd& rhs) {
-	lhs._name = rhs.pw_name;
-	lhs._password = rhs.pw_passwd;
-	lhs._realname = rhs.pw_gecos;
-	lhs._homedir = rhs.pw_dir;
-	lhs._shell = rhs.pw_shell;
-	lhs._uid = rhs.pw_uid;
-	lhs._gid = rhs.pw_gid;
+ggg::entity&
+ggg::entity::operator=(const struct ::passwd& rhs) {
+	this->_name = rhs.pw_name;
+	this->_description = rhs.pw_gecos;
+	this->_homedir = rhs.pw_dir;
+	this->_shell = rhs.pw_shell;
+	this->_id = rhs.pw_uid;
+    return *this;
 }
 
 void
-ggg::operator>>(const sqlite::statement& in, basic_entity<char>& rhs) {
+ggg::operator>>(const sqlite::statement& in, entity& rhs) {
 	rhs.clear();
 	sqlite::cstream cstr(in);
 	int64_t id = -1;
 	cstr >> id;
 	cstr >> rhs._name;
-	cstr >> rhs._realname;
+	cstr >> rhs._description;
 	cstr >> rhs._homedir;
 	cstr >> rhs._shell;
-	rhs._uid = static_cast<sys::uid_type>(id);
-	rhs._gid = static_cast<sys::gid_type>(id);
+	rhs._id = static_cast<sys::uid_type>(id);
 }
-
-template class ggg::basic_entity<char>;
-
-template void
-ggg
-::assign(basic_entity<char>& lhs, const struct ::passwd& rhs);
-
-template std::basic_istream<char>&
-ggg::operator>>(std::basic_istream<char>&, basic_entity<char>&);
-
-template std::basic_ostream<char>&
-ggg::operator<<(std::basic_ostream<char>&, const basic_entity<char>&);
-
-template sys::basic_bstream<char>&
-ggg::operator<<(sys::basic_bstream<char>&, const basic_entity<char>&);
-
-template sys::basic_bstream<char>&
-ggg::operator>>(sys::basic_bstream<char>&, basic_entity<char>&);

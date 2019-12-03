@@ -12,9 +12,7 @@ TEST_P(EntityTest, Read) {
 	tmp >> ent;
 	EXPECT_TRUE(tmp.good());
 	EXPECT_EQ("root", ent.name());
-	EXPECT_EQ("x", ent.password());
 	EXPECT_EQ(12u, ent.id());
-	EXPECT_EQ(34u, ent.gid());
 	#ifdef __linux__
 	EXPECT_EQ("root", ent.description());
 	#else
@@ -32,9 +30,7 @@ TEST_P(EntityTest, Clear) {
 	ent.clear();
 	EXPECT_TRUE(tmp.good());
 	EXPECT_EQ("", ent.name());
-	EXPECT_EQ("", ent.password());
 	EXPECT_EQ(sys::uid_type(-1), ent.id());
-	EXPECT_EQ(sys::gid_type(-1), ent.gid());
 	#ifdef __linux__
 	EXPECT_EQ("", ent.description());
 	#else
@@ -59,7 +55,7 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST(EntityTest, ReadWrite) {
 	std::stringstream tmp, tmp2;
-	tmp << "root:x:12:34:root:/root:/bin/bash";
+	tmp << "root:x:12:12:root:/root:/bin/bash";
 	ggg::entity ent, ent2;
 	tmp >> ent;
 	tmp2 << ent;
@@ -68,7 +64,7 @@ TEST(EntityTest, ReadWrite) {
 
 TEST(EntityTest, WriteEmpty) {
 	std::stringstream orig;
-	orig << "::" << sys::uid_type(-1) << ':' << sys::gid_type(-1) << ":::";
+	orig << ":x:" << sys::uid_type(-1) << ':' << sys::gid_type(-1) << ":::";
 	std::stringstream tmp;
 	ggg::entity ent;
 	tmp << ent;
@@ -84,9 +80,7 @@ TEST_P(BareEntityTest, Read) {
 	tmp >> ent;
 	EXPECT_TRUE(tmp.good());
 	EXPECT_EQ("root", ent.name());
-	EXPECT_EQ("", ent.password());
 	EXPECT_EQ(sys::uid_type(-1), ent.id());
-	EXPECT_EQ(sys::gid_type(-1), ent.gid());
 	EXPECT_EQ("", ent.description());
 	EXPECT_EQ("", ent.home());
 	EXPECT_EQ("", ent.shell());
@@ -110,9 +104,7 @@ TEST(EntityTest, ReadEntryWithMissingFields) {
 	tmp >> ent;
 	EXPECT_TRUE(tmp.good());
 	EXPECT_EQ("mygroup", ent.name());
-	EXPECT_EQ("x", ent.password());
 	EXPECT_EQ(2000u, ent.id());
-	EXPECT_EQ(2000u, ent.gid());
 	EXPECT_EQ("/home", ent.home());
 	EXPECT_EQ("", ent.shell());
 }

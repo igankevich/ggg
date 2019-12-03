@@ -86,7 +86,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<entity>::write<Format::NSS>(
+    void CLI_traits<entity>::write<Format::Passwd>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -103,11 +103,49 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<entity>::write<Format::SSH>(
+    void CLI_traits<entity>::read<Format::Passwd>(
+        std::istream& in,
+        object_array& result
+    ) {
+        std::string line;
+        int line_no = 0;
+        while (in >> std::ws && std::getline(in, line)) {
+            ++line_no;
+            // remove trailing spaces
+            while (!line.empty() && std::isspace(line.back())) { line.pop_back(); }
+            std::istringstream tmp(line);
+            entity o;
+            if (!(tmp >> o)) {
+                std::ostringstream msg;
+                msg << "bad entity at line " << line_no << ": " << line;
+                throw std::invalid_argument(msg.str());
+            }
+            result.emplace_back(std::move(o));
+        }
+    }
+
+    template <>
+    template <>
+    void CLI_traits<entity>::write<Format::Group>(
         std::ostream& out,
         statement_type& st
     ) {
-        throw std::invalid_argument("not supported");
+        auto conn = st.connection();
+        std::string name;
+        for (const auto& ent : st.rows<object_type>()) {
+            out << ent.name() << ":x:";
+            out << ent.id() << ':';
+            auto members = children(conn, ent.id());
+            if (members.step() != sqlite::errc::done) {
+                members.column(0, name);
+                out << name;
+            }
+            while (members.step() != sqlite::errc::done) {
+                members.column(0, name);
+                out << ',' << name;
+            }
+            out << '\n';
+        }
     }
 
     template <>
@@ -189,7 +227,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<account>::write<Format::NSS>(
+    void CLI_traits<account>::write<Format::Shadow>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -205,11 +243,25 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<account>::write<Format::SSH>(
-        std::ostream& out,
-        statement_type& st
+    void CLI_traits<account>::read<Format::Shadow>(
+        std::istream& in,
+        object_array& result
     ) {
-        throw std::invalid_argument("not supported");
+        std::string line;
+        int line_no = 0;
+        while (in >> std::ws && std::getline(in, line)) {
+            ++line_no;
+            // remove trailing spaces
+            while (!line.empty() && std::isspace(line.back())) { line.pop_back(); }
+            std::istringstream tmp(line);
+            account o;
+            if (!(tmp >> o)) {
+                std::ostringstream msg;
+                msg << "bad account at line " << line_no << ": " << line;
+                throw std::invalid_argument(msg.str());
+            }
+            result.emplace_back(std::move(o));
+        }
     }
 
     template <>
@@ -276,39 +328,12 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<message>::write<Format::NSS>(
-        std::ostream& out,
-        statement_type& st
-    ) {
-        throw std::invalid_argument("messages do not have NSS format");
-    }
-
-    template <>
-    template <>
-    void CLI_traits<message>::write<Format::SSH>(
-        std::ostream& out,
-        statement_type& st
-    ) {
-        throw std::invalid_argument("not supported");
-    }
-
-    template <>
-    template <>
     void CLI_traits<message>::write<Format::SCM>(
         std::ostream& out,
         statement_type& st
     ) {
         auto rows = st.rows<object_type>();
         Guile_traits<object_type>::to_guile(out, object_array{rows.begin(),rows.end()});
-    }
-
-    template <>
-    template <>
-    void CLI_traits<message>::read<Format::SCM>(
-        std::istream& in,
-        object_array& result
-    ) {
-        throw std::invalid_argument("not supported");
     }
 
     template <>
@@ -349,7 +374,7 @@ namespace ggg {
 
     template <>
     template <>
-    void CLI_traits<Machine>::write<Format::NSS>(
+    void CLI_traits<Machine>::write<Format::Hosts>(
         std::ostream& out,
         statement_type& st
     ) {
@@ -358,15 +383,6 @@ namespace ggg {
             out << m.name();
             out << '\n';
         }
-    }
-
-    template <>
-    template <>
-    void CLI_traits<Machine>::write<Format::SSH>(
-        std::ostream& out,
-        statement_type& st
-    ) {
-        throw std::invalid_argument("not supported");
     }
 
     template <>
@@ -428,15 +444,6 @@ namespace ggg {
             out << o.comment();
             out << '\n';
         }
-    }
-
-    template <>
-    template <>
-    void CLI_traits<public_key>::write<Format::NSS>(
-        std::ostream& out,
-        statement_type& st
-    ) {
-        throw std::invalid_argument("not supported");
     }
 
     template <>

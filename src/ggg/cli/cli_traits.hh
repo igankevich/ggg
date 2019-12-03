@@ -22,7 +22,9 @@ namespace ggg {
         using statement_type = sqlite::statement;
 
         template <Format format>
-        static void write(std::ostream& out, statement_type& st);
+        inline static void write(std::ostream& out, statement_type& st) {
+            throw std::invalid_argument("not supported");
+        }
 
         template <Format format>
         inline static void read(std::istream& in, object_array& result) {
@@ -50,8 +52,17 @@ namespace ggg {
             case Format::TSV:
                 CLI_traits<T>::template write<Format::TSV>(out, st);
                 break;
-            case Format::NSS:
-                CLI_traits<T>::template write<Format::NSS>(out, st);
+            case Format::Passwd:
+                CLI_traits<T>::template write<Format::Passwd>(out, st);
+                break;
+            case Format::Group:
+                CLI_traits<T>::template write<Format::Group>(out, st);
+                break;
+            case Format::Shadow:
+                CLI_traits<T>::template write<Format::Shadow>(out, st);
+                break;
+            case Format::Hosts:
+                CLI_traits<T>::template write<Format::Shadow>(out, st);
                 break;
             case Format::SSH:
                 CLI_traits<T>::template write<Format::SSH>(out, st);
@@ -74,9 +85,6 @@ namespace ggg {
         switch (format) {
             case Format::SCM:
                 CLI_traits<T>::template read<Format::SCM>(in, result);
-                break;
-            case Format::NSS:
-                CLI_traits<T>::template read<Format::NSS>(in, result);
                 break;
             case Format::SSH:
                 CLI_traits<T>::template read<Format::SSH>(in, result);

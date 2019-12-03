@@ -39,7 +39,7 @@ ggg::Show_duplicates::execute() {
 		sys::user_iterator(),
 		[&set1,&set2] (const sys::user& rhs) {
 			entity tmp;
-			assign(tmp, rhs);
+            tmp = rhs;
 		    set1.insert(tmp);
 		    set2.insert(tmp);
 		}
