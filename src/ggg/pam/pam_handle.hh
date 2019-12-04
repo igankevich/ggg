@@ -16,6 +16,9 @@ namespace ggg {
 
 	class pam_handle: public pam::handle {
 
+    public:
+        using pam::handle::error;
+
     private:
         using cleanup_type = void (*)(::pam_handle_t*,void*,int);
         using errc = pam::errc;
@@ -36,9 +39,9 @@ namespace ggg {
 
 		inline bool debug() const noexcept { return this->_debug; }
 		inline double min_entropy() const noexcept { return this->_minentropy; }
-		const account* get_account() const;
+		account* get_account();
 		void set_account(const ggg::account& acc);
-		Database& get_database();
+		Database* get_database();
 
 		template <class ... Args>
 		inline void

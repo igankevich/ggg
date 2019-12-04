@@ -43,12 +43,53 @@ typedef int (*system_call_type)(...);
 std::string override_file(const char* func, const char* file) {
     using traits_type = std::string::traits_type;
     std::string path(file);
-    if (path == GGG_ENTITIES_PATH) { path = GGG_NEW_ENTITIES_PATH; }
-    if (path == GGG_ACCOUNTS_PATH) { path = GGG_NEW_ACCOUNTS_PATH; }
+    if (path == GGG_ENTITIES_PATH) {
+        path.clear();
+        if (const char* suffix = std::getenv("GGG_TEST_SUFFIX")) {
+            path += "tmp/";
+            mkdir(path.data(), 0755);
+            path += suffix;
+            path += '/';
+            mkdir(path.data(), 0755);
+        }
+        path += "entities.tmp";
+    }
+    if (path == GGG_ACCOUNTS_PATH) {
+        path.clear();
+        if (const char* suffix = std::getenv("GGG_TEST_SUFFIX")) {
+            path += "tmp/";
+            mkdir(path.data(), 0755);
+            path += suffix;
+            path += '/';
+            mkdir(path.data(), 0755);
+        }
+        path += "accounts.tmp";
+    }
+    { std::clog << func << ' ' << path << std::endl; }
     if (path == GGG_GUILE) { path = GGG_NEW_GUILE; }
-    if (path == GGG_ROOT) { path = GGG_WORKDIR; }
+    if (path == GGG_ROOT) {
+        path = GGG_WORKDIR;
+        if (const char* suffix = std::getenv("GGG_TEST_SUFFIX")) {
+            path += "tmp/";
+            mkdir(path.data(), 0755);
+            path += suffix;
+            path += '/';
+            mkdir(path.data(), 0755);
+        }
+    }
     auto n = traits_type::length(GGG_ROOT);
-    if (path.compare(0, n, GGG_ROOT, n) == 0) { path = path.substr(n+1); }
+    if (path.compare(0, n, GGG_ROOT, n) == 0) {
+        auto tmp = path.substr(n+1);
+        path.clear();
+        if (const char* suffix = std::getenv("GGG_TEST_SUFFIX")) {
+            path += "tmp/";
+            mkdir(path.data(), 0755);
+            path += suffix;
+            path += '/';
+            mkdir(path.data(), 0755);
+        }
+        path += tmp;
+    }
     if (path == GGG_NEW_GUILE_LOAD_PATH "/ggg/types.scm" ||
         path == GGG_GUILE_LOAD_PATH "/ggg/types.scm") {
         path = GGG_NEW_GUILE_LOAD_PATH "/ggg/types_test.scm";

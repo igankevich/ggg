@@ -42,6 +42,33 @@ namespace {
         db.set_password(acc);
     }
 
+    std::string collect_data(pam::handle pamh) {
+        std::string data;
+        data.reserve(1024);
+        const char* value = nullptr;
+        if (PAM_SUCCESS == pamh.get_item(PAM_RUSER, &value) && value) {
+            data += " data ";
+            data += value;
+            if (PAM_SUCCESS == pamh.get_item(PAM_RHOST, &value) && value) {
+                data += '@';
+                data += value;
+            }
+        }
+        if (PAM_SUCCESS == pamh.get_item(PAM_SERVICE, &value) && value) {
+            data += " service ";
+            data += value;
+        }
+        if (PAM_SUCCESS == pamh.get_item(PAM_TTY, &value) && value) {
+            data += " tty ";
+            data += value;
+            if (PAM_SUCCESS == pamh.get_item(PAM_XDISPLAY, &value) && value) {
+                data += " xdisplay ";
+                data += value;
+            }
+        }
+        return data;
+    }
+
 }
 
 int pam_sm_authenticate(
@@ -58,7 +85,7 @@ int pam_sm_authenticate(
 		const char* user = pamh.user();
 		pamh.debug("authenticating user \"%s\"", user);
 		const char* password = pamh.password(errc::authentication_error);
-        auto& db = pamh.get_database();
+        auto& db = *pamh.get_database();
         Transaction tr(db);
 		account acc = find_account(db, user);
 		check_password(acc.password(), password);
@@ -75,11 +102,11 @@ int pam_sm_authenticate(
         tr.commit();
 		ret = errc::success;
 	} catch (const std::system_error& e) {
-		ret = pamh.handle_error(e, errc::authentication_error);
+		ret = pamh.error(e, errc::authentication_error);
 	} catch (const std::bad_alloc& e) {
-		ret = pamh.handle_error(e);
+		ret = pamh.error(e);
 	} catch (const std::exception& e) {
-		ret = pamh.handle_error(e);
+		ret = pamh.error(e);
 	}
 	return std::make_error_condition(ret).value();
 }
@@ -98,12 +125,13 @@ int pam_sm_acct_mgmt(
 	try {
 		const char* user = pamh.user();
 		pamh.debug("checking account \"%s\"", user);
-		const account* acc = nullptr;
+		account* acc = nullptr;
+        Database* db = nullptr;
 		try {
 			acc = pamh.get_account();
 		} catch (const std::system_error& err) {
-            auto& db = pamh.get_database();
-			other = find_account(db, user);
+            db = pamh.get_database();
+			other = find_account(*db, user);
 			acc = &other;
 		}
 		if (acc->has_been_suspended()) {
@@ -115,19 +143,26 @@ int pam_sm_acct_mgmt(
 			pamh.debug("account \"%s\" has expired", user);
 			throw_pam_error(errc::account_expired);
 		}
+		if (acc->is_inactive(now)) {
+			pamh.debug("account \"%s\" has been inactive for too long", user);
+			throw_pam_error(errc::account_expired);
+		}
 		if (acc->password_has_expired(now)) {
 			pamh.info("Password has expired.");
 			pamh.debug("password of account \"%s\" has expired", user);
 			throw_pam_error(errc::new_password_required);
 		}
 		pamh.debug("account \"%s\" is valid", user);
+        if (!db) { db = pamh.get_database(); }
+        acc->last_active(now);
+        db->set_last_active(*acc, now);
 		ret = errc::success;
 	} catch (const std::system_error& e) {
-		ret = pamh.handle_error(e, errc::authtok_error);
+		ret = pamh.error(e, errc::authtok_error);
 	} catch (const std::bad_alloc& e) {
-		ret = pamh.handle_error(e);
+		ret = pamh.error(e);
 	} catch (const std::exception& e) {
-		ret = pamh.handle_error(e);
+		ret = pamh.error(e);
 	}
 	return std::make_error_condition(ret).value();
 }
@@ -148,13 +183,17 @@ int pam_sm_chauthtok(
 			pamh.password_type("GGG");
 			const char* user = pamh.user();
 			pamh.debug("changing password for user \"%s\"", user);
-            auto& db = pamh.get_database();
+            auto& db = *pamh.get_database();
 			account acc = find_account(db, user);
 			const account::time_point now = account::clock_type::now();
 			if (acc.has_expired(now)) {
 				pamh.debug("account \"%s\" has expired", user);
 				throw_pam_error(errc::account_expired);
 			}
+            if (acc.is_inactive(now)) {
+                pamh.debug("account \"%s\" has been inactive for too long", user);
+                throw_pam_error(errc::account_expired);
+            }
 			if ((flags & PAM_CHANGE_EXPIRED_AUTHTOK) &&
 				!acc.password_has_expired(now))
 			{
@@ -185,11 +224,11 @@ int pam_sm_chauthtok(
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = errc::success;
 		} catch (const std::system_error& e) {
-			ret = pamh.handle_error(e, errc::authtok_error);
+			ret = pamh.error(e, errc::authtok_error);
 		} catch (const std::bad_alloc& e) {
-			ret = pamh.handle_error(e);
+			ret = pamh.error(e);
 		} catch (const std::exception& e) {
-			ret = pamh.handle_error(e);
+			ret = pamh.error(e);
 		}
 	}
 	return std::make_error_condition(ret).value();
@@ -214,11 +253,11 @@ int pam_sm_open_session(
 	ggg::pam_handle pamh(orig, argc, argv);
     try {
 		const char* user = pamh.user();
-        auto& db = pamh.get_database();
-        db.message(user, "session opened");
+        auto& db = *pamh.get_database();
+        db.message(user, "session opened: %s", collect_data(pamh));
         ret = errc::success;
     } catch (const std::exception& e) {
-        ret = pamh.handle_error(e);
+        ret = pamh.error(e);
     }
 	return std::make_error_condition(ret).value();
 }
@@ -233,11 +272,11 @@ int pam_sm_close_session(
 	ggg::pam_handle pamh(orig, argc, argv);
     try {
 		const char* user = pamh.user();
-        auto& db = pamh.get_database();
-        db.message(user, "session closed");
+        auto& db = *pamh.get_database();
+        db.message(user, "session closed: %s", collect_data(pamh));
         ret = errc::success;
     } catch (const std::exception& e) {
-        ret = pamh.handle_error(e);
+        ret = pamh.error(e);
     }
 	return std::make_error_condition(ret).value();
 }

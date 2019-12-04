@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 
 #include <ggg/config.hh>
+#include <ggg/test/clean_database.hh>
 #include <ggg/test/execute_command.hh>
 
 class Commands: public ::testing::Test {
@@ -19,12 +20,15 @@ protected:
 
     void
     SetUp() override {
+        /*
         int ret;
         ret = std::remove(GGG_ENTITIES_PATH);
         EXPECT_TRUE(ret == 0 || (ret == -1 && errno == ENOENT));
         ret = std::remove(GGG_ACCOUNTS_PATH);
         EXPECT_TRUE(ret == 0 || (ret == -1 && errno == ENOENT));
         EXPECT_ZERO("ggg init");
+        */
+        Clean_database db;
     }
 
 };
@@ -163,21 +167,21 @@ TEST_F(Commands, Version) {
 
 TEST_F(Commands, Edit) {
 	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u1" #:id 2001 #:description "N" #:home "H" #:shell "S")')");
-	EXPECT_OUTPUT("u1:x:2001:2001:N:H:S\n", "ggg find -o nss u1");
+	EXPECT_OUTPUT("u1:x:2001:2001:N:H:S\n", "ggg find -o passwd u1");
 	EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2001 #:description "Nx" #:home "H" #:shell "S")')");
-	EXPECT_OUTPUT("u1:x:2001:2001:Nx:H:S\n", "ggg find -o nss u1");
+	EXPECT_OUTPUT("u1:x:2001:2001:Nx:H:S\n", "ggg find -o passwd u1");
 	EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2001 #:description "Nx" #:home "Hx" #:shell "S")')");
-	EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:S\n", "ggg find -o nss u1");
+	EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:S\n", "ggg find -o passwd u1");
 	EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2001 #:description "Nx" #:home "Hx" #:shell "Sx")')");
-	EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o nss u1");
+	EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o passwd u1");
 	EXPECT_NON_ZERO2(
         R"(ggg edit -e '(make <entity> #:name "u1" #:id 2222 #:description "Nx" #:home "Hx" #:shell "Sx")')",
 		"changed entity id but it is not allowed"
 	);
-	EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o nss u1");
+	EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o passwd u1");
 	EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u2" #:id 2001 #:description "Nx" #:home "Hx" #:shell "Sx")')");
-	EXPECT_OUTPUT("", "ggg find -o nss u1");
-	EXPECT_OUTPUT("u2:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o nss u2");
+	EXPECT_OUTPUT("", "ggg find -o passwd u1");
+	EXPECT_OUTPUT("u2:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o passwd u2");
 }
 
 TEST_F(Commands, Locale) {

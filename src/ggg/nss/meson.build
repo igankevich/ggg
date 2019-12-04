@@ -27,8 +27,14 @@ if has_override_fs
             link_with: [libnss_ggg],
             cpp_args: ['-DGGG_NSS_SERVICE="' + service + '"']
         )
-		test(name, exe, env: ['LD_PRELOAD=' + override_fs.full_path()],
-            is_parallel: false)
+		test(
+            name,
+            exe,
+            env: [
+                'LD_PRELOAD=' + override_fs.full_path(),
+                'GGG_TEST_SUFFIX='+name
+            ]
+		)
 	endforeach
 endif
 

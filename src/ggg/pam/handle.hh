@@ -88,10 +88,17 @@ namespace pam {
 			this->set_item(PAM_AUTHTOK_TYPE, word);
 		}
 
+        template <class T>
+        inline int
+        get_item(int type, T** ptr) const {
+            auto cptr = const_cast<const T**>(ptr);
+            return ::pam_get_item(*this, type, reinterpret_cast<const void**>(cptr));
+        }
+
 		inline conversation_ptr
         get_conversation() const {
             conversation* ptr = nullptr;
-            int ret = ::pam_get_item(*this, PAM_CONV, (const void**)&ptr);
+            int ret = get_item(PAM_CONV, &ptr);
             if (ret != PAM_SUCCESS) {
                 throw_pam_error(errc(ret));
             }
@@ -101,16 +108,16 @@ namespace pam {
             return conversation_ptr(ptr);
         }
 
-		errc handle_error(const std::system_error& e, errc def) const;
+		errc error(const std::system_error& e, errc def) const;
 
 		inline errc
-		handle_error(const std::exception& e) const {
+		error(const std::exception& e) const {
 			pam_syslog(*this, LOG_ERR, "%s", e.what());
 			return errc::service_error;
 		}
 
 		inline errc
-		handle_error(const std::bad_alloc& e) const {
+		error(const std::bad_alloc& e) const {
 			pam_syslog(*this, LOG_CRIT, "memory allocation error");
 			return errc::system_error;
 		}

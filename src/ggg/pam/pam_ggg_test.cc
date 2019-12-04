@@ -13,14 +13,27 @@
 const char* testuser_password = "jae3wahQue";
 const char* testuser_new_password = "gah9nuyeGh";
 
-void
-add_testuser_with_password(Clean_database& db, const char* password_id) {
+ggg::entity
+testuser_entity(std::string str="testuser:x:2000:2000:halt:/sbin:/sbin/halt") {
+    ggg::entity ent;
+    std::stringstream(str) >> ent;
+    return ent;
+}
+
+ggg::account
+testuser_account() {
     using namespace ggg;
-	db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
 	account acc("testuser");
     argon2_password_hash hash;
 	acc.set_password(hash(testuser_password));
-	db.Database::insert(acc);
+    return acc;
+}
+
+void
+add_testuser_with_password(Clean_database& db, const char* password_id) {
+    using namespace ggg;
+	db.Database::insert(testuser_entity());
+	db.Database::insert(testuser_account());
 }
 
 void
@@ -302,3 +315,29 @@ TEST(pam, change_password_of_expired_account) {
 	}
 	h.end();
 }
+
+TEST(pam, authenticate_with_inactive_account) {
+	{
+		Clean_database db;
+        db.Database::insert(testuser_entity());
+        auto acc = testuser_account();
+        auto now = ggg::account::clock_type::now();
+        acc.max_inactive(std::chrono::hours(24));
+        acc.last_active(now-std::chrono::hours(48));
+        db.Database::insert(acc);
+	}
+	pam::handle h;
+	pam::conversation conv(default_conversation);
+	h.start("ggg", "testuser", conv);
+	pam::call(::pam_authenticate(h, 0));
+	try {
+		pam::call(::pam_acct_mgmt(h, 0));
+	} catch (const std::system_error& err) {
+		EXPECT_EQ(
+			pam::errc::account_expired,
+			pam::errc(err.code().value())
+		) << err.what();
+	}
+	h.end();
+}
+

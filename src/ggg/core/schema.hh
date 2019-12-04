@@ -77,7 +77,7 @@ CREATE UNIQUE INDEX network_index ON networks (number);
 )"
 };
 
-constexpr const int64_t accounts_schema_version = 3;
+constexpr const int64_t accounts_schema_version = 4;
 
 constexpr const char* accounts_schema[accounts_schema_version] = {
 
@@ -115,6 +115,11 @@ CREATE TABLE public_keys (
     UNIQUE (account_name,key)
 );
 CREATE INDEX public_keys_account_name_index ON public_keys (account_name);
+)",
+
+R"(
+ALTER TABLE accounts ADD COLUMN max_inactive INTEGER;
+ALTER TABLE accounts ADD COLUMN last_active INTEGER;
 )"
 
 };

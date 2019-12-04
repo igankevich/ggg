@@ -73,9 +73,9 @@ if has_override_fs
 			'GGG_EXECUTABLE=' + ggg_exe.full_path(),
 			'GUILE_AUTO_COMPILE=0',
             'GUILE_LOAD_PATH=' + guile_load_path,
+            'GGG_TEST_SUFFIX=cli-test'
 		],
 		timeout: 120,
         workdir: meson.build_root(),
-        is_parallel: false,
 	)
 endif

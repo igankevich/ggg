@@ -26,6 +26,8 @@
   (password #:init-keyword #:password #:accessor account-password)
   (expiration-date #:init-keyword #:expiration-date #:accessor account-expiration-date
                    #:init-value (current-time))
+  (max-inactive #:init-keyword #:max-inactive #:accessor account-max-inactive)
+  (last-active #:init-keyword #:last-active #:accessor account-last-active)
   (flags #:init-keyword #:flags #:accessor account-flags #:init-value 0))
 
 (define-class <public-key> ()
@@ -41,6 +43,11 @@
   (lambda* (string #:optional (format iso-time-format))
     "Convert string to UNIX timestamp"
     (car (mktime (car (strptime format string))))))
+
+(define (seconds n) n)
+(define (minutes n) (* n 60))
+(define (hours n) (* n 3600))
+(define (days n) (* n 86400))
 
 (define SUSPENDED 1)
 (define PASSWORD_HAS_EXPIRED 2)

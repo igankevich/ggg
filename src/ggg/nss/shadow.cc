@@ -26,14 +26,14 @@ namespace ggg {
 	template <>
 	size_t
 	buffer_size<account>(const account& a) noexcept {
-		return a.login().size() + 1 + a.password().size() + 1;
+		return a.name().size() + 1 + a.password().size() + 1;
 	}
 
 	template <>
 	void
 	copy_to<account>(const account& ent, struct ::spwd* lhs, char* buffer) {
 		Buffer buf(buffer);
-		lhs->sp_namp = buf.write(ent.login());
+		lhs->sp_namp = buf.write(ent.name());
 		lhs->sp_pwdp = buf.write("");
 		set_days(lhs->sp_lstchg, ent.last_change());
 		set_days(lhs->sp_min, ent.min_change());

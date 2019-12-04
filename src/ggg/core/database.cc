@@ -303,30 +303,30 @@ WHERE child_id IN (SELECT id FROM entities WHERE name=$child_name)
 )";
 
 const char* sql_select_account_by_name = R"(
-SELECT name,password,expiration_date,flags
+SELECT name,password,expiration_date,flags,max_inactive,last_active
 FROM accounts
 WHERE name = ?
 )";
 
 const char* sql_select_accounts_by_multiple_names = R"(
-SELECT name,password,expiration_date,flags
+SELECT name,password,expiration_date,flags,max_inactive,last_active
 FROM accounts
 WHERE name IN (
 )";
 
 const char* sql_select_all_accounts = R"(
-SELECT name,password,expiration_date,flags
+SELECT name,password,expiration_date,flags,max_inactive,last_active
 FROM accounts
 )";
 
 const char* sql_insert_account = R"(
-INSERT INTO accounts (name,password,expiration_date,flags)
-VALUES (?,?,?,?)
+INSERT INTO accounts (name,password,expiration_date,flags,max_inactive,last_active)
+VALUES (?,?,?,?,?,?)
 )";
 
 const char* sql_update_account_by_name = R"(
 UPDATE accounts
-SET password=?,expiration_date=?,flags=?
+SET password=?,expiration_date=?,flags=?,max_inactive=?,last_active=?
 WHERE name = ?
 )";
 
@@ -608,7 +608,7 @@ ggg::Database::search_entities() -> statement_type {
 auto
 ggg::Database::search_accounts() -> statement_type {
 	return this->_db.prepare(R"(
-SELECT name,password,expiration_date,flags
+SELECT name,password,expiration_date,flags,max_inactive,last_active
 FROM accounts
 WHERE search(name)
 )");
@@ -888,7 +888,9 @@ ggg::Database::insert(const account& acc) {
 		acc.name(),
 		acc.password().empty() ? nullptr : acc.password().data(),
 		acc.expire(),
-		static_cast<int_t>(acc.flags())
+		static_cast<int_t>(acc.flags()),
+        acc.max_inactive_in_seconds(),
+        acc.last_active()
 	);
     message(acc.name().data(), "account created");
 }
@@ -901,6 +903,8 @@ ggg::Database::update(const account& acc) {
 		acc.password().empty() ? nullptr : acc.password().data(),
 		acc.expire(),
 		static_cast<int_t>(acc.flags()),
+        acc.max_inactive_in_seconds(),
+        acc.last_active(),
 		acc.name()
 	);
 	if (this->_db.num_rows_modified() == 0) {
@@ -916,12 +920,31 @@ ggg::Database::set_password(const account& acc) {
 		sql_set_password_by_name,
 		acc.password().data(),
 		static_cast<int_t>(account_flags::password_has_expired),
-		acc.login().data()
+		acc.name()
 	);
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad account");
 	}
     message(acc.name().data(), "password changed");
+}
+
+void
+ggg::Database::set_last_active(const account& acc, time_point now) {
+    auto was_active = !acc.is_inactive(now);
+	this->_db.execute(
+        "UPDATE accounts SET last_active=? WHERE name=?",
+		acc.last_active(),
+        acc.name()
+	);
+	if (this->_db.num_rows_modified() == 0) {
+		throw std::invalid_argument("bad account");
+	}
+    auto now_active = !acc.is_inactive(now);
+    if (was_active && !now_active) {
+        message(acc.name().data(), "account is deactivated");
+    } else if (!was_active && now_active) {
+        message(acc.name().data(), "account is activated");
+    }
 }
 
 void

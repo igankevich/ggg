@@ -57,9 +57,10 @@ if pam_wrapper.found() and not state_dir.startswith('/') and b_sanitize != 'addr
             'PAM_WRAPPER_SERVICE_DIR=' + join_paths(
                 meson.current_build_dir(),
                 'pam.d'
-            )
+            ),
+            'GGG_TEST_SUFFIX=pam-ggg-test'
         ],
-        is_parallel: false
+        timeout: 120
     )
     subdir('pam.d')
 endif

@@ -89,6 +89,42 @@ namespace {
 		}
 	}
 
+    enum class unit { seconds, minutes, hours, days };
+
+    const char* unit_prefix[4] = { "seconds", "minutes", "hours", "days" };
+
+    class quantity {
+
+    private:
+        using rep = std::uint64_t;
+        rep _dt = 0;
+        unit _unit = unit::seconds;
+
+    public:
+
+        quantity() = default;
+        inline explicit quantity(rep dt, unit u = unit::seconds):
+        _dt(dt), _unit(u) {}
+
+        template <class T, class Period>
+        inline explicit quantity(std::chrono::duration<T,Period> d):
+        _dt(std::chrono::duration_cast<std::chrono::seconds>(d).count()),
+        _unit(unit::seconds) {}
+
+        inline void normalise() {
+            constexpr const unsigned int days = 60*60*24;
+            constexpr const unsigned int hours = 60*60;
+            constexpr const unsigned int minutes = 60;
+            if (_dt % days == 0) { _dt /= days; _unit = unit::days; }
+            else if (_dt % hours == 0) { _dt /= hours; _unit = unit::hours; }
+            else if (_dt % minutes == 0) { _dt /= minutes; _unit = unit::minutes; }
+        }
+        inline friend std::ostream&
+        operator<<(std::ostream& out, const quantity& rhs) {
+            return out << '(' << unit_prefix[int(rhs._unit)] << ' ' << rhs._dt << ')';
+        }
+    };
+
 }
 
 namespace std {
@@ -142,10 +178,19 @@ namespace ggg {
     template <>
     ggg::account
     Guile_traits<ggg::account>::from(SCM obj) {
+        using std::chrono::seconds;
         auto s_password = scm_from_latin1_symbol("password");
+        auto s_expiration_date = scm_from_latin1_symbol("expiration-date");
+        auto s_max_inactive = scm_from_latin1_symbol("max-inactive");
         account acc;
-        acc._login = to_string(slot(obj, "name"));
-        acc._expire = account::clock_type::from_time_t(scm_to_uint64(slot(obj, "expiration-date")));
+        acc._name = to_string(slot(obj, "name"));
+        if (slot_is_bound(obj, s_expiration_date)) {
+            acc._expire = account::clock_type::from_time_t(
+                    scm_to_uint64(slot(obj, s_expiration_date)));
+        }
+        if (slot_is_bound(obj, s_max_inactive)) {
+            acc._maxinactive = seconds(scm_to_uint64(slot(obj, s_max_inactive)));
+        }
         if (slot_is_bound(obj, s_password)) {
             auto s = to_string(slot(obj, s_password));
             acc.set_password(account::string(s.begin(), s.end()));
@@ -158,6 +203,8 @@ namespace ggg {
     SCM
     Guile_traits<ggg::account>::to(const account& acc) {
         static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
+        using std::chrono::duration_cast;
+        using std::chrono::seconds;
         return scm_call(
             scm_variable_ref(scm_c_lookup("make")),
             scm_variable_ref(scm_c_lookup("<account>")),
@@ -165,6 +212,10 @@ namespace ggg {
             scm_from_utf8_string(acc.name().data()),
             scm_from_latin1_keyword("expiration-date"),
             scm_from_uint64(account::clock_type::to_time_t(acc.expire())),
+            scm_from_latin1_keyword("max-inactive"),
+            scm_from_uint64(duration_cast<seconds>(acc.max_inactive()).count()),
+            scm_from_latin1_keyword("last-inactive"),
+            scm_from_uint64(account::clock_type::to_time_t(acc.last_active())),
             scm_from_latin1_keyword("flags"),
             scm_from_uint64(downcast(acc.flags())),
             SCM_UNDEFINED
@@ -173,11 +224,12 @@ namespace ggg {
 
     template <>
     void
-    Guile_traits<ggg::account>::to_guile(std::ostream& guile, const array_type& objects) {
+    Guile_traits<ggg::account>::to_guile(std::ostream& out, const array_type& objects) {
+        using std::chrono::duration_cast;
+        using std::chrono::seconds;
         const char format[] = "%Y-%m-%dT%H:%M:%S%z";
-        if (objects.empty()) { guile << "(list)"; return; }
-        std::string indent(2, ' ');
-        guile << "(list";
+        if (objects.empty()) { out << "(list)"; return; }
+        out << "(list";
         for (const auto& acc : objects) {
             char expire_str[128] {};
             auto t = account::clock_type::to_time_t(acc.expire());
@@ -189,14 +241,16 @@ namespace ggg {
             if (acc.flags() & account_flags::password_has_expired) {
                 flags_str += " PASSWORD_HAS_EXPIRED";
             }
-            guile << '\n' << indent;
-            guile << "(make <account>\n";
-            guile << indent << "      #:name " << escape_string(acc.name()) << '\n';
-            guile << indent << "      #:expiration-date (time-point "
-                << escape_string(expire_str) << ")\n";
-            guile << indent << "      #:flags (flags" << flags_str << "))";
+            quantity max_inactive(acc.max_inactive());
+            max_inactive.normalise();
+            out << "\n  ";
+            out << "(make <account>\n  ";
+            out << "      #:name " << escape_string(acc.name()) << "\n  ";
+            out << "      #:expiration-date (time-point " << escape_string(expire_str) << ")\n  ";
+            out << "      #:max-inactive " << max_inactive << "\n  ";
+            out << "      #:flags (flags" << flags_str << "))";
         }
-        guile << ")\n";
+        out << ")\n";
     }
 
     template <>
@@ -246,6 +300,7 @@ namespace ggg {
         result.reserve(names.size());
         for (const auto& name : names) {
             result.emplace_back(name.data());
+            result.back()._maxinactive = std::chrono::hours(24)*365;
         }
         return result;
     }

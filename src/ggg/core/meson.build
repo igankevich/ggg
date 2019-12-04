@@ -50,8 +50,10 @@ if has_override_fs
     )
     test(
         name + '-test', exe,
-		env: ['LD_PRELOAD='+override_fs.full_path()],
+		env: [
+            'LD_PRELOAD='+override_fs.full_path(),
+            'GGG_TEST_SUFFIX='+name+'-test'
+		],
         workdir: meson.build_root(),
-        is_parallel: false,
     )
 endif

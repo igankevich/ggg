@@ -46,9 +46,9 @@ namespace {
 
 }
 
-const ggg::account*
-ggg::pam_handle::get_account() const {
-	const account* acc = nullptr;
+ggg::account*
+ggg::pam_handle::get_account() {
+	account* acc = nullptr;
 	if (!get_data(key_account, void_ptr<account>(&acc)) || !acc) {
 		throw_pam_error(errc::service_error);
 	}
@@ -60,14 +60,14 @@ ggg::pam_handle::set_account(const account& acc) {
 	set_data(key_account, new account(acc), delete_object<account>);
 }
 
-ggg::Database&
+ggg::Database*
 ggg::pam_handle::get_database() {
 	Database* db = nullptr;
 	if (!get_data(key_database, void_ptr<Database>(&db)) || !db) {
         db = new Database(Database::File::Accounts, Database::Flag::Read_write);
         set_data(key_database, db, delete_database);
 	}
-	return *db;
+	return db;
 }
 
 void

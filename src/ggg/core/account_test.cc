@@ -27,7 +27,7 @@ TEST_P(AccountTest, Read) {
 	ggg::account acc;
 	tmp >> acc;
 	EXPECT_TRUE(tmp.good());
-	EXPECT_EQ("bin", acc.login());
+	EXPECT_EQ("bin", acc.name());
 	EXPECT_EQ("*", acc.password());
 	EXPECT_EQ(16605L, to_days(acc.last_change()));
 	EXPECT_EQ(0L, to_days(acc.min_change()));
@@ -57,7 +57,7 @@ INSTANTIATE_TEST_CASE_P(
 	)
 );
 
-TEST(Account2, ExpireActive) {
+TEST(Account2, Expired) {
 	ggg::account acc;
 	acc.make_expired();
     auto now = ggg::account::clock_type::now();
@@ -67,6 +67,18 @@ TEST(Account2, ExpireActive) {
 	EXPECT_FALSE(acc.has_expired(now));
 }
 
+TEST(Account2, Inactive) {
+	ggg::account acc;
+    auto now = ggg::account::clock_type::now();
+    EXPECT_FALSE(acc.is_inactive(now));
+    acc.max_inactive(std::chrono::hours(24));
+    EXPECT_FALSE(acc.is_inactive(now));
+    acc.last_active(now-std::chrono::hours(23));
+    EXPECT_FALSE(acc.is_inactive(now));
+    acc.last_active(now-std::chrono::hours(25));
+    EXPECT_TRUE(acc.is_inactive(now));
+}
+
 TEST(Account2, ReadDefaultConstructed) {
 	ggg::account acc0;
 	std::stringstream tmp;
@@ -74,7 +86,7 @@ TEST(Account2, ReadDefaultConstructed) {
 	ggg::account acc;
 	tmp >> acc;
 	EXPECT_TRUE(tmp.good());
-	EXPECT_EQ("", acc.login());
+	EXPECT_EQ("", acc.name());
 	EXPECT_EQ("", acc.password());
 	EXPECT_EQ(0L, to_days(acc.last_change()));
 	EXPECT_EQ(0L, to_days(acc.min_change()));
@@ -91,7 +103,7 @@ TEST_P(AccountTest, Clear) {
 	tmp >> acc;
 	acc.clear();
 	EXPECT_TRUE(tmp.good());
-	EXPECT_EQ("", acc.login());
+	EXPECT_EQ("", acc.name());
 	EXPECT_EQ("", acc.password());
 	EXPECT_EQ(0L, to_days(acc.last_change()));
 	EXPECT_EQ(0L, to_days(acc.min_change()));

@@ -1,7 +1,7 @@
 #include <ggg/pam/handle.hh>
 
 auto
-pam::handle::handle_error(const std::system_error& e, errc def) const -> errc {
+pam::handle::error(const std::system_error& e, errc def) const -> errc {
 	errc ret;
 	if (e.code().category() == std::iostream_category()) {
 		ret = def;

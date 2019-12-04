@@ -191,8 +191,8 @@ namespace ggg {
 		void update(const account& acc);
 		void erase(const account& acc);
 
-		void
-		set_password(const account& acc);
+		void set_password(const account& acc);
+        void set_last_active(const account& acc, time_point now);
 
 		void
 		expire(const char* name);

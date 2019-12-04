@@ -135,7 +135,7 @@ namespace chrono {
 std::ostream&
 ggg::operator<<(std::ostream& out, const account& rhs) {
 	return out
-		<< rhs._login << account::delimiter
+		<< rhs._name << account::delimiter
 		<< rhs._password << account::delimiter
 		<< rhs._lastchange << account::delimiter
 		<< rhs._minchange << account::delimiter
@@ -153,7 +153,7 @@ ggg::operator>>(std::istream& in, account& rhs) {
 		rhs.clear();
 		bits::read_all_fields(
 			in, account::delimiter,
-			rhs._login,
+			rhs._name,
 			rhs._password,
 			rhs._lastchange,
 			rhs._minchange,
@@ -172,7 +172,7 @@ ggg::operator>>(std::istream& in, account& rhs) {
 
 void
 ggg::account::copy_from(const account& rhs) {
-	this->_login = rhs._login;
+	this->_name = rhs._name;
 	this->_minchange = rhs._minchange;
 	this->_maxchange = rhs._maxchange;
 	this->_warnchange = rhs._warnchange;
@@ -189,12 +189,13 @@ ggg::account::set_password(string_type&& rhs) {
 
 void
 ggg::account::clear() {
-	this->_login.clear();
+	this->_name.clear();
 	this->_password.clear();
 	this->_lastchange = time_point(duration::zero());
 	this->_minchange = duration::zero();
 	this->_maxchange = duration::zero();
 	this->_warnchange = duration::zero();
+    this->_lastactive = time_point(duration::zero());
 	this->_maxinactive = duration::zero();
 	this->_expire = time_point(duration::zero());
 	this->_flags = account_flags(0);
@@ -204,8 +205,10 @@ void
 ggg::operator>>(const sqlite::statement& in, account& rhs) {
 	rhs.clear();
 	sqlite::cstream cstr(in);
-	uint64_t flags = 0;
-	cstr >> rhs._login >> rhs._password >> rhs._expire >> flags;
+	uint64_t flags = 0, max_inactive = 0;
+	cstr >> rhs._name >> rhs._password >> rhs._expire >> flags;
+    cstr >> max_inactive >> rhs._lastactive;
 	rhs._flags = static_cast<account_flags>(flags);
+    rhs._maxinactive = std::chrono::seconds(max_inactive);
 }
 

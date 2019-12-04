@@ -36,19 +36,20 @@ namespace ggg {
         static constexpr bool isset(duration d) { return d > duration::zero(); }
 
 	private:
-		string_type _login;
+		string_type _name;
 		string_type _password;
 		time_point _lastchange = time_point(duration::zero());
 		duration _minchange = duration::zero();
 		duration _maxchange = duration::zero();
 		duration _warnchange = duration::zero();
+		time_point _lastactive = time_point(duration::zero());
 		duration _maxinactive = duration::zero();
 		time_point _expire = time_point(duration::zero());
 		account_flags _flags = account_flags(0);
 
 	public:
 
-		inline explicit account(const char* name): _login(name) {}
+		inline explicit account(const char* name): _name(name) {}
 		account() = default;
 		account(const account&) = default;
 		account(account&&) = default;
@@ -83,6 +84,12 @@ namespace ggg {
 			this->setf(account_flags::password_has_expired);
 		}
 
+		inline bool
+		is_inactive(time_point now) const {
+			return has_max_inactive() && has_last_active() &&
+                !(now-max_inactive() < last_active());
+		}
+
 		friend std::ostream&
 		operator<<(std::ostream& out, const account& rhs);
 
@@ -97,7 +104,7 @@ namespace ggg {
 
 		inline bool
 		operator==(const account& rhs) const noexcept {
-			return this->_login == rhs._login;
+			return this->_name == rhs._name;
 		}
 
 		inline bool
@@ -107,11 +114,10 @@ namespace ggg {
 
 		inline bool
 		operator<(const account& rhs) const noexcept {
-			return this->_login < rhs._login;
+			return this->_name < rhs._name;
 		}
 
-		inline const string_type& login() const { return this->_login; }
-		inline const string_type& name() const { return this->_login; }
+		inline const string_type& name() const { return this->_name; }
 		inline const string_type& password() const { return this->_password; }
 
 		void set_password(string_type&& rhs);
@@ -126,8 +132,12 @@ namespace ggg {
 		inline void max_change(duration rhs) { this->_maxchange = rhs; }
 		inline duration warn_change() const { return this->_warnchange; }
 		inline bool has_warn_change() const { return isset(this->_warnchange); }
+		inline time_point last_active() const { return this->_lastactive; }
+		inline void last_active(time_point rhs) { this->_lastactive = rhs; }
 		inline duration max_inactive() const { return this->_maxinactive; }
+		inline void max_inactive(duration rhs) { this->_maxinactive = rhs; }
 		inline bool has_max_inactive() const { return isset(this->_maxinactive); }
+		inline bool has_last_active() const { return isset(this->_lastactive); }
 		inline time_point expire() const { return this->_expire; }
 		inline time_point expiration_date() const { return this->_expire; }
 
@@ -135,6 +145,12 @@ namespace ggg {
 		inline void setf(account_flags rhs) { this->_flags = this->_flags | rhs; }
 		inline void unsetf(account_flags rhs) { this->_flags = this->_flags & (~rhs); }
 		inline void clear(account_flags rhs) { this->_flags = rhs; }
+
+		inline std::uint64_t
+        max_inactive_in_seconds() const {
+            using namespace std::chrono;
+            return duration_cast<seconds>(this->_maxinactive).count();
+        }
 
 		inline bool
 		has_been_suspended() const noexcept {
@@ -170,7 +186,7 @@ namespace std {
 
 		inline result_type
 		operator()(const argument_type& rhs) const noexcept {
-			return hash<string>::operator()(rhs.login());
+			return hash<string>::operator()(rhs.name());
 		}
 
 	};

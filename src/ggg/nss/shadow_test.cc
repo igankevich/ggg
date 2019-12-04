@@ -34,7 +34,7 @@ TEST_P(shadow_test, CopyTo) {
 	std::memset(&spw, 0, sizeof(::spwd));
 	copy_to(acc, &spw, buffer.data());
 	EXPECT_EQ(fillchar, buffer[buffer_size(acc)]);
-	EXPECT_STREQ(acc.login().data(), spw.sp_namp);
+	EXPECT_STREQ(acc.name().data(), spw.sp_namp);
 	EXPECT_STREQ("", spw.sp_pwdp);
 	EXPECT_EQ(to_days(acc.last_change()), spw.sp_lstchg);
 	EXPECT_EQ(to_days(acc.min_change()), spw.sp_min);
