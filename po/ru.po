@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ggg\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-24 19:01+0300\n"
+"POT-Creation-Date: 2019-12-07 00:21+0300\n"
 "PO-Revision-Date: 2018-04-11 16:45+0300\n"
 "Last-Translator: Ivan Gankevich <igankevich@ya.ru>\n"
 "Language-Team: Russian\n"
@@ -18,34 +18,34 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: src/ggg/cli/add_entity.cc:33 src/ggg/cli/edit_entity.cc:54
+#: src/ggg/cli/add_entity.cc:35 src/ggg/cli/edit_entity.cc:54
 #, fuzzy
 msgid "please, specify entity names, filename or Guile expression"
 msgstr "Укажите имена сущностей."
 
-#: src/ggg/cli/add_entity.cc:53 src/ggg/cli/edit_entity.cc:73
-#: src/ggg/cli/select.cc:66 src/ggg/cli/select_by_regex.cc:30
-#: src/ggg/cli/select_by_regex.cc:33
+#: src/ggg/cli/add_entity.cc:59 src/ggg/cli/edit_entity.cc:77
+#: src/ggg/cli/select.cc:70
 msgid "not implemented"
 msgstr ""
 
-#: src/ggg/cli/add_entity.cc:55
+#: src/ggg/cli/add_entity.cc:61
 msgid "adding messages is not allowed"
 msgstr ""
 
-#: src/ggg/cli/add_entity.cc:94
-msgid "Entity _ already exists."
-msgstr "Сущность _ уже существует."
-
-#: src/ggg/cli/add_entity.cc:108 src/ggg/cli/edit_entity.cc:102
+#: src/ggg/cli/add_entity.cc:115 src/ggg/cli/edit_entity.cc:106
 msgid "_"
 msgstr ""
 
-#: src/ggg/cli/add_entity.cc:109 src/ggg/cli/edit_entity.cc:103
+#: src/ggg/cli/add_entity.cc:116 src/ggg/cli/edit_entity.cc:107
 msgid "Press any key to continue..."
 msgstr "Нажмите клавишу, чтобы продолжить..."
 
-#: src/ggg/cli/all_commands.cc:107 src/ggg/cli/ggg_main.cc:18
+#: src/ggg/cli/add_entity.cc:151
+#, fuzzy
+msgid "please, specify exactly one name"
+msgstr "Укажите имена сущностей."
+
+#: src/ggg/cli/all_commands.cc:106 src/ggg/cli/ggg_main.cc:18
 msgid "bad command"
 msgstr "Неизвестная команда."
 
@@ -79,19 +79,20 @@ msgstr "Укажите имена сущностей."
 msgid "destination file already exists"
 msgstr "Сущность _ уже существует."
 
-#: src/ggg/cli/cli_traits.cc:232
-msgid "messages do not have NSS format"
+#: src/ggg/cli/cli_traits.hh:26 src/ggg/cli/cli_traits.hh:31
+#: src/ggg/cli/cli_traits.hh:93 src/ggg/cli/remove_entity.cc:54
+msgid "not supported"
 msgstr ""
 
 #: src/ggg/cli/edit_entity.cc:32
 msgid "duplicate names/ids"
 msgstr "Повторяющиеся имена или идентификаторы."
 
-#: src/ggg/cli/edit_entity.cc:75
+#: src/ggg/cli/edit_entity.cc:79
 msgid "editing messages is not allowed"
 msgstr ""
 
-#: src/ggg/cli/edit_entity.cc:137
+#: src/ggg/cli/edit_entity.cc:141
 msgid "not found"
 msgstr "Не найдено."
 
@@ -99,12 +100,12 @@ msgstr "Не найдено."
 msgid "bad exit code from editor"
 msgstr "Ненулевой код возврата из редактора."
 
-#: src/ggg/cli/entity_type.cc:11
+#: src/ggg/cli/entity_type.cc:13
 msgid "unknown entity type"
 msgstr ""
 
-#: src/ggg/cli/entity_type.cc:22
-msgid "unknown entity output format"
+#: src/ggg/cli/entity_type.cc:29
+msgid "unknown format"
 msgstr ""
 
 #: src/ggg/cli/expunge.cc:20
@@ -152,10 +153,10 @@ msgstr "Не надо указывать сущности."
 msgid "please, specify at least one modifier"
 msgstr "Укажите имена сущностей."
 
-#: src/ggg/cli/remove_entity.cc:17
+#: src/ggg/cli/remove_entity.cc:19
 #, fuzzy
-msgid "Failed to remove _: _"
-msgstr "Не могу создать _. "
+msgid "please, specify entity names"
+msgstr "Не надо указывать сущности."
 
 #: src/ggg/cli/reset_password.cc:15
 #, fuzzy
@@ -185,83 +186,88 @@ msgstr "Не могу найти директорию для временных 
 msgid "Failed to unlock _: _"
 msgstr "Не могу создать _. "
 
-#: src/ggg/core/database.cc:538
+#: src/ggg/core/database.cc:557
 msgid "unable to update schema of read-only database"
 msgstr ""
 
-#: src/ggg/core/database.cc:674
+#: src/ggg/core/database.cc:718
 #, fuzzy
 msgid "failed to generate new id"
 msgstr "Не могу создать _. "
 
-#: src/ggg/core/database.cc:693 src/ggg/core/database.cc:787
-#: src/ggg/core/database.cc:1074
+#: src/ggg/core/database.cc:737 src/ggg/core/database.cc:823
+#: src/ggg/core/database.cc:1151
 msgid "bad name"
 msgstr ""
 
-#: src/ggg/core/database.cc:697
+#: src/ggg/core/database.cc:741
 msgid "conflicting system user"
 msgstr "Конфликт с системным пользователем."
 
-#: src/ggg/core/database.cc:711 src/ggg/core/database.cc:803
-#: src/ggg/core/database.cc:1066
+#: src/ggg/core/database.cc:755 src/ggg/core/database.cc:839
+#: src/ggg/core/database.cc:1143
 msgid "bad id"
 msgstr ""
 
-#: src/ggg/core/database.cc:738 src/ggg/core/database.cc:748
-#: src/ggg/core/database.cc:974 src/ggg/core/database.cc:999
+#: src/ggg/core/database.cc:782 src/ggg/core/database.cc:1051
+#: src/ggg/core/database.cc:1076
 msgid "bad entity"
 msgstr ""
 
-#: src/ggg/core/database.cc:756 src/ggg/core/database.cc:879
-#: src/ggg/core/database.cc:894 src/ggg/guile/store.cc:129
+#: src/ggg/core/database.cc:792 src/ggg/core/database.cc:895
+#: src/ggg/core/database.cc:922 src/ggg/core/database.cc:937
+#: src/ggg/core/database.cc:951
 msgid "bad account"
 msgstr ""
 
-#: src/ggg/core/database.cc:903 src/ggg/core/database.cc:913
-#: src/ggg/core/database.cc:929
+#: src/ggg/core/database.cc:965 src/ggg/core/database.cc:975
+#: src/ggg/core/database.cc:991
 msgid "bad account name"
 msgstr ""
 
-#: src/ggg/core/database.cc:986
+#: src/ggg/core/database.cc:1063
 msgid "changing id is not allowed"
 msgstr ""
 
-#: src/ggg/core/database.cc:1080 src/ggg/core/database.cc:1128
+#: src/ggg/core/database.cc:1157 src/ggg/core/database.cc:1205
 msgid "self-loop"
 msgstr ""
 
-#: src/ggg/core/database.cc:1082 src/ggg/core/database.cc:1130
+#: src/ggg/core/database.cc:1159 src/ggg/core/database.cc:1207
 #, fuzzy
 msgid "entities are attached"
 msgstr "Не могу загрузить сущности."
 
-#: src/ggg/core/database.cc:1085 src/ggg/core/database.cc:1133
+#: src/ggg/core/database.cc:1162 src/ggg/core/database.cc:1210
 #, fuzzy
 msgid "entities are tied"
 msgstr "Не могу загрузить сущности."
 
-#: src/ggg/core/database.cc:1101
+#: src/ggg/core/database.cc:1178
 msgid ""
 "entities in the hierarchy should either all have <= 1 outbound edges or all "
 "have <= 1 inbound edges"
 msgstr ""
 
-#: src/ggg/core/database.cc:1115
+#: src/ggg/core/database.cc:1192
 msgid "this operation creates loops in the graph"
 msgstr ""
 
-#: src/ggg/core/database.cc:1148
+#: src/ggg/core/database.cc:1225
 msgid "bad names"
 msgstr ""
 
-#: src/ggg/core/database.cc:1240
+#: src/ggg/core/database.cc:1317
 #, fuzzy
 msgid "bad machine"
 msgstr "Неизвестная команда."
 
-#: src/ggg/core/database.cc:1352
+#: src/ggg/core/database.cc:1429
 msgid "bad size"
+msgstr ""
+
+#: src/ggg/core/database.cc:1466
+msgid "bad public key"
 msgstr ""
 
 #: src/ggg/guile/guile_traits.cc:46
@@ -275,6 +281,13 @@ msgstr ""
 #: src/ggg/sec/secure_allocator.hh:14
 msgid "failed to init libsodium"
 msgstr ""
+
+#~ msgid "Entity _ already exists."
+#~ msgstr "Сущность _ уже существует."
+
+#, fuzzy
+#~ msgid "Failed to remove _: _"
+#~ msgstr "Не могу создать _. "
 
 #~ msgid "conflicting name/uid pair"
 #~ msgstr "Конфликтующая пара имя-идентификатор."
