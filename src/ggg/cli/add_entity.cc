@@ -131,7 +131,7 @@ ggg::Add_entity
     read<T>(tmp, objects, input_format());
 	//auto ents = guile_traits_type::from_guile(guile);
 	Transaction tr(store);
-	for (const auto& o : objects) { store.add(o); }
+	for (const auto& o : objects) { store.insert(o); }
 	tr.commit();
 }
 
@@ -155,7 +155,7 @@ namespace ggg {
         }
     	//auto ents = guile_traits_type::from_guile(guile);
     	Transaction tr(store);
-    	for (const auto& o : objects) { store.add(o); }
+    	for (const auto& o : objects) { store.insert(o); }
     	tr.commit();
     }
 
@@ -171,7 +171,7 @@ ggg::Add_entity
 		<< std::setw(w) << std::left << "  -t TYPE"
 		<< "entity type (account, entity, machine, public-key)\n"
 		<< std::setw(w) << std::left << "  -i FORMAT"
-		<< "input format (scm, nss, ssh)\n"
+		<< "input format (scm, passwd, group, shadow, ssh)\n"
 		<< std::setw(w) << std::left << "  -f FILE"
 		<< "file to read entities from\n";
 }

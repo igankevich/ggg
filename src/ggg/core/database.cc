@@ -78,10 +78,6 @@ WHERE expiration_date IS NOT NULL
   AND expiration_date < strftime('%s', 'now')
 )";
 
-const char* sql_delete_entity_by_name = R"(
-DELETE FROM entities WHERE name = ?
-)";
-
 const char* sql_select_group_by_id = R"(
 WITH RECURSIVE
 	-- merge hierarchy and ties
@@ -614,6 +610,26 @@ WHERE search(name)
 )");
 }
 
+auto
+ggg::Database::search_public_keys() -> statement_type {
+	return this->_db.prepare("SELECT account_name,options,type,key,comment "
+            "FROM public_keys WHERE search(key) OR search(comment)");
+}
+
+auto
+ggg::Database::search_messages() -> statement_type {
+    return this->_db.prepare("SELECT account_name,timestamp,machine_name,message "
+            "FROM messages WHERE search(message) ORDER BY timestamp");
+}
+
+auto
+ggg::Database::search_machines() -> statement_type {
+    return this->_db.prepare("SELECT name, addresses.ethernet_address, "
+            "addresses.ip_address FROM hosts "
+            "JOIN addresses ON hosts.ethernet_address=addresses.ethernet_address "
+            "WHERE search(name)");
+}
+
 bool
 ggg::Database::find_group(sys::gid_type gid, ggg::group& result) {
 	statement_type rstr = this->_db.prepare(sql_select_group_by_id, gid);
@@ -757,24 +773,16 @@ ggg::Database::insert(const entity& ent) {
 }
 
 void
-ggg::Database::erase(const char* name) {
-	this->_db.execute(sql_delete_entity_by_name, name);
+ggg::Database::erase(const entity& ent) {
+	this->_db.execute("DELETE FROM entities WHERE name = ?", ent.name());
 	auto nrows1 = this->_db.num_rows_modified();
-	this->_db.execute("DELETE FROM accounts WHERE name=?", name);
+	this->_db.execute("DELETE FROM accounts WHERE name=?", ent.name());
 	auto nrows2 = this->_db.num_rows_modified();
 	if (nrows1 == 0 && nrows2 == 0) {
 		throw std::invalid_argument("bad entity");
 	}
-    message(name, "entity removed");
-    message(name, "account removed");
-}
-
-void
-ggg::Database::erase(const entity& ent) {
-	this->_db.execute(sql_delete_entity_by_name, ent.name());
-	auto nrows = this->_db.num_rows_modified();
-	if (nrows == 0) { throw std::invalid_argument("bad entity"); }
     message(ent.name().data(), "entity removed");
+    message(ent.name().data(), "account removed");
 }
 
 void
@@ -882,7 +890,10 @@ ggg::Database::accounts() -> statement_type {
 
 void
 ggg::Database::insert(const account& acc) {
-	typedef std::underlying_type<account_flags>::type int_t;
+	using int_t = std::underlying_type<account_flags>::type;
+    if (!has_entity(acc.name().data())) {
+		throw std::invalid_argument("bad account");
+    }
 	this->_db.execute(
 		sql_insert_account,
 		acc.name(),
@@ -897,7 +908,7 @@ ggg::Database::insert(const account& acc) {
 
 void
 ggg::Database::update(const account& acc) {
-	typedef std::underlying_type<account_flags>::type int_t;
+	using int_t = std::underlying_type<account_flags>::type;
 	this->_db.execute(
 		sql_update_account_by_name,
 		acc.password().empty() ? nullptr : acc.password().data(),
@@ -915,7 +926,7 @@ ggg::Database::update(const account& acc) {
 
 void
 ggg::Database::set_password(const account& acc) {
-	typedef std::underlying_type<account_flags>::type int_t;
+	using int_t = std::underlying_type<account_flags>::type;
 	this->_db.execute(
 		sql_set_password_by_name,
 		acc.password().data(),
@@ -958,7 +969,7 @@ ggg::Database::expire(const char* name) {
 
 void
 ggg::Database::set_account_flag(const char* name, account_flags flag) {
-	typedef std::underlying_type<account_flags>::type int_t;
+	using int_t = std::underlying_type<account_flags>::type;
 	this->_db.execute(sql_set_account_flag_by_name, static_cast<int_t>(flag), name);
 	if (this->_db.num_rows_modified() == 0) {
 		throw std::invalid_argument("bad account name");
@@ -1100,7 +1111,7 @@ ggg::Database::find_entities_by_flag(
 	account_flags flag,
 	bool set
 ) -> statement_type {
-	typedef std::underlying_type<account_flags>::type int_t;
+	using int_t = std::underlying_type<account_flags>::type;
 	int_t v = static_cast<int_t>(flag);
 	return this->_db.prepare(sql_select_entities_by_flag, v, set ? v : 0);
 }
@@ -1432,6 +1443,7 @@ ggg::Database::insert(const public_key& rhs) {
             "(account_name,options,type,key,comment) "
             "VALUES (?,?,?,?,?)", rhs.name(),
             rhs.options(), rhs.type(), rhs.key(), rhs.comment());
+    message("public key %s added", rhs.key().data());
 }
 
 void
@@ -1441,6 +1453,19 @@ ggg::Database::update(const public_key& rhs) {
             "WHERE account_name=?", rhs.options(),
             rhs.type(), rhs.key(), rhs.comment(),
             rhs.name());
+}
+
+void
+ggg::Database::erase(const public_key& rhs) {
+    if (rhs.has_name() && rhs.has_key()) {
+        this->_db.execute("DELETE FROM public_keys WHERE account_name=? "
+                "AND key=?", rhs.name(), rhs.key());
+    } else if (rhs.has_name()) {
+        this->_db.execute("DELETE FROM public_keys WHERE account_name=?", rhs.name());
+    } else {
+        throw std::invalid_argument("bad public key");
+    }
+    message("public key %s removed", rhs.key().data());
 }
 
 auto

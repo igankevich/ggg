@@ -24,7 +24,7 @@ msgid "please, specify entity names, filename or Guile expression"
 msgstr "Укажите имена сущностей."
 
 #: src/ggg/cli/add_entity.cc:53 src/ggg/cli/edit_entity.cc:73
-#: src/ggg/cli/select_by_name.cc:66 src/ggg/cli/select_by_regex.cc:30
+#: src/ggg/cli/select.cc:66 src/ggg/cli/select_by_regex.cc:30
 #: src/ggg/cli/select_by_regex.cc:33
 msgid "not implemented"
 msgstr ""

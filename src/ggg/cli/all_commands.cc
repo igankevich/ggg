@@ -11,17 +11,16 @@
 #include <ggg/cli/edit_entity.hh>
 #include <ggg/cli/expire_entity.hh>
 #include <ggg/cli/expunge.hh>
-#include <ggg/cli/select_by_regex.hh>
 #include <ggg/cli/guile.hh>
 #include <ggg/cli/heal.hh>
 #include <ggg/cli/lock_entity.hh>
+#include <ggg/cli/messages.hh>
 #include <ggg/cli/remove_entity.hh>
 #include <ggg/cli/reset_password.hh>
-#include <ggg/cli/show_duplicates.hh>
-#include <ggg/cli/select_by_name.hh>
+#include <ggg/cli/select.hh>
 #include <ggg/cli/select_all.hh>
+#include <ggg/cli/show_duplicates.hh>
 #include <ggg/cli/show_help.hh>
-#include <ggg/cli/messages.hh>
 #include <ggg/cli/show_version.hh>
 #include <ggg/cli/unlock_entity.hh>
 
@@ -36,7 +35,7 @@
 
 namespace {
 
-	typedef std::function<ggg::command_ptr()> command_ctr;
+	using command_ctr = std::function<ggg::command_ptr()>;
 
 	std::unordered_map<std::string,command_ctr> all_commands{
 		MAKE_COMMAND("init", Heal),
@@ -61,15 +60,15 @@ namespace {
 		MAKE_COMMAND("insert", Add_entity),
 		MAKE_COMMAND("new", Add_entity),
 		MAKE_COMMAND("version", Show_version),
-		MAKE_COMMAND("show", Select_by_name),
-		MAKE_COMMAND("info", Select_by_name),
-		MAKE_COMMAND("list", Select_by_name),
+		MAKE_COMMAND("show", Select),
+		MAKE_COMMAND("info", Select),
+		MAKE_COMMAND("list", Select),
 		MAKE_COMMAND("members", Select_children),
 		MAKE_COMMAND("children", Select_children),
 		MAKE_COMMAND("groups", Select_parents),
 		MAKE_COMMAND("parents", Select_parents),
-		MAKE_COMMAND("find", Select_by_regex),
-		MAKE_COMMAND("search", Select_by_regex),
+		MAKE_COMMAND("find", Select(true)),
+		MAKE_COMMAND("search", Select(true)),
 		MAKE_COMMAND("expired", Select_expired),
 		MAKE_COMMAND("locked", Select_locked),
 		MAKE_COMMAND("inactive", Select_locked),

@@ -93,6 +93,9 @@ namespace ggg {
 
 		statement_type search_entities();
 		statement_type search_accounts();
+		statement_type search_public_keys();
+		statement_type search_messages();
+		statement_type search_machines();
 
 		inline statement_type
 		find_user(sys::uid_type uid) {
@@ -154,14 +157,13 @@ namespace ggg {
 		next_entity_id();
 
 		void insert(const entity& ent);
-		void erase(const char* name);
 		void erase(const entity& ent);
 
 		sys::uid_type
 		find_id(const char* name);
 
 		inline bool
-		contains(const char* name) {
+		has_entity(const char* name) {
 			return this->find_id_nocheck(name) != ggg::bad_uid;
 		}
 
@@ -355,6 +357,7 @@ namespace ggg {
         statement_type public_keys(const char* user);
 		void insert(const public_key& rhs);
 		void update(const public_key& rhs);
+        void erase(const public_key& rhs);
 
 		template <class Iterator>
         inline statement_type

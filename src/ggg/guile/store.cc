@@ -31,9 +31,9 @@ namespace {
 		Store& store = get_store(store_in);
 		auto type = scm_class_of(obj);
 		if (type == scm_variable_ref(scm_c_lookup("<entity>"))) {
-			store.add(Guile_traits<entity>::from(obj));
+			store.insert(Guile_traits<entity>::from(obj));
 		} else if (type == scm_variable_ref(scm_c_lookup("<account>"))) {
-			store.add(Guile_traits<account>::from(obj));
+			store.insert(Guile_traits<account>::from(obj));
 		}
 		return SCM_UNSPECIFIED;
 	}
@@ -110,30 +110,12 @@ namespace {
 
 bool
 ggg::Store::has(const entity& rhs) {
-	return contains(rhs.name().data());
+	return has_entity(rhs.name().data());
 }
 
 bool
 ggg::Store::has(const account& rhs) {
 	return find_account(rhs.name().data()).step() != sqlite::errc::done;
-}
-
-void
-ggg::Store::add(const entity& rhs) {
-	insert(rhs);
-}
-
-void
-ggg::Store::add(const account& rhs) {
-	if (!has(entity(rhs.name().data()))) {
-		throw std::invalid_argument("bad account");
-	}
-	insert(rhs);
-}
-
-void
-ggg::Store::add(const public_key& rhs) {
-	insert(rhs);
 }
 
 void

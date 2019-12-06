@@ -38,6 +38,7 @@ namespace ggg {
 	public:
 
 		inline explicit entity(const char* name): _name(name) {}
+		inline explicit entity(const string_type& name): _name(name) {}
 
 		entity() = default;
 		entity(const entity& rhs) = default;

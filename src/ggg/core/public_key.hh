@@ -27,6 +27,8 @@ namespace ggg {
         public_key& operator=(const public_key&) = default;
         public_key(public_key&&) = default;
         public_key& operator=(public_key&&) = default;
+        inline bool has_name() const { return !this->_name.empty(); }
+        inline bool has_key() const { return !this->_key.empty(); }
         inline const std::string& name() const { return this->_name; }
         inline const std::string& options() const { return this->_options; }
         inline const std::string& type() const { return this->_type; }

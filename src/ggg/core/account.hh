@@ -50,6 +50,8 @@ namespace ggg {
 	public:
 
 		inline explicit account(const char* name): _name(name) {}
+		inline explicit account(const string_type& name): _name(name) {}
+
 		account() = default;
 		account(const account&) = default;
 		account(account&&) = default;

@@ -14,10 +14,6 @@ namespace ggg {
 		bool has(const entity& rhs);
 		bool has(const account& rhs);
 
-		void add(const entity& rhs);
-		void add(const account& rhs);
-		void add(const public_key& rhs);
-
 	};
 
 	void store_define_procedures();

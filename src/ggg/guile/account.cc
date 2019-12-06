@@ -257,7 +257,7 @@ namespace ggg {
     SCM
     Guile_traits<ggg::account>::insert0(SCM obj) {
         Store store(Store::File::All, Store::Flag::Read_write);
-        store.add(from(obj));
+        store.insert(from(obj));
         return SCM_UNSPECIFIED;
     }
 
