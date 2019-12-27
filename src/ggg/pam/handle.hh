@@ -38,6 +38,8 @@ namespace pam {
         inline void change_password(int flags=0) { call(::pam_chauthtok(*this,flags)); }
         inline void verify_account(int flags=0) { call(::pam_acct_mgmt(*this,flags)); }
         inline void end(int status=0) { call(::pam_end(*this,status)); }
+        inline void open_session(int flags=0) { call(::pam_open_session(*this,flags)); }
+        inline void close_session(int flags=0) { call(::pam_close_session(*this,flags)); }
 
         inline const char*
         user() {

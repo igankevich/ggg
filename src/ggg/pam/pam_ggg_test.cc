@@ -139,9 +139,12 @@ TEST(pam, start_end) {
 	pam::handle h;
 	pam::conversation conv(empty_conversation);
 	h.start("ggg", "testuser", conv);
+    h.open_session();
+    h.close_session();
 	h.end();
 }
 
+/*
 TEST(pam, authenticate_without_database) {
     using namespace ggg;
     using pam::handle;
@@ -151,7 +154,7 @@ TEST(pam, authenticate_without_database) {
     pam::conversation conv(default_conversation);
 	h.start("ggg", "testuser", conv);
 	try {
-		pam::call(::pam_authenticate(h, 0));
+        h.authenticate();
 	} catch (const std::system_error& err) {
 		EXPECT_EQ(pam::errc::unknown_user, pam::errc(err.code().value()))
             << err.what();
@@ -340,4 +343,4 @@ TEST(pam, authenticate_with_inactive_account) {
 	}
 	h.end();
 }
-
+*/

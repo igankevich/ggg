@@ -254,7 +254,7 @@ int pam_sm_open_session(
     try {
 		const char* user = pamh.user();
         auto& db = *pamh.get_database();
-        db.message(user, "session opened: %s", collect_data(pamh));
+        db.message(user, "session opened:%s", collect_data(pamh).data());
         ret = errc::success;
     } catch (const std::exception& e) {
         ret = pamh.error(e);
@@ -273,7 +273,7 @@ int pam_sm_close_session(
     try {
 		const char* user = pamh.user();
         auto& db = *pamh.get_database();
-        db.message(user, "session closed: %s", collect_data(pamh));
+        db.message(user, "session closed:%s", collect_data(pamh).data());
         ret = errc::success;
     } catch (const std::exception& e) {
         ret = pamh.error(e);

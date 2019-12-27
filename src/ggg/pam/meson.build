@@ -39,7 +39,7 @@ test(
 )
 
 pam_wrapper = dependency('pam_wrapper', required: false)
-if pam_wrapper.found() and not state_dir.startswith('/') and b_sanitize != 'address' and has_override_fs
+if pam_wrapper.found() and b_sanitize != 'address' and has_override_fs
     ld_preload_items = ['libpam_wrapper.so', override_fs.full_path()]
     ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
     test(
@@ -53,7 +53,7 @@ if pam_wrapper.found() and not state_dir.startswith('/') and b_sanitize != 'addr
         env: [
             ld_preload,
             'PAM_WRAPPER=1',
-            'PAM_WRAPPER_DEBUGLEVEL=3',
+            'PAM_WRAPPER_DEBUGLEVEL=0',
             'PAM_WRAPPER_SERVICE_DIR=' + join_paths(
                 meson.current_build_dir(),
                 'pam.d'
