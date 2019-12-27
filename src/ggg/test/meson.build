@@ -46,3 +46,12 @@ if has_override_fs
         dependencies: libdl
     )
 endif
+
+sh = find_program('sh')
+test_config = configuration_data()
+test_config.set('sh', sh.path())
+configure_file(
+    input: 'config.hh.in',
+    output: 'config.hh',
+    configuration: test_config
+)

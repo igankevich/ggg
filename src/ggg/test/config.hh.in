@@ -1,0 +1,6 @@
+#ifndef GGG_TEST_CONFIG_HH
+#define GGG_TEST_CONFIG_HH
+
+#define GGG_SH "@sh@"
+
+#endif // vim:filetype=cpp

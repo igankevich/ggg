@@ -1,3 +1,4 @@
+#include <ggg/test/config.hh>
 #include <ggg/test/execute_command.hh>
 
 #include <unistdx/io/fdstream>
@@ -20,7 +21,7 @@ execute_command(const char* cmd) {
 			sys::fildes err(STDERR_FILENO);
 			err = pipes[1].out();
 			sys::argstream args;
-			args.append("/bin/sh");
+			args.append(GGG_SH);
 			args.append("-c");
 			args.append(cmd);
 			return sys::this_process::execute_command(args);
