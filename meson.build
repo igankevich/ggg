@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.3.8',
+	version: '1.3.9',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
 	license: ['gpl3+']
@@ -12,7 +12,7 @@ if not cpp.has_header('nss.h')
 	error('Header nss.h is required to compile the module.')
 endif
 
-foreach arg : ['-Werror=return-type']
+foreach arg : ['-Werror=return-type', '-Werror=return-local-addr']
 	if cpp.has_argument(arg)
 		add_global_arguments(arg, language: 'cpp')
 	endif
@@ -37,13 +37,12 @@ developer = get_option('developer')
 
 unistdx_version = '>= 0.5.4'
 ggg_crypt_version = '>= 0.1.1'
-sqlitex_version = '>= 0.4.4'
+sqlitex_version = '>= 0.4.6'
 
 unistdx = dependency('unistdx', version: unistdx_version)
 zxcvbn = cpp.find_library('zxcvbn')
 pam = cpp.find_library('pam')
 ggg_crypt = dependency('ggg-crypt', version: ggg_crypt_version)
-sqlite = dependency('sqlite3')
 sqlitex = dependency('sqlitex', version: sqlitex_version)
 guile = dependency('guile-2.2')
 libsodium = dependency('libsodium')

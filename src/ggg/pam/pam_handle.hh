@@ -42,6 +42,7 @@ namespace ggg {
 		account* get_account();
 		void set_account(const ggg::account& acc);
 		Database* get_database();
+        void close_connection();
 
 		template <class ... Args>
 		inline void

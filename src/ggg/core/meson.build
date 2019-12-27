@@ -13,7 +13,7 @@ ggg_core_src = files([
 	'public_key.cc',
 ])
 
-ggg_core_deps = [unistdx,sqlitex,sqlite]
+ggg_core_deps = [unistdx,sqlitex]
 
 ggg_core_lib = shared_library(
 	'ggg-core',

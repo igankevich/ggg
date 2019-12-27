@@ -71,6 +71,11 @@ ggg::pam_handle::get_database() {
 }
 
 void
+ggg::pam_handle::close_connection() {
+    set_data(key_database, nullptr, nullptr);
+}
+
+void
 ggg::pam_handle::parse_args(int argc, const char** argv) {
 	for (int i=0; i<argc; ++i) {
 		std::string arg(argv[i]);
