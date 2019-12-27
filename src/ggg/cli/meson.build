@@ -55,7 +55,7 @@ configure_file(
 )
 # }}}
 
-if has_override_fs and sh.found()
+if has_override_fs and with_tests
     test(
         'cli-test',
         executable(
