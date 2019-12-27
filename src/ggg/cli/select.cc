@@ -114,8 +114,6 @@ ggg::Select::select_by_regex() {
             write<message>(std::cout, st, this->output_format());
 			break;
 	}
-    st.close();
-    db.close();
 }
 
 void

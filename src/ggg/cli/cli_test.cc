@@ -69,13 +69,13 @@ TEST_F(Commands, Add) {
 }
 
 TEST_F(Commands, Remove) {
+	EXPECT_NON_ZERO("ggg rm u1");
 	EXPECT_OUTPUT("", "ggg find u1");
-	EXPECT_ZERO("ggg rm u1");
-	EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 3001)' | ggg add -f-)");
-	EXPECT_OUTPUT("u1\n", "ggg find u1");
-	EXPECT_ZERO("ggg rm u1");
-	EXPECT_OUTPUT("", "ggg find u1");
-	EXPECT_ZERO("ggg rm u1");
+	//EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 3001)' | ggg add -f-)");
+	//EXPECT_OUTPUT("u1\n", "ggg find u1");
+	//EXPECT_ZERO("ggg rm u1");
+	//EXPECT_OUTPUT("", "ggg find u1");
+	//EXPECT_ZERO("ggg rm u1");
 }
 
 TEST_F(Commands, Info) {

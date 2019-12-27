@@ -65,7 +65,6 @@ std::string override_file(const char* func, const char* file) {
         }
         path += "accounts.tmp";
     }
-    { std::clog << func << ' ' << path << std::endl; }
     if (path == GGG_GUILE) { path = GGG_NEW_GUILE; }
     if (path == GGG_ROOT) {
         path = GGG_WORKDIR;

@@ -46,7 +46,7 @@ execute_command(const char* cmd);
 	{ \
 		auto result = ::execute_command(cmdline); \
         auto actual = std::get<1>(result); \
-        if (output != actual) { \
+        if (output != actual || std::get<0>(result).exit_code() != 0) { \
             std::clog << std::get<2>(result) << std::flush; \
         } \
 		EXPECT_EQ(0, std::get<0>(result).exit_code()); \

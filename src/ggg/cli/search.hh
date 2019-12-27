@@ -54,6 +54,8 @@ struct Search {
 		return 0;
 	}
 
+    inline void close() { this->delete_function(); }
+
 private:
 
 	void
