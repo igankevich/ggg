@@ -126,11 +126,11 @@ int pam_sm_acct_mgmt(
 		const char* user = pamh.user();
 		pamh.debug("checking account \"%s\"", user);
 		account* acc = nullptr;
-        Database db;
+        Database db(Database::File::Accounts, Database::Flag::Read_write);
+        Transaction tr(db);
 		try {
 			acc = pamh.get_account();
 		} catch (const std::system_error& err) {
-            db.open(Database::File::Accounts, Database::Flag::Read_write);
 			other = find_account(db, user);
 			acc = &other;
 		}
@@ -138,7 +138,7 @@ int pam_sm_acct_mgmt(
 			pamh.debug("account \"%s\" has been suspended", user);
 			throw_pam_error(errc::permission_denied);
 		}
-		const account::time_point now = account::clock_type::now();
+		const auto now = account::clock_type::now();
 		if (acc->has_expired(now)) {
 			pamh.debug("account \"%s\" has expired", user);
 			throw_pam_error(errc::account_expired);
@@ -153,10 +153,9 @@ int pam_sm_acct_mgmt(
 			throw_pam_error(errc::new_password_required);
 		}
 		pamh.debug("account \"%s\" is valid", user);
-        if (!db.is_open()) { db.open(Database::File::Accounts, Database::Flag::Read_write); }
         acc->last_active(now);
         db.set_last_active(*acc, now);
-        db.close();
+        tr.commit();
 		ret = errc::success;
 	} catch (const std::system_error& e) {
 		ret = pamh.error(e, errc::authtok_error);

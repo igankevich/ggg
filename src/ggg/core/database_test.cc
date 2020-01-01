@@ -1,6 +1,9 @@
 #include <ggg/test/clean_database.hh>
 #include <gtest/gtest.h>
 
+#include <thread>
+#include <unistdx/ipc/process>
+
 #define expect_no_throw(code) \
 { \
     try { \
@@ -78,3 +81,32 @@ TEST(database, detect_loops) {
     }
 }
 
+/*
+TEST(database, locked) {
+    using namespace ggg;
+    Clean_database db;
+    int nthreads = 20;
+    std::vector<sys::process> threads;
+    for (int i=0; i<nthreads; ++i) {
+        threads.emplace_back([i,&db] () {
+                std::printf("%lu\n", getpid());
+            Database db(ggg::Database::File::All, ggg::Database::Flag::Read_write);
+            for (int j=0; j<10; ++j) {
+                std::string name;
+                name += ('a'+i);
+                name += std::to_string(j);
+                try {
+                    //Transaction tr(db);
+                    db.message(name.data(), "authenticated");
+                    //db.insert(entity(name));
+                    //tr.commit();
+                    std::printf("%s\n", name.data());
+                } catch (const std::exception& err) {
+                    std::printf("%s: %s\n", name.data(), err.what());
+                }
+            }
+        });
+    }
+    for (auto& t : threads) { t.join(); }
+}
+*/
