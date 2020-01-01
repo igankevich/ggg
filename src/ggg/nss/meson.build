@@ -9,7 +9,6 @@ nss_ggg_internal_lib = static_library(
 	sources: nss_ggg_internal_src,
 	include_directories: src,
 	dependencies: [unistdx,ggg_core],
-    cpp_args: cpp_args_visibility,
 )
 
 nss_ggg_src = files([

@@ -9,6 +9,7 @@
 #define NSS_FUNCTION(suffix) \
     extern "C" GGG_VISIBILITY_DEFAULT \
     enum nss_status NSS_NAME(suffix)
+
 #define NSS_SETENT(db) NSS_FUNCTION(set ## db ## ent)
 #define NSS_ENDENT(db) NSS_FUNCTION(end ## db ## ent)
 #define NSS_GETENT_R(db) NSS_FUNCTION(get ## db ## ent_r)

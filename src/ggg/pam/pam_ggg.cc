@@ -4,6 +4,7 @@
 #include <security/pam_modules.h>
 #include <unistd.h>
 
+#include <ggg/bits/macros.hh>
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
 #include <ggg/pam/pam_handle.hh>
@@ -73,6 +74,7 @@ namespace {
 
 }
 
+GGG_VISIBILITY_DEFAULT
 int pam_sm_authenticate(
 	pam_handle_t* orig,
 	int flags,
@@ -112,6 +114,7 @@ int pam_sm_authenticate(
 	return std::make_error_condition(ret).value();
 }
 
+GGG_VISIBILITY_DEFAULT
 int pam_sm_acct_mgmt(
 	pam_handle_t* orig,
 	int flags,
@@ -170,6 +173,7 @@ int pam_sm_acct_mgmt(
 	return std::make_error_condition(ret).value();
 }
 
+GGG_VISIBILITY_DEFAULT
 int pam_sm_chauthtok(
 	pam_handle_t* orig,
 	int flags,
@@ -237,6 +241,7 @@ int pam_sm_chauthtok(
 	return std::make_error_condition(ret).value();
 }
 
+GGG_VISIBILITY_DEFAULT
 int pam_sm_setcred(
 	pam_handle_t *pamh,
 	int flags,
@@ -246,6 +251,7 @@ int pam_sm_setcred(
 	return PAM_SUCCESS;
 }
 
+GGG_VISIBILITY_DEFAULT
 int pam_sm_open_session(
 	pam_handle_t* orig,
 	int flags,
@@ -267,6 +273,7 @@ int pam_sm_open_session(
 	return std::make_error_condition(ret).value();
 }
 
+GGG_VISIBILITY_DEFAULT
 int pam_sm_close_session(
 	pam_handle_t* orig,
 	int flags,

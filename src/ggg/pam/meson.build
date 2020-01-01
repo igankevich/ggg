@@ -1,18 +1,31 @@
-ggg_pam_src = files([
-	'pam_ggg.cc',
-	'pam_handle.cc',
+ggg_pam_deps = [ggg_crypt, libsodium, pam, unistdx, ggg_core, zxcvbn]
+
+ggg_pam_internal_src = files([
 	'pam_category.cc',
 	'conversation.cc',
 	'handle.cc',
 ]) + password_src
 
-ggg_pam_deps = [ggg_crypt,libsodium, pam, unistdx, ggg_core, zxcvbn]
+ggg_pam_internal_lib = static_library(
+	'pam_ggg_internal',
+	sources: ggg_pam_internal_src,
+	include_directories: src,
+	dependencies: ggg_pam_deps,
+    cpp_args: cpp_args_visibility,
+)
+
+ggg_pam_src = files([
+	'pam_ggg.cc',
+	'pam_handle.cc',
+])
 
 ggg_pam_lib = shared_library(
 	'pam_ggg',
 	sources: ggg_pam_src,
 	include_directories: src,
-	dependencies: ggg_pam_deps
+	dependencies: ggg_pam_deps,
+    link_with: [ggg_pam_internal_lib],
+    cpp_args: cpp_args_visibility,
 )
 
 ggg_pam = declare_dependency(
@@ -48,7 +61,8 @@ if pam_wrapper.found() and b_sanitize != 'address' and has_override_fs
             'pam-ggg-test',
             sources: ['pam_ggg_test.cc'],
             include_directories: src,
-            dependencies: [unistdx, gtest, ggg_pam]
+            dependencies: [unistdx, gtest, ggg_pam],
+            link_with: [ggg_pam_internal_lib],
         ),
         env: [
             ld_preload,
