@@ -155,7 +155,7 @@ TEST(pam, authenticate_without_database) {
 	try {
         h.authenticate();
 	} catch (const std::system_error& err) {
-		EXPECT_EQ(pam::errc::unknown_user, pam::errc(err.code().value()))
+		EXPECT_EQ(pam::errc::authentication_error, pam::errc(err.code().value()))
             << err.what();
 	}
 	h.end();

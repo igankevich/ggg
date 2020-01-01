@@ -42,6 +42,7 @@ namespace {
         db.set_password(acc);
     }
 
+    /*
     std::string collect_data(pam::handle pamh) {
         std::string data;
         data.reserve(1024);
@@ -68,6 +69,7 @@ namespace {
         }
         return data;
     }
+    */
 
 }
 
@@ -85,12 +87,12 @@ int pam_sm_authenticate(
 		const char* user = pamh.user();
 		pamh.debug("authenticating user \"%s\"", user);
 		const char* password = pamh.password(errc::authentication_error);
-        Database db(Database::File::Accounts, Database::Flag::Read_write);
-        Transaction tr(db);
+        auto& db = *pamh.get_database();
 		account acc = find_account(db, user);
 		check_password(acc.password(), password);
         std::string argon2_prefix = "$argon2id$";
         if (acc.password().compare(0, argon2_prefix.size(), argon2_prefix) != 0) {
+            Database db(Database::File::Accounts, Database::Flag::Read_write);
             pamh.debug("migrating to argon2 for user \"%s\"", user);
             migrate_to_argon2(db, acc, password);
             pamh.debug("successfully migrated to argon2 for user \"%s\"", user);
@@ -98,8 +100,7 @@ int pam_sm_authenticate(
         }
 		pamh.set_account(acc);
 		pamh.debug("successfully authenticated user \"%s\"", user);
-        db.message(user, "authenticated");
-        tr.commit();
+        //db.message(user, "authenticated");
 		ret = errc::success;
 	} catch (const std::system_error& e) {
 		ret = pamh.error(e, errc::authentication_error);
@@ -126,19 +127,19 @@ int pam_sm_acct_mgmt(
 		const char* user = pamh.user();
 		pamh.debug("checking account \"%s\"", user);
 		account* acc = nullptr;
-        Database db(Database::File::Accounts, Database::Flag::Read_write);
-        Transaction tr(db);
+        Database* db = nullptr;
 		try {
 			acc = pamh.get_account();
 		} catch (const std::system_error& err) {
-			other = find_account(db, user);
+            db = pamh.get_database();
+			other = find_account(*db, user);
 			acc = &other;
 		}
 		if (acc->has_been_suspended()) {
 			pamh.debug("account \"%s\" has been suspended", user);
 			throw_pam_error(errc::permission_denied);
 		}
-		const auto now = account::clock_type::now();
+		const account::time_point now = account::clock_type::now();
 		if (acc->has_expired(now)) {
 			pamh.debug("account \"%s\" has expired", user);
 			throw_pam_error(errc::account_expired);
@@ -153,9 +154,11 @@ int pam_sm_acct_mgmt(
 			throw_pam_error(errc::new_password_required);
 		}
 		pamh.debug("account \"%s\" is valid", user);
+        /*
+        if (!db) { db = pamh.get_database(); }
         acc->last_active(now);
-        db.set_last_active(*acc, now);
-        tr.commit();
+        db->set_last_active(*acc, now);
+        */
 		ret = errc::success;
 	} catch (const std::system_error& e) {
 		ret = pamh.error(e, errc::authtok_error);
@@ -221,7 +224,6 @@ int pam_sm_chauthtok(
             argon2_password_hash hash;
 			acc.set_password(hash(new_password));
 			db.set_password(acc);
-            db.close();
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = errc::success;
 		} catch (const std::system_error& e) {
@@ -250,14 +252,14 @@ int pam_sm_open_session(
 	int argc,
 	const char **argv
 ) {
-    using ggg::Database;
 	errc ret = errc::ignore;
 	ggg::pam_handle pamh(orig, argc, argv);
     try {
+        /*
 		const char* user = pamh.user();
-        Database db(Database::File::Accounts, Database::Flag::Read_write);
+        auto& db = *pamh.get_database();
         db.message(user, "session opened:%s", collect_data(pamh).data());
-        db.close();
+        */
         ret = errc::success;
     } catch (const std::exception& e) {
         ret = pamh.error(e);
@@ -271,14 +273,14 @@ int pam_sm_close_session(
 	int argc,
 	const char **argv
 ) {
-    using ggg::Database;
 	errc ret = errc::ignore;
 	ggg::pam_handle pamh(orig, argc, argv);
     try {
+        /*
 		const char* user = pamh.user();
-        Database db(Database::File::Accounts, Database::Flag::Read_write);
+        auto& db = *pamh.get_database();
         db.message(user, "session closed:%s", collect_data(pamh).data());
-        db.close();
+        */
         ret = errc::success;
     } catch (const std::exception& e) {
         ret = pamh.error(e);

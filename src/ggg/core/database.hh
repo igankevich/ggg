@@ -405,13 +405,13 @@ namespace ggg {
 	typedef sqlite::row_iterator<ggg::Machine> machine_iterator;
 	typedef sqlite::row_iterator<ggg::message> message_iterator;
 
-	class Transaction: public sqlite::exclusive_transaction {
+	class Transaction: public sqlite::immediate_transaction {
 
 	public:
 
 		inline explicit
 		Transaction(Database& db):
-		sqlite::exclusive_transaction(db._db) {}
+		sqlite::immediate_transaction(db._db) {}
 
 	};
 

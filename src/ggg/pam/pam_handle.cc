@@ -64,7 +64,7 @@ ggg::Database*
 ggg::pam_handle::get_database() {
 	Database* db = nullptr;
 	if (!get_data(key_database, void_ptr<Database>(&db)) || !db) {
-        db = new Database(Database::File::Accounts, Database::Flag::Read_write);
+        db = new Database(Database::File::Accounts, Database::Flag::Read_only);
         set_data(key_database, db, delete_database);
 	}
 	return db;
