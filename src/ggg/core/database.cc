@@ -540,7 +540,7 @@ ggg::Database::open(File file, Flag flag) {
 	// convert flags to sqlite
 	sqlite::file_flag flags = sqlite::file_flag::read_only;
 	if (flag == Flag::Read_write) {
-		flags = sqlite::file_flag::read_write | sqlite::file_flag::create;
+		flags = sqlite::file_flag::read_write | sqlite::file_flag::create | sqlite::file_flag::full_mutex;
 	}
 	int nfiles = 2;
 	int nopen = 0;

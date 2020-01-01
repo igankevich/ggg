@@ -13,8 +13,7 @@ pam::handle::error(const std::system_error& e, errc def) const -> errc {
 	    	ret = def;
         }
         int level = (e.code().value() == PAM_PERM_DENIED) ? LOG_NOTICE : LOG_ERR;
-        const char* text = e.code().message().data();
-        pam_syslog(*this, level, "%s", text);
+        pam_syslog(*this, level, "%s", e.what());
 	}
 	return ret;
 }

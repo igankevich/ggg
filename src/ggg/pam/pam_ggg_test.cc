@@ -144,7 +144,6 @@ TEST(pam, start_end) {
 	h.end();
 }
 
-/*
 TEST(pam, authenticate_without_database) {
     using namespace ggg;
     using pam::handle;
@@ -343,4 +342,3 @@ TEST(pam, authenticate_with_inactive_account) {
 	}
 	h.end();
 }
-*/
