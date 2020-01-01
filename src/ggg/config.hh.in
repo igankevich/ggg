@@ -22,5 +22,6 @@
 #define GGG_GUILE_LOAD_COMPILED_PATH "@guile_load_compiled_path@"
 
 #mesondefine GGG_DEVELOPER_BUILD
+#mesondefine GGG_HAVE_VISIBILITY
 
 #endif // vim:filetype=cpp

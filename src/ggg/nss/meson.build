@@ -1,4 +1,18 @@
-nss_src = files([
+nss_ggg_internal_src = files([
+    'group_internal.cc',
+    'passwd_internal.cc',
+    'shadow_internal.cc',
+])
+
+nss_ggg_internal_lib = static_library(
+	'nss_ggg_internal',
+	sources: nss_ggg_internal_src,
+	include_directories: src,
+	dependencies: [unistdx,ggg_core],
+    cpp_args: cpp_args_visibility,
+)
+
+nss_ggg_src = files([
 	'ethers.cc',
 	'group.cc',
 	'hosts.cc',
@@ -6,13 +20,15 @@ nss_src = files([
 	'shadow.cc',
 ])
 
-libnss_ggg = shared_library(
-	'nss_' + module_name,
-	sources: nss_src,
+nss_ggg_lib = shared_library(
+	'nss_ggg',
+	sources: nss_ggg_src,
 	include_directories: src,
+    link_with: [nss_ggg_internal_lib],
 	dependencies: [unistdx,ggg_core],
 	version: '2',
-	install: true
+	install: true,
+    cpp_args: cpp_args_visibility,
 )
 
 if has_override_fs
@@ -24,7 +40,7 @@ if has_override_fs
             sources: [service + '_test.cc'] + override_nss_src,
             include_directories: src,
             dependencies: [unistdx, gtest, ggg_core],
-            link_with: [libnss_ggg],
+            link_with: [nss_ggg_lib,nss_ggg_internal_lib],
             cpp_args: ['-DGGG_NSS_SERVICE="' + service + '"']
         )
 		test(

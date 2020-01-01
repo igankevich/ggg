@@ -8,44 +8,19 @@
 
 namespace ggg {
 
-	template <>
-	struct entity_traits<entity> {
+    template <>
+    struct entity_traits<entity> {
 
-		typedef entity entity_type;
-		typedef Database::statement_type stream_type;
-		typedef sqlite::row_iterator<entity> iterator;
+    	typedef entity entity_type;
+    	typedef Database::statement_type stream_type;
+    	typedef sqlite::row_iterator<entity> iterator;
 
-		static inline stream_type
-		all(Database* db) {
-			return db->entities();
-		}
+    	static inline stream_type
+    	all(Database* db) {
+    		return db->entities();
+    	}
 
-	};
-
-	template <>
-	size_t
-	buffer_size<entity>(const entity& rhs) noexcept {
-		return rhs.name().size() + 1
-			   + 1 + 1
-			   + rhs.description().size() + 1
-			   + rhs.home().size() + 1
-			   + rhs.shell().size() + 1;
-	}
-
-	template <>
-	void
-	copy_to<entity,::passwd>(const entity& ent, passwd* lhs, char* buffer) {
-		Buffer buf(buffer);
-		lhs->pw_name = buf.write(ent.name());
-		lhs->pw_passwd = buf.write('x');
-		#ifdef __linux__
-		lhs->pw_gecos = buf.write(ent.description());
-		#endif
-		lhs->pw_dir = buf.write(ent.home());
-		lhs->pw_shell = buf.write(ent.shell());
-		lhs->pw_uid = ent.id();
-		lhs->pw_gid = ent.id();
-	}
+    };
 
 }
 
