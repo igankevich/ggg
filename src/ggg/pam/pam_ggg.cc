@@ -85,7 +85,7 @@ int pam_sm_authenticate(
 		const char* user = pamh.user();
 		pamh.debug("authenticating user \"%s\"", user);
 		const char* password = pamh.password(errc::authentication_error);
-        auto& db = *pamh.get_database();
+        Database db(Database::File::Accounts, Database::Flag::Read_write);
         Transaction tr(db);
 		account acc = find_account(db, user);
 		check_password(acc.password(), password);
@@ -126,12 +126,12 @@ int pam_sm_acct_mgmt(
 		const char* user = pamh.user();
 		pamh.debug("checking account \"%s\"", user);
 		account* acc = nullptr;
-        Database* db = nullptr;
+        Database db;
 		try {
 			acc = pamh.get_account();
 		} catch (const std::system_error& err) {
-            db = pamh.get_database();
-			other = find_account(*db, user);
+            db.open(Database::File::Accounts, Database::Flag::Read_write);
+			other = find_account(db, user);
 			acc = &other;
 		}
 		if (acc->has_been_suspended()) {
@@ -153,9 +153,10 @@ int pam_sm_acct_mgmt(
 			throw_pam_error(errc::new_password_required);
 		}
 		pamh.debug("account \"%s\" is valid", user);
-        if (!db) { db = pamh.get_database(); }
+        if (!db.is_open()) { db.open(Database::File::Accounts, Database::Flag::Read_write); }
         acc->last_active(now);
-        db->set_last_active(*acc, now);
+        db.set_last_active(*acc, now);
+        db.close();
 		ret = errc::success;
 	} catch (const std::system_error& e) {
 		ret = pamh.error(e, errc::authtok_error);
@@ -183,7 +184,7 @@ int pam_sm_chauthtok(
 			pamh.password_type("GGG");
 			const char* user = pamh.user();
 			pamh.debug("changing password for user \"%s\"", user);
-            auto& db = *pamh.get_database();
+            Database db(Database::File::Accounts, Database::Flag::Read_write);
 			account acc = find_account(db, user);
 			const account::time_point now = account::clock_type::now();
 			if (acc.has_expired(now)) {
@@ -221,6 +222,7 @@ int pam_sm_chauthtok(
             argon2_password_hash hash;
 			acc.set_password(hash(new_password));
 			db.set_password(acc);
+            db.close();
 			pamh.debug("successfully changed password for user \"%s\"", user);
 			ret = errc::success;
 		} catch (const std::system_error& e) {
@@ -249,13 +251,14 @@ int pam_sm_open_session(
 	int argc,
 	const char **argv
 ) {
+    using ggg::Database;
 	errc ret = errc::ignore;
 	ggg::pam_handle pamh(orig, argc, argv);
     try {
 		const char* user = pamh.user();
-        auto& db = *pamh.get_database();
+        Database db(Database::File::Accounts, Database::Flag::Read_write);
         db.message(user, "session opened:%s", collect_data(pamh).data());
-        pamh.close_connection();
+        db.close();
         ret = errc::success;
     } catch (const std::exception& e) {
         ret = pamh.error(e);
@@ -269,12 +272,14 @@ int pam_sm_close_session(
 	int argc,
 	const char **argv
 ) {
+    using ggg::Database;
 	errc ret = errc::ignore;
 	ggg::pam_handle pamh(orig, argc, argv);
     try {
 		const char* user = pamh.user();
-        auto& db = *pamh.get_database();
+        Database db(Database::File::Accounts, Database::Flag::Read_write);
         db.message(user, "session closed:%s", collect_data(pamh).data());
+        db.close();
         ret = errc::success;
     } catch (const std::exception& e) {
         ret = pamh.error(e);
