@@ -127,43 +127,63 @@ int pam_sm_acct_mgmt(
 		pamh.debug("checking account \"%s\"", user);
 		account* acc = nullptr;
         Database* db = nullptr;
+        pamh.debug("1");
 		try {
 			acc = pamh.get_account();
+            pamh.debug("2");
 		} catch (const std::system_error& err) {
+            pamh.debug("3");
             db = pamh.get_database();
+            pamh.debug("4");
 			other = find_account(*db, user);
+            pamh.debug("5");
 			acc = &other;
+            pamh.debug("6");
 		}
 		if (acc->has_been_suspended()) {
 			pamh.debug("account \"%s\" has been suspended", user);
 			throw_pam_error(errc::permission_denied);
 		}
+        pamh.debug("7");
 		const account::time_point now = account::clock_type::now();
+        pamh.debug("8");
 		if (acc->has_expired(now)) {
 			pamh.debug("account \"%s\" has expired", user);
 			throw_pam_error(errc::account_expired);
 		}
+        pamh.debug("9");
 		if (acc->is_inactive(now)) {
 			pamh.debug("account \"%s\" has been inactive for too long", user);
 			throw_pam_error(errc::account_expired);
 		}
+        pamh.debug("10");
 		if (acc->password_has_expired(now)) {
 			pamh.info("Password has expired.");
 			pamh.debug("password of account \"%s\" has expired", user);
 			throw_pam_error(errc::new_password_required);
 		}
+        pamh.debug("11");
 		pamh.debug("account \"%s\" is valid", user);
+        pamh.debug("12");
         if (!db) { db = pamh.get_database(); }
+        pamh.debug("13");
         acc->last_active(now);
+        pamh.debug("14");
         db->set_last_active(*acc, now);
+        pamh.debug("15");
 		ret = errc::success;
+        pamh.debug("16");
 	} catch (const std::system_error& e) {
+        pamh.debug("system error: \"%s\"", e.what());
 		ret = pamh.error(e, errc::authtok_error);
 	} catch (const std::bad_alloc& e) {
+        pamh.debug("memory allocation error: \"%s\"", e.what());
 		ret = pamh.error(e);
 	} catch (const std::exception& e) {
+        pamh.debug("other error: \"%s\"", e.what());
 		ret = pamh.error(e);
 	}
+    pamh.debug("17");
 	return std::make_error_condition(ret).value();
 }
 
