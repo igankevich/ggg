@@ -30,6 +30,7 @@ datadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_
 with_nss = get_option('with_nss')
 with_pam = get_option('with_pam')
 with_cli = get_option('with_cli')
+with_daemon = get_option('with_daemon')
 with_tests = get_option('with_tests')
 with_man = get_option('with_man')
 b_sanitize = get_option('b_sanitize')

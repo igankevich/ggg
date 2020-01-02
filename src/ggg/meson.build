@@ -24,3 +24,6 @@ if with_cli
 	subdir('cli')
 endif
 
+if with_daemon
+    subdir('daemon')
+endif

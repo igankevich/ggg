@@ -20,6 +20,7 @@
 #define GGG_DEFAULT_SHELL "@default_shell@"
 #define GGG_GUILE_LOAD_PATH "@guile_load_path@"
 #define GGG_GUILE_LOAD_COMPILED_PATH "@guile_load_compiled_path@"
+#define GGG_BIND_ADDRESS "\0/tmp/.GGG"
 
 #mesondefine GGG_DEVELOPER_BUILD
 #mesondefine GGG_HAVE_VISIBILITY
