@@ -1,5 +1,6 @@
 #include <unistdx/base/log_message>
 
+#include <ggg/daemon/protocol.hh>
 #include <ggg/daemon/remote_client.hh>
 
 void
@@ -13,6 +14,9 @@ ggg::Remote_client::process(const sys::epoll_event& event) {
     }
     if (started()) {
         if (event.in()) {
+            this->_buffer.read(this->_socket);
+            this->_buffer.flip();
+            this->_protocol.read(this->_buffer);
         }
         if (event.out()) {
         }

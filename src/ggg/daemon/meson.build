@@ -1,7 +1,10 @@
 ggg_src = files('''
+authentication.cc
+byte_buffer.cc
 connection.cc
 local_server.cc
 pipeline.cc
+protocol.cc
 remote_client.cc
 gggd_main.cc
 '''.split())

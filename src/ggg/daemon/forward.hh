@@ -5,8 +5,9 @@ namespace ggg {
 
 	class Local_server;
     class Connection;
-    class Remote_client;
     class Pipeline;
+    class Protocol;
+    class Remote_client;
 
 }
 

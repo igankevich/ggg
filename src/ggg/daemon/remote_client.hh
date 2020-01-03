@@ -5,7 +5,9 @@
 #include <unistdx/net/socket>
 #include <unistdx/net/socket_address>
 
+#include <ggg/daemon/byte_buffer.hh>
 #include <ggg/daemon/connection.hh>
+#include <ggg/daemon/protocol.hh>
 
 namespace ggg {
 
@@ -13,6 +15,8 @@ namespace ggg {
 
 	private:
 		sys::socket_address _address;
+        byte_buffer _buffer{4096};
+        Server_protocol _protocol;
 
 	public:
 
