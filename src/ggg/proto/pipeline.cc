@@ -24,7 +24,7 @@ ggg::Pipeline::process_events() {
         try {
             connection.process(event);
         } catch (const std::exception& err) {
-            this->log("session error: _", err.what());
+            this->log("_", err.what());
         }
         if (connection.stopped()) {
             this->_connections.erase(result);

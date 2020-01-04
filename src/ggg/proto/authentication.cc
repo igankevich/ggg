@@ -3,11 +3,8 @@
 #include <ggg/sec/argon2.hh>
 #include <ggg/sec/password.hh>
 
-#include <iostream>
-
 void ggg::PAM_kernel::run() {
     const auto user = this->_name.data();
-    std::clog << "client_credentials().uid=" << client_credentials().uid << std::endl;
     account acc;
     Database db(Database::File::Accounts, Database::Flag::Read_write);
     db.prepare_message();
@@ -56,7 +53,6 @@ void ggg::PAM_kernel::run() {
             const auto& client = client_credentials();
             if (client.uid != 0 &&
                 !verify_password(acc.password(), this->_old_password.data())) {
-                std::clog << "111=" << 111 << std::endl;
                 throw std::invalid_argument("permission denied");
             }
             validate_password(this->_password, this->_min_entropy);
