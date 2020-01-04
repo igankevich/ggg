@@ -21,7 +21,7 @@ namespace pam {
         using cleanup_type = void (*)(handle_type*,void*,int);
 
     private:
-		handle_type* _handle = nullptr;
+        handle_type* _handle = nullptr;
 
     public:
 
@@ -80,15 +80,27 @@ namespace pam {
             }
         }
 
-		inline void
+        template <class T>
+        typename std::enable_if<sizeof(T)<=sizeof(void*),bool>::type
+        get_scalar(const char* key, T& value) {
+            return this->get_data(key, reinterpret_cast<const void**>(&value));
+        }
+
+        template <class T>
+        typename std::enable_if<sizeof(T)<=sizeof(void*),void>::type
+        set_scalar(const char* key, T value) {
+            this->set_data(key, reinterpret_cast<void*>(value), nullptr);
+        }
+
+        inline void
         set_item(int key, const void* value) {
             call(::pam_set_item(*this, key, value));
         }
 
-		inline void
-		password_type(const void* word) {
-			this->set_item(PAM_AUTHTOK_TYPE, word);
-		}
+        inline void
+        password_type(const void* word) {
+            this->set_item(PAM_AUTHTOK_TYPE, word);
+        }
 
         template <class T>
         inline int
@@ -97,7 +109,16 @@ namespace pam {
             return ::pam_get_item(*this, type, reinterpret_cast<const void**>(cptr));
         }
 
-		inline conversation_ptr
+        inline std::string
+        get_item(int type) const {
+            const char* value = nullptr;
+            if (PAM_SUCCESS == this->get_item(PAM_SERVICE, &value) && value) {
+                return value;
+            }
+            return "";
+        }
+
+        inline conversation_ptr
         get_conversation() const {
             conversation* ptr = nullptr;
             int ret = get_item(PAM_CONV, &ptr);
@@ -110,25 +131,25 @@ namespace pam {
             return conversation_ptr(ptr);
         }
 
-		errc error(const std::system_error& e, errc def) const;
+        errc error(const std::system_error& e, errc def) const;
 
-		inline errc
-		error(const std::exception& e) const {
-			pam_syslog(*this, LOG_ERR, "%s", e.what());
-			return errc::service_error;
-		}
+        inline errc
+        error(const std::exception& e) const {
+            pam_syslog(*this, LOG_ERR, "%s", e.what());
+            return errc::service_error;
+        }
 
-		inline errc
-		error(const std::bad_alloc& e) const {
-			pam_syslog(*this, LOG_CRIT, "memory allocation error");
-			return errc::system_error;
-		}
+        inline errc
+        error(const std::bad_alloc& e) const {
+            pam_syslog(*this, LOG_CRIT, "memory allocation error");
+            return errc::system_error;
+        }
 
         inline handle_type* get() { return this->_handle; }
         inline const handle_type* get() const { return this->_handle; }
-		inline operator handle_type*() { return this->_handle; }
-		inline operator handle_type*() const { return this->_handle; }
-		inline operator handle_type**() { return &this->_handle; }
+        inline operator handle_type*() { return this->_handle; }
+        inline operator handle_type*() const { return this->_handle; }
+        inline operator handle_type**() { return &this->_handle; }
 
     };
 

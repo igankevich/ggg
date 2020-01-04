@@ -43,7 +43,7 @@ if has_override_fs
         'override-fs',
         sources: 'override_fs.cc',
         include_directories: src,
-        dependencies: libdl
+        dependencies: [libdl,unistdx]
     )
 endif
 

@@ -1,4 +1,4 @@
-#include <ggg/daemon/pipeline.hh>
+#include <ggg/proto/pipeline.hh>
 
 void
 ggg::Pipeline::add(Connection* connection, sys::event events) {

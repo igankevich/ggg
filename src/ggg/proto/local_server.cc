@@ -1,8 +1,8 @@
 #include <unistdx/base/log_message>
 
-#include <ggg/daemon/local_server.hh>
-#include <ggg/daemon/pipeline.hh>
-#include <ggg/daemon/remote_client.hh>
+#include <ggg/proto/local_server.hh>
+#include <ggg/proto/pipeline.hh>
+#include <ggg/proto/remote_client.hh>
 
 ggg::Local_server::Local_server(const sys::socket_address& address):
 Connection(address.family()), _address(address) {

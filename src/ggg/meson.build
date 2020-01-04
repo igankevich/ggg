@@ -10,6 +10,7 @@ endif
 
 subdir('core')
 subdir('sec')
+subdir('proto')
 subdir('guile')
 
 if with_nss

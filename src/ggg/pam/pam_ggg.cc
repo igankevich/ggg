@@ -11,6 +11,9 @@
 #include <ggg/sec/argon2.hh>
 #include <ggg/sec/password.hh>
 #include <ggg/sec/secure_string.hh>
+#include <ggg/proto/authentication.hh>
+#include <ggg/proto/protocol.hh>
+#include <ggg/proto/result.hh>
 
 using pam::throw_pam_error;
 using pam::errc;
@@ -18,279 +21,246 @@ using pam::call;
 using pam::pam_category;
 
 namespace {
-
-	ggg::account
-	find_account(ggg::Database& db, const char* user) {
-		auto rstr = db.find_account(user);
-		ggg::account_iterator first(rstr), last;
-		if (first == last) { throw_pam_error(errc::unknown_user); }
-		return *first;
-	}
-
-	void
-	check_password(const std::string& hashed_password, const char* password) {
-        if (!ggg::verify_password(hashed_password, password)) {
-            throw_pam_error(errc::permission_denied);
-        }
-	}
-
-    void
-    migrate_to_argon2(ggg::Database& db, ggg::account& acc, const char* password) {
-        using namespace ggg;
-        init_sodium();
-        argon2_password_hash hash;
-        acc.set_password(hash(password));
-        db.set_password(acc);
-    }
-
-    /*
-    std::string collect_data(pam::handle pamh) {
-        std::string data;
-        data.reserve(1024);
-        const char* value = nullptr;
-        if (PAM_SUCCESS == pamh.get_item(PAM_RUSER, &value) && value) {
-            data += " data ";
-            data += value;
-            if (PAM_SUCCESS == pamh.get_item(PAM_RHOST, &value) && value) {
-                data += '@';
-                data += value;
-            }
-        }
-        if (PAM_SUCCESS == pamh.get_item(PAM_SERVICE, &value) && value) {
-            data += " service ";
-            data += value;
-        }
-        if (PAM_SUCCESS == pamh.get_item(PAM_TTY, &value) && value) {
-            data += " tty ";
-            data += value;
-            if (PAM_SUCCESS == pamh.get_item(PAM_XDISPLAY, &value) && value) {
-                data += " xdisplay ";
-                data += value;
-            }
-        }
-        return data;
-    }
-    */
-
+    constexpr const char ggg_result[] = "ggg_result";
+    constexpr const char ggg_steps[] = "ggg_steps";
 }
 
 GGG_VISIBILITY_DEFAULT
 int pam_sm_authenticate(
-	pam_handle_t* orig,
-	int flags,
-	int argc,
-	const char **argv
+    pam_handle_t* orig,
+    int flags,
+    int argc,
+    const char **argv
 ) {
     using namespace ggg;
     using ggg::pam_handle;
-	errc ret = errc::ignore;
-	pam_handle pamh(orig, argc, argv);
-	try {
-		const char* user = pamh.user();
-		pamh.debug("authenticating user \"%s\"", user);
-		const char* password = pamh.password(errc::authentication_error);
-        auto& db = *pamh.get_database();
-		account acc = find_account(db, user);
-		check_password(acc.password(), password);
-        std::string argon2_prefix = "$argon2id$";
-        if (acc.password().compare(0, argon2_prefix.size(), argon2_prefix) != 0) {
-            Database db(Database::File::Accounts, Database::Flag::Read_write);
-            pamh.debug("migrating to argon2 for user \"%s\"", user);
-            migrate_to_argon2(db, acc, password);
-            pamh.debug("successfully migrated to argon2 for user \"%s\"", user);
-            db.message(user, "migrated to argon2");
+    errc ret = errc::ignore;
+    pam_handle pamh(orig, argc, argv);
+    try {
+        const char* user = pamh.user();
+        pamh.debug("authenticating user \"%s\"", user);
+        const char* password = pamh.password(errc::authentication_error);
+        PAM_kernel auth(user, password);
+        auth.min_entropy(pamh.min_entropy());
+        auth.steps(PAM_kernel::Auth | PAM_kernel::Account | PAM_kernel::Open_session);
+        auth.service(pamh.get_item(PAM_SERVICE));
+        Client_protocol proto;
+        auto result = proto.process(&auth);
+        pamh.set_scalar(ggg_steps, auth.steps());
+        pamh.set_scalar(ggg_result, result);
+        if (result & PAM_kernel::Auth) {
+            pamh.debug("successfully authenticated user \"%s\"", user);
+            ret = errc::success;
+        } else {
+            ret = errc::permission_denied;
         }
-		pamh.set_account(acc);
-		pamh.debug("successfully authenticated user \"%s\"", user);
-        //db.message(user, "authenticated");
-		ret = errc::success;
-	} catch (const std::system_error& e) {
-		ret = pamh.error(e, errc::authentication_error);
-	} catch (const std::bad_alloc& e) {
-		ret = pamh.error(e);
-	} catch (const std::exception& e) {
-		ret = pamh.error(e);
-	}
-	return std::make_error_condition(ret).value();
+    } catch (const std::system_error& e) {
+        ret = pamh.error(e, errc::authentication_error);
+    } catch (const std::bad_alloc& e) {
+        ret = pamh.error(e);
+    } catch (const std::exception& e) {
+        ret = pamh.error(e);
+    }
+    return std::make_error_condition(ret).value();
 }
 
 GGG_VISIBILITY_DEFAULT
 int pam_sm_acct_mgmt(
-	pam_handle_t* orig,
-	int flags,
-	int argc,
-	const char **argv
+    pam_handle_t* orig,
+    int flags,
+    int argc,
+    const char **argv
 ) {
     using namespace ggg;
     using ggg::pam_handle;
-	errc ret = errc::ignore;
-	pam_handle pamh(orig, argc, argv);
-	account other;
-	try {
-		const char* user = pamh.user();
-		pamh.debug("checking account \"%s\"", user);
-		account* acc = nullptr;
-        Database* db = nullptr;
-		try {
-			acc = pamh.get_account();
-		} catch (const std::system_error& err) {
-            db = pamh.get_database();
-			other = find_account(*db, user);
-			acc = &other;
-		}
-		if (acc->has_been_suspended()) {
-			pamh.debug("account \"%s\" has been suspended", user);
-			throw_pam_error(errc::permission_denied);
-		}
-		const account::time_point now = account::clock_type::now();
-		if (acc->has_expired(now)) {
-			pamh.debug("account \"%s\" has expired", user);
-			throw_pam_error(errc::account_expired);
-		}
-		if (acc->is_inactive(now)) {
-			pamh.debug("account \"%s\" has been inactive for too long", user);
-			throw_pam_error(errc::account_expired);
-		}
-		if (acc->password_has_expired(now)) {
-			pamh.info("Password has expired.");
-			pamh.debug("password of account \"%s\" has expired", user);
-			throw_pam_error(errc::new_password_required);
-		}
-		pamh.debug("account \"%s\" is valid", user);
-        /*
-        if (!db) { db = pamh.get_database(); }
-        acc->last_active(now);
-        db->set_last_active(*acc, now);
-        */
-		ret = errc::success;
-	} catch (const std::system_error& e) {
-		ret = pamh.error(e, errc::authtok_error);
-	} catch (const std::bad_alloc& e) {
-		ret = pamh.error(e);
-	} catch (const std::exception& e) {
-		ret = pamh.error(e);
-	}
-	return std::make_error_condition(ret).value();
+    errc ret = errc::ignore;
+    pam_handle pamh(orig, argc, argv);
+    try {
+        const char* user = pamh.user();
+        pamh.debug("checking account \"%s\"", user);
+        Result::Type result = 0;
+        sys::u32 steps = 0;
+        if (!pamh.get_scalar<sys::u32>(ggg_result, steps) ||
+            !(steps & PAM_kernel::Account) ||
+            !pamh.get_scalar<Result::Type>(ggg_result, result)) {
+            PAM_kernel auth;
+            auth.name(user);
+            auth.min_entropy(pamh.min_entropy());
+            auth.steps(PAM_kernel::Account | PAM_kernel::Open_session);
+            auth.service(pamh.get_item(PAM_SERVICE));
+            Client_protocol proto;
+            result = proto.process(&auth);
+            pamh.set_scalar(ggg_steps, auth.steps());
+            pamh.set_scalar(ggg_result, result);
+        }
+        if (result & PAM_kernel::Account) {
+            pamh.debug("account \"%s\" is valid", user);
+            ret = errc::success;
+        } else if (result & PAM_kernel::Suspended) {
+            pamh.debug("account \"%s\" has been suspended", user);
+            ret = errc::permission_denied;
+        } else if (result & PAM_kernel::Expired) {
+            pamh.debug("account \"%s\" has expired", user);
+            ret = errc::account_expired;
+        } else if (result & PAM_kernel::Inactive) {
+            pamh.debug("account \"%s\" has been inactive for too long", user);
+            ret = errc::account_expired;
+        } else if (result & PAM_kernel::Password_expired) {
+            pamh.debug("password of account \"%s\" has expired", user);
+            ret = errc::new_password_required;
+        } else {
+            ret = errc::permission_denied;
+        }
+    } catch (const std::system_error& e) {
+        ret = pamh.error(e, errc::permission_denied);
+    } catch (const std::bad_alloc& e) {
+        ret = pamh.error(e);
+    } catch (const std::exception& e) {
+        ret = pamh.error(e);
+    }
+    return std::make_error_condition(ret).value();
 }
 
 GGG_VISIBILITY_DEFAULT
 int pam_sm_chauthtok(
-	pam_handle_t* orig,
-	int flags,
-	int argc,
-	const char **argv
+    pam_handle_t* orig,
+    int flags,
+    int argc,
+    const char **argv
 ) {
-	errc ret = errc::ignore;
-	ggg::pam_handle pamh(orig, argc, argv);
-	if (flags & PAM_PRELIM_CHECK) {
-		ret = errc::success;
-	} else if (flags & PAM_UPDATE_AUTHTOK) {
+    errc ret = errc::ignore;
+    ggg::pam_handle pamh(orig, argc, argv);
+    if (flags & PAM_PRELIM_CHECK) {
+        ret = errc::success;
+    } else if (flags & PAM_UPDATE_AUTHTOK) {
         using namespace ggg;
-		try {
-			pamh.password_type("GGG");
-			const char* user = pamh.user();
-			pamh.debug("changing password for user \"%s\"", user);
-            Database db(Database::File::Accounts, Database::Flag::Read_write);
-			account acc = find_account(db, user);
-			const account::time_point now = account::clock_type::now();
-			if (acc.has_expired(now)) {
-				pamh.debug("account \"%s\" has expired", user);
-				throw_pam_error(errc::account_expired);
-			}
-            if (acc.is_inactive(now)) {
+        try {
+            pamh.password_type("GGG");
+            const char* user = pamh.user();
+            pamh.debug("changing password for user \"%s\"", user);
+            PAM_kernel auth;
+            auth.name(user);
+            auth.min_entropy(pamh.min_entropy());
+            if (::getuid() != 0) { auth.old_password(pamh.old_password()); }
+            auth.password(pamh.password(errc::authtok_error));
+            auth.steps(PAM_kernel::Password);
+            auth.service(pamh.get_item(PAM_SERVICE));
+            Client_protocol proto;
+            auto result = proto.process(&auth);
+            if (result & PAM_kernel::Password) {
+                pamh.debug("successfully changed password for user \"%s\"", user);
+                ret = errc::success;
+            } else if (result & PAM_kernel::Suspended) {
+                pamh.debug("account \"%s\" has been suspended", user);
+                ret = errc::permission_denied;
+            } else if (result & PAM_kernel::Expired) {
+                pamh.debug("account \"%s\" has expired", user);
+                ret = errc::account_expired;
+            } else if (result & PAM_kernel::Inactive) {
                 pamh.debug("account \"%s\" has been inactive for too long", user);
-                throw_pam_error(errc::account_expired);
+                ret = errc::account_expired;
+            } else {
+                ret = errc::authtok_error;
             }
-			if ((flags & PAM_CHANGE_EXPIRED_AUTHTOK) &&
-				!acc.password_has_expired(now))
-			{
-				pamh.debug(
-					"trying to change expired password for user \"%s\","
-					" but the password has not expired yet!", user
-				);
-				throw_pam_error(errc::authtok_error);
-			}
-            auto uid = ::getuid();
-			if (uid != 0) {
-				const char* old = pamh.old_password();
-				check_password(acc.password(), old);
-			}
-			const char* new_password = pamh.password(errc::authtok_error);
-			if (uid != 0) {
-			    try {
-			    	validate_password(new_password, pamh.min_entropy());
-			    } catch (const std::exception& err) {
-			    	pamh.error("%s", err.what());
-			    	throw_pam_error(errc::authtok_error);
-			    }
-            }
-            init_sodium();
-            argon2_password_hash hash;
-			acc.set_password(hash(new_password));
-			db.set_password(acc);
-			pamh.debug("successfully changed password for user \"%s\"", user);
-			ret = errc::success;
-		} catch (const std::system_error& e) {
-			ret = pamh.error(e, errc::authtok_error);
-		} catch (const std::bad_alloc& e) {
-			ret = pamh.error(e);
-		} catch (const std::exception& e) {
-			ret = pamh.error(e);
-		}
-	}
-	return std::make_error_condition(ret).value();
+        } catch (const std::system_error& e) {
+            ret = pamh.error(e, errc::authtok_error);
+        } catch (const std::bad_alloc& e) {
+            ret = pamh.error(e);
+        } catch (const std::exception& e) {
+            ret = pamh.error(e);
+        }
+    }
+    return std::make_error_condition(ret).value();
 }
 
 GGG_VISIBILITY_DEFAULT
 int pam_sm_setcred(
-	pam_handle_t *pamh,
-	int flags,
-	int argc,
-	const char **argv
+    pam_handle_t *pamh,
+    int flags,
+    int argc,
+    const char **argv
 ) {
-	return PAM_SUCCESS;
+    return PAM_SUCCESS;
 }
 
 GGG_VISIBILITY_DEFAULT
 int pam_sm_open_session(
-	pam_handle_t* orig,
-	int flags,
-	int argc,
-	const char **argv
+    pam_handle_t* orig,
+    int flags,
+    int argc,
+    const char **argv
 ) {
-	errc ret = errc::ignore;
-	ggg::pam_handle pamh(orig, argc, argv);
+    using namespace ggg;
+    using ggg::pam_handle;
+    errc ret = errc::ignore;
+    ggg::pam_handle pamh(orig, argc, argv);
     try {
-        /*
-		const char* user = pamh.user();
-        auto& db = *pamh.get_database();
-        db.message(user, "session opened:%s", collect_data(pamh).data());
-        */
-        ret = errc::success;
+        const char* user = pamh.user();
+        Result::Type result = 0;
+        sys::u32 steps = 0;
+        if (!pamh.get_scalar<sys::u32>(ggg_result, steps) ||
+            !(steps & PAM_kernel::Open_session) ||
+            !pamh.get_scalar<Result::Type>(ggg_result, result)) {
+            PAM_kernel auth;
+            auth.name(user);
+            auth.steps(PAM_kernel::Open_session);
+            auth.service(pamh.get_item(PAM_SERVICE));
+            Client_protocol proto;
+            result = proto.process(&auth);
+            pamh.set_scalar(ggg_steps, auth.steps());
+            pamh.set_scalar(ggg_result, result);
+        }
+        if (result && PAM_kernel::Open_session) {
+            ret = pam::errc::success;
+        } else {
+            ret = pam::errc::service_error;
+        }
+    } catch (const std::system_error& e) {
+        ret = pamh.error(e, errc::service_error);
+    } catch (const std::bad_alloc& e) {
+        ret = pamh.error(e);
     } catch (const std::exception& e) {
         ret = pamh.error(e);
     }
-	return std::make_error_condition(ret).value();
+    return std::make_error_condition(ret).value();
 }
 
 GGG_VISIBILITY_DEFAULT
 int pam_sm_close_session(
-	pam_handle_t* orig,
-	int flags,
-	int argc,
-	const char **argv
+    pam_handle_t* orig,
+    int flags,
+    int argc,
+    const char **argv
 ) {
-	errc ret = errc::ignore;
-	ggg::pam_handle pamh(orig, argc, argv);
+    using namespace ggg;
+    using ggg::pam_handle;
+    errc ret = errc::ignore;
+    ggg::pam_handle pamh(orig, argc, argv);
     try {
-        /*
-		const char* user = pamh.user();
-        auto& db = *pamh.get_database();
-        db.message(user, "session closed:%s", collect_data(pamh).data());
-        */
-        ret = errc::success;
+        const char* user = pamh.user();
+        Result::Type result = 0;
+        sys::u32 steps = 0;
+        if (!pamh.get_scalar<sys::u32>(ggg_result, steps) ||
+            !(steps & PAM_kernel::Open_session) ||
+            !pamh.get_scalar<Result::Type>(ggg_result, result)) {
+            PAM_kernel auth;
+            auth.name(user);
+            auth.steps(PAM_kernel::Open_session);
+            auth.service(pamh.get_item(PAM_SERVICE));
+            Client_protocol proto;
+            result = proto.process(&auth);
+        }
+        if (result && PAM_kernel::Open_session) {
+            ret = pam::errc::success;
+        } else {
+            ret = pam::errc::service_error;
+        }
+    } catch (const std::system_error& e) {
+        ret = pamh.error(e, errc::service_error);
+    } catch (const std::bad_alloc& e) {
+        ret = pamh.error(e);
     } catch (const std::exception& e) {
         ret = pamh.error(e);
     }
-	return std::make_error_condition(ret).value();
+    return std::make_error_condition(ret).value();
 }

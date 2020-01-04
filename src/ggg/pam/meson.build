@@ -1,10 +1,10 @@
-ggg_pam_deps = [ggg_crypt, libsodium, pam, unistdx, ggg_core, zxcvbn]
+ggg_pam_deps = [ggg_crypt, pam, unistdx, ggg_core, ggg_proto]
 
 ggg_pam_internal_src = files([
 	'pam_category.cc',
 	'conversation.cc',
 	'handle.cc',
-]) + password_src
+])
 
 ggg_pam_internal_lib = static_library(
 	'pam_ggg_internal',
@@ -52,6 +52,7 @@ test(
 )
 
 pam_wrapper = dependency('pam_wrapper', required: false)
+pam_wrapper_service_dir = join_paths(meson.current_build_dir(), 'pam.d')
 if pam_wrapper.found() and b_sanitize != 'address' and has_override_fs
     ld_preload_items = ['libpam_wrapper.so', override_fs.full_path()]
     ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
@@ -61,21 +62,19 @@ if pam_wrapper.found() and b_sanitize != 'address' and has_override_fs
             'pam-ggg-test',
             sources: ['pam_ggg_test.cc'],
             include_directories: src,
-            dependencies: [unistdx, gtest, ggg_pam],
+            dependencies: [unistdx, gtest, ggg_pam, ggg_proto_test],
             link_with: [ggg_pam_internal_lib],
         ),
         env: [
             ld_preload,
             'PAM_WRAPPER=1',
             'PAM_WRAPPER_DEBUGLEVEL=0',
-            'PAM_WRAPPER_SERVICE_DIR=' + join_paths(
-                meson.current_build_dir(),
-                'pam.d'
-            ),
+            'PAM_WRAPPER_SERVICE_DIR=' + pam_wrapper_service_dir,
             'GGG_TEST_SUFFIX=pam-ggg-test'
         ],
         timeout: 120
     )
     subdir('pam.d')
 endif
+
 

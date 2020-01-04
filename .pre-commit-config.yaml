@@ -1,0 +1,17 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.4.0
+    hooks:
+    -   id: check-added-large-files
+        args: ['--maxkb=100']
+    -   id: check-merge-conflict
+    -   id: check-symlinks
+    -   id: check-xml
+    -   id: check-yaml
+    -   id: detect-private-key
+    -   id: forbid-new-submodules
+-   repo: https://github.com/igankevich/pre-commit-cpp
+    rev: 0.2.2
+    hooks:
+    -   id: normalise
+    -   id: header-guard

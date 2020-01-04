@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -12,6 +13,8 @@
 
 #include <ggg/config.hh>
 #include <ggg/test/override_fs.hh>
+
+#include <unistdx/net/socket_address>
 
 #define GGG_DEBUG 0
 
@@ -230,4 +233,28 @@ extern "C" int unlinkat(int fd, const char* file, int flag) {
 extern "C" int rmdir(const char* file) {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(rmdir, new_file.data());
+}
+
+sys::socket_address ggg_address(GGG_BIND_ADDRESS);
+sys::socket_address ggg_address_test(GGG_BIND_ADDRESS "-test");
+
+void override_address(const char* func, sys::socket_address& addr) {
+    if (ggg_address == addr) {
+        addr = ggg_address_test;
+        #if GGG_DEBUG
+        std::clog << func << ' ' << addr << std::endl;
+        #endif
+    }
+}
+
+extern "C" int bind(int fd, const sockaddr* addr_in, socklen_t len) {
+    sys::socket_address addr(*addr_in);
+    override_address(__func__, addr);
+    return CALL_NEXT(bind, fd, addr.sockaddr(), addr.sockaddrlen());
+}
+
+extern "C" int connect(int fd, const sockaddr* addr_in, socklen_t len) {
+    sys::socket_address addr(*addr_in);
+    override_address(__func__, addr);
+    return CALL_NEXT(connect, fd, addr.sockaddr(), addr.sockaddrlen());
 }

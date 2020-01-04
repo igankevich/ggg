@@ -1,10 +1,18 @@
+#include <thread>
+
+#include <unistdx/ipc/signal>
+
 #include <ggg/config.hh>
-#include <ggg/daemon/local_server.hh>
-#include <ggg/daemon/pipeline.hh>
+#include <ggg/proto/authentication.hh>
+#include <ggg/proto/local_server.hh>
+#include <ggg/proto/pipeline.hh>
+#include <ggg/proto/protocol.hh>
+#include <ggg/proto/result.hh>
 
 int main(int argc, char* argv[]) {
     using namespace ggg;
     int ret = EXIT_FAILURE;
+    sys::this_process::ignore_signal(sys::signal::broken_pipe);
     try {
         sys::socket_address bind_address(GGG_BIND_ADDRESS);
         Pipeline ppl;

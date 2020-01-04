@@ -12,7 +12,11 @@ if not cpp.has_header('nss.h')
 	error('Header nss.h is required to compile the module.')
 endif
 
-foreach arg : ['-Werror=return-type', '-Werror=return-local-addr']
+foreach arg : [
+    '-Werror=return-type',
+    '-Werror=return-local-addr',
+    '-fvisibility-inlines-hidden'
+]
 	if cpp.has_argument(arg)
 		add_global_arguments(arg, language: 'cpp')
 	endif

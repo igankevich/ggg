@@ -1,4 +1,4 @@
-#include <ggg/daemon/connection.hh>
+#include <ggg/proto/connection.hh>
 
 void
 ggg::Connection::process(const sys::epoll_event& event) {
