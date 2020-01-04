@@ -68,11 +68,11 @@ void ggg::PAM_kernel::run() {
         }
     }
     if (steps() & Open_session) {
-        db.message(user, "session opened for %s", this->_service);
+        db.message(user, "session opened for %s", this->_service.data());
         result(result() | Open_session);
     }
     if (steps() & Close_session) {
-        db.message(user, "session closed for %s", this->_service);
+        db.message(user, "session closed for %s", this->_service.data());
         result(result() | Close_session);
     }
 }
