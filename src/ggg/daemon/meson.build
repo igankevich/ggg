@@ -7,5 +7,6 @@ ggg_daemon_exe = executable(
     sources: ggg_src,
     include_directories: src,
     dependencies: [unistdx,ggg_core,ggg_proto],
-    install: true
+    install: true,
+    install_dir: get_option('sbindir')
 )
