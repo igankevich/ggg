@@ -53,8 +53,11 @@ test(
 
 pam_wrapper = dependency('pam_wrapper', required: false)
 pam_wrapper_service_dir = join_paths(meson.current_build_dir(), 'pam.d')
-if pam_wrapper.found() and b_sanitize != 'address' and has_override_fs
+if pam_wrapper.found() and has_override_fs
     ld_preload_items = ['libpam_wrapper.so', override_fs.full_path()]
+    if b_sanitize == 'address'
+        ld_preload_items = ['libasan.so.2'] + ld_preload_items
+    endif
     ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
     test(
         'pam-ggg-test',

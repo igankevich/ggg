@@ -172,7 +172,7 @@ TEST(pam, authenticate_without_password) {
     pam::conversation conv(default_conversation);
     h.start("ggg", "testuser", conv);
     try {
-        pam::call(::pam_authenticate(h, 0));
+        h.authenticate();
     } catch (const std::system_error& err) {
         EXPECT_EQ(
             pam::errc::permission_denied,
@@ -187,7 +187,7 @@ TEST(pam, authenticate_with_password) {
     pam::handle h;
     pam::conversation conv(default_conversation);
     h.start("ggg", "testuser", conv);
-    pam::call(::pam_authenticate(h, 0));
+    h.authenticate();
     h.end();
 }
 
@@ -200,9 +200,9 @@ TEST(pam, authenticate_with_expired_password) {
     pam::handle h;
     pam::conversation conv(default_conversation);
     h.start("ggg", "testuser", conv);
-    pam::call(::pam_authenticate(h, 0));
+    h.authenticate();
     try {
-        pam::call(::pam_acct_mgmt(h, 0));
+        h.verify_account();
     } catch (const std::system_error& err) {
         EXPECT_EQ(
             pam::errc::new_password_required,
@@ -222,19 +222,19 @@ TEST(pam, authenticate_with_expired_password_and_change_it) {
     pam::handle h;
     pam::conversation conv(conversation_with_state);
     h.start("ggg", "testuser", conv);
-    pam::call(::pam_authenticate(h, 0));
+    h.authenticate();
     try {
-        pam::call(::pam_acct_mgmt(h, 0));
+        h.verify_account();
     } catch (const std::system_error& err) {
         EXPECT_EQ(
             pam::errc::new_password_required,
             pam::errc(err.code().value())
         ) << err.what();
         conversation_state = Conversation_state::Get_old_password;
-        pam::call(::pam_chauthtok(h, 0));
+        h.change_password();
         conversation_state = Conversation_state::Authenticate_with_new_password;
-        pam::call(::pam_authenticate(h, 0));
-        pam::call(::pam_acct_mgmt(h, 0));
+        h.authenticate();
+        h.verify_account();
     }
     h.end();
 }
@@ -244,8 +244,8 @@ TEST(pam, authenticate_with_valid_account) {
     pam::handle h;
     pam::conversation conv(default_conversation);
     h.start("ggg", "testuser", conv);
-    pam::call(::pam_authenticate(h, 0));
-    pam::call(::pam_acct_mgmt(h, 0));
+    h.authenticate();
+    h.verify_account();
     h.end();
 }
 
@@ -258,9 +258,9 @@ TEST(pam, authenticate_with_suspended_account) {
     pam::handle h;
     pam::conversation conv(default_conversation);
     h.start("ggg", "testuser", conv);
-    pam::call(::pam_authenticate(h, 0));
+    h.authenticate();
     try {
-        pam::call(::pam_acct_mgmt(h, 0));
+        h.verify_account();
     } catch (const std::system_error& err) {
         EXPECT_EQ(
             pam::errc::permission_denied,
@@ -279,9 +279,9 @@ TEST(pam, authenticate_with_expired_account) {
     pam::handle h;
     pam::conversation conv(default_conversation);
     h.start("ggg", "testuser", conv);
-    pam::call(::pam_authenticate(h, 0));
+    h.authenticate();
     try {
-        pam::call(::pam_acct_mgmt(h, 0));
+        h.verify_account();
     } catch (const std::system_error& err) {
         EXPECT_EQ(
             pam::errc::account_expired,
@@ -336,9 +336,9 @@ TEST(pam, authenticate_with_inactive_account) {
     pam::handle h;
     pam::conversation conv(default_conversation);
     h.start("ggg", "testuser", conv);
-    pam::call(::pam_authenticate(h, 0));
+    h.authenticate();
     try {
-        pam::call(::pam_acct_mgmt(h, 0));
+        h.verify_account();
     } catch (const std::system_error& err) {
         EXPECT_EQ(
             pam::errc::account_expired,

@@ -83,13 +83,17 @@ namespace pam {
         template <class T>
         typename std::enable_if<sizeof(T)<=sizeof(void*),bool>::type
         get_scalar(const char* key, T& value) {
-            return this->get_data(key, reinterpret_cast<const void**>(&value));
+            std::intptr_t tmp = 0;
+            bool ret = this->get_data(key, reinterpret_cast<const void**>(&tmp));
+            value = static_cast<T>(tmp);
+            return ret;
         }
 
         template <class T>
         typename std::enable_if<sizeof(T)<=sizeof(void*),void>::type
         set_scalar(const char* key, T value) {
-            this->set_data(key, reinterpret_cast<void*>(value), nullptr);
+            std::intptr_t tmp = static_cast<std::intptr_t>(value);
+            this->set_data(key, reinterpret_cast<void*>(tmp), nullptr);
         }
 
         inline void
