@@ -80,7 +80,7 @@ int pam_sm_acct_mgmt(
         pamh.debug("checking account \"%s\"", user);
         Result::Type result = 0;
         sys::u32 steps = 0;
-        if (!pamh.get_scalar<sys::u32>(ggg_result, steps) ||
+        if (!pamh.get_scalar<sys::u32>(ggg_steps, steps) ||
             !(steps & PAM_kernel::Account) ||
             !pamh.get_scalar<Result::Type>(ggg_result, result)) {
             PAM_kernel auth;
@@ -198,7 +198,7 @@ int pam_sm_open_session(
         const char* user = pamh.user();
         Result::Type result = 0;
         sys::u32 steps = 0;
-        if (!pamh.get_scalar<sys::u32>(ggg_result, steps) ||
+        if (!pamh.get_scalar<sys::u32>(ggg_steps, steps) ||
             !(steps & PAM_kernel::Open_session) ||
             !pamh.get_scalar<Result::Type>(ggg_result, result)) {
             PAM_kernel auth;
@@ -240,17 +240,17 @@ int pam_sm_close_session(
         const char* user = pamh.user();
         Result::Type result = 0;
         sys::u32 steps = 0;
-        if (!pamh.get_scalar<sys::u32>(ggg_result, steps) ||
-            !(steps & PAM_kernel::Open_session) ||
+        if (!pamh.get_scalar<sys::u32>(ggg_steps, steps) ||
+            !(steps & PAM_kernel::Close_session) ||
             !pamh.get_scalar<Result::Type>(ggg_result, result)) {
             PAM_kernel auth;
             auth.name(user);
-            auth.steps(PAM_kernel::Open_session);
+            auth.steps(PAM_kernel::Close_session);
             auth.service(pamh.get_item(PAM_SERVICE));
             Client_protocol proto;
             result = proto.process(&auth);
         }
-        if (result && PAM_kernel::Open_session) {
+        if (result && PAM_kernel::Close_session) {
             ret = pam::errc::success;
         } else {
             ret = pam::errc::service_error;
