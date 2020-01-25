@@ -180,57 +180,57 @@ extern "C" int remove(const char* file) noexcept {
     return CALL_NEXT(remove, new_file.data());
 }
 
-extern "C" int LIBC_MKDIR(const char* file, mode_t mode) {
+extern "C" int LIBC_MKDIR(const char* file, mode_t mode) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(LIBC_MKDIR, new_file.data(), mode);
 }
 
-extern "C" int LIBC_MKDIRAT(int fd, const char* file, mode_t mode) {
+extern "C" int LIBC_MKDIRAT(int fd, const char* file, mode_t mode) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(LIBC_MKDIRAT, fd, new_file.data(), mode);
 }
 
-extern "C" int chown(const char* file, uid_t owner, gid_t group) {
+extern "C" int chown(const char* file, uid_t owner, gid_t group) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(chown, new_file.data(), owner, group);
 }
 
-extern "C" int lchown(const char* file, uid_t owner, gid_t group) {
+extern "C" int lchown(const char* file, uid_t owner, gid_t group) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(lchown, new_file.data(), owner, group);
 }
 
-extern "C" int fchownat(int fd, const char* file, uid_t owner, gid_t group, int flag) {
+extern "C" int fchownat(int fd, const char* file, uid_t owner, gid_t group, int flag) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(fchownat, fd, new_file.data(), owner, group, flag);
 }
 
-extern "C" int chmod(const char* file, mode_t mode) {
+extern "C" int chmod(const char* file, mode_t mode) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(chmod, new_file.data(), mode);
 }
 
-extern "C" int lchmod(const char* file, mode_t mode) {
+extern "C" int lchmod(const char* file, mode_t mode) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(lchmod, new_file.data(), mode);
 }
 
-extern "C" int fchmodat(int fd, const char* file, mode_t mode, int flag) {
+extern "C" int fchmodat(int fd, const char* file, mode_t mode, int flag) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(fchmodat, fd, new_file.data(), mode, flag);
 }
 
-extern "C" int unlink(const char* file) {
+extern "C" int unlink(const char* file) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(unlink, new_file.data());
 }
 
-extern "C" int unlinkat(int fd, const char* file, int flag) {
+extern "C" int unlinkat(int fd, const char* file, int flag) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(unlinkat, fd, new_file.data(), flag);
 }
 
-extern "C" int rmdir(const char* file) {
+extern "C" int rmdir(const char* file) noexcept {
     auto new_file = override_file(__func__, file);
     return CALL_NEXT(rmdir, new_file.data());
 }
@@ -247,7 +247,7 @@ void override_address(const char* func, sys::socket_address& addr) {
     }
 }
 
-extern "C" int bind(int fd, const sockaddr* addr_in, socklen_t len) {
+extern "C" int bind(int fd, const sockaddr* addr_in, socklen_t len) noexcept {
     sys::socket_address addr(*addr_in);
     override_address(__func__, addr);
     return CALL_NEXT(bind, fd, addr.sockaddr(), addr.sockaddrlen());

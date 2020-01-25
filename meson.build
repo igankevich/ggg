@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.3.24',
+	version: '1.3.25',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
 	license: ['gpl3+']
@@ -40,7 +40,7 @@ with_man = get_option('with_man')
 b_sanitize = get_option('b_sanitize')
 developer = get_option('developer')
 
-unistdx_version = '>= 0.5.4'
+unistdx_version = '>= 0.19.2'
 ggg_crypt_version = '>= 0.1.1'
 sqlitex_version = '>= 0.4.6'
 
