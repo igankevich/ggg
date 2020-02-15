@@ -19,8 +19,8 @@ namespace ggg {
         inline Type code() const { return this->_code; }
         inline void code(Type rhs) { this->_code = rhs; }
         void run() override {}
-        void read(byte_buffer& buf) override;
-        void write(byte_buffer& buf) override;
+        void read(sys::byte_buffer& buf) override;
+        void write(sys::byte_buffer& buf) override;
 
     };
 

@@ -24,7 +24,7 @@ namespace {
 }
 
 void
-ggg::Server_protocol::process(sys::socket& sock, byte_buffer& in, byte_buffer& out) {
+ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte_buffer& out) {
     if (in.remaining() < sizeof(sys::u32)) { return; }
     auto frame = reinterpret_cast<Frame*>(in.data());
     if (in.remaining() < frame->size) { return; }
@@ -66,7 +66,7 @@ ggg::Client_protocol::process(Kernel* kernel) {
     sys::socket s(sys::family_type::unix);
     s.setopt(sys::socket::pass_credentials);
     s.connect(address);
-    byte_buffer buf{1024};
+    sys::byte_buffer buf{4096};
     {
         Protocol::Frame frame;
         frame.command = Protocol::Command::PAM_kernel;

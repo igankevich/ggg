@@ -46,8 +46,8 @@ namespace ggg {
         inline void service(std::string rhs) { this->_service = std::move(rhs); }
 
         void run() override;
-        void read(byte_buffer& buf) override;
-        void write(byte_buffer& buf) override;
+        void read(sys::byte_buffer& buf) override;
+        void write(sys::byte_buffer& buf) override;
 
     };
 

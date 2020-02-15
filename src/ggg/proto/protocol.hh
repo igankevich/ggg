@@ -1,10 +1,10 @@
 #ifndef GGG_PROTO_PROTOCOL_HH
 #define GGG_PROTO_PROTOCOL_HH
 
+#include <unistdx/base/byte_buffer>
 #include <unistdx/base/types>
 #include <unistdx/net/socket>
 
-#include <ggg/proto/byte_buffer.hh>
 #include <ggg/proto/kernel.hh>
 
 namespace ggg {
@@ -31,7 +31,7 @@ namespace ggg {
     class Server_protocol: public Protocol {
 
     public:
-        void process(sys::socket& sock, byte_buffer& in, byte_buffer& out);
+        void process(sys::socket& sock, sys::byte_buffer& in, sys::byte_buffer& out);
 
     };
 

@@ -1,6 +1,5 @@
 ggg_proto_src = files('''
 authentication.cc
-byte_buffer.cc
 connection.cc
 local_server.cc
 pipeline.cc
