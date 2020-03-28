@@ -12,7 +12,7 @@ ggg_guile_src = files([
 	'unistdx.cc',
 ]) + password_src
 
-ggg_guile_deps = [unistdx,ggg_core,guile,zxcvbn,ggg_crypt,libsodium]
+ggg_guile_deps = [unistdx,ggg_core,guile,zxcvbn,libsodium]
 
 ggg_guile_lib = shared_library(
 	'ggg-guile',

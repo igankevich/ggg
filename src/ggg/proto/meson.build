@@ -10,7 +10,7 @@ result.cc
 
 ggg_proto_src += password_src
 
-ggg_proto_deps = [ggg_core,libsodium,zxcvbn,ggg_crypt]
+ggg_proto_deps = [ggg_core,libsodium,zxcvbn]
 
 ggg_proto_lib = shared_library(
 	'ggg-proto',

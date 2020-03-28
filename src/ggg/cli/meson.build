@@ -32,7 +32,7 @@ ggg_exe = executable(
     executable_name,
     sources: ggg_src,
     include_directories: src,
-    dependencies: [unistdx,ggg_crypt,libsodium,ggg_core,guile,ggg_guile],
+    dependencies: [unistdx,libsodium,ggg_core,guile,ggg_guile],
     install: true
 )
 
@@ -40,7 +40,7 @@ ggg_public_keys_exe = executable(
     'ggg-public-keys',
     sources: ['ggg_public_keys_main.cc', 'cli_traits.cc'],
     include_directories: src,
-    dependencies: [unistdx,ggg_crypt,libsodium,ggg_core,guile,ggg_guile],
+    dependencies: [unistdx,libsodium,ggg_core,guile,ggg_guile],
     install: true
 )
 
@@ -61,10 +61,7 @@ if has_override_fs and with_tests
         executable(
             'cli-test',
             sources: ['cli_test.cc'],
-            dependencies: [
-                unistdx, gtest_nomain, pam, libsodium,
-                ggg_crypt, ggg_core, ggg_test
-            ],
+            dependencies: [unistdx, gtest_nomain, pam, libsodium, ggg_core, ggg_test],
         ),
         env: [
             'LD_PRELOAD=' + override_fs.full_path(),

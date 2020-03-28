@@ -1,4 +1,4 @@
-ggg_pam_deps = [ggg_crypt, pam, unistdx, ggg_core, ggg_proto]
+ggg_pam_deps = [pam, unistdx, ggg_core, ggg_proto]
 
 ggg_pam_internal_src = files([
 	'pam_category.cc',
@@ -47,7 +47,7 @@ test(
 		'conversation-test',
 		sources: ['conversation_test.cc'],
 		include_directories: src,
-		dependencies: [unistdx, gtest, ggg_crypt, libsodium, pam, ggg_core, ggg_pam]
+		dependencies: [unistdx, gtest, libsodium, pam, ggg_core, ggg_pam]
 	)
 )
 

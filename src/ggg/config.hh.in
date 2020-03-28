@@ -4,7 +4,6 @@
 #define MODULE_NAME @module_name@
 
 #define GGG_ROOT "@ggg_root@"
-#define GGG_SALT_LENGTH @salt_length@
 #define GGG_EXECUTABLE_NAME "@executable_name@"
 #define GGG_VERSION "@version@"
 #define GGG_FILE_EDITOR "@file_editor@"

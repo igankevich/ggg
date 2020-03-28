@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.3.27',
+	version: '1.4.0',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
 	license: ['gpl3+']
@@ -41,13 +41,11 @@ b_sanitize = get_option('b_sanitize')
 developer = get_option('developer')
 
 unistdx_version = '>= 0.19.2'
-ggg_crypt_version = '>= 0.1.1'
 sqlitex_version = '>= 0.4.6'
 
 unistdx = dependency('unistdx', version: unistdx_version)
 zxcvbn = cpp.find_library('zxcvbn')
 pam = cpp.find_library('pam')
-ggg_crypt = dependency('ggg-crypt', version: ggg_crypt_version)
 sqlitex = dependency('sqlitex', version: sqlitex_version)
 guile = dependency('guile-2.2')
 libsodium = dependency('libsodium')
@@ -73,7 +71,6 @@ if not ggg_root.startswith('/')
 endif
 config = configuration_data()
 config.set('module_name', module_name)
-config.set('salt_length', '16')
 config.set('executable_name', executable_name)
 config.set('version', debug_build ? 'debug' : meson.project_version())
 config.set('file_editor', 'vi')

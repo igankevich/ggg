@@ -6,7 +6,6 @@ License:        @license@
 URL:            http://igankevich.com/
 Source0:        @name@-%{version}.tar.xz
 
-Requires: ggg-crypt @ggg_crypt_version@
 Requires: guile22
 Requires: sqlitex @sqlitex_version@
 Requires: unistdx @unistdx_version@
