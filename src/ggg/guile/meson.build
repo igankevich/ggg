@@ -9,6 +9,7 @@ ggg_guile_src = files([
 	'password.cc',
 	'public_key.cc',
 	'store.cc',
+	'unistdx.cc',
 ]) + password_src
 
 ggg_guile_deps = [unistdx,ggg_core,guile,zxcvbn,ggg_crypt,libsodium]

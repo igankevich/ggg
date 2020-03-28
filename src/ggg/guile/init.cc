@@ -7,6 +7,7 @@
 #include <ggg/guile/init.hh>
 #include <ggg/guile/password.hh>
 #include <ggg/guile/store.hh>
+#include <ggg/guile/unistdx.hh>
 
 extern "C" void
 scm_init_ggg() {
@@ -17,6 +18,7 @@ scm_init_ggg() {
 	Guile_traits<account>::define_procedures();
 	password_define_procedures();
 	store_define_procedures();
+    unistdx_define_procedures();
 }
 
 void
