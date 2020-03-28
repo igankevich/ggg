@@ -11,13 +11,9 @@
 
 extern "C" void
 scm_init_ggg() {
-	using namespace ggg;
-	Guile_traits<Machine>::define_procedures();
-	Guile_traits<entity>::define_procedures();
-	Guile_traits<::ggg::group>::define_procedures();
-	Guile_traits<account>::define_procedures();
-	password_define_procedures();
-	store_define_procedures();
+    using namespace ggg;
+    password_define_procedures();
+    store_define_procedures();
     unistdx_define_procedures();
 }
 

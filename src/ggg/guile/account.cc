@@ -15,79 +15,79 @@
 
 namespace {
 
-	template <class T>
-	class formatted_date {
+    template <class T>
+    class formatted_date {
 
-	private:
-		T _date = nullptr;
+    private:
+        T _date = nullptr;
 
-	public:
-		formatted_date() = default;
+    public:
+        formatted_date() = default;
 
-		explicit
-		formatted_date(T date):
-		_date(date)
-		{}
+        explicit
+        formatted_date(T date):
+        _date(date)
+        {}
 
-		friend std::ostream&
-		operator<<(std::ostream& out, const formatted_date& rhs) {
-			if (!rhs._date) {
-				return out;
-			}
-			typedef std::time_put<char> tput_type;
-			typedef ggg::account::time_point tp;
-			typedef ggg::account::duration dur;
-			if (*rhs._date > tp(dur::zero())) {
-				std::time_t t = ggg::account::clock_type::to_time_t(*rhs._date);
-				std::tm* tm = std::gmtime(&t);
-				const tput_type& tput = std::use_facet<tput_type>(out.getloc());
-				tput.put(out, out, ' ', tm, 'F');
-			}
-			return out;
-		}
+        friend std::ostream&
+        operator<<(std::ostream& out, const formatted_date& rhs) {
+            if (!rhs._date) {
+                return out;
+            }
+            typedef std::time_put<char> tput_type;
+            typedef ggg::account::time_point tp;
+            typedef ggg::account::duration dur;
+            if (*rhs._date > tp(dur::zero())) {
+                std::time_t t = ggg::account::clock_type::to_time_t(*rhs._date);
+                std::tm* tm = std::gmtime(&t);
+                const tput_type& tput = std::use_facet<tput_type>(out.getloc());
+                tput.put(out, out, ' ', tm, 'F');
+            }
+            return out;
+        }
 
-		friend std::istream&
-		operator>>(std::istream& in, formatted_date& rhs) {
-			using ggg::days;
-			if (!rhs._date) {
-				return in;
-			}
-			typedef std::time_get<char> tget_type;
-			const tget_type& tget = std::use_facet<tget_type>(in.getloc());
-			std::ios::iostate state = std::ios::goodbit;
-			std::tm tm{};
-			std::string tmp;
-			in >> tmp;
-			std::istringstream iss(tmp);
-			std::string fmt("%Y-%m-%d");
-			tget.get(iss, tget_type::iter_type(), iss, state, &tm, fmt.data(), fmt.data() + fmt.length());
-			std::time_t t = std::mktime(&tm);
-			*rhs._date = ggg::account::clock_type::from_time_t(t) + days(1);
-			return in;
-		}
-	};
+        friend std::istream&
+        operator>>(std::istream& in, formatted_date& rhs) {
+            using ggg::days;
+            if (!rhs._date) {
+                return in;
+            }
+            typedef std::time_get<char> tget_type;
+            const tget_type& tget = std::use_facet<tget_type>(in.getloc());
+            std::ios::iostate state = std::ios::goodbit;
+            std::tm tm{};
+            std::string tmp;
+            in >> tmp;
+            std::istringstream iss(tmp);
+            std::string fmt("%Y-%m-%d");
+            tget.get(iss, tget_type::iter_type(), iss, state, &tm, fmt.data(), fmt.data() + fmt.length());
+            std::time_t t = std::mktime(&tm);
+            *rhs._date = ggg::account::clock_type::from_time_t(t) + days(1);
+            return in;
+        }
+    };
 
-	template <class T>
-	formatted_date<T*>
-	make_formatted(T* rhs) {
-		return formatted_date<T*>(rhs);
-	}
+    template <class T>
+    formatted_date<T*>
+    make_formatted(T* rhs) {
+        return formatted_date<T*>(rhs);
+    }
 
-	template <class T>
-	formatted_date<const T*>
-	make_formatted(const T* rhs) {
-		return formatted_date<const T*>(rhs);
-	}
+    template <class T>
+    formatted_date<const T*>
+    make_formatted(const T* rhs) {
+        return formatted_date<const T*>(rhs);
+    }
 
-	template <class T>
-	void
-	read_field(T& field, const char* value, const char* err) {
-		std::stringstream str(value);
-		str >> field;
-		if (str.fail()) {
-			throw std::invalid_argument(err);
-		}
-	}
+    template <class T>
+    void
+    read_field(T& field, const char* value, const char* err) {
+        std::stringstream str(value);
+        str >> field;
+        if (str.fail()) {
+            throw std::invalid_argument(err);
+        }
+    }
 
     enum class unit { seconds, minutes, hours, days };
 
@@ -130,45 +130,45 @@ namespace {
 namespace std {
 namespace chrono {
 
-	std::ostream&
-	operator<<(std::ostream& out, const ggg::account::time_point& rhs) {
-		long d = ggg::to_days(rhs);
-		if (d > 0) {
-			out << d;
-		}
-		return out;
-	}
+    std::ostream&
+    operator<<(std::ostream& out, const ggg::account::time_point& rhs) {
+        long d = ggg::to_days(rhs);
+        if (d > 0) {
+            out << d;
+        }
+        return out;
+    }
 
-	std::ostream&
-	operator<<(std::ostream& out, const ggg::account::duration& rhs) {
-		long d = ggg::to_days(rhs);
-		if (d > 0) {
-			out << d;
-		}
-		return out;
-	}
+    std::ostream&
+    operator<<(std::ostream& out, const ggg::account::duration& rhs) {
+        long d = ggg::to_days(rhs);
+        if (d > 0) {
+            out << d;
+        }
+        return out;
+    }
 
-	std::istream&
-	operator>>(std::istream& in, ggg::account::time_point& rhs) {
-		long val;
-		if (!(in >> val)) {
-			val = 0L;
-			in.clear();
-		}
-		rhs = ggg::time_point_from_days(val);
-		return in;
-	}
+    std::istream&
+    operator>>(std::istream& in, ggg::account::time_point& rhs) {
+        long val;
+        if (!(in >> val)) {
+            val = 0L;
+            in.clear();
+        }
+        rhs = ggg::time_point_from_days(val);
+        return in;
+    }
 
-	std::istream&
-	operator>>(std::istream& in, ggg::account::duration& rhs) {
-		long val;
-		if (!(in >> val)) {
-			val = 0L;
-			in.clear();
-		}
-		rhs = ggg::duration_from_days(val);
-		return in;
-	}
+    std::istream&
+    operator>>(std::istream& in, ggg::account::duration& rhs) {
+        long val;
+        if (!(in >> val)) {
+            val = 0L;
+            in.clear();
+        }
+        rhs = ggg::duration_from_days(val);
+        return in;
+    }
 
 }
 }
@@ -303,14 +303,6 @@ namespace ggg {
             result.back()._maxinactive = std::chrono::hours(24)*365;
         }
         return result;
-    }
-
-    template <>
-    void
-    Guile_traits<ggg::account>::define_procedures() {
-        define_procedure("ggg-account-insert", 1, 0, 0, (scm_t_subr)&insert);
-        define_procedure("ggg-account-delete", 1, 0, 0, (scm_t_subr)&remove);
-        define_procedure("ggg-accounts", 0, 0, 0, (scm_t_subr)&find);
     }
 
 }

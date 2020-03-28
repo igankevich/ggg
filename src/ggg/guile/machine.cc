@@ -105,13 +105,4 @@ namespace ggg {
         return list;
     }
 
-    template <>
-    void
-    Guile_traits<ggg::Machine>::define_procedures() {
-        define_procedure("ggg-machine-insert", 1, 0, 0, &insert);
-        define_procedure("ggg-machine-delete", 1, 0, 0, &remove);
-        define_procedure("ggg-machine-delete-all", 0, 0, 0, &remove_all);
-        define_procedure("ggg-machines", 0, 0, 0, &find);
-    }
-
 }

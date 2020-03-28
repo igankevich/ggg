@@ -77,6 +77,36 @@ namespace {
         return SCM_UNSPECIFIED;
     }
 
+    SCM
+    scm_change_password(SCM username, SCM old_password, SCM new_password) {
+        const double min_entropy = 30.0;
+        using namespace ggg;
+        try {
+            auto s_username = to_secure_string(username);
+            auto s_old_password = to_secure_string(old_password);
+            auto s_new_password = to_secure_string(new_password);
+            account acc;
+            Database db(Database::File::Accounts, Database::Flag::Read_write);
+            Transaction tr(db);
+            db.prepare_message();
+            auto st = db.find_account(s_username.data());
+            if (st.step() == sqlite::errc::done) { throw std::invalid_argument("bad name"); }
+            st >> acc; st.close();
+            if (!verify_password(acc.password(), s_old_password.data())) {
+                throw std::invalid_argument("permission denied");
+            }
+            validate_password(s_new_password, min_entropy);
+            init_sodium();
+            argon2_password_hash hash;
+            acc.set_password(hash(s_new_password));
+            db.set_password(acc);
+            tr.commit();
+        } catch (const std::exception& err) {
+            guile_throw(err);
+        }
+        return SCM_UNSPECIFIED;
+    }
+
 }
 
 void
@@ -86,5 +116,6 @@ ggg::password_define_procedures() {
     define_procedure("password-hash", 1, 0, 0, password_hash);
     define_procedure("authenticate", 2, 0, 0, authenticate);
     define_procedure("verify-password", 2, 0, 0, scm_verify_password);
+    define_procedure("change-password", 3, 0, 0, scm_change_password);
 }
 

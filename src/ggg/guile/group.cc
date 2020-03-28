@@ -55,10 +55,4 @@ namespace ggg {
         return list;
     }
 
-    template <>
-    void
-    Guile_traits<ggg::group>::define_procedures() {
-        define_procedure("ggg-groups", 0, 0, 0, (scm_t_subr)&find);
-    }
-
 }

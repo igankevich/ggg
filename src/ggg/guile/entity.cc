@@ -10,87 +10,6 @@
 
 namespace {
 
-	SCM entity_tie(SCM a, SCM b) {
-		using namespace ggg;
-		if (scm_is_integer(a) && scm_is_integer(b)) {
-			Store store(Store::File::Entities, Store::Flag::Read_write);
-			Transaction tr(store);
-			store.tie(scm_to_uint32(a), scm_to_uint32(b));
-			tr.commit();
-		} else if (is_string(a) && is_string(b)) {
-			Store store(Store::File::Entities, Store::Flag::Read_write);
-			Transaction tr(store);
-			store.tie(to_string(a).data(), to_string(b).data());
-			tr.commit();
-		} else {
-			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
-				scm_from_utf8_string("ggg-entity-tie needs either two IDs or two names"));
-			return SCM_UNSPECIFIED;
-		}
-		return SCM_UNSPECIFIED;
-	}
-
-	SCM entity_untie(SCM a, SCM b) {
-		using namespace ggg;
-		if (!is_string(a) || (is_bound(b) && !is_string(b))) {
-			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
-				scm_from_utf8_string("ggg-entity-untie needs either one or two names"));
-			return SCM_UNSPECIFIED;
-		}
-		Store store(Store::File::Entities, Store::Flag::Read_write);
-		Transaction tr(store);
-		auto child = to_string(a);
-		if (is_bound(b)) { store.untie(child.data(), to_string(b).data()); }
-		else { store.untie(child.data()); }
-		tr.commit();
-		return SCM_UNSPECIFIED;
-	}
-
-	SCM entity_attach(SCM a, SCM b) {
-		using namespace ggg;
-		if (scm_is_integer(a) && scm_is_integer(b)) {
-			Store store(Store::File::Entities, Store::Flag::Read_write);
-			Transaction tr(store);
-			store.attach(scm_to_uint32(a), scm_to_uint32(b));
-			tr.commit();
-		} else if (is_string(a) && is_string(b)) {
-			Store store(Store::File::Entities, Store::Flag::Read_write);
-			Transaction tr(store);
-			store.attach(to_string(a).data(), to_string(b).data());
-			tr.commit();
-		} else {
-			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
-				scm_from_utf8_string("ggg-entity-attach needs either two IDs or two names"));
-			return SCM_UNSPECIFIED;
-		}
-		return SCM_UNSPECIFIED;
-	}
-
-	SCM entity_detach(SCM a, SCM b) {
-		using namespace ggg;
-		if (!is_string(a)) {
-			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
-				scm_from_utf8_string("ggg-entity-detach needs string argument"));
-			return SCM_UNSPECIFIED;
-		}
-		Store store(Store::File::Entities, Store::Flag::Read_write);
-		Transaction tr(store);
-		store.detach(to_string(a).data());
-		tr.commit();
-		return SCM_UNSPECIFIED;
-	}
-
-	SCM entity_exists(SCM a) {
-		using namespace ggg;
-		if (!is_string(a)) {
-			scm_throw(scm_from_utf8_symbol("ggg-invalid-argument"),
-				scm_from_utf8_string("ggg-entity-exists needs string argument"));
-			return SCM_UNSPECIFIED;
-		}
-		Store store(Store::File::Entities, Store::Flag::Read_only);
-		return scm_from_bool(store.has(entity(to_string(a).data())));
-	}
-
 }
 
 namespace ggg {
@@ -98,30 +17,30 @@ namespace ggg {
     template <>
     ggg::entity
     Guile_traits<ggg::entity>::from(SCM obj) {
-    	static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
-    	auto s_description = scm_from_latin1_symbol("description");
-    	auto s_home = scm_from_latin1_symbol("home");
-    	auto s_shell = scm_from_latin1_symbol("shell");
-    	auto s_id = scm_from_latin1_symbol("id");
-    	entity ent;
-    	ent._name = to_string(slot(obj, "name"));
-    	if (slot_is_bound(obj, s_description)) {
-    		ent._description = to_string(slot(obj, s_description));
-    	}
-    	if (slot_is_bound(obj, s_home)) {
-    		ent._homedir = to_string(slot(obj, s_home));
-    	} else {
-    		ent._homedir = GGG_DEFAULT_HOME_PREFIX "/" + ent._name;
-    	}
-    	if (slot_is_bound(obj, s_shell)) {
-    		ent._shell = to_string(slot(obj, s_shell));
-    	} else {
-    		ent._shell = GGG_DEFAULT_SHELL;
-    	}
-    	if (slot_is_bound(obj, s_id)) {
-    		ent._id = scm_to_uint32(slot(obj, "id"));
-    	}
-    	return ent;
+        static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
+        auto s_description = scm_from_latin1_symbol("description");
+        auto s_home = scm_from_latin1_symbol("home");
+        auto s_shell = scm_from_latin1_symbol("shell");
+        auto s_id = scm_from_latin1_symbol("id");
+        entity ent;
+        ent._name = to_string(slot(obj, "name"));
+        if (slot_is_bound(obj, s_description)) {
+            ent._description = to_string(slot(obj, s_description));
+        }
+        if (slot_is_bound(obj, s_home)) {
+            ent._homedir = to_string(slot(obj, s_home));
+        } else {
+            ent._homedir = GGG_DEFAULT_HOME_PREFIX "/" + ent._name;
+        }
+        if (slot_is_bound(obj, s_shell)) {
+            ent._shell = to_string(slot(obj, s_shell));
+        } else {
+            ent._shell = GGG_DEFAULT_SHELL;
+        }
+        if (slot_is_bound(obj, s_id)) {
+            ent._id = scm_to_uint32(slot(obj, "id"));
+        }
+        return ent;
     }
 
     template <>
@@ -220,20 +139,6 @@ namespace ggg {
             tmp.shell(GGG_DEFAULT_SHELL);
         }
         return result;
-    }
-
-    template <>
-    void
-    Guile_traits<ggg::entity>::define_procedures() {
-        define_procedure("ggg-entity-insert", 1, 0, 0, insert);
-        define_procedure("ggg-entity-delete", 1, 0, 0, remove);
-        define_procedure("ggg-entities", 0, 0, 0, find);
-        define_procedure("ggg-users", 0, 0, 0, find);
-        define_procedure("ggg-entity-tie", 2, 0, 0, entity_tie);
-        define_procedure("ggg-entity-untie", 1, 1, 0, entity_untie);
-        define_procedure("ggg-entity-attach", 2, 0, 0, entity_attach);
-        define_procedure("ggg-entity-detach", 1, 0, 0, entity_detach);
-        define_procedure("ggg-entity-exists", 1, 0, 0, entity_exists);
     }
 
 }
