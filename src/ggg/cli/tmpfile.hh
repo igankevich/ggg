@@ -7,34 +7,34 @@
 
 namespace sys {
 
-	sys::path
-	find_temporary_directory();
+    sys::path
+    find_temporary_directory();
 
-	std::string
-	get_temporary_file_name_template(sys::path dir, std::string suffix);
+    std::string
+    get_temporary_file_name_template(sys::path dir, std::string suffix);
 
-	class tmpfile {
-		std::string _filename;
-		sys::ofdstream _out;
+    class tmpfile {
+        std::string _filename;
+        sys::ofdstream _out;
 
-	public:
-		tmpfile(std::string suffix="");
-		tmpfile(tmpfile&&) = default;
-		~tmpfile();
-		tmpfile(const tmpfile&) = delete;
-		tmpfile& operator=(const tmpfile&) = delete;
+    public:
+        tmpfile(std::string suffix="");
+        tmpfile(tmpfile&&) = default;
+        ~tmpfile();
+        tmpfile(const tmpfile&) = delete;
+        tmpfile& operator=(const tmpfile&) = delete;
 
-		inline std::ostream&
-		out() noexcept {
-			return this->_out;
-		}
+        inline std::ostream&
+        out() noexcept {
+            return this->_out;
+        }
 
-		inline const std::string&
-		filename() const noexcept {
-			return this->_filename;
-		}
+        inline const std::string&
+        filename() const noexcept {
+            return this->_filename;
+        }
 
-	};
+    };
 
 }
 

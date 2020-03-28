@@ -11,7 +11,7 @@ repos:
     -   id: detect-private-key
     -   id: forbid-new-submodules
 -   repo: https://github.com/igankevich/pre-commit-cpp
-    rev: 0.2.2
+    rev: 0.5.0
     hooks:
     -   id: normalise
     -   id: header-guard

@@ -12,11 +12,11 @@ namespace ggg {
     class message {
 
     public:
-		using clock_type = std::chrono::system_clock;
-		using time_point = clock_type::time_point;
-		using duration = clock_type::duration;
+        using clock_type = std::chrono::system_clock;
+        using time_point = clock_type::time_point;
+        using duration = clock_type::duration;
 
-		static constexpr const char delimiter = ' ';
+        static constexpr const char delimiter = ' ';
 
     private:
         std::string _name;
@@ -33,8 +33,8 @@ namespace ggg {
 
         void clear();
 
-		friend void operator>>(const sqlite::statement& in, message& rhs);
-		friend std::ostream& operator<<(std::ostream& out, const message& rhs);
+        friend void operator>>(const sqlite::statement& in, message& rhs);
+        friend std::ostream& operator<<(std::ostream& out, const message& rhs);
 
     };
 

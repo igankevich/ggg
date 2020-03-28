@@ -8,9 +8,9 @@
 
 namespace ggg {
 
-	typedef std::unique_ptr<Command> command_ptr;
+    typedef std::unique_ptr<Command> command_ptr;
 
-	command_ptr command_from_string(const std::string& cmd);
+    command_ptr command_from_string(const std::string& cmd);
 
 }
 

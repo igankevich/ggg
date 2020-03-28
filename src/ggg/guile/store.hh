@@ -6,17 +6,17 @@
 
 namespace ggg {
 
-	class Store: public Database {
+    class Store: public Database {
 
-	public:
-		using Database::Database;
+    public:
+        using Database::Database;
 
-		bool has(const entity& rhs);
-		bool has(const account& rhs);
+        bool has(const entity& rhs);
+        bool has(const account& rhs);
 
-	};
+    };
 
-	void store_define_procedures();
+    void store_define_procedures();
 
 }
 

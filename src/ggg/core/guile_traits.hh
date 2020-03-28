@@ -3,8 +3,8 @@
 
 namespace ggg {
 
-	template <class T>
-	struct Guile_traits;
+    template <class T>
+    struct Guile_traits;
 
 }
 

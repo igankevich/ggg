@@ -5,11 +5,11 @@
 
 namespace ggg {
 
-	class Show_version: public Command {
+    class Show_version: public Command {
 
-	public:
-		void execute() override;
-	};
+    public:
+        void execute() override;
+    };
 
 }
 

@@ -5,14 +5,14 @@
 
 namespace ggg {
 
-	class Guile: public Command {
+    class Guile: public Command {
 
-	public:
-		void parse_arguments(int argc, char* argv[]) override;
-		void execute() override;
-		void print_usage() override;
+    public:
+        void parse_arguments(int argc, char* argv[]) override;
+        void execute() override;
+        void print_usage() override;
 
-	};
+    };
 
 }
 

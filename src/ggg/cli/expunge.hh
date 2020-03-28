@@ -12,39 +12,36 @@
 
 namespace ggg {
 
-	struct Process {
-		sys::pid_type pid;
-		sys::uid_type uid;
+    struct Process {
+        sys::pid_type pid;
+        sys::uid_type uid;
 
-		inline
-		Process(sys::pid_type p, sys::uid_type u):
-		pid(p), uid(u) {}
+        inline
+        Process(sys::pid_type p, sys::uid_type u):
+        pid(p), uid(u) {}
 
-	};
+    };
 
-	class Expunge: public Command {
+    class Expunge: public Command {
 
-	private:
-		std::unordered_set<sys::uid_type> _uids;
-		std::vector<Process> _processes;
+    private:
+        std::unordered_set<sys::uid_type> _uids;
+        std::vector<Process> _processes;
 
-	public:
-		void parse_arguments(int argc, char* argv[]) override;
-		void execute() override;
+    public:
+        void parse_arguments(int argc, char* argv[]) override;
+        void execute() override;
 
-	private:
+    private:
 
-		void
-		find_expired_entities();
+        void
+        find_expired_entities();
 
-		void
-		find_processes();
+        void
+        find_processes();
 
-	};
+    };
 
 }
 
 #endif // vim:filetype=cpp
-
-
-

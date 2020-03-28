@@ -7,11 +7,11 @@
 
 namespace ggg {
 
-	typedef std::basic_string<
-		char,
-		std::char_traits<char>,
-		secure_allocator<char>
-	> secure_string;
+    typedef std::basic_string<
+        char,
+        std::char_traits<char>,
+        secure_allocator<char>
+    > secure_string;
 
 }
 

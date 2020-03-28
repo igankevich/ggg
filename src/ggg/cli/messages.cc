@@ -8,9 +8,9 @@
 
 void
 ggg::Messages::parse_arguments(int argc, char* argv[]) {
-	int opt;
+    int opt;
     ::opterr = 0;
-	while ((opt = getopt(argc, argv, "hsr")) != -1) {
+    while ((opt = getopt(argc, argv, "hsr")) != -1) {
         switch (opt) {
             case 'h': this->_option = Option::Help; break;
             case 's': this->_option = Option::Size; break;
@@ -30,7 +30,7 @@ ggg::Messages::execute() {
     switch (this->_option) {
         case Option::Default:
             db.open(Database::File::Accounts, Database::Flag::Read_only);
-	        if (nargs == 0) {
+            if (nargs == 0) {
                 st = db.messages();
             } else if (nargs == 1) {
                 const auto& name = args().front();
@@ -59,11 +59,11 @@ ggg::Messages::execute() {
 
 void
 ggg::Messages::print_usage() {
-	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-		<< this->prefix() << " [ENTITY...]\n";
-	std::cout << "       " GGG_EXECUTABLE_NAME " "
-		<< this->prefix() << " -s\n";
-	std::cout << "    -s    messages disk usage in bytes\n";
+    std::cout << "usage: " GGG_EXECUTABLE_NAME " "
+        << this->prefix() << " [ENTITY...]\n";
+    std::cout << "       " GGG_EXECUTABLE_NAME " "
+        << this->prefix() << " -s\n";
+    std::cout << "    -s    messages disk usage in bytes\n";
 }
 
 void
@@ -84,8 +84,8 @@ ggg::Rotate_messages::execute() {
 
 void
 ggg::Rotate_messages::print_usage() {
-	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-		<< this->prefix() << " MODIFIER...\n"
+    std::cout << "usage: " GGG_EXECUTABLE_NAME " "
+        << this->prefix() << " MODIFIER...\n"
         "You can use any valid sqlite modifier.\n"
         "Examples:\n"
         GGG_EXECUTABLE_NAME " " << this->prefix() << " '-30 days'\n"

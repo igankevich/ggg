@@ -5,14 +5,13 @@
 
 namespace ggg {
 
-	class Show_duplicates: public Command {
+    class Show_duplicates: public Command {
 
-	public:
-		void execute() override;
-		void print_usage() override;
-	};
+    public:
+        void execute() override;
+        void print_usage() override;
+    };
 
 }
 
 #endif // vim:filetype=cpp
-

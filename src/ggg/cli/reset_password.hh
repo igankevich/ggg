@@ -5,15 +5,12 @@
 
 namespace ggg {
 
-	class Reset_password: public Command {
-	public:
-		void execute() override;
-		void print_usage() override;
-	};
+    class Reset_password: public Command {
+    public:
+        void execute() override;
+        void print_usage() override;
+    };
 
 }
 
 #endif // vim:filetype=cpp
-
-
-

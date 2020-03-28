@@ -19,4 +19,3 @@ ggg::Local_server::process(const sys::epoll_event& event) {
         this->parent()->add(new Remote_client(this->_socket), sys::event::inout);
     }
 }
-

@@ -13,22 +13,22 @@
 
 void
 ggg::Guile::parse_arguments(int argc, char* argv[]) {
-	Command::parse_arguments(argc, argv);
-	if (args().empty()) {
-		print_usage();
-		throw quiet_error();
-	}
+    Command::parse_arguments(argc, argv);
+    if (args().empty()) {
+        print_usage();
+        throw quiet_error();
+    }
 }
 
 void
 ggg::Guile::execute() {
-	guile_init();
-	for (const auto& filename : args()) {
-		scm_c_primitive_load(filename.data());
-	}
+    guile_init();
+    for (const auto& filename : args()) {
+        scm_c_primitive_load(filename.data());
+    }
 }
 
 void
 ggg::Guile::print_usage() {
-	std::cout << "usage: " GGG_EXECUTABLE_NAME " " << this->prefix() << " FILE...\n";
+    std::cout << "usage: " GGG_EXECUTABLE_NAME " " << this->prefix() << " FILE...\n";
 }

@@ -118,4 +118,3 @@ ggg::password_define_procedures() {
     define_procedure("verify-password", 2, 0, 0, scm_verify_password);
     define_procedure("change-password", 3, 0, 0, scm_change_password);
 }
-

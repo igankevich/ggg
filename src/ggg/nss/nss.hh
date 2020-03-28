@@ -16,15 +16,15 @@
 #define NSS_GETENTBY_R(db, by) NSS_FUNCTION(get ## db ## by ## _r)
 
 #define NSS_ENUMERATE(db, type, file) \
-	NSS_SETENT(db)(void) { return database.open(ggg::Database::File::file); } \
-	NSS_ENDENT(db)(void) { return database.close(); } \
-	NSS_GETENT_R(db)( \
-		type* result, \
-		char* buffer, \
-		size_t buflen, \
-		int* errnop \
-	) { \
-		return database.get<type>(result, buffer, buflen, errnop); \
-	}
+    NSS_SETENT(db)(void) { return database.open(ggg::Database::File::file); } \
+    NSS_ENDENT(db)(void) { return database.close(); } \
+    NSS_GETENT_R(db)( \
+        type* result, \
+        char* buffer, \
+        size_t buflen, \
+        int* errnop \
+    ) { \
+        return database.get<type>(result, buffer, buflen, errnop); \
+    }
 
 #endif // vim:filetype=cpp

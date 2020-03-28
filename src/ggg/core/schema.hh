@@ -22,33 +22,33 @@ CREATE UNIQUE INDEX entities_name_index ON entities (name);
 INSERT INTO sqlite_sequence (name,seq) VALUES ('entities',999);
 
 CREATE TABLE ties (
-	child_id INTEGER NOT NULL,
-	parent_id INTEGER NOT NULL,
-	PRIMARY KEY (child_id, parent_id),
-	FOREIGN KEY (child_id)
-		REFERENCES entities (id)
-		ON DELETE CASCADE
-		ON UPDATE RESTRICT,
-	FOREIGN KEY (parent_id)
-		REFERENCES entities (id)
-		ON DELETE CASCADE
-		ON UPDATE RESTRICT
+    child_id INTEGER NOT NULL,
+    parent_id INTEGER NOT NULL,
+    PRIMARY KEY (child_id, parent_id),
+    FOREIGN KEY (child_id)
+        REFERENCES entities (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (parent_id)
+        REFERENCES entities (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
 );
 
 CREATE UNIQUE INDEX ties_index ON ties (child_id,parent_id);
 
 CREATE TABLE hierarchy (
-	child_id INTEGER NOT NULL,
-	parent_id INTEGER NOT NULL,
-	PRIMARY KEY (child_id, parent_id),
-	FOREIGN KEY (child_id)
-		REFERENCES entities (id)
-		ON DELETE CASCADE
-		ON UPDATE RESTRICT,
-	FOREIGN KEY (parent_id)
-		REFERENCES entities (id)
-		ON DELETE CASCADE
-		ON UPDATE RESTRICT
+    child_id INTEGER NOT NULL,
+    parent_id INTEGER NOT NULL,
+    PRIMARY KEY (child_id, parent_id),
+    FOREIGN KEY (child_id)
+        REFERENCES entities (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (parent_id)
+        REFERENCES entities (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
 );
 
 CREATE UNIQUE INDEX hierarchy_index ON hierarchy (child_id,parent_id);
@@ -56,20 +56,20 @@ CREATE UNIQUE INDEX hierarchy_index ON hierarchy (child_id,parent_id);
 
 R"(
 CREATE TABLE hosts (
-	ethernet_address  BLOB  NOT NULL  PRIMARY KEY,
-	            name  TEXT  NOT NULL
+    ethernet_address  BLOB  NOT NULL  PRIMARY KEY,
+                name  TEXT  NOT NULL
 );
 CREATE TABLE networks (
-	  name  TEXT  NOT NULL  PRIMARY KEY,
-	number  BLOB  NOT NULL  UNIQUE
+      name  TEXT  NOT NULL  PRIMARY KEY,
+    number  BLOB  NOT NULL  UNIQUE
 );
 CREATE TABLE addresses (
-	      ip_address  BLOB  NOT NULL  PRIMARY KEY,
-	ethernet_address  BLOB  NOT NULL,
-	FOREIGN KEY (ethernet_address)
-		REFERENCES hosts (ethernet_address)
-		ON DELETE CASCADE
-		ON UPDATE CASCADE
+          ip_address  BLOB  NOT NULL  PRIMARY KEY,
+    ethernet_address  BLOB  NOT NULL,
+    FOREIGN KEY (ethernet_address)
+        REFERENCES hosts (ethernet_address)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 CREATE INDEX host_name_index ON hosts (name);
 CREATE UNIQUE INDEX ethernet_address_index ON hosts (ethernet_address);
@@ -108,10 +108,10 @@ CREATE TABLE public_keys (
     type TEXT NOT NULL,
     key TEXT NOT NULL,
     comment TEXT,
-	FOREIGN KEY (account_name)
-		REFERENCES accounts (name)
-		ON DELETE CASCADE
-		ON UPDATE CASCADE,
+    FOREIGN KEY (account_name)
+        REFERENCES accounts (name)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
     UNIQUE (account_name,key)
 );
 CREATE INDEX public_keys_account_name_index ON public_keys (account_name);

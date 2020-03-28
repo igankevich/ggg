@@ -31,4 +31,3 @@ ggg::Pipeline::process_events() {
         }
     }
 }
-

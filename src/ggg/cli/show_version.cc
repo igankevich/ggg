@@ -7,6 +7,5 @@
 
 void
 ggg::Show_version::execute()  {
-	std::cout << GGG_VERSION << '\n';
+    std::cout << GGG_VERSION << '\n';
 }
-

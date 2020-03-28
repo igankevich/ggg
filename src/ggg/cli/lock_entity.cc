@@ -8,21 +8,18 @@
 
 void
 ggg::Lock_entity::execute()  {
-	Database db(Database::File::Accounts, Database::Flag::Read_write);
-	for (const auto& name : this->args()) {
-		try {
-			db.deactivate(name.data());
-		} catch (const std::exception& err) {
-			ggg::native_message(std::cerr, "Failed to lock _: _", name, err.what());
-		}
-	}
+    Database db(Database::File::Accounts, Database::Flag::Read_write);
+    for (const auto& name : this->args()) {
+        try {
+            db.deactivate(name.data());
+        } catch (const std::exception& err) {
+            ggg::native_message(std::cerr, "Failed to lock _: _", name, err.what());
+        }
+    }
 }
 
 void
 ggg::Lock_entity::print_usage() {
-	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-		<< this->prefix() << " [-q] ENTITY...\n";
+    std::cout << "usage: " GGG_EXECUTABLE_NAME " "
+        << this->prefix() << " [-q] ENTITY...\n";
 }
-
-
-

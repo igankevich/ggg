@@ -6,18 +6,17 @@
 
 namespace ggg {
 
-	class Show_help: public Command {
+    class Show_help: public Command {
 
-	private:
-		command_ptr _ptr;
+    private:
+        command_ptr _ptr;
 
-	public:
-		void parse_arguments(int argc, char* argv[]) override;
-		void execute() override;
-		void print_usage() override;
-	};
+    public:
+        void parse_arguments(int argc, char* argv[]) override;
+        void execute() override;
+        void print_usage() override;
+    };
 
 }
 
 #endif // vim:filetype=cpp
-

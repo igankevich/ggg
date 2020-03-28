@@ -7,4 +7,3 @@ ggg::Connection::process(const sys::epoll_event& event) {
     if (started() && event.bad()) { state(State::Stopping); }
     if (stopping()) { state(State::Stopped); }
 }
-

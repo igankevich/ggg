@@ -7,21 +7,18 @@
 
 void
 ggg::Reset_password::execute()  {
-	Database db(Database::File::Accounts, Database::Flag::Read_write);
-	for (const auto& name : this->args()) {
-		try {
-			db.expire_password(name.data());
-		} catch (const std::exception& err) {
-			ggg::native_message(std::cerr, "Failed to expire password for _: _", name, err.what());
-		}
-	}
+    Database db(Database::File::Accounts, Database::Flag::Read_write);
+    for (const auto& name : this->args()) {
+        try {
+            db.expire_password(name.data());
+        } catch (const std::exception& err) {
+            ggg::native_message(std::cerr, "Failed to expire password for _: _", name, err.what());
+        }
+    }
 }
 
 void
 ggg::Reset_password::print_usage() {
-	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-		<< this->prefix() << " [-q] ENTITY...\n";
+    std::cout << "usage: " GGG_EXECUTABLE_NAME " "
+        << this->prefix() << " [-q] ENTITY...\n";
 }
-
-
-

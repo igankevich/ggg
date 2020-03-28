@@ -6,19 +6,19 @@
 
 void
 ggg::Remove_entity::parse_arguments(int argc, char* argv[]) {
-	int opt;
-	while ((opt = getopt(argc, argv, "t:")) != -1) {
-		switch (opt) {
-			case 't': std::string(::optarg) >> this->_type; break;
-		}
-	}
-	for (int i=::optind; i<argc; ++i) {
-		this->_args.emplace_back(argv[i]);
-	}
-	if (this->_args.empty()) {
-		throw std::invalid_argument("please, specify entity names");
-	}
-	remove_duplicate_arguments();
+    int opt;
+    while ((opt = getopt(argc, argv, "t:")) != -1) {
+        switch (opt) {
+            case 't': std::string(::optarg) >> this->_type; break;
+        }
+    }
+    for (int i=::optind; i<argc; ++i) {
+        this->_args.emplace_back(argv[i]);
+    }
+    if (this->_args.empty()) {
+        throw std::invalid_argument("please, specify entity names");
+    }
+    remove_duplicate_arguments();
 }
 
 template <class T>
@@ -60,5 +60,3 @@ ggg::Remove_entity::print_usage() {
     std::cout << "usage: " GGG_EXECUTABLE_NAME " "
         << this->prefix() << " NAME...\n";
 }
-
-

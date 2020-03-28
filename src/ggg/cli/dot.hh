@@ -5,15 +5,13 @@
 
 namespace ggg {
 
-	class Dot: public Command {
+    class Dot: public Command {
 
-	public:
-		void execute() override;
-		void print_usage() override;
-	};
+    public:
+        void execute() override;
+        void print_usage() override;
+    };
 
 }
 
 #endif // vim:filetype=cpp
-
-

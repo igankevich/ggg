@@ -6,7 +6,7 @@
 namespace {
 
     SCM scm_encode_base64(SCM data) {
-		auto s_data = ggg::to_string(data);
+        auto s_data = ggg::to_string(data);
         std::string result;
         result.resize(sys::base64_encoded_size(s_data.size()));
         sys::base64_encode(s_data.data(), s_data.size(), &result[0]);
@@ -14,7 +14,7 @@ namespace {
     }
 
     SCM scm_decode_base64(SCM data) {
-		auto s_data = ggg::to_string(data);
+        auto s_data = ggg::to_string(data);
         auto n = sys::base64_max_decoded_size(s_data.size());
         std::string result;
         result.resize(n);

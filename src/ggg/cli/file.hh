@@ -7,36 +7,36 @@
 
 namespace ggg {
 
-	struct File {
+    struct File {
 
-		const char* filename;
+        const char* filename;
 
-		inline void
-		owner(sys::uid_type uid, sys::gid_type gid) {
-			UNISTDX_CHECK(::chown(filename, uid, gid));
-		}
+        inline void
+        owner(sys::uid_type uid, sys::gid_type gid) {
+            UNISTDX_CHECK(::chown(filename, uid, gid));
+        }
 
-		inline void
-		mode(sys::file_mode m) {
-			UNISTDX_CHECK(::chmod(filename, m));
-		}
+        inline void
+        mode(sys::file_mode m) {
+            UNISTDX_CHECK(::chmod(filename, m));
+        }
 
-	};
+    };
 
-	struct Directory: public File {
+    struct Directory: public File {
 
-		inline explicit
-		Directory(const char* name): File{name} {}
+        inline explicit
+        Directory(const char* name): File{name} {}
 
-		inline void
-		make(sys::file_mode m) {
-			int ret = ::mkdir(filename, m);
-			if (ret != 0 && errno != EEXIST) {
-				UNISTDX_CHECK(ret);
-			}
-		}
+        inline void
+        make(sys::file_mode m) {
+            int ret = ::mkdir(filename, m);
+            if (ret != 0 && errno != EEXIST) {
+                UNISTDX_CHECK(ret);
+            }
+        }
 
-	};
+    };
 
 }
 

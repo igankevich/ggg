@@ -13,10 +13,10 @@ namespace pam {
         return errc(ret);
     }
 
-	inline void
-	throw_pam_error(errc err) {
-		throw std::system_error(int(err), pam_category);
-	}
+    inline void
+    throw_pam_error(errc err) {
+        throw std::system_error(int(err), pam_category);
+    }
 
 
 }

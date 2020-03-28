@@ -2,6 +2,6 @@
 
 namespace pam {
 
-	error_category pam_category;
+    error_category pam_category;
 
 }

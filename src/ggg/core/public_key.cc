@@ -11,9 +11,9 @@ ggg::public_key::clear() {
 
 void
 ggg::operator>>(const sqlite::statement& in, public_key& rhs) {
-	rhs.clear();
-	sqlite::cstream cstr(in);
-	cstr >> rhs._name >> rhs._options >> rhs._type
+    rhs.clear();
+    sqlite::cstream cstr(in);
+    cstr >> rhs._name >> rhs._options >> rhs._type
         >> rhs._key >> rhs._comment;
 }
 
@@ -25,4 +25,3 @@ ggg::operator<<(std::ostream& out, const public_key& rhs) {
     out << rhs.comment();
     return out;
 }
-

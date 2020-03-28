@@ -5,7 +5,7 @@
 
 namespace ggg {
 
-	class quiet_error: public std::exception {};
+    class quiet_error: public std::exception {};
 
 }
 

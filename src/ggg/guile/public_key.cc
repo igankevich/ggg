@@ -43,16 +43,16 @@ namespace ggg {
     template <>
     public_key
     Guile_traits<public_key>::from(SCM obj) {
-    	public_key o;
-    	o._name = to_string(slot(obj, "name"));
-    	o._type = to_string(slot(obj, "type"));
-    	o._key = to_string(slot(obj, "key"));
-    	o._comment = to_string(slot(obj, "comment"));
-    	auto s_options = scm_from_latin1_symbol("options");
-    	if (slot_is_bound(obj, s_options)) {
-    		o._options = to_string(slot(obj, s_options));
-    	}
-    	return o;
+        public_key o;
+        o._name = to_string(slot(obj, "name"));
+        o._type = to_string(slot(obj, "type"));
+        o._key = to_string(slot(obj, "key"));
+        o._comment = to_string(slot(obj, "comment"));
+        auto s_options = scm_from_latin1_symbol("options");
+        if (slot_is_bound(obj, s_options)) {
+            o._options = to_string(slot(obj, s_options));
+        }
+        return o;
     }
 
     template <>
@@ -64,5 +64,3 @@ namespace ggg {
     }
 
 }
-
-

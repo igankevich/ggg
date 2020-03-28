@@ -5,16 +5,12 @@
 
 namespace ggg {
 
-	class Lock_entity: public Command {
-	public:
-		void execute() override;
-		void print_usage() override;
-	};
+    class Lock_entity: public Command {
+    public:
+        void execute() override;
+        void print_usage() override;
+    };
 
 }
 
 #endif // vim:filetype=cpp
-
-
-
-

@@ -3,7 +3,7 @@
 
 namespace ggg {
 
-	void password_define_procedures();
+    void password_define_procedures();
 
 }
 

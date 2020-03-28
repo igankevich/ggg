@@ -5,19 +5,17 @@
 
 namespace ggg {
 
-	class Backup: public Command {
+    class Backup: public Command {
 
-	private:
-		const char* _format = "%Y-%m-%d--%H-%M-%S";
+    private:
+        const char* _format = "%Y-%m-%d--%H-%M-%S";
 
-	public:
-		void parse_arguments(int argc, char* argv[]) override;
-		void execute() override;
-		void print_usage() override;
-	};
+    public:
+        void parse_arguments(int argc, char* argv[]) override;
+        void execute() override;
+        void print_usage() override;
+    };
 
 }
 
 #endif // vim:filetype=cpp
-
-

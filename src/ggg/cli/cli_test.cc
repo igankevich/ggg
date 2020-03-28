@@ -51,40 +51,40 @@ TEST(CommandsBase, Init) {
 }
 
 TEST_F(Commands, Add) {
-	EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 2001)' | ggg add -f-)");
-	EXPECT_ZERO(R"(echo '(make <entity> #:name "u2" #:id 2002)' | ggg add -f-)");
-	EXPECT_ZERO(R"(echo '(make <entity> #:name "u3" #:id 2003)' | ggg add -f-)");
-	EXPECT_NON_ZERO2(
+    EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 2001)' | ggg add -f-)");
+    EXPECT_ZERO(R"(echo '(make <entity> #:name "u2" #:id 2002)' | ggg add -f-)");
+    EXPECT_ZERO(R"(echo '(make <entity> #:name "u3" #:id 2003)' | ggg add -f-)");
+    EXPECT_NON_ZERO2(
         R"(echo '(list (make <entity> #:name "u3" #:id 2003))' | ggg add -f-)",
         "added the same user twice"
-	);
-	EXPECT_NON_ZERO2(
+    );
+    EXPECT_NON_ZERO2(
         R"(echo '(list (make <entity> #:name "uu" #:id 2001))' | ggg add -f-)",
-	    "added a user with the same UID twice"
-	);
-	EXPECT_NON_ZERO2(
+        "added a user with the same UID twice"
+    );
+    EXPECT_NON_ZERO2(
         R"(echo '(list (make <entity> #:name "u1" #:id 2222))' | ggg add -f-)",
-	    "added a user with the same USERNAME twice"
-	);
+        "added a user with the same USERNAME twice"
+    );
 }
 
 TEST_F(Commands, Remove) {
-	EXPECT_NON_ZERO("ggg rm u1");
-	EXPECT_OUTPUT("", "ggg find u1");
-	//EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 3001)' | ggg add -f-)");
-	//EXPECT_OUTPUT("u1\n", "ggg find u1");
-	//EXPECT_ZERO("ggg rm u1");
-	//EXPECT_OUTPUT("", "ggg find u1");
-	//EXPECT_ZERO("ggg rm u1");
+    EXPECT_NON_ZERO("ggg rm u1");
+    EXPECT_OUTPUT("", "ggg find u1");
+    //EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 3001)' | ggg add -f-)");
+    //EXPECT_OUTPUT("u1\n", "ggg find u1");
+    //EXPECT_ZERO("ggg rm u1");
+    //EXPECT_OUTPUT("", "ggg find u1");
+    //EXPECT_ZERO("ggg rm u1");
 }
 
 TEST_F(Commands, Info) {
-	EXPECT_NON_ZERO("ggg info u1");
-	EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 2001)' | ggg add -f-)");
-	EXPECT_ZERO("ggg info u1");
-	EXPECT_ZERO("ggg rm u1");
-	EXPECT_NON_ZERO("ggg info u1");
-	EXPECT_NON_ZERO("ggg info donotexist");
+    EXPECT_NON_ZERO("ggg info u1");
+    EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 2001)' | ggg add -f-)");
+    EXPECT_ZERO("ggg info u1");
+    EXPECT_ZERO("ggg rm u1");
+    EXPECT_NON_ZERO("ggg info u1");
+    EXPECT_NON_ZERO("ggg info donotexist");
 }
 
 //TEST_F(Commands, GetEnt) {
@@ -102,20 +102,20 @@ TEST_F(Commands, Info) {
 //}
 
 TEST_F(Commands, Find) {
-	EXPECT_OUTPUT("", "ggg find");
-	EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 2001)' | ggg add -f-)");
-	EXPECT_OUTPUT("u1\n", "ggg find");
-	EXPECT_ZERO(R"(echo '(make <entity> #:name "u2" #:id 2002)' | ggg add -f-)");
-	EXPECT_ZERO(R"(echo '(make <entity> #:name "u3" #:id 2003)' | ggg add -f-)");
-	EXPECT_OUTPUT("u1\n", "ggg find u1");
-	EXPECT_OUTPUT("u1\n", "ggg find U1");
-	EXPECT_OUTPUT("u2\n", "ggg find u2");
-	EXPECT_OUTPUT("u3\n", "ggg find U3");
-	EXPECT_OUTPUT("u1\nu2\nu3\n", "ggg find u | sort");
-	EXPECT_OUTPUT("u1\nu2\n", "ggg find 'u[12]' | sort");
-	EXPECT_OUTPUT("", "ggg find donotexist");
-	EXPECT_ZERO("ggg rm u1");
-	EXPECT_OUTPUT("", "ggg find u1");
+    EXPECT_OUTPUT("", "ggg find");
+    EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 2001)' | ggg add -f-)");
+    EXPECT_OUTPUT("u1\n", "ggg find");
+    EXPECT_ZERO(R"(echo '(make <entity> #:name "u2" #:id 2002)' | ggg add -f-)");
+    EXPECT_ZERO(R"(echo '(make <entity> #:name "u3" #:id 2003)' | ggg add -f-)");
+    EXPECT_OUTPUT("u1\n", "ggg find u1");
+    EXPECT_OUTPUT("u1\n", "ggg find U1");
+    EXPECT_OUTPUT("u2\n", "ggg find u2");
+    EXPECT_OUTPUT("u3\n", "ggg find U3");
+    EXPECT_OUTPUT("u1\nu2\nu3\n", "ggg find u | sort");
+    EXPECT_OUTPUT("u1\nu2\n", "ggg find 'u[12]' | sort");
+    EXPECT_OUTPUT("", "ggg find donotexist");
+    EXPECT_ZERO("ggg rm u1");
+    EXPECT_OUTPUT("", "ggg find u1");
 }
 
 //TEST_F(Commands, FindOutputMatchesGetEntOutput) {
@@ -145,84 +145,84 @@ TEST_F(Commands, Find) {
 
 
 TEST_F(Commands, GroupsAndMembers) {
-	EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 2001)' | ggg add -f-)");
-	EXPECT_ZERO(R"(echo '(make <entity> #:name "g1" #:id 3001)' | ggg add -f-)");
-	EXPECT_OUTPUT("", "ggg groups u1");
-	EXPECT_OUTPUT("", "ggg members g1");
-	EXPECT_ZERO("ggg tie u1 g1");
-	EXPECT_OUTPUT("g1\n", "ggg groups u1");
-	EXPECT_OUTPUT("u1\n", "ggg members g1");
-	EXPECT_ZERO("ggg untie u1");
-	EXPECT_OUTPUT("", "ggg groups u1");
-	EXPECT_OUTPUT("", "ggg members g1");
-	EXPECT_NON_ZERO("ggg groups donotexist");
-	EXPECT_NON_ZERO("ggg members donotexist");
+    EXPECT_ZERO(R"(echo '(make <entity> #:name "u1" #:id 2001)' | ggg add -f-)");
+    EXPECT_ZERO(R"(echo '(make <entity> #:name "g1" #:id 3001)' | ggg add -f-)");
+    EXPECT_OUTPUT("", "ggg groups u1");
+    EXPECT_OUTPUT("", "ggg members g1");
+    EXPECT_ZERO("ggg tie u1 g1");
+    EXPECT_OUTPUT("g1\n", "ggg groups u1");
+    EXPECT_OUTPUT("u1\n", "ggg members g1");
+    EXPECT_ZERO("ggg untie u1");
+    EXPECT_OUTPUT("", "ggg groups u1");
+    EXPECT_OUTPUT("", "ggg members g1");
+    EXPECT_NON_ZERO("ggg groups donotexist");
+    EXPECT_NON_ZERO("ggg members donotexist");
 }
 
 TEST_F(Commands, Version) {
-	EXPECT_OUTPUT(GGG_VERSION "\n", "ggg version");
-	EXPECT_OUTPUT(GGG_VERSION "\n", "ggg --version");
-	EXPECT_OUTPUT(GGG_VERSION "\n", "ggg -v");
+    EXPECT_OUTPUT(GGG_VERSION "\n", "ggg version");
+    EXPECT_OUTPUT(GGG_VERSION "\n", "ggg --version");
+    EXPECT_OUTPUT(GGG_VERSION "\n", "ggg -v");
 }
 
 TEST_F(Commands, Edit) {
-	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u1" #:id 2001 #:description "N" #:home "H" #:shell "S")')");
-	EXPECT_OUTPUT("u1:x:2001:2001:N:H:S\n", "ggg find -o passwd u1");
-	EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2001 #:description "Nx" #:home "H" #:shell "S")')");
-	EXPECT_OUTPUT("u1:x:2001:2001:Nx:H:S\n", "ggg find -o passwd u1");
-	EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2001 #:description "Nx" #:home "Hx" #:shell "S")')");
-	EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:S\n", "ggg find -o passwd u1");
-	EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2001 #:description "Nx" #:home "Hx" #:shell "Sx")')");
-	EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o passwd u1");
-	EXPECT_NON_ZERO2(
+    EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u1" #:id 2001 #:description "N" #:home "H" #:shell "S")')");
+    EXPECT_OUTPUT("u1:x:2001:2001:N:H:S\n", "ggg find -o passwd u1");
+    EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2001 #:description "Nx" #:home "H" #:shell "S")')");
+    EXPECT_OUTPUT("u1:x:2001:2001:Nx:H:S\n", "ggg find -o passwd u1");
+    EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2001 #:description "Nx" #:home "Hx" #:shell "S")')");
+    EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:S\n", "ggg find -o passwd u1");
+    EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u1" #:id 2001 #:description "Nx" #:home "Hx" #:shell "Sx")')");
+    EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o passwd u1");
+    EXPECT_NON_ZERO2(
         R"(ggg edit -e '(make <entity> #:name "u1" #:id 2222 #:description "Nx" #:home "Hx" #:shell "Sx")')",
-		"changed entity id but it is not allowed"
-	);
-	EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o passwd u1");
-	EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u2" #:id 2001 #:description "Nx" #:home "Hx" #:shell "Sx")')");
-	EXPECT_OUTPUT("", "ggg find -o passwd u1");
-	EXPECT_OUTPUT("u2:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o passwd u2");
+        "changed entity id but it is not allowed"
+    );
+    EXPECT_OUTPUT("u1:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o passwd u1");
+    EXPECT_ZERO(R"(ggg edit -e '(make <entity> #:name "u2" #:id 2001 #:description "Nx" #:home "Hx" #:shell "Sx")')");
+    EXPECT_OUTPUT("", "ggg find -o passwd u1");
+    EXPECT_OUTPUT("u2:x:2001:2001:Nx:Hx:Sx\n", "ggg find -o passwd u2");
 }
 
 TEST_F(Commands, Locale) {
-	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u1" #:id 2001 #:description "U1")')");
-	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u2" #:id 2002 #:description "Ю2")')");
-	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u3" #:id 2003 #:description "U3")')");
-	EXPECT_ZERO(R"(ggg add -t account -e '(make <account> #:name "u1")')");
-	EXPECT_ZERO(R"(ggg add -t account -e '(make <account> #:name "u2")')");
-	EXPECT_ZERO(R"(ggg add -t account -e '(make <account> #:name "u3")')");
-	EXPECT_ZERO("ggg lock u1 u2 u3");
-	EXPECT_OUTPUT("u1\nu2\nu3\n", "ggg locked");
-	EXPECT_OUTPUT("u1\nu2\nu3\n", "env LC_ALL=C ggg locked");
+    EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u1" #:id 2001 #:description "U1")')");
+    EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u2" #:id 2002 #:description "Ю2")')");
+    EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u3" #:id 2003 #:description "U3")')");
+    EXPECT_ZERO(R"(ggg add -t account -e '(make <account> #:name "u1")')");
+    EXPECT_ZERO(R"(ggg add -t account -e '(make <account> #:name "u2")')");
+    EXPECT_ZERO(R"(ggg add -t account -e '(make <account> #:name "u3")')");
+    EXPECT_ZERO("ggg lock u1 u2 u3");
+    EXPECT_OUTPUT("u1\nu2\nu3\n", "ggg locked");
+    EXPECT_OUTPUT("u1\nu2\nu3\n", "env LC_ALL=C ggg locked");
 }
 
 TEST_F(Commands, TiesAndHierarchies) {
-	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u1" #:id 2001 #:description "U1")')");
-	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u2" #:id 2002 #:description "Ю2")')");
-	EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u3" #:id 2003 #:description "U3")')");
-	EXPECT_ZERO("ggg attach u1 u2");
-	EXPECT_NON_ZERO2("ggg attach u1 u2", "attached same entities multiple times");
-	EXPECT_NON_ZERO2("ggg tie u1 u2", "tied entitites with the same hierarhy root");
-	EXPECT_ZERO("ggg detach u1");
-	EXPECT_ZERO("ggg tie u1 u2");
-	EXPECT_NON_ZERO2("ggg attach u1 u2", "attached tied entities");
-	EXPECT_ZERO("ggg untie u1 u2");
-	EXPECT_ZERO("ggg attach u1 u2");
+    EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u1" #:id 2001 #:description "U1")')");
+    EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u2" #:id 2002 #:description "Ю2")')");
+    EXPECT_ZERO(R"(ggg add -e '(make <entity> #:name "u3" #:id 2003 #:description "U3")')");
+    EXPECT_ZERO("ggg attach u1 u2");
+    EXPECT_NON_ZERO2("ggg attach u1 u2", "attached same entities multiple times");
+    EXPECT_NON_ZERO2("ggg tie u1 u2", "tied entitites with the same hierarhy root");
+    EXPECT_ZERO("ggg detach u1");
+    EXPECT_ZERO("ggg tie u1 u2");
+    EXPECT_NON_ZERO2("ggg attach u1 u2", "attached tied entities");
+    EXPECT_ZERO("ggg untie u1 u2");
+    EXPECT_ZERO("ggg attach u1 u2");
 }
 
 int
 main(int argc, char* argv[]) {
-	const char* ggg_executable = getenv("GGG_EXECUTABLE");
-	if (!ggg_executable) { return 77; }
-	sys::canonical_path ggg_exe(ggg_executable);
-	if (const char* path = getenv("PATH")) {
-		std::string new_path = ggg_exe.dirname();
-		new_path += ':';
-		new_path += path;
-		::setenv("PATH", new_path.data(), 1);
-	} else {
-		::setenv("PATH", ggg_exe.dirname(), 1);
-	}
-	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    const char* ggg_executable = getenv("GGG_EXECUTABLE");
+    if (!ggg_executable) { return 77; }
+    sys::canonical_path ggg_exe(ggg_executable);
+    if (const char* path = getenv("PATH")) {
+        std::string new_path = ggg_exe.dirname();
+        new_path += ':';
+        new_path += path;
+        ::setenv("PATH", new_path.data(), 1);
+    } else {
+        ::setenv("PATH", ggg_exe.dirname(), 1);
+    }
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

@@ -11,7 +11,7 @@ struct Clean_database: public ggg::Database {
 
     using ggg::Database::insert;
 
-	Clean_database() {
+    Clean_database() {
         try {
             { Database(Database::File::Entities, Database::Flag::Read_write); }
             { Database(Database::File::Accounts, Database::Flag::Read_write); }
@@ -21,7 +21,7 @@ struct Clean_database: public ggg::Database {
             { Database(Database::File::Entities, Database::Flag::Read_write); }
             { Database(Database::File::Accounts, Database::Flag::Read_write); }
         }
-		this->open(ggg::Database::File::All, ggg::Database::Flag::Read_write);
+        this->open(ggg::Database::File::All, ggg::Database::Flag::Read_write);
         this->db()->execute(
                 "DELETE FROM entities;"
                 "DELETE FROM ties;"
@@ -35,11 +35,11 @@ struct Clean_database: public ggg::Database {
                 "PRAGMA journal_mode=OFF;");
     }
 
-	void insert(const char* str) {
-		ggg::entity ent;
-		std::stringstream(str) >> ent;
-		this->Database::insert(ent);
-	}
+    void insert(const char* str) {
+        ggg::entity ent;
+        std::stringstream(str) >> ent;
+        this->Database::insert(ent);
+    }
 
 };
 

@@ -6,13 +6,12 @@
 
 namespace ggg {
 
-	typedef std::basic_stringstream<
-		char,
-		std::char_traits<char>,
-		secure_allocator<char>
-	> secure_stringstream;
+    typedef std::basic_stringstream<
+        char,
+        std::char_traits<char>,
+        secure_allocator<char>
+    > secure_stringstream;
 
 }
 
 #endif // vim:filetype=cpp
-

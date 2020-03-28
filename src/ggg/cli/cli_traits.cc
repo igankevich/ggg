@@ -19,14 +19,14 @@ namespace {
 
     void
     put_time_and_date(std::ostream& out, ggg::account::time_point tp) {
-    	if (tp > ggg::account::time_point(ggg::account::duration::zero())) {
-    		auto t = ggg::account::clock_type::to_time_t(tp);
+        if (tp > ggg::account::time_point(ggg::account::duration::zero())) {
+            auto t = ggg::account::clock_type::to_time_t(tp);
             char buf[25];
             std::strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S%z", std::localtime(&t));
-    		out << buf;
-    	} else {
-    		out << '-';
-    	}
+            out << buf;
+        } else {
+            out << '-';
+        }
     }
 
     void

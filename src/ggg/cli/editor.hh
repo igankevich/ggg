@@ -7,14 +7,14 @@
 
 namespace ggg {
 
-	std::string
-	find_file_editor();
+    std::string
+    find_file_editor();
 
-	sys::process_status
-	edit_file(std::string path);
+    sys::process_status
+    edit_file(std::string path);
 
-	void
-	edit_file_or_throw(std::string path);
+    void
+    edit_file_or_throw(std::string path);
 
 }
 

@@ -6,16 +6,14 @@
 
 void
 ggg::Expire_entity::execute()  {
-	Database db(Database::File::All, Database::Flag::Read_write);
-	for (const auto& name : this->args()) {
-		db.expire(name.data());
-	}
+    Database db(Database::File::All, Database::Flag::Read_write);
+    for (const auto& name : this->args()) {
+        db.expire(name.data());
+    }
 }
 
 void
 ggg::Expire_entity::print_usage() {
-	std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-		<< this->prefix() << " [-q] ENTITY...\n";
+    std::cout << "usage: " GGG_EXECUTABLE_NAME " "
+        << this->prefix() << " [-q] ENTITY...\n";
 }
-
-

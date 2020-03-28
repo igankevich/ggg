@@ -98,4 +98,3 @@ ggg::verify_password(const std::string& hashed_password, const char* password) {
     }
     return success;
 }
-

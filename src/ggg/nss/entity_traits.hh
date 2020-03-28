@@ -5,16 +5,16 @@
 
 namespace ggg {
 
-	template <class T>
-	struct entity_traits;
+    template <class T>
+    struct entity_traits;
 
-	template <class T>
-	size_t
-	buffer_size(const T& ent) noexcept;
+    template <class T>
+    size_t
+    buffer_size(const T& ent) noexcept;
 
-	template <class X, class Y>
-	void
-	copy_to(const X& a, Y* lhs, char* buffer);
+    template <class X, class Y>
+    void
+    copy_to(const X& a, Y* lhs, char* buffer);
 
 }
 

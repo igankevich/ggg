@@ -8,37 +8,37 @@
 
 namespace ggg {
 
-	class echo_guard: public ::termios {
+    class echo_guard: public ::termios {
 
-	private:
-		sys::fd_type _fd = -1;
+    private:
+        sys::fd_type _fd = -1;
 
-	public:
+    public:
 
-		inline explicit
-		echo_guard(sys::fd_type fd):
-		_fd(fd) {
-			if (::isatty(this->_fd)) {
-				UNISTDX_CHECK(::tcgetattr(this->_fd, this));
-				this->c_lflag &= ~ECHO;
-				UNISTDX_CHECK(::tcsetattr(this->_fd, TCSANOW, this));
-			} else {
-				this->_fd = -1;
-			}
-		}
+        inline explicit
+        echo_guard(sys::fd_type fd):
+        _fd(fd) {
+            if (::isatty(this->_fd)) {
+                UNISTDX_CHECK(::tcgetattr(this->_fd, this));
+                this->c_lflag &= ~ECHO;
+                UNISTDX_CHECK(::tcsetattr(this->_fd, TCSANOW, this));
+            } else {
+                this->_fd = -1;
+            }
+        }
 
-		inline
-		~echo_guard() {
-			if (this->_fd != -1) {
-				this->c_lflag |= ECHO;
-				int ret = ::tcsetattr(this->_fd, TCSANOW, this);
-				if (ret == -1) {
-					std::terminate();
-				}
-			}
-		}
+        inline
+        ~echo_guard() {
+            if (this->_fd != -1) {
+                this->c_lflag |= ECHO;
+                int ret = ::tcsetattr(this->_fd, TCSANOW, this);
+                if (ret == -1) {
+                    std::terminate();
+                }
+            }
+        }
 
-	};
+    };
 
 }
 

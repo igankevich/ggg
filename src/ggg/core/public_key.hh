@@ -40,9 +40,9 @@ namespace ggg {
         inline void key(const std::string& rhs) { this->_key = rhs; }
         inline void comment(const std::string& rhs) { this->_comment = rhs; }
         void clear();
-		friend void operator>>(const sqlite::statement& in, public_key& rhs);
-		friend std::ostream& operator<<(std::ostream& out, const public_key& rhs);
-		friend struct Guile_traits<public_key>;
+        friend void operator>>(const sqlite::statement& in, public_key& rhs);
+        friend std::ostream& operator<<(std::ostream& out, const public_key& rhs);
+        friend struct Guile_traits<public_key>;
     };
 
     void operator>>(const sqlite::statement& in, public_key& rhs);

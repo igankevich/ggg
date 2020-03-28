@@ -5,15 +5,12 @@
 
 namespace ggg {
 
-	class Expire_entity: public Command {
-	public:
-		void execute() override;
-		void print_usage() override;
-	};
+    class Expire_entity: public Command {
+    public:
+        void execute() override;
+        void print_usage() override;
+    };
 
 }
 
 #endif // vim:filetype=cpp
-
-
-

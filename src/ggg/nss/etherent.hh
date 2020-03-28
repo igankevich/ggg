@@ -4,8 +4,8 @@
 #include <netinet/ether.h>
 
 struct etherent {
-	char* e_name;
-	struct ::ether_addr e_addr;
+    char* e_name;
+    struct ::ether_addr e_addr;
 };
 
 #endif // vim:filetype=cpp

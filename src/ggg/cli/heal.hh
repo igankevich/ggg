@@ -8,20 +8,13 @@
 
 namespace ggg {
 
-	class Heal: public Command {
+    class Heal: public Command {
 
-	public:
-		void execute() override;
+    public:
+        void execute() override;
 
-	};
+    };
 
 }
 
 #endif // vim:filetype=cpp
-
-
-
-
-
-
-

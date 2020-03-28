@@ -7,7 +7,7 @@ extern "C" void scm_init_ggg();
 
 namespace ggg {
 
-	void guile_init();
+    void guile_init();
 
 }
 

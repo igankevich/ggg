@@ -5,12 +5,11 @@
 
 void
 ggg::Dot::execute() {
-	Database db(Database::File::Entities, Database::Flag::Read_only);
-	db.dot(std::cout);
+    Database db(Database::File::Entities, Database::Flag::Read_only);
+    db.dot(std::cout);
 }
 
 void
 ggg::Dot::print_usage() {
-	std::cout << "usage: " GGG_EXECUTABLE_NAME " " << this->prefix() << '\n';
+    std::cout << "usage: " GGG_EXECUTABLE_NAME " " << this->prefix() << '\n';
 }
-
