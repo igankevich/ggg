@@ -1,0 +1,4 @@
+LIBNSS_GGG_1.0 {
+    global: _nss_ggg_*;
+    local: *;
+};

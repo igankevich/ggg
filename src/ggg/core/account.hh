@@ -12,6 +12,7 @@
 
 #include <ggg/core/account_flags.hh>
 #include <ggg/core/guile_traits.hh>
+#include <ggg/core/protocol_traits.hh>
 #include <ggg/sec/secure_string.hh>
 
 #include <sqlitex/statement.hh>
@@ -164,6 +165,7 @@ namespace ggg {
     private:
 
         friend struct Guile_traits<account>;
+        friend struct Protocol_traits<account>;
 
     };
 

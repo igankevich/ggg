@@ -2,38 +2,22 @@
 #include <stddef.h>
 
 #include <ggg/config.hh>
+#include <ggg/core/account.hh>
 #include <ggg/core/days.hh>
 #include <ggg/nss/buffer.hh>
 #include <ggg/nss/database.hh>
 #include <ggg/nss/nss.hh>
 
-namespace ggg {
-
-    template <>
-    struct entity_traits<account> {
-
-        typedef account entity_type;
-        typedef Database::statement_type stream_type;
-        typedef sqlite::row_iterator<account> iterator;
-
-        static inline stream_type
-        all(Database* db) {
-            return db->accounts();
-        }
-
-    };
-
-}
+using namespace ggg;
 
 namespace {
 
-    typedef sqlite::row_iterator<ggg::account> iterator;
-    typedef struct ::spwd entity_type;
-    ggg::NSS_database<ggg::account> database;
+    using entity_type = ::spwd;
+    NSS_response<account,NSS_kernel::Passwd> database;
 
 }
 
-NSS_ENUMERATE(sp, entity_type, Accounts)
+NSS_ENUMERATE_PROTO(sp, entity_type)
 
 NSS_GETENTBY_R(sp, nam)(
     const char* name,
@@ -45,17 +29,19 @@ NSS_GETENTBY_R(sp, nam)(
     nss_status ret;
     int err;
     try {
-        ggg::Database db(ggg::Database::File::Accounts);
-        auto rstr = db.find_account(name);
-        iterator first(rstr), last;
-        if (first == last) {
+        NSS_kernel kernel(NSS_kernel::Shadow, NSS_kernel::Get_by_name);
+        kernel.name(name);
+        Client_protocol proto;
+        proto.process(&kernel, Protocol::Command::NSS_kernel);
+        const auto& response = kernel.response<account>();
+        if (response.empty()) {
             ret = NSS_STATUS_NOTFOUND;
             err = ENOENT;
-        } else if (buflen < buffer_size(*first)) {
+        } else if (buflen < buffer_size(response.front())) {
             ret = NSS_STATUS_TRYAGAIN;
             err = ERANGE;
         } else {
-            copy_to(*first, result, buffer);
+            copy_to(response.front(), result, buffer);
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }

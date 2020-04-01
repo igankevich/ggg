@@ -3,10 +3,11 @@
 
 #include <string>
 
+#include <unistdx/net/ethernet_address>
+
 #include <ggg/core/guile_traits.hh>
 #include <ggg/core/host.hh>
 #include <ggg/core/ip_address.hh>
-#include <unistdx/net/ethernet_address>
 
 namespace ggg {
 
@@ -25,6 +26,12 @@ namespace ggg {
         Machine& operator=(const Machine&) = default;
         Machine(Machine&&) = default;
         Machine& operator=(Machine&&) = default;
+
+        inline
+        Machine(const std::string& name,
+                const ip_address& ip,
+                const sys::ethernet_address& eth):
+            _name(name), _ip_address(ip), _ethernet_address(eth) {}
 
         inline const std::string&
         name() const noexcept {

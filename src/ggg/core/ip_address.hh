@@ -9,6 +9,8 @@
 #include <unistdx/net/ipv4_address>
 #include <unistdx/net/ipv6_address>
 
+#include <ggg/core/protocol_traits.hh>
+
 namespace ggg {
 
     class ip_address {
@@ -33,6 +35,16 @@ namespace ggg {
         ip_address(sys::family_type family):
         _family{family},
         _address6{} {}
+
+        inline explicit
+        ip_address(const sys::ipv4_address& addr):
+        _family{sys::family_type::inet},
+        _address4{addr} {}
+
+        inline explicit
+        ip_address(const sys::ipv6_address& addr):
+        _family{sys::family_type::inet6},
+        _address6{addr} {}
 
         ~ip_address() = default;
 
@@ -89,6 +101,8 @@ namespace ggg {
 
         friend bool
         operator<(const ip_address& lhs, const ip_address& rhs);
+
+        friend struct Protocol_traits<ip_address>;
 
     };
 

@@ -3,9 +3,8 @@
 #include <limits>
 #include <stddef.h>
 
-#include <unistdx/it/field_iterator>
-
-#include <ggg/config.hh>
+#include <ggg/core/entity.hh>
+#include <ggg/core/group.hh>
 #include <ggg/nss/buffer.hh>
 #include <ggg/nss/database.hh>
 #include <ggg/nss/nss.hh>
@@ -14,100 +13,17 @@
 #include <iostream>
 #endif
 
-namespace ggg {
+using entity_type = ::group;
 
-    class Group_stream {
-
-    public:
-        typedef ggg::Database::group_container_t container_type;
-        typedef sys::field_iterator<container_type::iterator,1> iterator;
-
-    private:
-        container_type _groups;
-        container_type::iterator _first, _last;
-        bool _good = true;
-
-    public:
-
-        Group_stream() = default;
-
-        inline
-        Group_stream(container_type&& groups):
-        _groups(std::move(groups)),
-        _first(_groups.begin()),
-        _last(_groups.end()),
-        _good(_first != _last) {}
-
-        inline
-        Group_stream(Group_stream&& rhs):
-        _groups(std::move(rhs._groups)),
-        _first(_groups.begin()),
-        _last(_groups.end()),
-        _good(rhs._good) {}
-
-        inline Group_stream&
-        operator=(Group_stream&& rhs) {
-            this->_groups = std::move(rhs._groups);
-            this->_first = this->_groups.begin();
-            this->_last = this->_groups.end();
-            this->_good = rhs._good;
-            return *this;
-        }
-
-        inline Group_stream&
-        operator>>(group& rhs) {
-            if (this->_first == this->_last) {
-                this->_good = false;
-                return *this;
-            }
-            rhs = std::move(this->_first->second);
-            ++this->_first;
-            return *this;
-        }
-
-        inline bool
-        good() const {
-            return this->_good;
-        }
-
-        inline bool empty() const { return this->_first == this->_last; }
-
-        template <class T> inline iterator begin() { return this->_first; }
-        template <class T> inline iterator end() { return this->_last; }
-
-        inline void
-        close() {
-            this->_groups.clear();
-            this->_first = this->_groups.begin();
-            this->_last = this->_groups.end();
-        }
-
-    };
-
-    template <>
-    struct entity_traits<group> {
-
-        typedef group entity_type;
-        typedef Group_stream stream_type;
-        typedef Group_stream::iterator iterator;
-
-        static inline stream_type
-        all(Database* db) {
-            return Group_stream(db->groups());
-        }
-
-    };
-
-}
+using namespace ggg;
 
 namespace {
 
-    typedef struct ::group entity_type;
-    ggg::NSS_database<ggg::group> database;
+    NSS_response<::ggg::group,NSS_kernel::Group> database;
 
 }
 
-NSS_ENUMERATE(gr, entity_type, Entities)
+NSS_ENUMERATE_PROTO(gr, entity_type)
 
 NSS_GETENTBY_R(gr, gid)(
     ::gid_t gid,
@@ -119,16 +35,19 @@ NSS_GETENTBY_R(gr, gid)(
     nss_status ret;
     int err;
     try {
-        ggg::Database db(ggg::Database::File::Entities);
-        ggg::group gr;
-        if (!db.find_group(gid, gr)) {
+        NSS_kernel kernel(NSS_kernel::Group, NSS_kernel::Get_by_id);
+        kernel.gid(gid);
+        Client_protocol proto;
+        proto.process(&kernel, Protocol::Command::NSS_kernel);
+        const auto& response = kernel.response<::ggg::group>();
+        if (response.empty()) {
             ret = NSS_STATUS_NOTFOUND;
             err = ENOENT;
-        } else if (buflen < buffer_size(gr)) {
+        } else if (buflen < buffer_size(response.front())) {
             ret = NSS_STATUS_TRYAGAIN;
             err = ERANGE;
         } else {
-            copy_to(gr, result, buffer);
+            copy_to(response.front(), result, buffer);
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
@@ -150,16 +69,19 @@ NSS_GETENTBY_R(gr, nam)(
     nss_status ret;
     int err;
     try {
-        ggg::Database db(ggg::Database::File::Entities);
-        ggg::group gr;
-        if (!db.find_group(name, gr)) {
+        NSS_kernel kernel(NSS_kernel::Group, NSS_kernel::Get_by_name);
+        kernel.name(name);
+        Client_protocol proto;
+        proto.process(&kernel, Protocol::Command::NSS_kernel);
+        const auto& response = kernel.response<::ggg::group>();
+        if (response.empty()) {
             ret = NSS_STATUS_NOTFOUND;
             err = ENOENT;
-        } else if (buflen < buffer_size(gr)) {
+        } else if (buflen < buffer_size(response.front())) {
             ret = NSS_STATUS_TRYAGAIN;
             err = ERANGE;
         } else {
-            copy_to(gr, result, buffer);
+            copy_to(response.front(), result, buffer);
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
@@ -173,10 +95,10 @@ NSS_GETENTBY_R(gr, nam)(
 
 NSS_FUNCTION(initgroups_dyn)(
     const char* user,
-    gid_t group,
+    ::gid_t group_id,
     long int* start_ptr,
     long int* size_ptr,
-    gid_t** groupsp,
+    ::gid_t** groupsp,
     long int max_size,
     int* errnop
 ) {
@@ -191,19 +113,18 @@ NSS_FUNCTION(initgroups_dyn)(
     try {
         #if defined(GGG_DEBUG_INITGROUPS)
         std::clog << "user=" << user << std::endl;
-        std::clog << "group=" << group << std::endl;
+        std::clog << "group_id=" << group_id << std::endl;
         std::clog << "start=" << start << std::endl;
         std::clog << "size=" << size << std::endl;
         std::clog << "max_size=" << max_size << std::endl;
         #endif
-        ggg::Database db(ggg::Database::File::Entities);
-        auto rstr = db.find_parent_entities(user);
-        ggg::user_iterator first(rstr), last;
-        while (first != last) {
-            if (first->id() == group) {
-                ++first;
-                continue;
-            }
+        NSS_kernel kernel(NSS_kernel::Group, NSS_kernel::Init_groups);
+        kernel.name(user);
+        Client_protocol proto;
+        proto.process(&kernel, Protocol::Command::NSS_kernel);
+        const auto& response = kernel.response<entity>();
+        for (const auto& ent : response) {
+            if (ent.id() == group_id) { continue; }
             if (start >= max_size) {
                 ret = NSS_STATUS_TRYAGAIN;
                 err = ERANGE;
@@ -220,8 +141,7 @@ NSS_FUNCTION(initgroups_dyn)(
                 size = newsize;
                 *groupsp = reinterpret_cast<gid_t*>(newgroups);
             }
-            (*groupsp)[start++] = first->id();
-            ++first;
+            (*groupsp)[start++] = ent.id();
         }
     } catch (...) {
         ret = NSS_STATUS_UNAVAIL;

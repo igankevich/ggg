@@ -4,6 +4,7 @@
 #include <ggg/nss/entity_traits.hh>
 #include <ggg/nss/etherent.hh>
 #include <ggg/nss/nss.hh>
+#include <ggg/nss/database.hh>
 
 namespace ggg {
 
@@ -27,6 +28,8 @@ namespace ggg {
 
 }
 
+using namespace ggg;
+
 NSS_FUNCTION(gethostton_r)(
     const char* name,
     struct ::etherent* result,
@@ -37,17 +40,19 @@ NSS_FUNCTION(gethostton_r)(
     nss_status ret;
     int err;
     try {
-        ggg::Database db(ggg::Database::File::Entities);
-        auto rstr = db.find_host(name);
-        ggg::host_iterator first(rstr), last;
-        if (first == last) {
+        NSS_kernel kernel(NSS_kernel::Ethers, NSS_kernel::Get_by_name);
+        kernel.name(name);
+        Client_protocol proto;
+        proto.process(&kernel, Protocol::Command::NSS_kernel);
+        const auto& response = kernel.response<host>();
+        if (response.empty()) {
             ret = NSS_STATUS_NOTFOUND;
             err = ENOENT;
-        } else if (buflen < buffer_size(*first)) {
+        } else if (buflen < buffer_size(response.front())) {
             ret = NSS_STATUS_TRYAGAIN;
             err = ERANGE;
         } else {
-            copy_to(*first, result, buffer);
+            copy_to(response.front(), result, buffer);
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
@@ -69,19 +74,19 @@ NSS_FUNCTION(getntohost_r)(
     nss_status ret;
     int err;
     try {
-        ggg::Database db(ggg::Database::File::Entities);
-        auto rstr = db.find_host(
-            sys::ethernet_address(address->ether_addr_octet)
-        );
-        ggg::host_iterator first(rstr), last;
-        if (first == last) {
+        NSS_kernel kernel(NSS_kernel::Ethers, NSS_kernel::Get_by_id);
+        kernel.ethernet_address(sys::ethernet_address(address->ether_addr_octet));
+        Client_protocol proto;
+        proto.process(&kernel, Protocol::Command::NSS_kernel);
+        const auto& response = kernel.response<host>();
+        if (response.empty()) {
             ret = NSS_STATUS_NOTFOUND;
             err = ENOENT;
-        } else if (buflen < buffer_size(*first)) {
+        } else if (buflen < buffer_size(response.front())) {
             ret = NSS_STATUS_TRYAGAIN;
             err = ERANGE;
         } else {
-            copy_to(*first, result, buffer);
+            copy_to(response.front(), result, buffer);
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }

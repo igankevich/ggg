@@ -2,6 +2,7 @@
 #define GGG_PROTO_PROTOCOL_HH
 
 #include <unistdx/base/byte_buffer>
+#include <unistdx/base/log_message>
 #include <unistdx/base/types>
 #include <unistdx/net/socket>
 
@@ -17,7 +18,8 @@ namespace ggg {
         enum class Command: sys::u32 {
             Result = 0,
             PAM_kernel = 1,
-            Size = 2,
+            NSS_kernel = 2,
+            Size = 3,
         };
 
         struct Frame {
@@ -33,12 +35,24 @@ namespace ggg {
     public:
         void process(sys::socket& sock, sys::byte_buffer& in, sys::byte_buffer& out);
 
+        template <class ... Args>
+        inline void
+        log(const char* message, const Args& ... args) const {
+            sys::log_message("server", message, args...);
+        }
+
     };
 
     class Client_protocol: public Protocol {
 
     public:
-        sys::u32 process(Kernel* kernel);
+        sys::u32 process(Kernel* kernel, Command command);
+
+        template <class ... Args>
+        inline void
+        log(const char* message, const Args& ... args) const {
+            sys::log_message("client", message, args...);
+        }
 
     };
 

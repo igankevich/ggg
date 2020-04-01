@@ -2,40 +2,27 @@
 #include <stddef.h>
 
 #include <ggg/config.hh>
+#include <ggg/core/entity.hh>
 #include <ggg/nss/buffer.hh>
 #include <ggg/nss/database.hh>
 #include <ggg/nss/nss.hh>
+#include <ggg/proto/protocol.hh>
+#include <ggg/proto/selection.hh>
 
-namespace ggg {
-
-    template <>
-    struct entity_traits<entity> {
-
-        typedef entity entity_type;
-        typedef Database::statement_type stream_type;
-        typedef sqlite::row_iterator<entity> iterator;
-
-        static inline stream_type
-        all(Database* db) {
-            return db->entities();
-        }
-
-    };
-
-}
+using namespace ggg;
 
 namespace {
 
-    typedef struct ::passwd entity_type;
-    ggg::NSS_database<ggg::entity> database;
+    using entity_type = ::passwd;
+    NSS_response<entity,NSS_kernel::Passwd> database;
 
 }
 
-NSS_ENUMERATE(pw, entity_type, Entities)
+NSS_ENUMERATE_PROTO(pw, entity_type)
 
 NSS_GETENTBY_R(pw, uid)(
     ::uid_t uid,
-    entity_type* result,
+    ::entity_type* result,
     char* buffer,
     size_t buflen,
     int* errnop
@@ -43,17 +30,19 @@ NSS_GETENTBY_R(pw, uid)(
     nss_status ret;
     int err;
     try {
-        ggg::Database db(ggg::Database::File::Entities);
-        auto rstr = db.find_user(uid);
-        ggg::user_iterator first(rstr), last;
-        if (first == last) {
+        NSS_kernel kernel(NSS_kernel::Passwd, NSS_kernel::Get_by_id);
+        kernel.uid(uid);
+        Client_protocol proto;
+        proto.process(&kernel, Protocol::Command::NSS_kernel);
+        const auto& response = kernel.response<entity>();
+        if (response.empty()) {
             ret = NSS_STATUS_NOTFOUND;
             err = ENOENT;
-        } else if (buflen < buffer_size(*first)) {
+        } else if (buflen < buffer_size(response.front())) {
             ret = NSS_STATUS_TRYAGAIN;
             err = ERANGE;
         } else {
-            copy_to(*first, result, buffer);
+            copy_to(response.front(), result, buffer);
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
@@ -75,17 +64,19 @@ NSS_GETENTBY_R(pw, nam)(
     nss_status ret;
     int err;
     try {
-        ggg::Database db(ggg::Database::File::Entities);
-        auto rstr = db.find_user(name);
-        ggg::user_iterator first(rstr), last;
-        if (first == last) {
+        NSS_kernel kernel(NSS_kernel::Passwd, NSS_kernel::Get_by_name);
+        kernel.name(name);
+        Client_protocol proto;
+        proto.process(&kernel, Protocol::Command::NSS_kernel);
+        const auto& response = kernel.response<entity>();
+        if (response.empty()) {
             ret = NSS_STATUS_NOTFOUND;
             err = ENOENT;
-        } else if (buflen < buffer_size(*first)) {
+        } else if (buflen < buffer_size(response.front())) {
             ret = NSS_STATUS_TRYAGAIN;
             err = ERANGE;
         } else {
-            copy_to(*first, result, buffer);
+            copy_to(response.front(), result, buffer);
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }

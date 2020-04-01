@@ -12,6 +12,7 @@
 #include <sqlitex/statement.hh>
 
 #include <ggg/core/guile_traits.hh>
+#include <ggg/core/protocol_traits.hh>
 
 namespace sys {
     typedef ::gid_t gid_type;
@@ -140,6 +141,7 @@ namespace ggg {
         }
 
         friend struct Guile_traits<basic_group>;
+        friend struct Protocol_traits<basic_group>;
 
     };
 

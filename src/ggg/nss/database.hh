@@ -1,71 +1,52 @@
 #ifndef GGG_NSS_DATABASE_HH
 #define GGG_NSS_DATABASE_HH
 
-#include <ggg/core/database.hh>
+#include <netdb.h>
+
 #include <ggg/nss/entity_traits.hh>
 #include <ggg/nss/nss.hh>
+#include <ggg/proto/protocol.hh>
+#include <ggg/proto/selection.hh>
 
 namespace ggg {
 
-    template <class T>
-    class NSS_database: public Database {
+    template <class T, NSS_kernel::DB db>
+    class NSS_response {
+
+    public:
+        using value_type = T;
+        using container_type = std::vector<T>;
+        using iterator = typename container_type::iterator;
 
     private:
-        typedef entity_traits<T> traits_type;
-        typedef typename traits_type::stream_type stream_type;
-        typedef typename traits_type::entity_type entity_type;
-        typedef typename traits_type::iterator iterator;
-
-    private:
-        stream_type _stream;
+        container_type _entities;
         iterator _first, _last;
 
     public:
-
-        NSS_database() = default;
-
-        inline
-        ~NSS_database() {
-            try {
-                this->close();
-            } catch (...) {
-                // ignore errors for NSS modules
-            }
-        }
-
-        inline stream_type& stream() { return this->_stream; }
-        inline entity_type& entity() { return *this->_first; }
+        inline value_type& entity() { return *this->_first; }
         inline bool empty() const { return this->_first == this->_last; }
 
         inline nss_status
-        open(Database::File file = Database::File::Entities) {
-            nss_status ret;
+        open() {
+            nss_status ret = NSS_STATUS_SUCCESS;
             try {
-                if (this->is_open()) {
-                    return NSS_STATUS_SUCCESS;
-                }
-                this->Database::open(file, Database::Flag::Read_only);
-                this->_stream = traits_type::all(this);
-                this->_first = this->_stream.template begin<T>();
-                this->_last = this->_stream.template end<T>();
-                ret = NSS_STATUS_SUCCESS;
+                NSS_kernel kernel(db, NSS_kernel::Get_all);
+                Client_protocol proto;
+                proto.process(&kernel, Protocol::Command::NSS_kernel);
+                this->_entities = kernel.response<value_type>();
+                this->_first = this->_entities.begin();
+                this->_last = this->_entities.end();
             } catch (...) {
                 ret = NSS_STATUS_UNAVAIL;
             }
             return ret;
         }
 
-        inline nss_status
-        close() {
-            nss_status ret;
-            try {
-                this->_stream.close();
-                this->Database::close();
-                ret = NSS_STATUS_SUCCESS;
-            } catch (...) {
-                ret = NSS_STATUS_UNAVAIL;
-            }
-            return ret;
+        inline nss_status close() {
+            this->_entities.clear();
+            this->_first = this->_entities.begin();
+            this->_last = this->_entities.end();
+            return NSS_STATUS_SUCCESS;
         }
 
         template <class Entity>
@@ -91,6 +72,37 @@ namespace ggg {
                 err = ENOENT;
             }
             *errnop = err;
+            return ret;
+        }
+
+        template <class Entity>
+        inline nss_status
+        get(Entity* result, char* buffer, size_t buflen, int* errnop, int* h_errnop) {
+            nss_status ret = NSS_STATUS_NOTFOUND;
+            int err, h_err;
+            try {
+                if (this->_first == this->_last) {
+                    ret = NSS_STATUS_NOTFOUND;
+                    err = ENOENT;
+                    h_err = HOST_NOT_FOUND;
+                } else if (buflen < buffer_size(*this->_first)) {
+                    ret = NSS_STATUS_TRYAGAIN;
+                    err = ERANGE;
+                    h_err = 0;
+                } else {
+                    copy_to(*this->_first, result, buffer);
+                    ++this->_first;
+                    ret = NSS_STATUS_SUCCESS;
+                    err = 0;
+                    h_err = 0;
+                }
+            } catch (...) {
+                ret = NSS_STATUS_UNAVAIL;
+                err = ENOENT;
+                h_err = NO_RECOVERY;
+            }
+            *errnop = err;
+            *h_errnop = h_err;
             return ret;
         }
 

@@ -27,4 +27,16 @@
         return database.get<type>(result, buffer, buflen, errnop); \
     }
 
+#define NSS_ENUMERATE_PROTO(db, type) \
+    NSS_SETENT(db)(void) { return database.open(); } \
+    NSS_ENDENT(db)(void) { return database.close(); } \
+    NSS_GETENT_R(db)( \
+        type* result, \
+        char* buffer, \
+        size_t buflen, \
+        int* errnop \
+    ) { \
+        return database.get<type>(result, buffer, buflen, errnop); \
+    }
+
 #endif // vim:filetype=cpp

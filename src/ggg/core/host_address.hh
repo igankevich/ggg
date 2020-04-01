@@ -2,6 +2,7 @@
 #define GGG_CORE_HOST_ADDRESS_HH
 
 #include <ggg/core/ip_address.hh>
+#include <ggg/core/protocol_traits.hh>
 
 namespace ggg {
 
@@ -46,6 +47,8 @@ namespace ggg {
 
         friend void
         operator>>(const sqlite::statement& in, host_address& rhs);
+
+        friend struct Protocol_traits<host_address>;
 
     };
 

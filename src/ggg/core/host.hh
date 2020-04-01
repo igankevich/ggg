@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <string>
 
+#include <ggg/core/protocol_traits.hh>
 #include <ggg/nss/etherent.hh>
 #include <sqlitex/statement.hh>
 #include <unistdx/net/ethernet_address>
@@ -79,6 +80,8 @@ namespace ggg {
 
         friend void
         operator>>(const sqlite::statement& in, host& rhs);
+
+        friend struct Protocol_traits<host>;
 
     };
 

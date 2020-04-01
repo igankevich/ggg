@@ -45,7 +45,7 @@ int pam_sm_authenticate(
         auth.steps(PAM_kernel::Auth | PAM_kernel::Account | PAM_kernel::Open_session);
         auth.service(pamh.get_item(PAM_SERVICE));
         Client_protocol proto;
-        auto result = proto.process(&auth);
+        auto result = proto.process(&auth, Protocol::Command::PAM_kernel);
         pamh.set_scalar(ggg_steps, auth.steps());
         pamh.set_scalar(ggg_result, result);
         if (result & PAM_kernel::Auth) {
@@ -89,7 +89,7 @@ int pam_sm_acct_mgmt(
             auth.steps(PAM_kernel::Account | PAM_kernel::Open_session);
             auth.service(pamh.get_item(PAM_SERVICE));
             Client_protocol proto;
-            result = proto.process(&auth);
+            result = proto.process(&auth, Protocol::Command::PAM_kernel);
             pamh.set_scalar(ggg_steps, auth.steps());
             pamh.set_scalar(ggg_result, result);
         }
@@ -146,7 +146,7 @@ int pam_sm_chauthtok(
             auth.steps(PAM_kernel::Password);
             auth.service(pamh.get_item(PAM_SERVICE));
             Client_protocol proto;
-            auto result = proto.process(&auth);
+            auto result = proto.process(&auth, Protocol::Command::PAM_kernel);
             if (result & PAM_kernel::Password) {
                 pamh.debug("successfully changed password for user \"%s\"", user);
                 ret = errc::success;
@@ -206,11 +206,11 @@ int pam_sm_open_session(
             auth.steps(PAM_kernel::Open_session);
             auth.service(pamh.get_item(PAM_SERVICE));
             Client_protocol proto;
-            result = proto.process(&auth);
+            result = proto.process(&auth, Protocol::Command::PAM_kernel);
             pamh.set_scalar(ggg_steps, auth.steps());
             pamh.set_scalar(ggg_result, result);
         }
-        if (result && PAM_kernel::Open_session) {
+        if (result & PAM_kernel::Open_session) {
             ret = pam::errc::success;
         } else {
             ret = pam::errc::service_error;
@@ -248,9 +248,9 @@ int pam_sm_close_session(
             auth.steps(PAM_kernel::Close_session);
             auth.service(pamh.get_item(PAM_SERVICE));
             Client_protocol proto;
-            result = proto.process(&auth);
+            result = proto.process(&auth, Protocol::Command::PAM_kernel);
         }
-        if (result && PAM_kernel::Close_session) {
+        if (result & PAM_kernel::Close_session) {
             ret = pam::errc::success;
         } else {
             ret = pam::errc::service_error;

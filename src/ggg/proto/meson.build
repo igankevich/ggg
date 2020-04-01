@@ -6,6 +6,7 @@ pipeline.cc
 protocol.cc
 remote_client.cc
 result.cc
+selection.cc
 '''.split())
 
 ggg_proto_src += password_src

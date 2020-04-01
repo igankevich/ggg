@@ -74,6 +74,7 @@ void ggg::PAM_kernel::run() {
 }
 
 void ggg::PAM_kernel::read(sys::byte_buffer& buf) {
+    buf.read(this->_result);
     buf.read(this->_name);
     buf.read(this->_password);
     buf.read(this->_old_password);
@@ -83,6 +84,7 @@ void ggg::PAM_kernel::read(sys::byte_buffer& buf) {
 }
 
 void ggg::PAM_kernel::write(sys::byte_buffer& buf) {
+    buf.write(this->_result);
     buf.write(this->_name);
     buf.write(this->_password);
     buf.write(this->_old_password);

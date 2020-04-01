@@ -13,6 +13,7 @@
 #include <sqlitex/statement.hh>
 
 #include <ggg/core/guile_traits.hh>
+#include <ggg/core/protocol_traits.hh>
 
 namespace ggg {
 
@@ -104,6 +105,7 @@ namespace ggg {
         void clear();
 
         friend struct Guile_traits<entity>;
+        friend struct Protocol_traits<entity>;
 
     };
 

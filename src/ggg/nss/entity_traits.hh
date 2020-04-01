@@ -6,9 +6,6 @@
 namespace ggg {
 
     template <class T>
-    struct entity_traits;
-
-    template <class T>
     size_t
     buffer_size(const T& ent) noexcept;
 

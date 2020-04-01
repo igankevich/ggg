@@ -25,6 +25,8 @@ namespace ggg {
 
     class Transaction;
 
+    using Statement = sqlite::statement;
+
     class Database {
 
     public:

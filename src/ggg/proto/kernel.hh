@@ -8,7 +8,7 @@ namespace ggg {
 
     class Kernel {
 
-    private:
+    protected:
         sys::u32 _result = 0;
         sys::user_credentials _client_credentials{};
 
