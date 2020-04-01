@@ -1,4 +1,5 @@
 #include <array>
+#include <cstring>
 #include <iostream>
 #include <memory>
 #include <thread>
@@ -29,32 +30,46 @@ namespace {
 
 void
 ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte_buffer& out) {
-    if (in.remaining() < sizeof(sys::u32)) { return; }
-    auto frame = reinterpret_cast<Frame*>(in.data());
-    if (in.remaining() < frame->size) { return; }
-    if (frame->command == Command::Unspecified) { return; }
-    if (frame->command >= Command::Size) { return; }
-    auto constructor = all_constructors[size_t(frame->command)];
-    if (!constructor) { return; }
-    auto kernel = constructor();
-    in.limit(in.position() + frame->size);
-    in.position(sizeof(Frame));
-    try {
-        kernel->read(in);
-        kernel->client_credentials(sock.credentials());
-        kernel->run();
-    } catch (const std::exception& err) {
-        kernel->result(-1);
-        log("kernel error: _", err.what());
+    Frame frame;
+    while (in.remaining() >= sizeof(Frame)) {
+        std::memcpy(&frame, in.data()+in.position(), sizeof(Frame));
+        // stop on partial frame
+        if (in.remaining() < frame.size) { break; }
+        // skip frames with invalid kernel types
+        if (frame.command == Command::Unspecified || frame.command >= Command::Size) {
+            in.bump(frame.size); continue;
+        }
+        auto constructor = all_constructors[size_t(frame.command)];
+        auto kernel = constructor();
+        auto old_position = in.position();
+        auto old_limit = in.limit();
+        in.limit(in.position() + frame.size);
+        in.bump(sizeof(Frame));
+        try {
+            kernel->read(in);
+            kernel->client_credentials(sock.credentials());
+            kernel->run();
+        } catch (const std::exception& err) {
+            kernel->result(-1);
+            log("kernel read/run error: _", err.what());
+        }
+        // move to the next frame
+        in.position(old_position + frame.size);
+        in.limit(old_limit);
+        auto out_old_position = out.position();
+        out.bump(sizeof(Frame));
+        try {
+            kernel->write(out);
+            auto new_position = out.position();
+            frame.size = new_position - out_old_position;
+            out.position(out_old_position);
+            out.write(&frame, sizeof(Frame));
+            out.position(new_position);
+        } catch (const std::exception& err) {
+            out.position(out_old_position);
+            log("kernel write error: _", err.what());
+        }
     }
-    auto old_position = out.position();
-    out.bump(sizeof(Frame));
-    kernel->write(out);
-    auto new_position = out.position();
-    frame->size = new_position - old_position;
-    out.position(old_position);
-    out.write(frame, sizeof(Frame));
-    out.position(new_position);
 }
 
 void

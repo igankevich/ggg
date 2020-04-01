@@ -10,12 +10,8 @@ ggg::Remote_client::process(const sys::epoll_event& event) {
         if (event.in()) {
             this->_in.fill(this->_socket);
             this->_in.flip();
-            try {
-                this->_protocol.process(this->_socket, this->_in, this->_out);
-            } catch (...) {
-                this->_in.compact();
-                std::rethrow_exception(std::current_exception());
-            }
+            this->_protocol.process(this->_socket, this->_in, this->_out);
+            this->_in.compact();
             this->_out.flip();
             this->_out.flush(this->_socket);
             this->_out.compact();
