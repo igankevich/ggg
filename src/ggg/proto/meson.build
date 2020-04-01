@@ -5,7 +5,6 @@ local_server.cc
 pipeline.cc
 protocol.cc
 remote_client.cc
-result.cc
 selection.cc
 '''.split())
 

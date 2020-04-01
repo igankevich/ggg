@@ -18,7 +18,7 @@ void ggg::PAM_kernel::run() {
             throw std::invalid_argument("permission denied");
         }
         db.message(user, "authenticated");
-        result(result() | Auth);
+        steps_result(steps_result() | Auth);
         std::string argon2_prefix = "$argon2id$";
         if (acc.password().compare(0, argon2_prefix.size(), argon2_prefix) != 0) {
             init_sodium();
@@ -35,11 +35,11 @@ void ggg::PAM_kernel::run() {
         if (acc.has_expired(now)) { error |= Error::Expired; }
         if (acc.is_inactive(now)) { error |= Error::Inactive; }
         if (acc.password_has_expired(now)) { error |= Error::Password_expired; }
-        result(result() | error);
+        steps_result(steps_result() | error);
         if (error == 0) {
             acc.last_active(now);
             db.set_last_active(acc, now);
-            result(result() | Account);
+            steps_result(steps_result() | Account);
         }
     }
     if (steps() & Password) {
@@ -48,7 +48,7 @@ void ggg::PAM_kernel::run() {
         if (acc.has_been_suspended()) { error |= Error::Suspended; }
         if (acc.has_expired(now)) { error |= Error::Expired; }
         if (acc.is_inactive(now)) { error |= Error::Inactive; }
-        result(result() | error);
+        steps_result(steps_result() | error);
         if (error == 0) {
             const auto& client = client_credentials();
             if (client.uid != 0 &&
@@ -60,21 +60,22 @@ void ggg::PAM_kernel::run() {
             argon2_password_hash hash;
             acc.set_password(hash(this->_password));
             db.set_password(acc);
-            result(result() | Password);
+            steps_result(steps_result() | Password);
         }
     }
     if (steps() & Open_session) {
         db.message(user, "session opened for %s", this->_service.data());
-        result(result() | Open_session);
+        steps_result(steps_result() | Open_session);
     }
     if (steps() & Close_session) {
         db.message(user, "session closed for %s", this->_service.data());
-        result(result() | Close_session);
+        steps_result(steps_result() | Close_session);
     }
 }
 
 void ggg::PAM_kernel::read(sys::byte_buffer& buf) {
     buf.read(this->_result);
+    buf.read(this->_steps_result);
     buf.read(this->_name);
     buf.read(this->_password);
     buf.read(this->_old_password);
@@ -85,6 +86,7 @@ void ggg::PAM_kernel::read(sys::byte_buffer& buf) {
 
 void ggg::PAM_kernel::write(sys::byte_buffer& buf) {
     buf.write(this->_result);
+    buf.write(this->_steps_result);
     buf.write(this->_name);
     buf.write(this->_password);
     buf.write(this->_old_password);

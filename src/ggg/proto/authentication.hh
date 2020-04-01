@@ -32,6 +32,7 @@ namespace ggg {
         std::string _service;
         double _min_entropy = 30.0;
         sys::u32 _steps = Auth | Account | Open_session;
+        sys::u32 _steps_result = 0;
 
     public:
         PAM_kernel() = default;
@@ -44,6 +45,8 @@ namespace ggg {
         inline void old_password(secure_string rhs) { this->_old_password = std::move(rhs); }
         inline void min_entropy(double rhs) { this->_min_entropy = rhs; }
         inline void service(std::string rhs) { this->_service = std::move(rhs); }
+        inline sys::u32 steps_result() const { return this->_steps_result; }
+        inline void steps_result(sys::u32 rhs) { this->_steps_result = rhs; }
 
         void run() override;
         void read(sys::byte_buffer& buf) override;

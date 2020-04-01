@@ -7,7 +7,6 @@
 #include <ggg/proto/local_server.hh>
 #include <ggg/proto/pipeline.hh>
 #include <ggg/proto/protocol.hh>
-#include <ggg/proto/result.hh>
 
 int main(int argc, char* argv[]) {
     using namespace ggg;

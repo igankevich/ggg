@@ -10,7 +10,6 @@
 #include <ggg/proto/authentication.hh>
 #include <ggg/proto/kernel.hh>
 #include <ggg/proto/protocol.hh>
-#include <ggg/proto/result.hh>
 #include <ggg/proto/selection.hh>
 
 namespace {
@@ -33,7 +32,7 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
     if (in.remaining() < sizeof(sys::u32)) { return; }
     auto frame = reinterpret_cast<Frame*>(in.data());
     if (in.remaining() < frame->size) { return; }
-    if (frame->command == Command::Result) { return; }
+    if (frame->command == Command::Unspecified) { return; }
     if (frame->command >= Command::Size) { return; }
     auto constructor = all_constructors[size_t(frame->command)];
     if (!constructor) { return; }
@@ -45,7 +44,7 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
         kernel->client_credentials(sock.credentials());
         kernel->run();
     } catch (const std::exception& err) {
-        kernel->result(1);
+        kernel->result(-1);
         log("kernel error: _", err.what());
     }
     auto old_position = out.position();
@@ -58,7 +57,7 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
     out.position(new_position);
 }
 
-sys::u32
+void
 ggg::Client_protocol::process(Kernel* kernel, Command command) {
     using namespace std::chrono;
     sys::socket_address address(GGG_BIND_ADDRESS);
@@ -110,5 +109,4 @@ ggg::Client_protocol::process(Kernel* kernel, Command command) {
             }
         }
     }
-    return kernel->result();
 }

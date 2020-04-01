@@ -16,7 +16,7 @@ namespace ggg {
         static constexpr const sys::u32 version = 1;
 
         enum class Command: sys::u32 {
-            Result = 0,
+            Unspecified = 0,
             PAM_kernel = 1,
             NSS_kernel = 2,
             Size = 3,
@@ -46,7 +46,7 @@ namespace ggg {
     class Client_protocol: public Protocol {
 
     public:
-        sys::u32 process(Kernel* kernel, Command command);
+        void process(Kernel* kernel, Command command);
 
         template <class ... Args>
         inline void
