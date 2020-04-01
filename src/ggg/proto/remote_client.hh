@@ -21,11 +21,18 @@ namespace ggg {
     public:
 
         inline explicit
-        Remote_client(sys::socket& server_socket) {
-            server_socket.accept(this->_socket, this->_address);
+        Remote_client(sys::socket&& socket, const sys::socket_address& address):
+        _address(address) {
+            this->_socket = std::move(socket);
         }
 
         void process(const sys::epoll_event& event) override;
+
+        template <class ... Args>
+        inline void
+        log(const char* message, const Args& ... args) const {
+            sys::log_message("server", message, args...);
+        }
 
     };
 

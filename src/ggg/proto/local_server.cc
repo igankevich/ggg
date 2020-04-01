@@ -1,5 +1,3 @@
-#include <unistdx/base/log_message>
-
 #include <ggg/proto/local_server.hh>
 #include <ggg/proto/pipeline.hh>
 #include <ggg/proto/remote_client.hh>
@@ -9,13 +7,19 @@ Connection(address.family()), _address(address) {
     this->_socket.setopt(sys::socket::reuse_addr);
     this->_socket.bind(this->_address);
     this->_socket.listen();
-    sys::log_message("server", "listen _", this->_address);
+    log("listen _", this->_address);
 }
 
 void
 ggg::Local_server::process(const sys::epoll_event& event) {
     Connection::process(event);
     if (started() && event.in()) {
-        this->parent()->add(new Remote_client(this->_socket), sys::event::inout);
+        sys::socket client_socket;
+        sys::socket_address client_address;
+        while (this->_socket.accept(client_socket, client_address)) {
+            this->parent()->add(
+                new Remote_client(std::move(client_socket), client_address),
+                sys::event::inout);
+        }
     }
 }

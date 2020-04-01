@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.6.4',
+	version: '1.6.5',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
 	license: ['gpl3+']
@@ -40,7 +40,7 @@ with_man = get_option('with_man')
 b_sanitize = get_option('b_sanitize')
 developer = get_option('developer')
 
-unistdx_version = '>= 0.19.2'
+unistdx_version = '>= 0.19.10'
 sqlitex_version = '>= 0.4.6'
 
 unistdx = dependency('unistdx', version: unistdx_version)

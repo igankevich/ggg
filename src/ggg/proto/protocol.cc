@@ -41,7 +41,6 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
         }
         auto constructor = all_constructors[size_t(frame.command)];
         auto kernel = constructor();
-        auto old_position = in.position();
         auto old_limit = in.limit();
         in.limit(in.position() + frame.size);
         in.bump(sizeof(Frame));
@@ -54,7 +53,7 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
             log("kernel read/run error: _", err.what());
         }
         // move to the next frame
-        in.position(old_position + frame.size);
+        in.position(in.limit());
         in.limit(old_limit);
         auto out_old_position = out.position();
         out.bump(sizeof(Frame));
@@ -92,36 +91,41 @@ ggg::Client_protocol::process(Kernel* kernel, Command command) {
         buf.write(&frame, sizeof(Frame));
         buf.position(new_position);
         buf.flip();
-        buf.flush(s);
     }
     No_lock lock;
-    auto deadline = system_clock::now() + seconds(30);
+    auto deadline = system_clock::now() + seconds(7);
     sys::event_poller poller;
     poller.emplace(s.fd(), sys::event::inout);
     std::cv_status status;
     enum { Writing, Reading, Finish } state = Writing;
+    buf.flush(s);
     if (buf.remaining() == 0) { buf.clear(); state = Reading; }
     while (state != Finish) {
         status = poller.wait_until(lock, deadline);
-        if (status == std::cv_status::timeout) { kernel->result(1); break; }
+        if (status == std::cv_status::timeout) { kernel->result(-1); break; }
         for (const auto& event : poller) {
             if (state == Writing) {
                 if (event.out()) {
                     buf.flush(s);
-                    if (buf.remaining() == 0) { buf.clear(); state = Reading; }
+                    if (buf.remaining() == 0) {
+                        buf.clear(); state = Reading;
+                    }
                 }
             } else {
                 if (event.in()) {
                     buf.fill(s);
-                    if (buf.position() < sizeof(sys::u32)) { continue; }
+                    if (buf.position() < sizeof(Frame)) { continue; }
                     auto frame = reinterpret_cast<Frame*>(buf.data());
                     if (buf.position() < frame->size) { continue; }
                     buf.flip();
                     buf.read(frame, sizeof(Frame));
                     kernel->read(buf);
                     state = Finish;
+                    break;
                 }
             }
         }
     }
+    s.shutdown(sys::shutdown_flag::read_write);
+    s.close();
 }

@@ -1,6 +1,7 @@
 #ifndef GGG_PROTO_LOCAL_SERVER_HH
 #define GGG_PROTO_LOCAL_SERVER_HH
 
+#include <unistdx/base/log_message>
 #include <unistdx/net/socket_address>
 
 #include <ggg/proto/connection.hh>
@@ -17,6 +18,12 @@ namespace ggg {
         inline sys::fd_type fd() const { return this->_socket.fd(); }
         inline sys::port_type port() const { return this->_address.port(); }
         void process(const sys::epoll_event& event) override;
+
+        template <class ... Args>
+        inline void
+        log(const char* message, const Args& ... args) const {
+            sys::log_message("server", message, args...);
+        }
 
     };
 
