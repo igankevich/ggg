@@ -28,7 +28,6 @@ nss_ggg_lib = shared_library(
 	version: '2',
 	install: true,
     cpp_args: cpp_args_visibility,
-    link_args: '-Wl,--version-script=' + meson.current_source_dir() + '/libnss.version'
 )
 
 if has_override_fs
