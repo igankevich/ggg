@@ -19,7 +19,7 @@ namespace ggg {
     copy_to<entity,::passwd>(const entity& ent, passwd* lhs, char* buffer) {
         Buffer buf(buffer);
         lhs->pw_name = buf.write(ent.name());
-        lhs->pw_passwd = buf.write('x');
+        lhs->pw_passwd = buf.write("x");
         #ifdef __linux__
         lhs->pw_gecos = buf.write(ent.description());
         #endif
