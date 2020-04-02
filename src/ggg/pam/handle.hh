@@ -85,7 +85,7 @@ namespace pam {
         get_scalar(const char* key, T& value) {
             union { void* ptr; T value; } tmp;
             bool ret = this->get_data(key, const_cast<const void**>(&tmp.ptr));
-            value = tmp.value;
+            if (ret) { value = tmp.value; }
             return ret;
         }
 

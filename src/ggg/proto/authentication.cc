@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include <ggg/core/database.hh>
 #include <ggg/proto/authentication.hh>
 #include <ggg/sec/argon2.hh>
@@ -10,23 +12,21 @@ void ggg::PAM_kernel::run() {
     db.prepare_message();
     if (steps() & (Auth | Account | Password)) {
         auto st = db.find_account(user);
-        if (st.step() == sqlite::errc::done) { throw std::invalid_argument("bad name"); }
+        if (st.step() == sqlite::errc::done) {
+            std::stringstream msg;
+            msg << "invalid user \"" << user << "\"";
+            throw std::invalid_argument(msg.str());
+        }
         st >> acc; st.close();
     }
     if (steps() & Auth) {
         if (!verify_password(acc.password(), this->_password.data())) {
-            throw std::invalid_argument("permission denied");
+            std::stringstream msg;
+            msg << "permission denied for user \"" << user << "\"";
+            throw std::invalid_argument(msg.str());
         }
         db.message(user, "authenticated");
         steps_result(steps_result() | Auth);
-        std::string argon2_prefix = "$argon2id$";
-        if (acc.password().compare(0, argon2_prefix.size(), argon2_prefix) != 0) {
-            init_sodium();
-            argon2_password_hash hash;
-            acc.set_password(hash(this->_password));
-            db.set_password(acc);
-            db.message(user, "migrated to argon2");
-        }
     }
     if (steps() & Account) {
         const auto now = db.timestamp();
@@ -53,7 +53,9 @@ void ggg::PAM_kernel::run() {
             const auto& client = client_credentials();
             if (client.uid != 0 &&
                 !verify_password(acc.password(), this->_old_password.data())) {
-                throw std::invalid_argument("permission denied");
+                std::stringstream msg;
+                msg << "permission denied for user \"" << user << "\"";
+                throw std::invalid_argument(msg.str());
             }
             validate_password(this->_password, this->_min_entropy);
             init_sodium();
