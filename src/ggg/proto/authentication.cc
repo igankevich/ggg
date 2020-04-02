@@ -5,7 +5,35 @@
 #include <ggg/sec/argon2.hh>
 #include <ggg/sec/password.hh>
 
+std::string ggg::PAM_kernel::steps_string(sys::u32 steps) const {
+    std::string s;
+    if (steps & Auth) { s += "auth "; }
+    if (steps & Account) { s += "account "; }
+    if (steps & Password) { s += "password "; }
+    if (steps & Open_session) { s += "session-open "; }
+    if (steps & Close_session) { s += "session-close "; }
+    if (steps & Suspended) { s += "error-suspended "; }
+    if (steps & Expired) { s += "error-expired "; }
+    if (steps & Inactive) { s += "error-inactive "; }
+    if (steps & Password_expired) { s += "error-password-expired "; }
+    if (!s.empty()) { s.pop_back(); }
+    return s;
+}
+
+void ggg::PAM_kernel::log_request() {
+    log("_ > _ _", this->_service, this->_name, steps_string(steps()));
+}
+
+void ggg::PAM_kernel::log_response() {
+    log("_ < _ _", this->_service, this->_name, steps_string(steps_result()));
+}
+
 void ggg::PAM_kernel::run() {
+    struct log_guard {
+        PAM_kernel* kernel;
+        log_guard(PAM_kernel* rhs): kernel(rhs) { kernel->log_request(); }
+        ~log_guard() { kernel->log_response(); }
+    } g(this);
     const auto user = this->_name.data();
     account acc;
     Database db(Database::File::Accounts, Database::Flag::Read_write);

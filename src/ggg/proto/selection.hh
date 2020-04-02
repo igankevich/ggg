@@ -1,9 +1,11 @@
 #ifndef GGG_PROTO_SELECTION_HH
 #define GGG_PROTO_SELECTION_HH
 
+#include <iosfwd>
 #include <string>
 #include <vector>
 
+#include <unistdx/base/log_message>
 #include <unistdx/net/ethernet_address>
 
 #include <ggg/proto/kernel.hh>
@@ -61,7 +63,20 @@ namespace ggg {
         void read(sys::byte_buffer& buf) override;
         void write(sys::byte_buffer& buf) override;
 
+        template <class ... Args>
+        inline void
+        log(const char* message, const Args& ... args) const {
+            sys::log_message("nss", message, args...);
+        }
+
+        void log_request() override;
+        void log_response() override;
     };
+
+    const char* to_string(NSS_kernel::DB rhs);
+    const char* to_string(NSS_kernel::Operation rhs);
+    std::ostream& operator<<(std::ostream& out, NSS_kernel::DB rhs);
+    std::ostream& operator<<(std::ostream& out, NSS_kernel::Operation rhs);
 
 }
 

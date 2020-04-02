@@ -47,10 +47,18 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
         try {
             kernel->read(in);
             kernel->client_credentials(sock.credentials());
+            if ((this->_log_pam && frame.command == Command::PAM_kernel) ||
+                (this->_log_nss && frame.command == Command::NSS_kernel)) {
+                kernel->log_request();
+            }
             kernel->run();
         } catch (const std::exception& err) {
             kernel->result(-1);
             log("kernel read/run error: _", err.what());
+        }
+        if ((this->_log_pam && frame.command == Command::PAM_kernel) ||
+            (this->_log_nss && frame.command == Command::NSS_kernel)) {
+            kernel->log_response();
         }
         // move to the next frame
         in.position(in.limit());

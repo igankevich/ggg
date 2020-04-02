@@ -108,6 +108,35 @@ namespace ggg {
         buf.read(rhs._name);
     }
 
+    const char* to_string(NSS_kernel::DB rhs) {
+        switch (rhs) {
+            case NSS_kernel::DB::Passwd: return "passwd";
+            case NSS_kernel::DB::Group: return "group";
+            case NSS_kernel::DB::Shadow: return "shadow";
+            case NSS_kernel::DB::Hosts: return "hosts";
+            case NSS_kernel::DB::Ethers: return "ethers";
+            default: return "unknown";
+        }
+    }
+
+    const char* to_string(NSS_kernel::Operation rhs) {
+        switch (rhs) {
+            case NSS_kernel::Operation::Get_all: return "get-all";
+            case NSS_kernel::Operation::Get_by_name: return "get-by-name";
+            case NSS_kernel::Operation::Get_by_id: return "get-by-id";
+            case NSS_kernel::Operation::Init_groups: return "init-groups";
+            default: return "unknown";
+        }
+    }
+
+    std::ostream& operator<<(std::ostream& out, NSS_kernel::DB rhs) {
+        return out << to_string(rhs);
+    }
+
+    std::ostream& operator<<(std::ostream& out, NSS_kernel::Operation rhs) {
+        return out << to_string(rhs);
+    }
+
 }
 
 namespace {
@@ -138,6 +167,14 @@ namespace {
     }
 
 }
+
+void ggg::NSS_kernel::log_request() {
+    log("> _ _ name=_,uid=_,gid=_,ethernet-address=_,family=_,ip-address=_",
+            this->_database, this->_operation, this->_name, this->_uid,
+            this->_gid, this->_ethernet_address, this->_family, this->_ip_address);
+}
+
+void ggg::NSS_kernel::log_response() {}
 
 void ggg::NSS_kernel::run() {
     Database db(

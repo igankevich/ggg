@@ -32,8 +32,15 @@ namespace ggg {
 
     class Server_protocol: public Protocol {
 
+    private:
+        bool _log_pam = true;
+        bool _log_nss = false;
+
     public:
         void process(sys::socket& sock, sys::byte_buffer& in, sys::byte_buffer& out);
+
+        inline void log_pam(bool rhs) { this->_log_pam = rhs; }
+        inline void log_nss(bool rhs) { this->_log_nss = rhs; }
 
         template <class ... Args>
         inline void

@@ -27,7 +27,8 @@ namespace ggg {
         inline void client_credentials(const sys::user_credentials& rhs) {
             this->_client_credentials = rhs;
         }
-
+        virtual inline void log_request() {}
+        virtual inline void log_response() {}
     };
 
 }
