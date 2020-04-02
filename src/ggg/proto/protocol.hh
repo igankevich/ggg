@@ -34,7 +34,7 @@ namespace ggg {
 
     private:
         bool _log_pam = true;
-        bool _log_nss = false;
+        bool _log_nss = true;
 
     public:
         void process(sys::socket& sock, sys::byte_buffer& in, sys::byte_buffer& out);

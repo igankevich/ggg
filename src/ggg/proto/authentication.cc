@@ -29,11 +29,6 @@ void ggg::PAM_kernel::log_response() {
 }
 
 void ggg::PAM_kernel::run() {
-    struct log_guard {
-        PAM_kernel* kernel;
-        log_guard(PAM_kernel* rhs): kernel(rhs) { kernel->log_request(); }
-        ~log_guard() { kernel->log_response(); }
-    } g(this);
     const auto user = this->_name.data();
     account acc;
     Database db(Database::File::Accounts, Database::Flag::Read_write);
