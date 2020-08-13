@@ -4,7 +4,7 @@
 
 ggg::Local_server::Local_server(const sys::socket_address& address):
 Connection(address.family()), _address(address) {
-    this->_socket.setopt(sys::socket::reuse_addr);
+    this->_socket.set(sys::socket::options::reuse_address);
     this->_socket.bind(this->_address);
     this->_socket.listen();
     log("listen _", this->_address);

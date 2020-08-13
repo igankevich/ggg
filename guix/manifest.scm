@@ -3,7 +3,7 @@
 
 (packages->manifest
  (list
-  linux-pam libsodium guile-2.2 zxcvbn-c unistdx sqlitex
+  linux-pam libsodium guile-3.0 zxcvbn-c unistdx sqlitex
   googletest pkg-config ninja meson gettext-minimal python-pre-commit
   (list gcc "lib") gcc-toolchain pam-wrapper))
 

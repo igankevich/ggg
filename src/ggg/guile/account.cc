@@ -202,7 +202,7 @@ namespace ggg {
     template <>
     SCM
     Guile_traits<ggg::account>::to(const account& acc) {
-        static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
+        static_assert(std::is_same<uint32_t,sys::uid_type>::value, "bad guile type");
         using std::chrono::duration_cast;
         using std::chrono::seconds;
         return scm_call(

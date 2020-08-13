@@ -10,7 +10,7 @@ namespace ggg {
     template <>
     ggg::group
     Guile_traits<ggg::group>::from(SCM obj) {
-        static_assert(std::is_same<scm_t_uint32,sys::gid_type>::value, "bad guile type");
+        static_assert(std::is_same<uint32_t,sys::gid_type>::value, "bad guile type");
         group g;
         g._name = to_string(slot(obj, "name"));
         g._gid = scm_to_uint32(slot(obj, "id"));
@@ -25,7 +25,7 @@ namespace ggg {
     template <>
     SCM
     Guile_traits<ggg::group>::to(const group& g) {
-        static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
+        static_assert(std::is_same<uint32_t,sys::uid_type>::value, "bad guile type");
         SCM members = SCM_EOL;
         for (const auto& m : g.members()) {
             members = scm_append(scm_list_2(members, scm_list_1(scm_from_utf8_string(m.data()))));

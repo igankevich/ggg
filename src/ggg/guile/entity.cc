@@ -17,7 +17,7 @@ namespace ggg {
     template <>
     ggg::entity
     Guile_traits<ggg::entity>::from(SCM obj) {
-        static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
+        static_assert(std::is_same<uint32_t,sys::uid_type>::value, "bad guile type");
         auto s_description = scm_from_latin1_symbol("description");
         auto s_home = scm_from_latin1_symbol("home");
         auto s_shell = scm_from_latin1_symbol("shell");
@@ -46,7 +46,7 @@ namespace ggg {
     template <>
     SCM
     Guile_traits<ggg::entity>::to(const entity& ent) {
-        static_assert(std::is_same<scm_t_uint32,sys::uid_type>::value, "bad guile type");
+        static_assert(std::is_same<uint32_t,sys::uid_type>::value, "bad guile type");
         return scm_call(
             scm_variable_ref(scm_c_lookup("make")),
             scm_variable_ref(scm_c_lookup("<entity>")),

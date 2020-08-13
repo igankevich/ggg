@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.6.8',
+	version: '1.7.0',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
 	license: ['gpl3+']
@@ -47,7 +47,7 @@ unistdx = dependency('unistdx', version: unistdx_version)
 zxcvbn = cpp.find_library('zxcvbn')
 pam = cpp.find_library('pam')
 sqlitex = dependency('sqlitex', version: sqlitex_version)
-guile = dependency('guile-2.2')
+guile = dependency('guile-3.0')
 libsodium = dependency('libsodium')
 gtest = dependency('gtest', main: true)
 gtest_nomain = dependency('gtest', main: false)
