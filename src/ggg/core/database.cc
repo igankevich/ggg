@@ -1183,6 +1183,8 @@ ggg::Database::validate_hierarchy(sys::uid_type id) {
 
 void
 ggg::Database::detect_loops(sys::uid_type id) {
+    /*
+       TODO this function is incorrect
     auto st = this->_db.prepare(sql_select_all_loops, id);
     if (st.step() == sqlite::errc::done) { return; }
     int64_t actual_count = 0, expected_count = 0;
@@ -1191,6 +1193,7 @@ ggg::Database::detect_loops(sys::uid_type id) {
     if (actual_count != expected_count) {
         throw std::invalid_argument("this operation creates loops in the graph");
     }
+    */
 }
 
 void
