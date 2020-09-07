@@ -1,0 +1,70 @@
+(use-modules
+  (guix packages)
+  (guix download)
+  (guix git-download)
+  (guix build-system meson)
+  (guix build-system cmake)
+  (gnu packages check)
+  (gnu packages crypto)
+  (gnu packages guile)
+  (gnu packages gcc)
+  (gnu packages commencement)
+  (gnu packages sqlite)
+  (gnu packages linux)
+  (gnu packages gettext)
+  (gnu packages pkg-config)
+  (gnu packages unistdx)
+  (gnu packages sqlitex)
+  (gnu packages zxcvbn-c)
+  (gnu packages ggg)
+  ((guix licenses) #:prefix license:))
+
+(package
+  (name "ggg")
+  (version "@version@")
+  (source "@source_root@")
+  (build-system meson-build-system)
+  (arguments
+    '(#:configure-flags '("-Dsharedstatedir=/var/lib")
+      #:tests? #t ;; cli test does not work in guix
+      #:build-type "release"
+      #:phases
+      (modify-phases %standard-phases
+        (add-before 'check 'enable-pam-wrapper
+          (lambda _
+            (let* ((pam-wrapper (assoc-ref %build-inputs "pam-wrapper")))
+              (setenv "LD_LIBRARY_PATH" (string-append pam-wrapper "/lib")))
+            #t))
+        (add-after 'shrink-runpath 'guile-compile
+          (lambda _
+            (define scm-directory
+              (string-append (assoc-ref %outputs "out") "/share/guile/site/3.0"))
+            (define go-directory
+              (string-append (assoc-ref %outputs "out") "/lib/guile/3.0/site-ccache"))
+            (mkdir-p go-directory)
+            (for-each
+              (lambda (scm-file)
+                (setenv "GUILE_AUTO_COMPILE" "0")
+                (setenv "GUILE_LOAD_PATH" scm-directory)
+                (invoke "guild" "compile" "-o"
+                        (string-append
+                          go-directory "/ggg/" (basename scm-file ".scm") ".go")
+                        scm-file))
+              (find-files scm-directory "^.*\\.scm$"))
+            #t)))))
+  (inputs
+    `(("unistdx" ,unistdx)
+      ("zxcvbn-c" ,zxcvbn-c)
+      ("sqlitex" ,sqlitex)
+      ("libsodium" ,libsodium)
+      ("guile" ,guile-3.0)
+      ("linux-pam" ,linux-pam)))
+  (native-inputs
+    `(("googletest" ,googletest)
+      ("gettext-minimal" ,gettext-minimal)
+      ("pkg-config" ,pkg-config)
+      ("pam-wrapper" ,pam-wrapper)))
+  (synopsis "Groups of groups of groups")
+  (description "NSS and PAM modules that support arbitrary nesting of users and groups.")
+  (home-page "https://github.com/igankevich/ggg")
+  (license license:gpl3+))

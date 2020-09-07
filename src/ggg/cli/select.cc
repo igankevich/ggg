@@ -22,7 +22,7 @@ namespace {
         ggg::Format format
     ) {
         using namespace ggg;
-        auto st = CLI_traits<T>::select(db, args);
+        auto st = Base_traits<T>::select(db, args);
         write<T>(std::cout, st, format);
         st.close();
     }

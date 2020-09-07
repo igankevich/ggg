@@ -66,7 +66,7 @@ NSS_FUNCTION(gethostbyname2_r)(
     int* h_errnop
 ) {
     nss_status ret;
-    int err, h_err;
+    int err, h_err = 0;
     try {
         NSS_kernel kernel(NSS_kernel::Hosts, NSS_kernel::Get_by_name);
         kernel.name(name);
@@ -83,7 +83,6 @@ NSS_FUNCTION(gethostbyname2_r)(
             if (buflen < buffer_size(ha)) {
                 ret = NSS_STATUS_TRYAGAIN;
                 err = ERANGE;
-                h_err = 0;
             } else {
                 copy_to(ha, result, buffer);
                 ret = NSS_STATUS_SUCCESS;
@@ -130,7 +129,7 @@ NSS_FUNCTION(gethostbyaddr_r)(
     int* h_errnop
 ) {
     nss_status ret;
-    int err, h_err;
+    int err, h_err = 0;
     try {
         auto family = static_cast<sys::family_type>(af);
         ip_address address{family};
@@ -154,7 +153,6 @@ NSS_FUNCTION(gethostbyaddr_r)(
                 if (buflen < buffer_size(address)) {
                     ret = NSS_STATUS_TRYAGAIN;
                     err = ERANGE;
-                    h_err = 0;
                 } else {
                     host_address ha(address, response.front());
                     copy_to(ha, result, buffer);

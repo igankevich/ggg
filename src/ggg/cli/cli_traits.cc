@@ -53,8 +53,7 @@ namespace {
 namespace ggg {
 
     template <>
-    template <>
-    void CLI_traits<entity>::write<Format::Rec>(
+    void CLI_traits<entity,Format::Rec>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -69,8 +68,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<entity>::write<Format::TSV>(
+    void CLI_traits<entity,Format::TSV>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -85,8 +83,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<entity>::write<Format::Passwd>(
+    void CLI_traits<entity,Format::Passwd>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -102,8 +99,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<entity>::read<Format::Passwd>(
+    void CLI_traits<entity,Format::Passwd>::read(
         std::istream& in,
         object_array& result
     ) {
@@ -125,8 +121,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<entity>::write<Format::Group>(
+    void CLI_traits<entity,Format::Group>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -149,8 +144,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<entity>::write<Format::SCM>(
+    void CLI_traits<entity,Format::SCM>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -159,8 +153,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<entity>::read<Format::SCM>(
+    void CLI_traits<entity,Format::SCM>::read(
         std::istream& in,
         object_array& result
     ) {
@@ -170,7 +163,7 @@ namespace ggg {
     }
 
     template <>
-    auto CLI_traits<entity>::select(
+    auto Base_traits<entity>::select(
         Database& db,
         const string_array& names
     ) -> statement_type {
@@ -186,8 +179,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<account>::write<Format::Rec>(
+    void CLI_traits<account,Format::Rec>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -208,8 +200,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<account>::write<Format::TSV>(
+    void CLI_traits<account,Format::TSV>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -226,8 +217,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<account>::write<Format::Shadow>(
+    void CLI_traits<account,Format::Shadow>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -242,8 +232,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<account>::read<Format::Shadow>(
+    void CLI_traits<account,Format::Shadow>::read(
         std::istream& in,
         object_array& result
     ) {
@@ -265,8 +254,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<account>::write<Format::SCM>(
+    void CLI_traits<account,Format::SCM>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -275,8 +263,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<account>::read<Format::SCM>(
+    void CLI_traits<account,Format::SCM>::read(
         std::istream& in,
         object_array& result
     ) {
@@ -286,7 +273,7 @@ namespace ggg {
     }
 
     template <>
-    auto CLI_traits<account>::select(
+    auto Base_traits<account>::select(
         Database& db,
         const string_array& names
     ) -> statement_type {
@@ -294,8 +281,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<message>::write<Format::Rec>(
+    void CLI_traits<message,Format::Rec>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -311,8 +297,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<message>::write<Format::TSV>(
+    void CLI_traits<message,Format::TSV>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -327,8 +312,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<message>::write<Format::SCM>(
+    void CLI_traits<message,Format::SCM>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -337,7 +321,7 @@ namespace ggg {
     }
 
     template <>
-    auto CLI_traits<message>::select(
+    auto Base_traits<message>::select(
         Database& db,
         const string_array& names
     ) -> statement_type {
@@ -345,8 +329,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<Machine>::write<Format::Rec>(
+    void CLI_traits<Machine,Format::Rec>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -359,8 +342,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<Machine>::write<Format::TSV>(
+    void CLI_traits<Machine,Format::TSV>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -373,8 +355,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<Machine>::write<Format::Hosts>(
+    void CLI_traits<Machine,Format::Hosts>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -386,8 +367,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<Machine>::write<Format::SCM>(
+    void CLI_traits<Machine,Format::SCM>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -396,8 +376,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<Machine>::read<Format::SCM>(
+    void CLI_traits<Machine,Format::SCM>::read(
         std::istream& in,
         object_array& result
     ) {
@@ -407,7 +386,7 @@ namespace ggg {
     }
 
     template <>
-    auto CLI_traits<Machine>::select(
+    auto Base_traits<Machine>::select(
         Database& db,
         const string_array& names
     ) -> statement_type {
@@ -415,8 +394,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<public_key>::write<Format::Rec>(
+    void CLI_traits<public_key,Format::Rec>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -431,8 +409,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<public_key>::write<Format::TSV>(
+    void CLI_traits<public_key,Format::TSV>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -447,8 +424,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<public_key>::write<Format::SSH>(
+    void CLI_traits<public_key,Format::SSH>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -463,8 +439,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<public_key>::write<Format::SCM>(
+    void CLI_traits<public_key,Format::SCM>::write(
         std::ostream& out,
         statement_type& st
     ) {
@@ -473,8 +448,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<public_key>::read<Format::SCM>(
+    void CLI_traits<public_key,Format::SCM>::read(
         std::istream& in,
         object_array& result
     ) {
@@ -484,8 +458,7 @@ namespace ggg {
     }
 
     template <>
-    template <>
-    void CLI_traits<public_key>::read<Format::SSH>(
+    void CLI_traits<public_key,Format::SSH>::read(
         std::istream& in,
         object_array& result
     ) {
@@ -538,11 +511,90 @@ namespace ggg {
     }
 
     template <>
-    auto CLI_traits<public_key>::select(
+    auto Base_traits<public_key>::select(
         Database& db,
         const string_array& names
     ) -> statement_type {
         return db.public_keys(names.begin(), names.end());
     }
 
+}
+
+template <> void
+ggg::write<ggg::entity>(std::ostream& out, sqlite::statement& st, Format format) {
+    using T = entity;
+    switch (format) {
+        case Format::Rec: CLI_traits<T,Format::Rec>::write(out, st); break;
+        case Format::SCM: CLI_traits<T,Format::SCM>::write(out, st); break;
+        case Format::TSV: CLI_traits<T,Format::TSV>::write(out, st); break;
+        case Format::Passwd: CLI_traits<T,Format::Passwd>::write(out, st); break;
+        case Format::Name:
+            for (const auto& obj : st.template rows<T>()) {
+                out << obj.name() << '\n';
+            }
+            break;
+        default: throw std::invalid_argument("format is not supported");
+    }
+}
+
+template <> void
+ggg::write<ggg::account>(std::ostream& out, sqlite::statement& st, Format format) {
+    using T = account;
+    switch (format) {
+        case Format::Rec: CLI_traits<T,Format::Rec>::write(out, st); break;
+        case Format::SCM: CLI_traits<T,Format::SCM>::write(out, st); break;
+        case Format::TSV: CLI_traits<T,Format::TSV>::write(out, st); break;
+        case Format::Shadow: CLI_traits<T,Format::Shadow>::write(out, st); break;
+        case Format::Name:
+            for (const auto& obj : st.template rows<T>()) {
+                out << obj.name() << '\n';
+            }
+            break;
+        default: throw std::invalid_argument("format is not supported");
+    }
+}
+
+template <> void
+ggg::write<ggg::public_key>(std::ostream& out, sqlite::statement& st, Format format) {
+    using T = public_key;
+    switch (format) {
+        case Format::Rec: CLI_traits<T,Format::Rec>::write(out, st); break;
+        case Format::SCM: CLI_traits<T,Format::SCM>::write(out, st); break;
+        case Format::TSV: CLI_traits<T,Format::TSV>::write(out, st); break;
+        case Format::SSH: CLI_traits<T,Format::SSH>::write(out, st); break;
+        case Format::Name:
+            for (const auto& obj : st.template rows<T>()) {
+                out << obj.name() << '\n';
+            }
+            break;
+        default: throw std::invalid_argument("format is not supported");
+    }
+}
+
+template <> void
+ggg::write<ggg::Machine>(std::ostream& out, sqlite::statement& st, Format format) {
+    using T = Machine;
+    switch (format) {
+        case Format::Rec: CLI_traits<T,Format::Rec>::write(out, st); break;
+        case Format::SCM: CLI_traits<T,Format::SCM>::write(out, st); break;
+        case Format::TSV: CLI_traits<T,Format::TSV>::write(out, st); break;
+        case Format::Hosts: CLI_traits<T,Format::Hosts>::write(out, st); break;
+        case Format::Name:
+            for (const auto& obj : st.template rows<T>()) {
+                out << obj.name() << '\n';
+            }
+            break;
+        default: throw std::invalid_argument("format is not supported");
+    }
+}
+
+
+void
+ggg::read(std::istream& in, std::vector<public_key>& result, Format format) {
+    using T = public_key;
+    switch (format) {
+        case Format::SCM: CLI_traits<T,Format::SCM>::read(in, result); break;
+        case Format::SSH: CLI_traits<T,Format::SSH>::read(in, result); break;
+        default: throw std::invalid_argument("format is not supported");
+    }
 }

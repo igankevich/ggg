@@ -123,7 +123,7 @@ template <class T>
 void
 ggg::Add_entity
 ::insert(Store& store, std::string guile) {
-    using traits_type = CLI_traits<T>;
+    using traits_type = Base_traits<T>;
     using object_array = typename traits_type::object_array;
     // TODO this is inefficient
     std::stringstream tmp(guile);
@@ -141,7 +141,7 @@ namespace ggg {
     void
     Add_entity
     ::insert<public_key>(Store& store, std::string guile) {
-        using traits_type = CLI_traits<public_key>;
+        using traits_type = Base_traits<public_key>;
         using object_array = typename traits_type::object_array;
         // TODO this is inefficient
         std::stringstream tmp(guile);
