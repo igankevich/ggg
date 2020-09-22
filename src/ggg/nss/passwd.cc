@@ -14,7 +14,7 @@ using namespace ggg;
 namespace {
 
     using entity_type = ::passwd;
-    NSS_response<entity,NSS_kernel::Passwd> database;
+    thread_local NSS_response<entity,NSS_kernel::Passwd> database;
 
 }
 

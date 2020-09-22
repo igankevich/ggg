@@ -19,7 +19,7 @@ using namespace ggg;
 
 namespace {
 
-    NSS_response<::ggg::group,NSS_kernel::Group> database;
+    thread_local NSS_response<::ggg::group,NSS_kernel::Group> database;
 
 }
 

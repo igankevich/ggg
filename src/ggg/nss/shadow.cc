@@ -13,7 +13,7 @@ using namespace ggg;
 namespace {
 
     using entity_type = ::spwd;
-    NSS_response<account,NSS_kernel::Passwd> database;
+    thread_local NSS_response<account,NSS_kernel::Passwd> database;
 
 }
 

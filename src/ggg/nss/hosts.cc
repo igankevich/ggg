@@ -38,7 +38,7 @@ using namespace ggg;
 namespace {
 
     using entity_type = ::hostent;
-    NSS_response<host_address,NSS_kernel::Hosts> database;
+    thread_local NSS_response<host_address,NSS_kernel::Hosts> database;
 
 }
 

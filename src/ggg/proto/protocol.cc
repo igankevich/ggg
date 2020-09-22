@@ -110,30 +110,22 @@ ggg::Client_protocol::process(Kernel* kernel, Command command) {
     if (buf.remaining() == 0) { buf.clear(); state = Reading; }
     while (state != Finish) {
         status = poller.wait_until(lock, deadline);
-        if (status == std::cv_status::timeout) { kernel->result(-1); break; }
-        for (const auto& event : poller) {
-            if (state == Writing) {
-                if (event.out()) {
-                    buf.flush(s);
-                    if (buf.remaining() == 0) {
-                        buf.clear(); state = Reading;
-                    }
-                }
-            } else {
-                if (event.in()) {
-                    buf.fill(s);
-                    if (buf.position() < sizeof(Frame)) { continue; }
-                    auto frame = reinterpret_cast<Frame*>(buf.data());
-                    if (buf.position() < frame->size) { continue; }
-                    buf.flip();
-                    buf.read(frame, sizeof(Frame));
-                    kernel->read(buf);
-                    state = Finish;
-                    break;
-                }
-            }
+        if (status == std::cv_status::timeout) { kernel->result(-1); state = Finish; }
+        if (state == Writing) {
+            buf.flush(s);
+            if (buf.remaining() == 0) { buf.clear(); state = Reading; }
+        }
+        if (state == Reading) {
+            buf.fill(s);
+            if (buf.position() < sizeof(Frame)) { continue; }
+            auto frame = reinterpret_cast<Frame*>(buf.data());
+            if (buf.position() < frame->size) { continue; }
+            buf.flip();
+            buf.read(frame, sizeof(Frame));
+            kernel->read(buf);
+            state = Finish;
         }
     }
-    s.shutdown(sys::shutdown_flag::read_write);
+    //s.shutdown(sys::shutdown_flag::read_write);
     s.close();
 }

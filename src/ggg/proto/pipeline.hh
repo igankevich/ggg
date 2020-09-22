@@ -46,7 +46,7 @@ namespace ggg {
         template <class ... Args>
         inline void
         log(const char* message, const Args& ... args) const {
-            sys::log_message("server", message, args...);
+            sys::log_message("pipeline", message, args...);
         }
 
     };

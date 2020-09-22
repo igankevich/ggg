@@ -178,7 +178,7 @@ void ggg::NSS_kernel::log_response() {
     log("< _ _ name=_,uid=_,gid=_,ethernet-address=_,family=_,ip-address=_,nbytes=_",
             this->_database, this->_operation, this->_name, this->_uid,
             this->_gid, this->_ethernet_address, this->_family, this->_ip_address,
-            this->_response.position());
+            this->_response.limit());
 }
 
 void ggg::NSS_kernel::run() {
