@@ -111,6 +111,9 @@ ggg::Client_protocol::process(Kernel* kernel, Command command) {
     while (state != Finish) {
         status = poller.wait_until(lock, deadline);
         if (status == std::cv_status::timeout) { kernel->result(-1); state = Finish; }
+        for (const auto& event : poller) {
+            if (event.bad()) { kernel->result(-1); state = Finish; }
+        }
         if (state == Writing) {
             buf.flush(s);
             if (buf.remaining() == 0) { buf.clear(); state = Reading; }

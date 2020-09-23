@@ -11,12 +11,8 @@ ggg::Remote_client::process(const sys::epoll_event& event) {
             this->_in.fill(this->_socket);
             buffer_guard g1(this->_in);
             this->_protocol.process(this->_socket, this->_in, this->_out);
-            buffer_guard g2(this->_out);
-            this->_out.flush(this->_socket);
         }
-        if (event.out()) {
-            buffer_guard g2(this->_out);
-            this->_out.flush(this->_socket);
-        }
+        buffer_guard g2(this->_out);
+        this->_out.flush(this->_socket);
     }
 }

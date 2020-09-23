@@ -28,6 +28,7 @@ ggg::Pipeline::process_events() {
             this->log("_", err.what());
         }
         if (connection.stopped()) {
+            this->_poller.erase(event);
             this->_connections.erase(result);
         }
     }
