@@ -16,14 +16,14 @@ namespace ggg {
     class NSS_kernel: public Kernel {
 
     public:
-        enum DB {
+        enum DB: sys::u32 {
             Passwd = 1<<0,
             Group = 1<<1,
             Shadow = 1<<2,
             Hosts = 1<<3,
             Ethers = 1<<4,
         };
-        enum Operation {
+        enum Operation: sys::u32 {
             Get_all = 1,
             Get_by_name = 2,
             Get_by_id = 3,
@@ -71,6 +71,10 @@ namespace ggg {
 
         void log_request() override;
         void log_response() override;
+
+    private:
+        void do_run();
+
     };
 
     const char* to_string(NSS_kernel::DB rhs);

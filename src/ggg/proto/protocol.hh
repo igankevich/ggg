@@ -63,6 +63,14 @@ namespace ggg {
 
     };
 
+    struct buffer_guard {
+        sys::byte_buffer& _buffer;
+        inline explicit buffer_guard(sys::byte_buffer& buffer): _buffer(buffer) {
+            this->_buffer.flip();
+        }
+        inline ~buffer_guard() { this->_buffer.compact(); }
+    };
+
 }
 
 #endif // vim:filetype=cpp

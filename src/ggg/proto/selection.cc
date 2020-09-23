@@ -77,7 +77,7 @@ namespace ggg {
 
     template <>
     void Protocol_traits<ip_address>::write(sys::byte_buffer& buf, const ip_address& rhs) {
-        buf.write(static_cast<sys::u32>(rhs._family));
+        buf.write(rhs._family);
         if (rhs._family == sys::family_type::inet) {
             buf.write(rhs._address4.data(), rhs._address4.size());
         } else {
@@ -87,8 +87,7 @@ namespace ggg {
 
     template <>
     void Protocol_traits<ip_address>::read(sys::byte_buffer& buf, ip_address& rhs) {
-        sys::u32 n = 0;
-        buf.read(n); rhs._family = static_cast<sys::family_type>(n);
+        buf.read(rhs._family);
         if (rhs._family == sys::family_type::inet) {
             buf.read(rhs._address4.data(), rhs._address4.size());
         } else {
@@ -182,12 +181,21 @@ void ggg::NSS_kernel::log_response() {
 }
 
 void ggg::NSS_kernel::run() {
+    try {
+        do_run();
+        //result(1);
+    } catch (const std::exception& err) {
+        //result(0);
+        this->_response.clear();
+    }
+}
+
+void ggg::NSS_kernel::do_run() {
     Database db(
         this->_database == Shadow ? Database::File::Accounts : Database::File::Entities,
         Database::Flag::Read_only);
     auto& resp = this->_response;
     auto* name = this->_name.data();
-    auto& family = this->_family;
     switch (this->_database) {
         case Passwd:
             switch (this->_operation) {
@@ -245,7 +253,8 @@ void ggg::NSS_kernel::run() {
                     to_bytes<host_address>(resp, db.host_addresses());
                     break;
                 case Get_by_name:
-                    to_bytes<ip_address>(resp, db.find_ip_address(name, family)); break;
+                    to_bytes<ip_address>(resp, db.find_ip_address(name, this->_family));
+                    break;
                 case Get_by_id: {
                     auto st = db.find_host_name(this->_ip_address);
                     if (st.step() != sqlite::errc::done) {
@@ -261,15 +270,12 @@ void ggg::NSS_kernel::run() {
             break;
         default: break;
     }
-    resp.flip();
-    result(1);
 }
 
 void ggg::NSS_kernel::read(sys::byte_buffer& buf) {
-    buf.read(this->_result);
-    sys::u32 n;
-    n = 0; buf.read(n); this->_database = static_cast<DB>(n);
-    n = 0; buf.read(n); this->_operation = static_cast<Operation>(n);
+    //buf.read(this->_result);
+    buf.read(this->_database);
+    buf.read(this->_operation);
     if (this->_operation == Get_by_name) { buf.read(this->_name); }
     switch (this->_database) {
         case Passwd:
@@ -306,8 +312,7 @@ void ggg::NSS_kernel::read(sys::byte_buffer& buf) {
                 case Get_all:
                     break;
                 case Get_by_name:
-                    n = 0; buf.read(n);
-                    this->_family = static_cast<sys::family_type>(n);
+                    buf.read(this->_family);
                     break;
                 case Get_by_id:
                     Protocol_traits<ip_address>::read(buf, this->_ip_address);
@@ -317,19 +322,19 @@ void ggg::NSS_kernel::read(sys::byte_buffer& buf) {
             break;
         default: break;
     }
-    n = 0; buf.read(n);
+    sys::u32 n = 0; buf.read(n);
     if (n > 0) {
         this->_response.resize(n);
-        buf.read(this->_response.data(), this->_response.size());
+        buf.read(this->_response.data(), n);
     }
     this->_response.position(0);
     this->_response.limit(n);
 }
 
 void ggg::NSS_kernel::write(sys::byte_buffer& buf) {
-    buf.write(this->_result);
-    buf.write(static_cast<sys::u32>(this->_database));
-    buf.write(static_cast<sys::u32>(this->_operation));
+    //buf.write(this->_result);
+    buf.write(this->_database);
+    buf.write(this->_operation);
     if (this->_operation == Get_by_name) { buf.write(this->_name); }
     switch (this->_database) {
         case Passwd:
@@ -365,7 +370,7 @@ void ggg::NSS_kernel::write(sys::byte_buffer& buf) {
             switch (this->_operation) {
                 case Get_all: break;
                 case Get_by_name:
-                    buf.write(static_cast<sys::u32>(this->_family));
+                    buf.write(this->_family);
                     break;
                 case Get_by_id:
                     Protocol_traits<ip_address>::write(buf, this->_ip_address);
@@ -375,11 +380,9 @@ void ggg::NSS_kernel::write(sys::byte_buffer& buf) {
             break;
         default: break;
     }
-    buf.write(static_cast<sys::u32>(this->_response.remaining()));
-    if (this->_response.remaining() != 0) {
-        buf.write(this->_response.data()+this->_response.position(),
-                  this->_response.remaining());
-    }
+    const auto n = this->_response.position();
+    buf.write(static_cast<sys::u32>(n));
+    if (n != 0) { buf.write(this->_response.data(), n); }
 }
 
 namespace ggg {

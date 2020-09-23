@@ -9,17 +9,14 @@ ggg::Remote_client::process(const sys::epoll_event& event) {
     if (started()) {
         if (event.in()) {
             this->_in.fill(this->_socket);
-            this->_in.flip();
+            buffer_guard g1(this->_in);
             this->_protocol.process(this->_socket, this->_in, this->_out);
-            this->_in.compact();
-            this->_out.flip();
+            buffer_guard g2(this->_out);
             this->_out.flush(this->_socket);
-            this->_out.compact();
         }
         if (event.out()) {
-            this->_out.flip();
+            buffer_guard g2(this->_out);
             this->_out.flush(this->_socket);
-            this->_out.compact();
         }
     }
 }
