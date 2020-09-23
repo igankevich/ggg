@@ -219,6 +219,7 @@ WITH RECURSIVE
 SELECT child_id,initial_id FROM path
 )";
 
+/*
 const char* sql_select_all_loops = R"(
 WITH RECURSIVE
     -- merge hierarchy and ties
@@ -239,6 +240,7 @@ SELECT
     (SELECT COUNT(*) FROM path),
     (SELECT COUNT(*) FROM (SELECT DISTINCT child_id,parent_id FROM path))
 )";
+*/
 
 const char* sql_hierarchy_invariant = R"(
 WITH RECURSIVE

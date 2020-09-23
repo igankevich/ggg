@@ -12,21 +12,33 @@ if not cpp.has_header('nss.h')
 	error('Header nss.h is required to compile the module.')
 endif
 
-foreach arg : [
+cpp_args = [
     '-Werror=return-type',
     '-Werror=return-local-addr',
+    '-Werror=cast-align',
+    '-Wcast-align=strict',
     '-fvisibility-inlines-hidden'
 ]
+
+cpp_link_args = [
+    '-rdynamic'
+]
+
+foreach arg : cpp_args
 	if cpp.has_argument(arg)
 		add_global_arguments(arg, language: 'cpp')
+	endif
+endforeach
+
+foreach arg : cpp_link_args
+	if cpp.has_link_argument(arg)
+		add_global_link_arguments(arg, language: 'cpp')
 	endif
 endforeach
 
 debug_build = get_option('buildtype').contains('debug')
 if not debug_build
 	add_global_arguments('-DNDEBUG', language: 'cpp')
-else
-	add_global_link_arguments('-rdynamic', language: 'cpp')
 endif
 
 datadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
@@ -98,7 +110,6 @@ endif
 
 subdir('src')
 subdir('po')
-subdir('pkg')
 subdir('guix')
 
 if with_man
