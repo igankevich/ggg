@@ -41,7 +41,7 @@ foreach name : ['entity', 'group', 'account']
         include_directories: src,
         dependencies: [unistdx, gtest, ggg_core]
     )
-    test(name + '-test', exe)
+    test('core/' + name, exe)
 endforeach
 
 if with_integration_tests
@@ -52,8 +52,5 @@ if with_integration_tests
         include_directories: src,
         dependencies: [unistdx, gtest, test_ggg_core],
     )
-    test(
-        name + '-test', exe,
-        workdir: meson.build_root(),
-    )
+    test('core/' + name, exe, workdir: meson.build_root())
 endif

@@ -50,14 +50,14 @@ if with_integration_tests
             cpp_args: ['-DGGG_NSS_SERVICE="' + service + '"'] + test_cpp_args,
         )
         test(
-            name,
+            'nss/' + service,
             exe,
             is_parallel: false,
             env: ['LD_LIBRARY_PATH=' + meson.current_build_dir()],
         )
     endforeach
     test(
-        'nss-stress-test',
+        'nss/stress',
         executable(
             'nss-stress-test',
             sources: ['stress_test.cc'] + override_nss_src,

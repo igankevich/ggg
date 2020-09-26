@@ -56,6 +56,12 @@ NSS_FUNCTION(GGG_MODULE_NAME, gethostton_r)(
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
+    #if defined(GGG_TEST)
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        ret = NSS_STATUS_UNAVAIL;
+        err = ENOENT;
+    #endif
     } catch (...) {
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
@@ -90,6 +96,12 @@ NSS_FUNCTION(GGG_MODULE_NAME, getntohost_r)(
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
+    #if defined(GGG_TEST)
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        ret = NSS_STATUS_UNAVAIL;
+        err = ENOENT;
+    #endif
     } catch (...) {
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;

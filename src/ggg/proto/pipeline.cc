@@ -13,7 +13,6 @@ ggg::Pipeline::add(Connection* connection, sys::event events) {
 void
 ggg::Pipeline::process_events() {
     auto pipe_fd = this->_poller.pipe_in();
-    std::clog << "-" << std::endl;
     for (const auto& event : this->_poller) {
         if (event.fd() == pipe_fd) { continue; }
         auto result = this->_connections.find(event.fd());
@@ -29,7 +28,6 @@ ggg::Pipeline::process_events() {
             this->log("_", err.what());
         }
         if (connection.stopped()) {
-            log("remove _", event.fd());
             this->_poller.erase(event.fd());
             this->_connections.erase(result);
         }

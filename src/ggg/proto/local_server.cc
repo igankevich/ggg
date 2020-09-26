@@ -17,7 +17,7 @@ ggg::Local_server::process(const sys::epoll_event& event) {
         sys::socket client_socket;
         sys::socket_address client_address;
         while (this->_socket.accept(client_socket, client_address)) {
-            log("add client fd _ address _", client_socket.fd(), client_address);
+            //log("add client fd _ address _", client_socket.fd(), client_address);
             this->parent()->add(
                 new Remote_client(std::move(client_socket), client_address),
                 sys::event::inout);

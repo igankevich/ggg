@@ -67,19 +67,14 @@ configure_file(
 
 if with_integration_tests and with_tests
     test(
-        'cli-test',
+        'cli/ggg',
         executable(
             'cli-test',
             sources: ['cli_test.cc'],
             cpp_args: test_cpp_args,
             dependencies: [unistdx, gtest_nomain, pam, libsodium, test_ggg_core, ggg_test],
         ),
-        env: [
-            'GGG_EXECUTABLE=' + test_ggg_exe.full_path(),
-            #'GUILE_AUTO_COMPILE=0',
-            #'GUILE_LOAD_PATH=' + guile_load_path,
-            #'GGG_TEST_SUFFIX=cli-test'
-        ],
+        env: ['GGG_EXECUTABLE=' + test_ggg_exe.full_path()],
         timeout: 120,
         workdir: meson.build_root(),
     )

@@ -51,6 +51,12 @@ NSS_GETENTBY_R(GGG_MODULE_NAME, gr, gid)(
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
+    #if defined(GGG_TEST)
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        ret = NSS_STATUS_UNAVAIL;
+        err = ENOENT;
+    #endif
     } catch (...) {
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
@@ -85,6 +91,12 @@ NSS_GETENTBY_R(GGG_MODULE_NAME, gr, nam)(
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
+    #if defined(GGG_TEST)
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        ret = NSS_STATUS_UNAVAIL;
+        err = ENOENT;
+    #endif
     } catch (...) {
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
@@ -143,6 +155,12 @@ NSS_FUNCTION(GGG_MODULE_NAME, initgroups_dyn)(
             }
             (*groupsp)[start++] = ent.id();
         }
+    #if defined(GGG_TEST)
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        ret = NSS_STATUS_UNAVAIL;
+        err = ENOENT;
+    #endif
     } catch (...) {
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;

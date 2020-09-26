@@ -49,7 +49,7 @@ meson.add_install_script(
 )
 
 test(
-	'conversation-test',
+	'pam/conversation',
 	executable(
 		'conversation-test',
 		sources: ['conversation_test.cc'],
@@ -67,12 +67,12 @@ if pam_wrapper.found() and with_integration_tests
     endif
     ld_preload = 'LD_PRELOAD=' + ' '.join(ld_preload_items)
     test(
-        'pam-ggg-test',
+        'pam/ggg',
         executable(
             'pam-ggg-test',
             sources: ['pam_ggg_test.cc'],
             include_directories: src,
-            dependencies: [unistdx, gtest, ggg_pam, ggg_proto_test],
+            dependencies: [unistdx, gtest, test_ggg_pam, ggg_proto_test],
             link_with: [test_ggg_pam_internal_lib],
         ),
         env: [
@@ -82,7 +82,8 @@ if pam_wrapper.found() and with_integration_tests
             'PAM_WRAPPER_SERVICE_DIR=' + pam_wrapper_service_dir,
             'GGG_TEST_SUFFIX=pam-ggg-test'
         ],
-        timeout: 120
+        timeout: 120,
+        is_parallel: false
     )
     subdir('pam.d')
 endif
