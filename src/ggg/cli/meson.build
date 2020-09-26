@@ -28,13 +28,23 @@ ggg_src = files([
     'unlock_entity.cc',
 ])
 
-ggg_exe = executable(
-    executable_name,
-    sources: ggg_src,
-    include_directories: src,
-    dependencies: [unistdx,libsodium,ggg_core,guile,ggg_guile],
-    install: true
-)
+foreach config : binary_configs
+    tmp_ggg_exe = executable(
+        config.get('prefix') + executable_name,
+        sources: ggg_src,
+        cpp_args: config.get('cpp_args'),
+        include_directories: src,
+        dependencies: [
+            unistdx,
+            libsodium,
+            get_variable(config.get('prefix') + 'ggg_core'),
+            guile,
+            get_variable(config.get('prefix') + 'ggg_guile'),
+        ],
+        install: true
+    )
+    set_variable(config.get('prefix') + 'ggg_exe', tmp_ggg_exe)
+endforeach
 
 ggg_public_keys_exe = executable(
     'ggg-public-keys',
@@ -55,20 +65,20 @@ configure_file(
 )
 # }}}
 
-if has_override_fs and with_tests
+if with_integration_tests and with_tests
     test(
         'cli-test',
         executable(
             'cli-test',
             sources: ['cli_test.cc'],
-            dependencies: [unistdx, gtest_nomain, pam, libsodium, ggg_core, ggg_test],
+            cpp_args: test_cpp_args,
+            dependencies: [unistdx, gtest_nomain, pam, libsodium, test_ggg_core, ggg_test],
         ),
         env: [
-            'LD_PRELOAD=' + override_fs.full_path(),
-            'GGG_EXECUTABLE=' + ggg_exe.full_path(),
-            'GUILE_AUTO_COMPILE=0',
-            'GUILE_LOAD_PATH=' + guile_load_path,
-            'GGG_TEST_SUFFIX=cli-test'
+            'GGG_EXECUTABLE=' + test_ggg_exe.full_path(),
+            #'GUILE_AUTO_COMPILE=0',
+            #'GUILE_LOAD_PATH=' + guile_load_path,
+            #'GGG_TEST_SUFFIX=cli-test'
         ],
         timeout: 120,
         workdir: meson.build_root(),

@@ -4,21 +4,23 @@
 #include <nss.h>
 
 #include <ggg/bits/macros.hh>
+#include <ggg/config.hh>
 
-#define NSS_NAME(suffix) _nss_ggg_ ## suffix
-#define NSS_FUNCTION(suffix) \
+#define NSS_NAME_IMPL(name,suffix) _nss_ ## name ## _ ## suffix
+#define NSS_NAME(name,suffix) NSS_NAME_IMPL(name,suffix)
+#define NSS_FUNCTION(name,suffix) \
     extern "C" GGG_VISIBILITY_DEFAULT \
-    enum nss_status NSS_NAME(suffix)
+    enum nss_status NSS_NAME(name, suffix)
 
-#define NSS_SETENT(db) NSS_FUNCTION(set ## db ## ent)
-#define NSS_ENDENT(db) NSS_FUNCTION(end ## db ## ent)
-#define NSS_GETENT_R(db) NSS_FUNCTION(get ## db ## ent_r)
-#define NSS_GETENTBY_R(db, by) NSS_FUNCTION(get ## db ## by ## _r)
+#define NSS_SETENT(name, db) NSS_FUNCTION(name, set ## db ## ent)
+#define NSS_ENDENT(name, db) NSS_FUNCTION(name, end ## db ## ent)
+#define NSS_GETENT_R(name, db) NSS_FUNCTION(name, get ## db ## ent_r)
+#define NSS_GETENTBY_R(name, db, by) NSS_FUNCTION(name, get ## db ## by ## _r)
 
-#define NSS_ENUMERATE(db, type, file) \
-    NSS_SETENT(db)(void) { return database.open(ggg::Database::File::file); } \
-    NSS_ENDENT(db)(void) { return database.close(); } \
-    NSS_GETENT_R(db)( \
+#define NSS_ENUMERATE(name, db, type, file) \
+    NSS_SETENT(name, db)(void) { return database.open(ggg::Database::File::file); } \
+    NSS_ENDENT(name, db)(void) { return database.close(); } \
+    NSS_GETENT_R(name, db)( \
         type* result, \
         char* buffer, \
         size_t buflen, \
@@ -27,10 +29,10 @@
         return database.get<type>(result, buffer, buflen, errnop); \
     }
 
-#define NSS_ENUMERATE_PROTO(db, type) \
-    NSS_SETENT(db)(void) { return database.open(); } \
-    NSS_ENDENT(db)(void) { return database.close(); } \
-    NSS_GETENT_R(db)( \
+#define NSS_ENUMERATE_PROTO(name, db, type) \
+    NSS_SETENT(name, db)(void) { return database.open(); } \
+    NSS_ENDENT(name, db)(void) { return database.close(); } \
+    NSS_GETENT_R(name, db)( \
         type* result, \
         char* buffer, \
         size_t buflen, \

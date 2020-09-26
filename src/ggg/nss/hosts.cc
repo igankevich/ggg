@@ -42,10 +42,10 @@ namespace {
 
 }
 
-NSS_SETENT(host)(int) { return database.open(); }
-NSS_ENDENT(host)(void) { return database.close(); }
+NSS_SETENT(GGG_MODULE_NAME,host)(int) { return database.open(); }
+NSS_ENDENT(GGG_MODULE_NAME,host)(void) { return database.close(); }
 
-NSS_GETENT_R(host)(
+NSS_GETENT_R(GGG_MODULE_NAME,host)(
     entity_type* result,
     char* buffer,
     size_t buflen,
@@ -56,7 +56,7 @@ NSS_GETENT_R(host)(
 }
 
 
-NSS_FUNCTION(gethostbyname2_r)(
+NSS_FUNCTION(GGG_MODULE_NAME, gethostbyname2_r)(
     const char* name,
     int af,
     entity_type* result,
@@ -99,7 +99,7 @@ NSS_FUNCTION(gethostbyname2_r)(
     return ret;
 }
 
-NSS_FUNCTION(gethostbyname_r)(
+NSS_FUNCTION(GGG_MODULE_NAME, gethostbyname_r)(
     const char* name,
     entity_type* result,
     char* buffer,
@@ -107,7 +107,7 @@ NSS_FUNCTION(gethostbyname_r)(
     int* errnop,
     int* h_errnop
 ) {
-    return NSS_NAME(gethostbyname2_r)(
+    return NSS_NAME(GGG_MODULE_NAME, gethostbyname2_r)(
         name,
         AF_INET,
         result,
@@ -118,7 +118,7 @@ NSS_FUNCTION(gethostbyname_r)(
     );
 }
 
-NSS_FUNCTION(gethostbyaddr_r)(
+NSS_FUNCTION(GGG_MODULE_NAME, gethostbyaddr_r)(
     const void* addr,
     socklen_t len,
     int af,

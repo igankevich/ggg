@@ -2,6 +2,7 @@
 #define GGG_PROTO_CONNECTION_HH
 
 #include <chrono>
+#include <iosfwd>
 
 #include <unistdx/net/socket>
 #include <unistdx/io/epoll_event>
@@ -61,6 +62,9 @@ namespace ggg {
         inline sys::port_type port() const { return this->_socket.bind_addr().port(); }
 
     };
+
+    const char* state_to_string(Connection::State s);
+    std::ostream& operator<<(std::ostream& out, Connection::State rhs);
 
 }
 

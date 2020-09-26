@@ -84,6 +84,7 @@ ggg::Client_protocol::process(Kernel* kernel, Command command) {
     using namespace std::chrono;
     sys::socket_address address(GGG_BIND_ADDRESS);
     sys::socket s(sys::family_type::unix);
+    log("socket fd _", s.fd());
     s.set(sys::socket::options::pass_credentials);
     s.connect(address);
     sys::byte_buffer buf{4096};
@@ -106,8 +107,9 @@ ggg::Client_protocol::process(Kernel* kernel, Command command) {
     poller.emplace(s.fd(), sys::event::inout);
     std::cv_status status;
     enum { Writing, Reading, Finish } state = Writing;
-    buf.flush(s);
-    if (buf.remaining() == 0) { buf.clear(); state = Reading; }
+    auto nwritten = buf.flush(s);
+    log("nwritten _", nwritten);
+    //if (buf.remaining() == 0) { buf.clear(); state = Reading; }
     while (state != Finish) {
         status = poller.wait_until(lock, deadline);
         if (status == std::cv_status::timeout) { kernel->result(-1); state = Finish; }

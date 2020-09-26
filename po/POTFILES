@@ -108,7 +108,6 @@ src/ggg/nss/group_test.cc
 src/ggg/nss/hosts.cc
 src/ggg/nss/hosts_test.cc
 src/ggg/nss/nss.hh
-src/ggg/nss/override_nss.cc
 src/ggg/nss/passwd.cc
 src/ggg/nss/passwd_test.cc
 src/ggg/nss/shadow.cc
@@ -138,4 +137,3 @@ src/ggg/sec/secure_string.hh
 src/ggg/test/clean_database.hh
 src/ggg/test/execute_command.cc
 src/ggg/test/execute_command.hh
-src/ggg/test/override_fs.cc

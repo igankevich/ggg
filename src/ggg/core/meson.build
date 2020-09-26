@@ -15,20 +15,24 @@ ggg_core_src = files([
 
 ggg_core_deps = [unistdx,sqlitex]
 
-ggg_core_lib = shared_library(
-	'ggg-core',
-	sources: ggg_core_src,
-	include_directories: src,
-	dependencies: ggg_core_deps,
-	version: meson.project_version(),
-	install: true
-)
-
-ggg_core = declare_dependency(
-	link_with: [ggg_core_lib],
-	include_directories: src,
-	dependencies: ggg_core_deps
-)
+foreach config : binary_configs
+    tmp_ggg_core_lib = shared_library(
+        config.get('prefix') + 'ggg-core',
+        sources: ggg_core_src,
+        cpp_args: config.get('cpp_args'),
+        include_directories: src,
+        dependencies: ggg_core_deps,
+        version: meson.project_version(),
+        install: true
+    )
+    tmp_ggg_core = declare_dependency(
+        link_with: [tmp_ggg_core_lib],
+        include_directories: src,
+        dependencies: ggg_core_deps
+    )
+    set_variable(config.get('prefix') + 'ggg_core_lib', tmp_ggg_core_lib)
+    set_variable(config.get('prefix') + 'ggg_core', tmp_ggg_core)
+endforeach
 
 foreach name : ['entity', 'group', 'account']
     exe = executable(
@@ -40,20 +44,16 @@ foreach name : ['entity', 'group', 'account']
     test(name + '-test', exe)
 endforeach
 
-if has_override_fs
+if with_integration_tests
     name = 'database'
     exe = executable(
         name + '-test',
         sources: [name + '_test.cc'],
         include_directories: src,
-        dependencies: [unistdx, gtest, ggg_core],
+        dependencies: [unistdx, gtest, test_ggg_core],
     )
     test(
         name + '-test', exe,
-		env: [
-            'LD_PRELOAD='+override_fs.full_path(),
-            'GGG_TEST_SUFFIX='+name+'-test'
-		],
         workdir: meson.build_root(),
     )
 endif

@@ -30,7 +30,7 @@ namespace ggg {
 
 using namespace ggg;
 
-NSS_FUNCTION(gethostton_r)(
+NSS_FUNCTION(GGG_MODULE_NAME, gethostton_r)(
     const char* name,
     struct ::etherent* result,
     char* buffer,
@@ -64,7 +64,7 @@ NSS_FUNCTION(gethostton_r)(
     return ret;
 }
 
-NSS_FUNCTION(getntohost_r)(
+NSS_FUNCTION(GGG_MODULE_NAME, getntohost_r)(
     const struct ::ether_addr* address,
     struct ::etherent* result,
     char* buffer,

@@ -1,8 +1,7 @@
-#ifndef GGG_CONFIG_HH
-#define GGG_CONFIG_HH
+#ifndef GGG_DEFAULT_CONFIG_HH
+#define GGG_DEFAULT_CONFIG_HH
 
-#define MODULE_NAME @module_name@
-
+#define GGG_MODULE_NAME @module_name@
 #define GGG_ROOT "@ggg_root@"
 #define GGG_EXECUTABLE_NAME "@executable_name@"
 #define GGG_VERSION "@version@"
@@ -19,7 +18,7 @@
 #define GGG_DEFAULT_SHELL "@default_shell@"
 #define GGG_GUILE_LOAD_PATH "@guile_load_path@"
 #define GGG_GUILE_LOAD_COMPILED_PATH "@guile_load_compiled_path@"
-#define GGG_BIND_ADDRESS "\0/tmp/.GGG"
+#define GGG_BIND_ADDRESS "\0" "@bind_address@"
 
 #mesondefine GGG_DEVELOPER_BUILD
 #mesondefine GGG_HAVE_VISIBILITY

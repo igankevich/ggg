@@ -48,9 +48,16 @@ with_pam = get_option('with_pam')
 with_cli = get_option('with_cli')
 with_daemon = get_option('with_daemon')
 with_tests = get_option('with_tests')
+with_integration_tests = get_option('with_integration_tests')
 with_man = get_option('with_man')
 b_sanitize = get_option('b_sanitize')
 developer = get_option('developer')
+
+test_cpp_args = ['-DGGG_TEST']
+binary_configs = [{'prefix': '', 'cpp_args': []}]
+if with_integration_tests
+    binary_configs += [{'prefix': 'test_', 'cpp_args': test_cpp_args}]
+endif
 
 unistdx_version = '>= 0.19.10'
 sqlitex_version = '>= 0.4.6'
@@ -100,6 +107,7 @@ config.set('guile_load_path', site_directory)
 config.set('guile_load_compiled_path', site_ccache_directory)
 config.set('GGG_DEVELOPER_BUILD', developer)
 config.set('ggg_root', ggg_root)
+config.set('bind_address', '/tmp/.GGG')
 visibility_main = '[[gnu::visibility("default")]] int func(); int main() {}'
 if cpp.has_argument('-fvisibility=hidden') and cpp.compiles(visibility_main)
     cpp_args_visibility = ['-fvisibility=hidden']
@@ -120,7 +128,6 @@ endif
 env = configuration_data()
 env.set('build_root', meson.build_root())
 env.set('prefix', join_paths(meson.build_root(), 'usr'))
-env.set('override_fs', override_fs.full_path())
 configure_file(input: 'env.in', output: 'env', configuration: env)
 # }}}
 

@@ -17,9 +17,9 @@ namespace {
 
 }
 
-NSS_ENUMERATE_PROTO(sp, entity_type)
+NSS_ENUMERATE_PROTO(GGG_MODULE_NAME, sp, entity_type)
 
-NSS_GETENTBY_R(sp, nam)(
+NSS_GETENTBY_R(GGG_MODULE_NAME, sp, nam)(
     const char* name,
     entity_type* result,
     char* buffer,

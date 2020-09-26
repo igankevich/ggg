@@ -9,6 +9,9 @@
 #include <ggg/proto/protocol.hh>
 #include <ggg/proto/selection.hh>
 
+#include <unistdx/fs/idirectory>
+#include <unistdx/ipc/process>
+
 using namespace ggg;
 
 namespace {
@@ -18,9 +21,9 @@ namespace {
 
 }
 
-NSS_ENUMERATE_PROTO(pw, entity_type)
+NSS_ENUMERATE_PROTO(GGG_MODULE_NAME, pw, entity_type)
 
-NSS_GETENTBY_R(pw, uid)(
+NSS_GETENTBY_R(GGG_MODULE_NAME, pw, uid)(
     ::uid_t uid,
     ::entity_type* result,
     char* buffer,
@@ -54,7 +57,7 @@ NSS_GETENTBY_R(pw, uid)(
     return ret;
 }
 
-NSS_GETENTBY_R(pw, nam)(
+NSS_GETENTBY_R(GGG_MODULE_NAME, pw, nam)(
     const char* name,
     entity_type* result,
     char* buffer,
@@ -66,6 +69,14 @@ NSS_GETENTBY_R(pw, nam)(
     try {
         NSS_kernel kernel(NSS_kernel::Passwd, NSS_kernel::Get_by_name);
         kernel.name(name);
+        std::clog << "name=" << name << std::endl;
+        {
+            std::string name = "/proc/" + std::to_string(sys::this_process::id()) + "/fd";
+            sys::idirectory dir{sys::path(name)};
+            for (const auto& entry : dir) {
+                std::clog << "entry=" << entry << std::endl;
+            }
+        }
         Client_protocol proto;
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<entity>();
@@ -80,6 +91,10 @@ NSS_GETENTBY_R(pw, nam)(
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        ret = NSS_STATUS_UNAVAIL;
+        err = ENOENT;
     } catch (...) {
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;

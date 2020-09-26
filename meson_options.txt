@@ -34,6 +34,13 @@ option(
 )
 
 option(
+	'with_integration_tests',
+	type: 'boolean',
+	value: true,
+	description: 'build more unit tests'
+)
+
+option(
 	'libasan_so_version',
 	type: 'integer',
 	value: 5,
@@ -53,4 +60,3 @@ option(
 	value: false,
 	description: 'developer build'
 )
-

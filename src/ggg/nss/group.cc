@@ -23,9 +23,9 @@ namespace {
 
 }
 
-NSS_ENUMERATE_PROTO(gr, entity_type)
+NSS_ENUMERATE_PROTO(GGG_MODULE_NAME, gr, entity_type)
 
-NSS_GETENTBY_R(gr, gid)(
+NSS_GETENTBY_R(GGG_MODULE_NAME, gr, gid)(
     ::gid_t gid,
     entity_type* result,
     char* buffer,
@@ -59,7 +59,7 @@ NSS_GETENTBY_R(gr, gid)(
     return ret;
 }
 
-NSS_GETENTBY_R(gr, nam)(
+NSS_GETENTBY_R(GGG_MODULE_NAME, gr, nam)(
     const char* name,
     entity_type* result,
     char* buffer,
@@ -93,7 +93,7 @@ NSS_GETENTBY_R(gr, nam)(
     return ret;
 }
 
-NSS_FUNCTION(initgroups_dyn)(
+NSS_FUNCTION(GGG_MODULE_NAME, initgroups_dyn)(
     const char* user,
     ::gid_t group_id,
     long int* start_ptr,
