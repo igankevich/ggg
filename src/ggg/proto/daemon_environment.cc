@@ -6,6 +6,9 @@
 #include <ggg/proto/pipeline.hh>
 
 void DaemonEnvironment::SetUp() {
+    #if defined(GGG_TEST)
+    this->_log.max_level(sys::log::levels::debug);
+    #endif
     sys::sysv_semaphore sem;
     this->_daemon = sys::process([&sem] () {
         using namespace ggg;

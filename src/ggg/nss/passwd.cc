@@ -3,6 +3,7 @@
 
 #include <ggg/config.hh>
 #include <ggg/core/entity.hh>
+#include <ggg/core/system_log.hh>
 #include <ggg/nss/buffer.hh>
 #include <ggg/nss/database.hh>
 #include <ggg/nss/nss.hh>
@@ -46,13 +47,12 @@ NSS_GETENTBY_R(GGG_MODULE_NAME, pw, uid)(
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
-    #if defined(GGG_TEST)
     } catch (const std::exception& ex) {
-        std::cerr << ex.what() << std::endl;
+        sys::message("%s: %s", __func__, ex.what());
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
-    #endif
     } catch (...) {
+        sys::message("%s: unknown error", __func__);
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
     }
@@ -86,13 +86,12 @@ NSS_GETENTBY_R(GGG_MODULE_NAME, pw, nam)(
             ret = NSS_STATUS_SUCCESS;
             err = 0;
         }
-    #if defined(GGG_TEST)
     } catch (const std::exception& ex) {
-        std::cerr << ex.what() << std::endl;
+        sys::message("%s: %s", __func__, ex.what());
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
-    #endif
     } catch (...) {
+        sys::message("%s: unknown error", __func__);
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
     }

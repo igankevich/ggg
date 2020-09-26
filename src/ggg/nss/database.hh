@@ -36,7 +36,11 @@ namespace ggg {
                 this->_entities = kernel.response<value_type>();
                 this->_first = this->_entities.begin();
                 this->_last = this->_entities.end();
+            } catch (const std::exception& ex) {
+                sys::message("%s: %s", to_string(db), ex.what());
+                ret = NSS_STATUS_UNAVAIL;
             } catch (...) {
+                sys::message("%s: unknown error", to_string(db));
                 ret = NSS_STATUS_UNAVAIL;
             }
             return ret;
@@ -67,7 +71,12 @@ namespace ggg {
                     ret = NSS_STATUS_SUCCESS;
                     err = 0;
                 }
+            } catch (const std::exception& ex) {
+                sys::message("%s: %s", to_string(db), ex.what());
+                ret = NSS_STATUS_UNAVAIL;
+                err = ENOENT;
             } catch (...) {
+                sys::message("%s: unknown error", to_string(db));
                 ret = NSS_STATUS_UNAVAIL;
                 err = ENOENT;
             }
@@ -96,7 +105,12 @@ namespace ggg {
                     err = 0;
                     h_err = 0;
                 }
+            } catch (const std::exception& ex) {
+                sys::message("%s: %s", to_string(db), ex.what());
+                ret = NSS_STATUS_UNAVAIL;
+                err = ENOENT;
             } catch (...) {
+                sys::message("%s: unknown error", to_string(db));
                 ret = NSS_STATUS_UNAVAIL;
                 err = ENOENT;
                 h_err = NO_RECOVERY;

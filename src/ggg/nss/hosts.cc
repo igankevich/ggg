@@ -1,6 +1,7 @@
 #include <netdb.h>
 
 #include <ggg/core/host_address.hh>
+#include <ggg/core/system_log.hh>
 #include <ggg/nss/buffer.hh>
 #include <ggg/nss/database.hh>
 #include <ggg/nss/nss.hh>
@@ -89,14 +90,13 @@ NSS_FUNCTION(GGG_MODULE_NAME, gethostbyname2_r)(
                 err = 0;
             }
         }
-    #if defined(GGG_TEST)
     } catch (const std::exception& ex) {
-        std::cerr << ex.what() << std::endl;
+        sys::message("%s: %s", __func__, ex.what());
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
         h_err = NO_RECOVERY;
-    #endif
     } catch (...) {
+        sys::message("%s: unknown error", __func__);
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
         h_err = NO_RECOVERY;
@@ -168,14 +168,13 @@ NSS_FUNCTION(GGG_MODULE_NAME, gethostbyaddr_r)(
                 }
             }
         }
-    #if defined(GGG_TEST)
     } catch (const std::exception& ex) {
-        std::cerr << ex.what() << std::endl;
+        sys::message("%s: %s", __func__, ex.what());
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
         h_err = NO_RECOVERY;
-    #endif
     } catch (...) {
+        sys::message("%s: unknown error", __func__);
         ret = NSS_STATUS_UNAVAIL;
         err = ENOENT;
         h_err = NO_RECOVERY;
