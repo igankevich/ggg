@@ -68,6 +68,7 @@ if with_integration_tests
         ),
         is_parallel: false,
         env: ['LD_LIBRARY_PATH=' + meson.current_build_dir()],
+        timeout: 120,
     )
 endif
 
