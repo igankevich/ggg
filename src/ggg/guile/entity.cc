@@ -22,8 +22,11 @@ namespace ggg {
         auto s_home = scm_from_latin1_symbol("home");
         auto s_shell = scm_from_latin1_symbol("shell");
         auto s_id = scm_from_latin1_symbol("id");
+        auto s_name = scm_from_latin1_symbol("name");
         entity ent;
-        ent._name = to_string(slot(obj, "name"));
+        if (slot_is_bound(obj, s_name)) {
+            ent._name = to_string(slot(obj, s_name));
+        }
         if (slot_is_bound(obj, s_description)) {
             ent._description = to_string(slot(obj, s_description));
         }

@@ -11,13 +11,22 @@ namespace ggg {
     ggg::group
     Guile_traits<ggg::group>::from(SCM obj) {
         static_assert(std::is_same<uint32_t,sys::gid_type>::value, "bad guile type");
+        auto s_name = scm_from_latin1_symbol("name");
+        auto s_id = scm_from_latin1_symbol("id");
+        auto s_members = scm_from_latin1_symbol("members");
         group g;
-        g._name = to_string(slot(obj, "name"));
-        g._gid = scm_to_uint32(slot(obj, "id"));
-        auto members = slot(obj, "members");
-        auto nmembers = scm_to_int32(scm_length(members));
-        for (int i=0; i<nmembers; ++i) {
-            g.push(to_string(scm_list_ref(members, scm_from_int32(i))));
+        if (slot_is_bound(obj, s_name)) {
+            g._name = to_string(slot(obj, s_name));
+        }
+        if (slot_is_bound(obj, s_id)) {
+            g._gid = scm_to_uint32(slot(obj, s_id));
+        }
+        if (slot_is_bound(obj, s_members)) {
+            auto members = slot(obj, s_members);
+            while (members != SCM_EOL) {
+                g.push(to_string(scm_car(members)));
+                members = scm_cdr(members);
+            }
         }
         return g;
     }

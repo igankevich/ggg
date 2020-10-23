@@ -43,12 +43,24 @@ namespace ggg {
     template <>
     public_key
     Guile_traits<public_key>::from(SCM obj) {
-        public_key o;
-        o._name = to_string(slot(obj, "name"));
-        o._type = to_string(slot(obj, "type"));
-        o._key = to_string(slot(obj, "key"));
-        o._comment = to_string(slot(obj, "comment"));
+        auto s_name = scm_from_latin1_symbol("name");
+        auto s_type = scm_from_latin1_symbol("type");
+        auto s_key = scm_from_latin1_symbol("key");
+        auto s_comment = scm_from_latin1_symbol("comment");
         auto s_options = scm_from_latin1_symbol("options");
+        public_key o;
+        if (slot_is_bound(obj, s_name)) {
+            o._name = to_string(slot(obj, s_name));
+        }
+        if (slot_is_bound(obj, s_type)) {
+            o._type = to_string(slot(obj, s_type));
+        }
+        if (slot_is_bound(obj, s_key)) {
+            o._key = to_string(slot(obj, s_key));
+        }
+        if (slot_is_bound(obj, s_comment)) {
+            o._comment = to_string(slot(obj, s_comment));
+        }
         if (slot_is_bound(obj, s_options)) {
             o._options = to_string(slot(obj, s_options));
         }
@@ -63,6 +75,8 @@ namespace ggg {
             scm_variable_ref(scm_c_lookup("<public-key>")),
             scm_from_latin1_keyword("name"),
             scm_from_utf8_string(pk.name().data()),
+            scm_from_latin1_keyword("type"),
+            scm_from_utf8_string(pk.type().data()),
             scm_from_latin1_keyword("options"),
             scm_from_utf8_string(pk.options().data()),
             scm_from_latin1_keyword("comment"),

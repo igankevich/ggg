@@ -182,8 +182,11 @@ namespace ggg {
         auto s_password = scm_from_latin1_symbol("password");
         auto s_expiration_date = scm_from_latin1_symbol("expiration-date");
         auto s_max_inactive = scm_from_latin1_symbol("max-inactive");
+        auto s_name = scm_from_latin1_symbol("name");
         account acc;
-        acc._name = to_string(slot(obj, "name"));
+        if (slot_is_bound(obj, s_name)) {
+            acc._name = to_string(slot(obj, s_name));
+        }
         if (slot_is_bound(obj, s_expiration_date)) {
             acc._expire = account::clock_type::from_time_t(
                     scm_to_uint64(slot(obj, s_expiration_date)));
