@@ -23,7 +23,7 @@ foreach config : binary_configs
         include_directories: src,
         dependencies: ggg_core_deps,
         version: meson.project_version(),
-        install: true
+        install: config.get('prefix') == '',
     )
     tmp_ggg_core = declare_dependency(
         link_with: [tmp_ggg_core_lib],

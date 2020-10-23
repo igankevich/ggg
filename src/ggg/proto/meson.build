@@ -19,7 +19,7 @@ foreach config : binary_configs
         include_directories: src,
         dependencies: tmp_ggg_proto_deps,
         version: meson.project_version(),
-        install: true
+        install: config.get('prefix') == '',
     )
     tmp_ggg_proto = declare_dependency(
         link_with: [tmp_ggg_proto_lib],

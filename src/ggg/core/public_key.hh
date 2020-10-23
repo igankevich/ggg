@@ -7,6 +7,7 @@
 #include <sqlitex/statement.hh>
 
 #include <ggg/core/guile_traits.hh>
+#include <ggg/proto/traits.hh>
 
 namespace ggg {
 
@@ -43,6 +44,7 @@ namespace ggg {
         friend void operator>>(const sqlite::statement& in, public_key& rhs);
         friend std::ostream& operator<<(std::ostream& out, const public_key& rhs);
         friend struct Guile_traits<public_key>;
+        friend struct Protocol_traits<public_key>;
     };
 
     void operator>>(const sqlite::statement& in, public_key& rhs);

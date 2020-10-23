@@ -30,7 +30,7 @@ foreach config : binary_configs
             get_variable(config.get('prefix') + 'ggg_proto'),
         ],
         version: '2',
-        install: true,
+        install: config.get('prefix') == '',
         cpp_args: cpp_args_visibility + config.get('cpp_args'),
     )
     set_variable(config.get('prefix') + 'nss_ggg_internal_lib', tmp_nss_ggg_internal_lib)

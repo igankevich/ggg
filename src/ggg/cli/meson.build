@@ -41,18 +41,29 @@ foreach config : binary_configs
             guile,
             get_variable(config.get('prefix') + 'ggg_guile'),
         ],
-        install: true
+        install: config.get('prefix') == ''
     )
     set_variable(config.get('prefix') + 'ggg_exe', tmp_ggg_exe)
 endforeach
 
-ggg_public_keys_exe = executable(
-    'ggg-public-keys',
-    sources: ['ggg_public_keys_main.cc', 'cli_traits.cc'],
-    include_directories: src,
-    dependencies: [unistdx,libsodium,ggg_core,guile,ggg_guile],
-    install: true
-)
+foreach config : binary_configs
+    tmp_ggg_public_keys_exe = executable(
+        config.get('prefix') + 'ggg-public-keys',
+        sources: ['ggg_public_keys_main.cc', 'cli_traits.cc'],
+        cpp_args: config.get('cpp_args'),
+        include_directories: src,
+        dependencies: [
+            unistdx,
+            libsodium,
+            get_variable(config.get('prefix') + 'ggg_proto'),
+            get_variable(config.get('prefix') + 'ggg_core'),
+            get_variable(config.get('prefix') + 'ggg_guile'),
+            guile,
+        ],
+        install: config.get('prefix') == ''
+    )
+    set_variable(config.get('prefix') + 'ggg_public_keys_exe', tmp_ggg_public_keys_exe)
+endforeach
 
 # guile environment variables {{{
 guile_config = configuration_data()
@@ -72,10 +83,31 @@ if with_integration_tests and with_tests
             'cli-test',
             sources: ['cli_test.cc'],
             cpp_args: test_cpp_args,
-            dependencies: [unistdx, gtest_nomain, pam, libsodium, test_ggg_core, ggg_test],
+            dependencies: [
+                unistdx,
+                gtest_nomain,
+                pam,
+                libsodium,
+                test_ggg_core,
+                ggg_test,
+                ggg_proto_test
+            ],
         ),
-        env: ['GGG_EXECUTABLE=' + test_ggg_exe.full_path()],
+        env: ['GGG_PATH=' + ':'.join([meson.current_build_dir()])],
         timeout: 120,
+        workdir: meson.build_root(),
+    )
+endif
+
+if with_tests
+    test(
+        'cli/public_key',
+        executable(
+            'public-key-test',
+            sources: ['public_key_test.cc'],
+            cpp_args: test_cpp_args,
+            dependencies: [unistdx, gtest, test_ggg_core, ggg_proto_test],
+        ),
         workdir: meson.build_root(),
     )
 endif

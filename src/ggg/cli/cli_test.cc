@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 
 #include <ggg/config.hh>
+#include <ggg/proto/daemon_environment.hh>
 #include <ggg/test/clean_database.hh>
 #include <ggg/test/execute_command.hh>
 
@@ -210,19 +211,32 @@ TEST_F(Commands, TiesAndHierarchies) {
     EXPECT_ZERO("test_ggg attach u1 u2");
 }
 
+TEST_F(Commands, PublicKeys) {
+    EXPECT_ZERO(R"(test_ggg add -e '(make <entity> #:name "u1" #:id 2001 #:description "U1")')");
+    EXPECT_ZERO(R"(test_ggg add -t account -e '(make <account> #:name "u1")')");
+    EXPECT_ZERO(R"(test_ggg add -t public-key \
+                                -e '(make <public-key>
+                                          #:name "u1"
+                                          #:options ""
+                                          #:type "ssh-rsa"
+                                          #:key "AAAA"
+                                          #:comment "hello")')");
+    EXPECT_OUTPUT("ssh-rsa AAAA hello\n", R"(test_ggg-public-keys u1)");
+}
+
 int
 main(int argc, char* argv[]) {
-    const char* ggg_executable = getenv("GGG_EXECUTABLE");
-    if (!ggg_executable) { return 77; }
-    sys::canonical_path ggg_exe(ggg_executable);
+    const char* ggg_path = getenv("GGG_PATH");
+    if (!ggg_path) { return 77; }
     if (const char* path = getenv("PATH")) {
-        std::string new_path = ggg_exe.dirname();
+        std::string new_path = ggg_path;
         new_path += ':';
         new_path += path;
         ::setenv("PATH", new_path.data(), 1);
     } else {
-        ::setenv("PATH", ggg_exe.dirname(), 1);
+        ::setenv("PATH", ggg_path, 1);
     }
     ::testing::InitGoogleTest(&argc, argv);
+    ::testing::AddGlobalTestEnvironment(new DaemonEnvironment);
     return RUN_ALL_TESTS();
 }

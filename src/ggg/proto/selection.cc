@@ -107,6 +107,24 @@ namespace ggg {
         buf.read(rhs._name);
     }
 
+    template <>
+    void Protocol_traits<public_key>::write(sys::byte_buffer& buf, const public_key& rhs) {
+        buf.write(rhs._name);
+        buf.write(rhs._options);
+        buf.write(rhs._type);
+        buf.write(rhs._key);
+        buf.write(rhs._comment);
+    }
+
+    template <>
+    void Protocol_traits<public_key>::read(sys::byte_buffer& buf, public_key& rhs) {
+        buf.read(rhs._name);
+        buf.read(rhs._options);
+        buf.read(rhs._type);
+        buf.read(rhs._key);
+        buf.read(rhs._comment);
+    }
+
     const char* to_string(NSS_kernel::DB rhs) {
         switch (rhs) {
             case NSS_kernel::DB::Passwd: return "passwd";
@@ -114,6 +132,7 @@ namespace ggg {
             case NSS_kernel::DB::Shadow: return "shadow";
             case NSS_kernel::DB::Hosts: return "hosts";
             case NSS_kernel::DB::Ethers: return "ethers";
+            case NSS_kernel::DB::Public_keys: return "public-keys";
             default: return "unknown";
         }
     }
@@ -165,6 +184,16 @@ namespace {
         return tmp;
     }
 
+    ggg::Database::File get_file(ggg::NSS_kernel::DB db) {
+        using T = ggg::NSS_kernel::DB;
+        using F = ggg::Database::File;
+        switch (db) {
+            case T::Shadow:      return F::Accounts;
+            case T::Public_keys: return F::All;
+            default:             return F::Entities;
+        }
+    }
+
 }
 
 void ggg::NSS_kernel::log_request() {
@@ -191,9 +220,7 @@ void ggg::NSS_kernel::run() {
 }
 
 void ggg::NSS_kernel::do_run() {
-    Database db(
-        this->_database == Shadow ? Database::File::Accounts : Database::File::Entities,
-        Database::Flag::Read_only);
+    Database db(get_file(this->_database), Database::Flag::Read_only);
     auto& resp = this->_response;
     auto* name = this->_name.data();
     switch (this->_database) {
@@ -265,6 +292,29 @@ void ggg::NSS_kernel::do_run() {
                     }
                     break;
                 }
+                default: break;
+            }
+            break;
+        case Public_keys:
+            switch (this->_operation) {
+                case Get_by_name:
+                    {
+                        bool valid = this->_client_credentials.uid == 0;
+                        if (!valid) {
+                            auto st = db.find_entity(this->_client_credentials.uid);
+                            ggg::entity ent;
+                            if (st.step() != sqlite::errc::done) {
+                                st >> ent;
+                                if (ent.name() == name) { valid = true; }
+                            }
+                            st.close();
+                        }
+                        #if !defined(GGG_TEST)
+                        if (!valid) { throw std::invalid_argument("permission denied"); }
+                        #endif
+                    }
+                    to_bytes<public_key>(resp, db.public_keys(name));
+                    break;
                 default: break;
             }
             break;
@@ -420,6 +470,11 @@ namespace ggg {
     template <> auto
     NSS_kernel::response() -> std::vector<std::string> {
         return from_bytes<std::string>(this->_response);
+    }
+
+    template <> auto
+    NSS_kernel::response() -> std::vector<public_key> {
+        return from_bytes<public_key>(this->_response);
     }
 
 }

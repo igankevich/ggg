@@ -147,12 +147,6 @@ namespace ggg {
         std::stringstream tmp(guile);
         object_array objects;
         read<public_key>(tmp, objects, input_format());
-        if (args().size() != 1) {
-            throw std::invalid_argument("please, specify exactly one name");
-        }
-        for (auto& o : objects) {
-            o.name(args().front());
-        }
         //auto ents = guile_traits_type::from_guile(guile);
         Transaction tr(store);
         for (const auto& o : objects) { store.insert(o); }

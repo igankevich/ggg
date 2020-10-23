@@ -6,6 +6,8 @@
 #include <ggg/config.hh>
 #include <ggg/core/database.hh>
 #include <ggg/core/native.hh>
+#include <ggg/proto/protocol.hh>
+#include <ggg/proto/selection.hh>
 
 int main(int argc, char* argv[]) {
     using namespace ggg;
@@ -22,11 +24,14 @@ int main(int argc, char* argv[]) {
     try {
     #endif
         const char* name = argv[1];
-        Database db(Database::File::Accounts, Database::Flag::Read_only);
-        auto st = db.public_keys(name);
-        write<public_key>(std::cout, st, Format::SSH);
-        st.close();
-        db.close();
+        NSS_kernel kernel(NSS_kernel::Public_keys, NSS_kernel::Get_by_name);
+        kernel.name(name);
+        Client_protocol proto;
+        proto.process(&kernel, Protocol::Command::NSS_kernel);
+        const auto& response = kernel.response<public_key>();
+        for (const auto& pk : response) {
+            std::cout << pk << '\n';
+        }
         ret = EXIT_SUCCESS;
     #if !defined(GGG_DEVELOPER_BUILD)
     } catch (const std::bad_alloc& err) {

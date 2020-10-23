@@ -22,6 +22,7 @@ namespace ggg {
             Shadow = 1<<2,
             Hosts = 1<<3,
             Ethers = 1<<4,
+            Public_keys = 1<<5,
         };
         enum Operation: sys::u32 {
             Get_all = 1,
