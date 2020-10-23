@@ -71,6 +71,7 @@ namespace {
     SCM
     store_select(SCM store_in, SCM obj) {
         using namespace ggg;
+        using ::ggg::group;
         Store& store = get_store(store_in);
         auto type = scm_class_of(obj);
         if (type == scm_variable_ref(scm_c_lookup("<entity>"))) {
@@ -92,6 +93,24 @@ namespace {
                 st >> acc;
                 return Guile_traits<account>::to(acc);
             }
+        } else if (type == scm_variable_ref(scm_c_lookup("<group>"))) {
+            auto gr = Guile_traits<group>::from(obj);
+            bool success = false;
+            if (gr.has_id()) {
+                success = store.find_group(gr.id(), gr);
+            } else if (gr.has_name()) {
+                success = store.find_group(gr.name().data(), gr);
+            }
+            if (success) { return Guile_traits<group>::to(gr); }
+        } else if (type == scm_variable_ref(scm_c_lookup("<public-key>"))) {
+            auto pk = Guile_traits<public_key>::from(obj);
+            auto st = store.public_keys(pk.name().data());
+            SCM lst = SCM_EOL;
+            if (st.step() != sqlite::errc::done) {
+                st >> pk;
+                lst = scm_cons(Guile_traits<public_key>::to(pk), lst);
+            }
+            return lst;
         }
         return SCM_UNSPECIFIED;
     }

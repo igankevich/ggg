@@ -6,9 +6,9 @@
 
 namespace ggg {
 
-    template <class Container, class Ch>
-    sys::basic_bstream<Ch>&
-    operator<<(sys::basic_bstream<Ch>& out, const Container& rhs) {
+    template <class Container>
+    sys::bstream&
+    operator<<(sys::bstream& out, const Container& rhs) {
         out << uint32_t(rhs.size());
         for (const auto& elem : rhs) {
             out << elem;
@@ -16,9 +16,9 @@ namespace ggg {
         return out;
     }
 
-    template <class Ch, class T>
-    sys::basic_bstream<Ch>&
-    operator>>(sys::basic_bstream<Ch>& in, std::unordered_set<T>& rhs) {
+    template <class T>
+    sys::bstream&
+    operator>>(sys::bstream& in, std::unordered_set<T>& rhs) {
         rhs.clear();
         uint32_t n = 0;
         in >> n;
@@ -32,30 +32,26 @@ namespace ggg {
 
 }
 
-template <class Ch>
-std::basic_ostream<Ch>&
-ggg::operator<<(std::basic_ostream<Ch>& out, const basic_group<Ch>& rhs) {
-    typedef typename basic_group<Ch>::string_type string_type;
+std::ostream&
+ggg::operator<<(std::ostream& out, const group& rhs) {
     out << rhs.name() << "::" << rhs.id() << ':';
     std::copy(
         rhs._members.begin(),
         rhs._members.end(),
-        sys::intersperse_iterator<string_type,Ch,Ch>(out, Ch(','))
+        sys::intersperse_iterator<std::string,char,char>(out, ',')
     );
     return out;
 }
 
-template <class Ch>
-sys::basic_bstream<Ch>&
-ggg::operator<<(sys::basic_bstream<Ch>& out, const basic_group<Ch>& rhs) {
+sys::bstream&
+ggg::operator<<(sys::bstream& out, const group& rhs) {
     return out << rhs._name
                << rhs._gid
                << rhs._members;
 }
 
-template <class Ch>
-sys::basic_bstream<Ch>&
-ggg::operator>>(sys::basic_bstream<Ch>& in, basic_group<Ch>& rhs) {
+sys::bstream&
+ggg::operator>>(sys::bstream& in, group& rhs) {
     return in
            >> rhs._name
            >> rhs._gid
@@ -63,20 +59,9 @@ ggg::operator>>(sys::basic_bstream<Ch>& in, basic_group<Ch>& rhs) {
 }
 
 void
-ggg::operator>>(const sqlite::statement& in, basic_group<char>& rhs) {
+ggg::operator>>(const sqlite::statement& in, group& rhs) {
     rhs._name.clear();
     rhs._gid = -1;
     sqlite::cstream cstr(in);
     cstr >> rhs._gid >> rhs._name;
 }
-
-template class ggg::basic_group<char>;
-
-template std::basic_ostream<char>&
-ggg::operator<<(std::basic_ostream<char>& out, const basic_group<char>& rhs);
-
-template sys::basic_bstream<char>&
-ggg::operator<<(sys::basic_bstream<char>& out, const basic_group<char>& rhs);
-
-template sys::basic_bstream<char>&
-ggg::operator>>(sys::basic_bstream<char>& in, basic_group<char>& rhs);

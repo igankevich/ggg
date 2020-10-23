@@ -32,7 +32,7 @@ namespace ggg {
         }
         return scm_call(
             scm_variable_ref(scm_c_lookup("make")),
-            scm_variable_ref(scm_c_lookup("<entity>")),
+            scm_variable_ref(scm_c_lookup("<group>")),
             scm_from_latin1_keyword("name"),
             scm_from_utf8_string(g.name().data()),
             scm_from_latin1_keyword("members"),

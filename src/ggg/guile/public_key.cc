@@ -56,6 +56,24 @@ namespace ggg {
     }
 
     template <>
+    SCM
+    Guile_traits<ggg::public_key>::to(const public_key& pk) {
+        return scm_call(
+            scm_variable_ref(scm_c_lookup("make")),
+            scm_variable_ref(scm_c_lookup("<public-key>")),
+            scm_from_latin1_keyword("name"),
+            scm_from_utf8_string(pk.name().data()),
+            scm_from_latin1_keyword("options"),
+            scm_from_utf8_string(pk.options().data()),
+            scm_from_latin1_keyword("comment"),
+            scm_from_utf8_string(pk.comment().data()),
+            scm_from_latin1_keyword("key"),
+            scm_from_utf8_string(pk.key().data()),
+            SCM_UNDEFINED
+        );
+    }
+
+    template <>
     auto
     Guile_traits<public_key>::select(std::string name) -> array_type {
         Store store(Store::File::Accounts, Store::Flag::Read_only);
