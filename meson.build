@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.8.1',
+	version: '1.8.2',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
 	license: ['gpl3+']
@@ -92,7 +92,7 @@ config = configuration_data()
 config.set('module_name', module_name)
 config.set('executable_name', executable_name)
 config.set('version', debug_build ? 'debug' : meson.project_version())
-config.set('file_editor', 'vi')
+config.set('file_editor', get_option('default_editor'))
 config.set('catalog', 'ggg')
 config.set('read_group', 'ggg.auth')
 config.set('write_group', 'ggg.write')

@@ -60,3 +60,10 @@ option(
 	value: false,
 	description: 'developer build'
 )
+
+option(
+	'default_editor',
+	type: 'string',
+	value: 'vi',
+	description: 'set default editor for changing entities (when EDITOR is not set)'
+)

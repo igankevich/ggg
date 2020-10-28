@@ -1,13 +1,13 @@
-#include "editor.hh"
-
 #include <cstdlib>
 #include <stdexcept>
-#include <unistdx/io/pipe>
-#include <unistdx/io/fdstream>
-#include <unistdx/ipc/process>
-#include <unistdx/ipc/execute>
-#include <unistdx/fs/idirtree>
 
+#include <unistdx/fs/idirtree>
+#include <unistdx/io/fdstream>
+#include <unistdx/io/pipe>
+#include <unistdx/ipc/execute>
+#include <unistdx/ipc/process>
+
+#include <ggg/cli/editor.hh>
 #include <ggg/config.hh>
 
 std::string
