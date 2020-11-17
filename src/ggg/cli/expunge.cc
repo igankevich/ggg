@@ -13,7 +13,7 @@ namespace {
     send(sys::signal s, const std::vector<ggg::Process>& processes) {
         for (const ggg::Process& p : processes) {
             try {
-                sys::send(s, p.pid);
+                sys::process_view(p.pid).send(s);
             } catch (const sys::bad_call& err) {
                 ggg::native_message(
                     std::cerr,

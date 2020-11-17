@@ -16,7 +16,9 @@ namespace ggg {
     public:
         explicit Local_server(const sys::socket_address& address);
         inline sys::fd_type fd() const { return this->_socket.fd(); }
-        inline sys::port_type port() const { return this->_address.port(); }
+        inline sys::port_type port() const {
+            return sys::socket_address_cast<sys::ipv4_socket_address>(this->_address).port();
+        }
         void process(const sys::epoll_event& event) override;
 
         template <class ... Args>

@@ -59,7 +59,9 @@ namespace ggg {
             this->_state = State::Stopping;
         }
 
-        inline sys::port_type port() const { return this->_socket.bind_addr().port(); }
+        inline sys::port_type port() const {
+            return sys::socket_address_cast<sys::ipv4_socket_address>(this->_socket.bind_addr()).port();
+        }
 
     };
 

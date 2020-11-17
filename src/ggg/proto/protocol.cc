@@ -84,6 +84,7 @@ ggg::Client_protocol::process(Kernel* kernel, Command command) {
     using namespace std::chrono;
     sys::socket_address address(GGG_BIND_ADDRESS);
     sys::socket s(sys::family_type::unix);
+    s.set(sys::socket::options::reuse_address);
     s.set(sys::socket::options::pass_credentials);
     s.connect(address);
     sys::byte_buffer buf{4096};
