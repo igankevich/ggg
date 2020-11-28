@@ -5,7 +5,7 @@
 #include <iterator>
 #include <set>
 
-#include <unistdx/util/userstream>
+#include <unistdx/system/nss>
 
 #include <ggg/config.hh>
 #include <ggg/core/entity.hh>

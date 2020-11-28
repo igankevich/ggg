@@ -8,7 +8,7 @@
 #include <string>
 
 #include <unistdx/net/bstream>
-#include <unistdx/util/user>
+#include <unistdx/system/nss>
 
 #include <sqlitex/statement.hh>
 
