@@ -36,6 +36,8 @@ namespace {
             store.insert(Guile_traits<account>::from(obj));
         } else if (type == scm_variable_ref(scm_c_lookup("<machine>"))) {
             store.insert(Guile_traits<Machine>::from(obj));
+        } else if (type == scm_variable_ref(scm_c_lookup("<public-key>"))) {
+            store.insert(Guile_traits<public_key>::from(obj));
         }
         return SCM_UNSPECIFIED;
     }
@@ -51,6 +53,8 @@ namespace {
             store.erase(Guile_traits<account>::from(obj));
         } else if (type == scm_variable_ref(scm_c_lookup("<machine>"))) {
             store.erase(Guile_traits<Machine>::from(obj));
+        } else if (type == scm_variable_ref(scm_c_lookup("<public-key>"))) {
+            store.erase(Guile_traits<public_key>::from(obj));
         }
         return SCM_UNSPECIFIED;
     }
@@ -64,6 +68,8 @@ namespace {
             store.update(Guile_traits<entity>::from(obj));
         } else if (type == scm_variable_ref(scm_c_lookup("<account>"))) {
             store.update(Guile_traits<account>::from(obj));
+        } else if (type == scm_variable_ref(scm_c_lookup("<public-key>"))) {
+            store.update(Guile_traits<public_key>::from(obj));
         }
         return SCM_UNSPECIFIED;
     }
@@ -106,7 +112,7 @@ namespace {
             auto pk = Guile_traits<public_key>::from(obj);
             auto st = store.public_keys(pk.name().data());
             SCM lst = SCM_EOL;
-            if (st.step() != sqlite::errc::done) {
+            while (st.step() != sqlite::errc::done) {
                 st >> pk;
                 lst = scm_cons(Guile_traits<public_key>::to(pk), lst);
             }

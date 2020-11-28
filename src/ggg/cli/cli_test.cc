@@ -221,7 +221,14 @@ TEST_F(Commands, PublicKeys) {
                                           #:type "ssh-rsa"
                                           #:key "AAAA"
                                           #:comment "hello")')");
-    EXPECT_OUTPUT("ssh-rsa AAAA hello\n", R"(test_ggg-public-keys u1)");
+    EXPECT_ZERO(R"(test_ggg add -t public-key \
+                                -e '(make <public-key>
+                                          #:name "u1"
+                                          #:options ""
+                                          #:type "ssh-rsa"
+                                          #:key "BBBB"
+                                          #:comment "hello")')");
+    EXPECT_OUTPUT("ssh-rsa AAAA hello\nssh-rsa BBBB hello\n", R"(test_ggg-public-keys u1)");
 }
 
 int
