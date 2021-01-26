@@ -130,7 +130,7 @@ namespace ggg {
         for (const auto& ent : st.rows<object_type>()) {
             out << ent.name() << ":x:";
             out << ent.id() << ':';
-            auto members = children(conn, ent.id());
+            auto members = ggg::Connection(conn).find_users_by_group_name(ent.name().data());
             if (members.step() != sqlite::errc::done) {
                 members.column(0, name);
                 out << name;

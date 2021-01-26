@@ -203,7 +203,7 @@ TEST_F(Commands, TiesAndHierarchies) {
     EXPECT_ZERO(R"(test_ggg add -e '(make <entity> #:name "u3" #:id 2003 #:description "U3")')");
     EXPECT_ZERO("test_ggg attach u1 u2");
     EXPECT_NON_ZERO2("test_ggg attach u1 u2", "attached same entities multiple times");
-    EXPECT_NON_ZERO2("test_ggg tie u1 u2", "tied entitites with the same hierarhy root");
+    EXPECT_ZERO("test_ggg tie u1 u2");
     EXPECT_ZERO("test_ggg detach u1");
     EXPECT_ZERO("test_ggg tie u1 u2");
     EXPECT_NON_ZERO2("test_ggg attach u1 u2", "attached tied entities");

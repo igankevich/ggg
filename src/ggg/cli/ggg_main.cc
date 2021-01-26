@@ -33,7 +33,11 @@ int main(int argc, char* argv[]) {
         #if !defined(GGG_DEVELOPER_BUILD)
         parse_success = true;
         #endif
-        cmd->execute();
+        if (cmd->help()) {
+            cmd->print_usage();
+        } else {
+            cmd->execute();
+        }
         ret = EXIT_SUCCESS;
     #if !defined(GGG_DEVELOPER_BUILD)
     } catch (const ggg::quiet_error& err) {

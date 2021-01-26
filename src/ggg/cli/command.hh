@@ -16,6 +16,7 @@ namespace ggg {
         std::string _prefix;
         args_type _args;
         bool _verbose = true;
+        bool _help = false;
 
     public:
         Command() = default;
@@ -38,10 +39,8 @@ namespace ggg {
             return this->_prefix;
         }
 
-        inline bool
-        verbose() const noexcept {
-            return this->_verbose;
-        }
+        inline bool verbose() const noexcept { return this->_verbose; }
+        inline bool help() const noexcept { return this->_help; }
 
         inline args_iterator
         args_begin() const noexcept {

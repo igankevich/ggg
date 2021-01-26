@@ -8,9 +8,10 @@
 void
 ggg::Select_all::parse_arguments(int argc, char* argv[]) {
     int opt;
-    while ((opt = getopt(argc, argv, "o:")) != -1) {
+    while ((opt = getopt(argc, argv, "o:h")) != -1) {
         switch (opt) {
             case 'o': std::string(::optarg) >> this->_oformat; break;
+            case 'h': this->_help = true; break;
         }
     }
     for (int i=::optind; i<argc; ++i) {
@@ -43,6 +44,22 @@ ggg::Select_locked::execute() {
 }
 
 void
+ggg::Select_edges::parse_arguments(int argc, char* argv[]) {
+    int opt;
+    while ((opt = getopt(argc, argv, "o:d:rh")) != -1) {
+        switch (opt) {
+            case 'o': std::string(::optarg) >> this->_oformat; break;
+            case 'd': this->_depth = std::atoi(::optarg); break;
+            case 'r': this->_depth = GGG_MAX_DEPTH; break;
+            case 'h': this->_help = true; break;
+        }
+    }
+    for (int i=::optind; i<argc; ++i) {
+        this->_args.emplace_back(argv[i]);
+    }
+}
+
+void
 ggg::Select_parents::execute() {
     remove_duplicate_arguments();
     if (this->_args.empty()) {
@@ -50,7 +67,7 @@ ggg::Select_parents::execute() {
     }
     Database db(Database::File::Entities);
     for (const auto& name : this->args()) {
-        auto result = db.find_parent_entities(name.data());
+        auto result = Connection(*db.db()).parents(name.data(), this->_depth);
         write<entity>(std::cout, result, output_format());
     }
     db.close();
@@ -59,14 +76,14 @@ ggg::Select_parents::execute() {
 void
 ggg::Select_parents::print_usage() {
     std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-        << this->prefix() << " NAME...\n";
+        << this->prefix() << " [-rh] [-d depth] NAME...\n";
 }
 
 void
 ggg::Select_children::execute() {
     Database db(Database::File::Entities);
     for (const auto& name : this->args()) {
-        auto result = db.find_child_entities(name.data());
+        auto result = Connection(*db.db()).children(name.data(), this->_depth);
         write<entity>(std::cout, result, output_format());
     }
     db.close();
@@ -74,6 +91,42 @@ ggg::Select_children::execute() {
 
 void
 ggg::Select_children::print_usage() {
+    std::cout << "usage: " GGG_EXECUTABLE_NAME " "
+        << this->prefix() << " [-rh] [-d depth] NAME...\n";
+}
+
+void
+ggg::Select_groups::execute() {
+    remove_duplicate_arguments();
+    if (this->_args.empty()) {
+        throw std::invalid_argument("please, specify names");
+    }
+    Database db(Database::File::Entities);
+    for (const auto& name : this->args()) {
+        auto result = db.find_groups_by_user_name(name.data());
+        write<entity>(std::cout, result, output_format());
+    }
+    db.close();
+}
+
+void
+ggg::Select_groups::print_usage() {
+    std::cout << "usage: " GGG_EXECUTABLE_NAME " "
+        << this->prefix() << " NAME...\n";
+}
+
+void
+ggg::Select_members::execute() {
+    Database db(Database::File::Entities);
+    for (const auto& name : this->args()) {
+        auto result = db.find_users_by_group_name(name.data());
+        write<entity>(std::cout, result, output_format());
+    }
+    db.close();
+}
+
+void
+ggg::Select_members::print_usage() {
     std::cout << "usage: " GGG_EXECUTABLE_NAME " "
         << this->prefix() << " NAME...\n";
 }

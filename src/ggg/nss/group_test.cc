@@ -88,7 +88,7 @@ TEST(group, group_member_via_tie) {
         Clean_database db;
         db.insert("testuser:x:2000:2000:halt:/sbin:/sbin/halt");
         db.insert("testgroup:x:2001:2001:halt:/sbin:/sbin/halt");
-        db.tie("testuser", "testgroup");
+        db.tie("testuser", "testgroup", ggg::Database::Ties::User_group);
     }
     auto* testgroup = getgrnam("testgroup");
     EXPECT_STREQ("testuser", *testgroup->gr_mem);
@@ -116,34 +116,32 @@ TEST(group, getgrent_nested_groups) {
         db.insert("u1:x:2000:2000:halt:/sbin:/sbin/halt");
         db.insert("g1:x:2001:2001:halt:/sbin:/sbin/halt");
         db.insert("g2:x:2002:2002:halt:/sbin:/sbin/halt");
-        db.tie("u1", "g1");
-        db.tie("g1", "g2");
+        db.tie("u1", "g2", ggg::Database::Ties::User_group);
+        db.tie("g1", "g2", ggg::Database::Ties::Group_group);
     }
+    auto* u1 = getgrnam("u1");
+    ASSERT_NE(nullptr, u1->gr_mem);
+    EXPECT_EQ(nullptr, u1->gr_mem[0]) << u1->gr_mem[0];
+    auto* g1 = getgrnam("g1");
+    ASSERT_NE(nullptr, g1->gr_mem);
+    ASSERT_NE(nullptr, g1->gr_mem[0]) << g1->gr_mem[0];
+    ASSERT_EQ(nullptr, g1->gr_mem[1]) << g1->gr_mem[1];
+    EXPECT_STREQ("u1", g1->gr_mem[0]);
+    auto* g2 = getgrnam("g2");
+    ASSERT_NE(nullptr, g2->gr_mem);
+    ASSERT_NE(nullptr, g2->gr_mem[0]) << g2->gr_mem[0];
+    ASSERT_EQ(nullptr, g2->gr_mem[1]) << g2->gr_mem[1];
+    EXPECT_STREQ("u1", g2->gr_mem[0]);
     gr_guard g;
     while (const auto* ent = ::getgrent()) {
         std::string name = ent->gr_name;
+        ggg::group group(*ent);
         if (name == "u1") {
-            ASSERT_NE(nullptr, ent->gr_mem);
-            EXPECT_EQ(nullptr, ent->gr_mem[0]) << ent->gr_mem[0];
+            EXPECT_EQ(ggg::group::container_type{}, group.members());
         } else if (name == "g1") {
-            ASSERT_NE(nullptr, ent->gr_mem);
-            ASSERT_NE(nullptr, ent->gr_mem[0]) << ent->gr_mem[0];
-            ASSERT_EQ(nullptr, ent->gr_mem[1]) << ent->gr_mem[1];
-            EXPECT_STREQ("u1", ent->gr_mem[0]);
+            EXPECT_EQ(ggg::group::container_type{"u1"}, group.members());
         } else if (name == "g2") {
-            ASSERT_NE(nullptr, ent->gr_mem);
-            ASSERT_NE(nullptr, ent->gr_mem[0]) << ent->gr_mem[0];
-            ASSERT_NE(nullptr, ent->gr_mem[1]) << ent->gr_mem[1];
-            ASSERT_EQ(nullptr, ent->gr_mem[2]) << ent->gr_mem[2];
-            if (ent->gr_mem[0] && ent->gr_mem[1]) {
-                std::string m1 = ent->gr_mem[0];
-                std::string m2 = ent->gr_mem[1];
-                if (m1 < m2) {
-                    std::swap(m1, m2);
-                }
-                EXPECT_EQ("u1", m1);
-                EXPECT_EQ("g1", m2);
-            }
+            EXPECT_EQ(ggg::group::container_type{"u1"}, group.members());
         } else {
             FAIL() << "unexpected group: " << name;
         }

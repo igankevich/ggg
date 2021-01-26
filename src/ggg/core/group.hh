@@ -54,6 +54,16 @@ namespace ggg {
         _name(name)
         {}
 
+        inline explicit
+        group(const ::group& rhs):
+        _name(rhs.gr_name),
+        _gid(rhs.gr_gid)
+        {
+            for (auto* mem=rhs.gr_mem; *mem; ++mem) {
+                this->_members.emplace(*mem);
+            }
+        }
+
         group() = default;
         group(const group& rhs) = default;
         group(group&& rhs) = default;

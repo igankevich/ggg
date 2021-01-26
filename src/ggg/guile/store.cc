@@ -5,10 +5,27 @@
 
 namespace {
 
+    SCM s_user_user, s_user_group, s_group_group;
+
     inline ggg::Store&
     get_store(SCM store_in) {
         auto ptr = scm_to_intptr_t(store_in);
         return *reinterpret_cast<ggg::Store*>(ptr);
+    }
+
+    auto scm_to_ties(SCM s_tie) -> ggg::Database::Ties {
+        using namespace ggg;
+        Database::Ties tie{};
+        if (scm_is_true(scm_eq_p(s_tie, s_user_user))) {
+            tie = ggg::Database::Ties::User_user;
+        } else if (scm_is_true(scm_eq_p(s_tie, s_user_group))) {
+            tie = ggg::Database::Ties::User_group;
+        } else if (scm_is_true(scm_eq_p(s_tie, s_group_group))) {
+            tie = ggg::Database::Ties::Group_group;
+        } else {
+            guile_throw("tie value is wrong");
+        }
+        return tie;
     }
 
     SCM
@@ -122,13 +139,14 @@ namespace {
     }
 
     SCM
-    store_tie(SCM store_in, SCM a, SCM b) {
+    store_tie(SCM store_in, SCM a, SCM b, SCM s_tie) {
         using namespace ggg;
         Store& store = get_store(store_in);
+        auto tie = scm_to_ties(s_tie);
         if (scm_is_integer(a) && scm_is_integer(b)) {
-            store.tie(scm_to_uint32(a), scm_to_uint32(b));
+            store.tie(scm_to_uint32(a), scm_to_uint32(b), tie);
         } else if (is_string(a) && is_string(b)) {
-            store.tie(to_string(a).data(), to_string(b).data());
+            store.tie(to_string(a).data(), to_string(b).data(), tie);
         } else {
             guile_throw("tie needs either two IDs or two names");
         }
@@ -150,13 +168,14 @@ namespace {
     }
 
     SCM
-    store_attach(SCM store_in, SCM a, SCM b) {
+    store_attach(SCM store_in, SCM a, SCM b, SCM s_tie) {
         using namespace ggg;
         Store& store = get_store(store_in);
+        auto tie = scm_to_ties(s_tie);
         if (scm_is_integer(a) && scm_is_integer(b)) {
-            store.attach(scm_to_uint32(a), scm_to_uint32(b));
+            store.attach(scm_to_uint32(a), scm_to_uint32(b), tie);
         } else if (is_string(a) && is_string(b)) {
-            store.attach(to_string(a).data(), to_string(b).data());
+            store.attach(to_string(a).data(), to_string(b).data(), tie);
         } else {
             guile_throw("attach needs either two IDs or two names");
         }
@@ -202,14 +221,17 @@ ggg::Store::has(const account& rhs) {
 
 void
 ggg::store_define_procedures() {
+    s_user_user = scm_from_latin1_symbol("user-user");
+    s_user_group = scm_from_latin1_symbol("user-group");
+    s_group_group = scm_from_latin1_symbol("group-group");
     define_procedure("with-transaction", 3, 0, 0, with_transaction);
     define_procedure("add", 2, 0, 0, store_add);
     define_procedure("remove", 2, 0, 0, store_remove);
     define_procedure("update", 2, 0, 0, store_update);
     define_procedure("select", 2, 0, 0, store_select);
-    define_procedure("tie", 3, 0, 0, store_tie);
+    define_procedure("tie", 4, 0, 0, store_tie);
     define_procedure("untie", 3, 0, 0, store_untie);
-    define_procedure("attach", 3, 0, 0, store_attach);
+    define_procedure("attach", 4, 0, 0, store_attach);
     define_procedure("detach", 2, 0, 0, store_detach);
     define_procedure("entity-exists", 1, 0, 0, entity_exists);
     define_procedure("account-exists", 1, 0, 0, account_exists);

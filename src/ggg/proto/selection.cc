@@ -250,7 +250,7 @@ void ggg::NSS_kernel::do_run() {
                     }
                     break;
                 }
-                case Init_groups: to_bytes<entity>(resp, db.find_parent_entities(name)); break;
+                case Init_groups: to_bytes<entity>(resp, db.find_groups_by_user_name(name)); break;
                 default: break;
             }
             break;

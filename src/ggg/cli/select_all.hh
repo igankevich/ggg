@@ -27,13 +27,32 @@ namespace ggg {
         void execute() override;
     };
 
-    class Select_parents: public Select_all {
+    class Select_edges: public Select_all {
+    protected:
+        int _depth = 1;
+    public:
+        void parse_arguments(int argc, char* argv[]) override;
+    };
+
+    class Select_parents: public Select_edges {
     public:
         void execute() override;
         void print_usage() override;
     };
 
-    class Select_children: public Select_all {
+    class Select_children: public Select_edges {
+    public:
+        void execute() override;
+        void print_usage() override;
+    };
+
+    class Select_groups: public Select_all {
+    public:
+        void execute() override;
+        void print_usage() override;
+    };
+
+    class Select_members: public Select_all {
     public:
         void execute() override;
         void print_usage() override;

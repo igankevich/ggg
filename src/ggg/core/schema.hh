@@ -3,7 +3,7 @@
 
 namespace {
 
-constexpr const int64_t entities_schema_version = 2;
+constexpr const int64_t entities_schema_version = 3;
 
 constexpr const char* entities_schema[entities_schema_version] = {
 
@@ -74,7 +74,91 @@ CREATE TABLE addresses (
 CREATE INDEX host_name_index ON hosts (name);
 CREATE UNIQUE INDEX ethernet_address_index ON hosts (ethernet_address);
 CREATE UNIQUE INDEX network_index ON networks (number);
+)",
+
+R"(
+-- 0 user->user edge
+-- 1 user->group edge
+-- 2 group->group edge
+ALTER TABLE ties ADD COLUMN type INTEGER NOT NULL DEFAULT 0;
+CREATE INDEX ties_type_index ON ties (type);
+UPDATE ties SET type=1;
+INSERT INTO ties (child_id,parent_id,type) SELECT child_id,parent_id,0 FROM hierarchy;
+DROP INDEX hierarchy_index;
+DELETE FROM hierarchy;
+)",
+
+    /*
+R"(
+CREATE TABLE users (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    home TEXT,
+    shell TEXT
+);
+CREATE UNIQUE INDEX users_name_index ON users (name);
+-- start IDs from 1000
+INSERT INTO sqlite_sequence (name,seq) VALUES ('users',999);
+
+CREATE TABLE users_hierarchy (
+    child_id INTEGER NOT NULL,
+    parent_id INTEGER NOT NULL,
+    PRIMARY KEY (child_id, parent_id),
+    FOREIGN KEY (child_id)
+        REFERENCES users (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (parent_id)
+        REFERENCES users (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+);
+CREATE UNIQUE INDEX users_hierarchy_index ON users_hierarchy (child_id,parent_id);
+
+CREATE TABLE groups (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT
+);
+CREATE UNIQUE INDEX groups_name_index ON groups (name);
+-- start IDs from 1000
+INSERT INTO sqlite_sequence (name,seq) VALUES ('groups',999);
+
+CREATE TABLE groups_hierarchy (
+    child_id INTEGER NOT NULL,
+    parent_id INTEGER NOT NULL,
+    PRIMARY KEY (child_id, parent_id),
+    FOREIGN KEY (child_id)
+        REFERENCES groups (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (parent_id)
+        REFERENCES groups (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+);
+CREATE UNIQUE INDEX groups_hierarchy_index ON groups_hierarchy (child_id,parent_id);
+
+CREATE TABLE user_group_ties (
+    user_id INTEGER NOT NULL,
+    group_id INTEGER NOT NULL,
+    PRIMARY KEY (user_id, group_id),
+    FOREIGN KEY (user_id)
+        REFERENCES users (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (group_id)
+        REFERENCES groups (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+);
+
+CREATE UNIQUE INDEX user_group_ties_index ON user_group_ties (user_id,group_id);
+
 )"
+*/
+
 };
 
 constexpr const int64_t accounts_schema_version = 4;

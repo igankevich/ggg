@@ -7,6 +7,20 @@
 #include <ggg/core/native.hh>
 
 void
+ggg::Attach::parse_arguments(int argc, char* argv[]) {
+    int opt;
+    while ((opt = getopt(argc, argv, "gh")) != -1) {
+        switch (opt) {
+            case 'g': this->_group = true; break;
+            case 'h': this->_help = true; break;
+        }
+    }
+    for (int i=::optind; i<argc; ++i) {
+        this->_args.emplace_back(argv[i]);
+    }
+}
+
+void
 ggg::Attach::execute()  {
     if (this->_args.size() != 2) {
         throw std::invalid_argument("please, specify exactly two names");
@@ -18,14 +32,15 @@ ggg::Attach::execute()  {
     const auto& parent = args().back();
     Database db(Database::File::Entities, Database::Flag::Read_write);
     Transaction tr(db);
-    db.attach(child.data(), parent.data());
+    db.attach(child.data(), parent.data(),
+              this->_group ? Database::Ties::Group_group : Database::Ties::User_user);
     tr.commit();
 }
 
 void
 ggg::Attach::print_usage() {
     std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-        << this->prefix() << " CHILD PARENT\n";
+        << this->prefix() << " [-gh] CHILD PARENT\n";
 }
 
 
@@ -47,7 +62,19 @@ ggg::Detach::print_usage() {
         << this->prefix() << " ENTITY...\n";
 }
 
-
+void
+ggg::Tie::parse_arguments(int argc, char* argv[]) {
+    int opt;
+    while ((opt = getopt(argc, argv, "t:h")) != -1) {
+        switch (opt) {
+            case 't': this->_tie = string_to_ties(::optarg); break;
+            case 'h': this->_help = true; break;
+        }
+    }
+    for (int i=::optind; i<argc; ++i) {
+        this->_args.emplace_back(argv[i]);
+    }
+}
 
 void
 ggg::Tie::execute()  {
@@ -61,19 +88,19 @@ ggg::Tie::execute()  {
     const auto& parent = args().back();
     Database db(Database::File::Entities, Database::Flag::Read_write);
     Transaction tr(db);
-    db.tie(child.data(), parent.data());
+    db.tie(child.data(), parent.data(), this->_tie);
     tr.commit();
 }
 
 void
 ggg::Tie::print_usage() {
     std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-        << this->prefix() << " CHILD PARENT\n";
+        << this->prefix() << " [-t type] CHILD PARENT\n";
 }
 
 void
 ggg::Untie::execute() {
-    remove_duplicate_arguments();
+    //remove_duplicate_arguments();
     auto n = args().size();
     if (n != 1 && n != 2) {
         throw std::invalid_argument("please, specify one or two names");

@@ -11,6 +11,7 @@ ggg_core_src = files([
 	'message.cc',
 	'native.cc',
 	'public_key.cc',
+	'ties.cc',
 ])
 
 ggg_core_deps = [unistdx,sqlitex]

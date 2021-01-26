@@ -16,6 +16,7 @@
 #include <ggg/core/machine.hh>
 #include <ggg/core/message.hh>
 #include <ggg/core/public_key.hh>
+#include <ggg/core/ties.hh>
 
 #include <sqlitex/connection.hh>
 #include <sqlitex/transaction.hh>
@@ -26,6 +27,31 @@ namespace ggg {
     class Transaction;
 
     using Statement = sqlite::statement;
+
+    class Connection {
+
+    private:
+        sqlite::connection_base& _connection;
+
+    public:
+        inline explicit Connection(sqlite::connection_base& connection):
+        _connection(connection) {}
+
+    public:
+        auto find_id_nocheck(const char* name) -> sys::uid_type;
+        auto find_id(const char* name) -> sys::uid_type;
+        auto find_groups_by_user_name(const char* name) -> Statement;
+        auto find_users_by_group_name(const char* name) -> Statement;
+        auto children(int64_t id, int depth) -> Statement;
+        inline auto children(const char* name, int depth) -> Statement {
+            return children(find_id(name), depth);
+        }
+        auto parents(int64_t id, int depth) -> Statement;
+        inline auto parents(const char* name, int depth) -> Statement {
+            return parents(find_id(name), depth);
+        }
+
+    };
 
     class Database {
 
@@ -41,6 +67,7 @@ namespace ggg {
             Read_write=2
         };
 
+        using Ties = ggg::Ties;
 
     public:
         using database_t = sqlite::connection;
@@ -138,23 +165,14 @@ namespace ggg {
         void
         update(const entity& ent);
 
-        bool
-        find_group(sys::gid_type gid, ggg::group& result);
+        bool find_group(sys::gid_type gid, ggg::group& result);
+        bool find_group(const char* name, ggg::group& result);
+        auto find_groups_by_user_name(const char* name) -> Statement;
+        auto find_users_by_group_name(const char* name) -> Statement;
 
-        bool
-        find_group(const char* name, ggg::group& result);
+        group_container_t groups();
 
-        statement_type
-        find_parent_entities(const char* name);
-
-        statement_type
-        find_child_entities(const char* name);
-
-        group_container_t
-        groups();
-
-        statement_type
-        ties();
+        statement_type ties();
 
         sys::uid_type
         next_entity_id();
@@ -245,28 +263,15 @@ namespace ggg {
             return this->find_entities_by_flag(account_flags::suspended, true);
         }
 
-        statement_type
-        hierarchy();
-
-        void attach(const char* child, const char* parent);
-        void attach(sys::uid_type child_id, sys::gid_type parent_id);
+        void attach(const char* child, const char* parent, Ties tie);
+        void attach(sys::uid_type child_id, sys::gid_type parent_id, Ties tie);
         void detach(sys::uid_type child_id);
         void detach(const char* child);
 
-        bool
-        entities_are_attached(sys::uid_type child_id, sys::gid_type parent_id);
-
-        void
-        tie(sys::uid_type uid, sys::gid_type gid);
-
-        void
-        tie(const char* child, const char* parent);
-
-        void
-        untie(const char* child, const char* parent);
-
-        void
-        untie(const char* child);
+        void tie(sys::uid_type uid, sys::gid_type gid, Ties tie);
+        void tie(const char* child, const char* parent, Ties tie);
+        void untie(const char* child, const char* parent);
+        void untie(const char* child);
 
         bool
         entities_are_tied(sys::uid_type child_id, sys::gid_type parent_id);
@@ -394,8 +399,6 @@ namespace ggg {
         entity find_entity_nocheck(int64_t id);
         entity find_entity_nocheck(const char* name);
         std::string find_name_nocheck(sys::uid_type id);
-        void validate_hierarchy(sys::uid_type child_id);
-        void detect_loops(sys::uid_type child_id);
 
         friend class Transaction;
 
@@ -435,8 +438,6 @@ namespace ggg {
         using tp = std::underlying_type<Database::File>::type;
         return Database::File(~tp(a));
     }
-
-    auto children(sqlite::connection_base& conn, int64_t id) -> sqlite::statement;
 
 }
 
