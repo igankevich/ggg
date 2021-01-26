@@ -7,7 +7,6 @@
 #define GGG_VERSION "@version@"
 #define GGG_FILE_EDITOR "@file_editor@"
 #define GGG_CATALOG "@catalog@"
-#define GGG_READ_GROUP "@read_group@"
 #define GGG_WRITE_GROUP "@write_group@"
 #define GGG_MAX_DEPTH @max_depth@
 #define GGG_ENTITIES_PATH "@ggg_root@/@entities@"

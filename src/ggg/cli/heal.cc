@@ -21,7 +21,6 @@ namespace {
     sys::file_mode entities_file_mode(0664);
     sys::file_mode accounts_file_mode(0660);
 
-    sys::gid_type read_gid = ggg::bad_gid;
     sys::gid_type write_gid = ggg::bad_gid;
     sys::uid_type root_uid = 0;
     sys::gid_type root_gid = 0;
@@ -97,7 +96,6 @@ ggg::Heal
         native_sentence(std::cerr, "Entities are broken. ");
         error_message(std::cerr, err);
     }
-    read_gid = group_id(db, GGG_READ_GROUP);
     write_gid = group_id(db, GGG_WRITE_GROUP);
     heal_owner_permissions();
     db.close();
