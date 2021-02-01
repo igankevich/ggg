@@ -228,12 +228,6 @@ INSERT INTO accounts (name,password,expiration_date,flags,max_inactive,last_acti
 VALUES (?,?,?,?,?,?)
 )";
 
-const char* sql_update_account_by_name = R"(
-UPDATE accounts
-SET password=?,expiration_date=?,flags=?,max_inactive=?,last_active=?
-WHERE name = ?
-)";
-
 const char* sql_expire_account_by_name = R"(
 UPDATE accounts
 SET expiration_date=strftime('%s', 'now')-1
@@ -778,7 +772,7 @@ ggg::Database::accounts() -> statement_type {
 
 void
 ggg::Database::insert(const account& acc) {
-    using int_t = std::underlying_type<account_flags>::type;
+    using int_type = std::underlying_type<account_flags>::type;
     if (!has_entity(acc.name().data())) {
         throw std::invalid_argument("bad account");
     }
@@ -787,7 +781,7 @@ ggg::Database::insert(const account& acc) {
         acc.name(),
         acc.password().empty() ? nullptr : acc.password().data(),
         acc.expire(),
-        static_cast<int_t>(acc.flags()),
+        static_cast<int_type>(acc.flags()),
         acc.max_inactive_in_seconds(),
         acc.last_active()
     );
@@ -795,17 +789,28 @@ ggg::Database::insert(const account& acc) {
 }
 
 void
-ggg::Database::update(const account& acc) {
-    using int_t = std::underlying_type<account_flags>::type;
-    this->_db.execute(
-        sql_update_account_by_name,
-        acc.password().empty() ? nullptr : acc.password().data(),
-        acc.expire(),
-        static_cast<int_t>(acc.flags()),
-        acc.max_inactive_in_seconds(),
-        acc.last_active(),
-        acc.name()
-    );
+ggg::Database::update(const account& acc, bool update_password) {
+    using int_type = std::underlying_type<account_flags>::type;
+    if (update_password) {
+        this->_db.execute("UPDATE accounts "
+                          "SET password=?,expiration_date=?,flags=?,max_inactive=?,last_active=? "
+                          "WHERE name = ?",
+            acc.password().empty() ? nullptr : acc.password().data(),
+            acc.expire(),
+            static_cast<int_type>(acc.flags()),
+            acc.max_inactive_in_seconds(),
+            acc.last_active(),
+            acc.name());
+    } else {
+        this->_db.execute("UPDATE accounts "
+                          "SET expiration_date=?,flags=?,max_inactive=?,last_active=? "
+                          "WHERE name = ?",
+            acc.expire(),
+            static_cast<int_type>(acc.flags()),
+            acc.max_inactive_in_seconds(),
+            acc.last_active(),
+            acc.name());
+    }
     if (this->_db.num_rows_modified() == 0) {
         throw std::invalid_argument("bad account");
     }
@@ -814,11 +819,11 @@ ggg::Database::update(const account& acc) {
 
 void
 ggg::Database::set_password(const account& acc) {
-    using int_t = std::underlying_type<account_flags>::type;
+    using int_type = std::underlying_type<account_flags>::type;
     this->_db.execute(
         sql_set_password_by_name,
         acc.password().data(),
-        static_cast<int_t>(account_flags::password_has_expired),
+        static_cast<int_type>(account_flags::password_has_expired),
         acc.name()
     );
     if (this->_db.num_rows_modified() == 0) {
@@ -857,8 +862,8 @@ ggg::Database::expire(const char* name) {
 
 void
 ggg::Database::set_account_flag(const char* name, account_flags flag) {
-    using int_t = std::underlying_type<account_flags>::type;
-    this->_db.execute(sql_set_account_flag_by_name, static_cast<int_t>(flag), name);
+    using int_type = std::underlying_type<account_flags>::type;
+    this->_db.execute(sql_set_account_flag_by_name, static_cast<int_type>(flag), name);
     if (this->_db.num_rows_modified() == 0) {
         throw std::invalid_argument("bad account name");
     }
@@ -869,10 +874,10 @@ ggg::Database::set_account_flag(const char* name, account_flags flag) {
 
 void
 ggg::Database::unset_account_flag(const char* name, account_flags flag) {
-    typedef std::underlying_type<account_flags>::type int_t;
+    typedef std::underlying_type<account_flags>::type int_type;
     this->_db.execute(
         sql_unset_account_flag_by_name,
-        static_cast<int_t>(flag),
+        static_cast<int_type>(flag),
         name
     );
     if (this->_db.num_rows_modified() == 0) {
@@ -999,8 +1004,8 @@ ggg::Database::find_entities_by_flag(
     account_flags flag,
     bool set
 ) -> statement_type {
-    using int_t = std::underlying_type<account_flags>::type;
-    int_t v = static_cast<int_t>(flag);
+    using int_type = std::underlying_type<account_flags>::type;
+    int_type v = static_cast<int_type>(flag);
     return this->_db.prepare(sql_select_entities_by_flag, v, set ? v : 0);
 }
 

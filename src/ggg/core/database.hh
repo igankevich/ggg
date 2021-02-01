@@ -211,7 +211,7 @@ namespace ggg {
         }
 
         void insert(const account& acc);
-        void update(const account& acc);
+        void update(const account& acc, bool update_password=false);
         void erase(const account& acc);
 
         void set_password(const account& acc);

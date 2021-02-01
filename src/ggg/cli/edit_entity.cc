@@ -99,6 +99,7 @@ ggg::Edit_entity::edit_interactive(Database& db) {
         tmp.out().imbue(std::locale::classic());
         this->print_objects<T>(db, tmp.out());
         edit_file_or_throw(tmp.filename());
+        // TODO editing account add password field with symbols: 'retain 'remove
         try {
             this->update<T>(db, file_to_string(tmp.filename()));
         } catch (const std::exception& err) {
