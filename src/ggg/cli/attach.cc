@@ -95,7 +95,8 @@ ggg::Tie::execute()  {
 void
 ggg::Tie::print_usage() {
     std::cout << "usage: " GGG_EXECUTABLE_NAME " "
-        << this->prefix() << " [-t type] CHILD PARENT\n";
+        << this->prefix() << " [-t type] CHILD PARENT\n"
+        "-t type    possible values: user-user, user-group, group-group\n";
 }
 
 void

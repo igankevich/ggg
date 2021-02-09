@@ -9,7 +9,8 @@ namespace ggg {
         Group_group=2,
     };
 
-    Ties string_to_ties(const char* s) noexcept;
+    Ties string_to_ties(const char* s);
+    const char* ties_to_string(Ties t) noexcept;
 
 }
 
