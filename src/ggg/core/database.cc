@@ -741,7 +741,7 @@ ggg::Database::dot(std::ostream& out) {
     for (const auto& tie : st.rows<Tie>()) {
         if (tie.type != Ties::User_group) {
             auto root_id = find_hierarchy_root(tie.child_id);
-            hierarchies[root_id].emplace_back(tie.child_id, tie.parent_id);
+            hierarchies[root_id].emplace_back(tie);
         } else {
             tie.dot(out);
         }
