@@ -212,9 +212,8 @@ void ggg::NSS_kernel::log_response() {
 void ggg::NSS_kernel::run() {
     try {
         do_run();
-        //result(1);
     } catch (const std::exception& err) {
-        //result(0);
+        result(1);
         this->_response.clear();
     }
 }

@@ -19,8 +19,9 @@ namespace ggg {
         virtual void read(sys::byte_buffer& buf) = 0;
         virtual void write(sys::byte_buffer& buf) = 0;
 
-        inline void result(sys::u32 rhs) { this->_result = rhs; }
-        inline sys::u32 result() const { return this->_result; }
+        inline void result(sys::u32 rhs) noexcept { this->_result = rhs; }
+        inline sys::u32 result() const noexcept { return this->_result; }
+        inline bool failed() const noexcept { return this->_result != 0; }
         inline const sys::user_credentials& client_credentials() const {
             return this->_client_credentials;
         }

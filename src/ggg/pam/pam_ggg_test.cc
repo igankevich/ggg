@@ -160,7 +160,7 @@ TEST(pam, authenticate_without_database) {
     try {
         h.authenticate();
     } catch (const std::system_error& err) {
-        EXPECT_EQ(pam::errc::permission_denied, pam::errc(err.code().value()))
+        EXPECT_EQ(pam::errc::service_error, pam::errc(err.code().value()))
             << err.what();
     }
     h.end();
@@ -175,7 +175,7 @@ TEST(pam, authenticate_without_password) {
         h.authenticate();
     } catch (const std::system_error& err) {
         EXPECT_EQ(
-            pam::errc::permission_denied,
+            pam::errc::service_error,
             pam::errc(err.code().value())
         ) << err.what();
     }

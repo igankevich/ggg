@@ -99,37 +99,49 @@ ggg::Client_protocol::process(Kernel* kernel, Command command) {
         buf.position(old_position);
         buf.write(&frame, sizeof(Frame));
         buf.position(new_position);
-        buf.flip();
     }
     No_lock lock;
-    auto deadline = system_clock::now() + seconds(7);
+    auto deadline = system_clock::now() + seconds(30);
     sys::event_poller poller;
     poller.emplace(s.fd(), sys::event::inout);
     std::cv_status status;
     enum { Writing, Reading, Finish } state = Writing;
+    buf.flip();
     buf.flush(s);
-    if (buf.remaining() == 0) { buf.clear(); state = Reading; }
+    buf.compact();
+    if (buf.position() == 0) { buf.clear(); state = Reading; }
     while (state != Finish) {
         status = poller.wait_until(lock, deadline);
-        if (status == std::cv_status::timeout) { kernel->result(-1); state = Finish; }
+        if (status == std::cv_status::timeout) {
+            throw std::runtime_error("timed out");
+        }
         for (const auto& event : poller) {
-            if (event.bad()) { kernel->result(-1); state = Finish; }
+            if (event.bad()) {
+                throw std::runtime_error("i/o error");
+            }
         }
         if (state == Writing) {
+            buf.flip();
             buf.flush(s);
-            if (buf.remaining() == 0) { buf.clear(); state = Reading; }
+            buf.compact();
+            if (buf.position() == 0) { buf.clear(); state = Reading; }
         }
         if (state == Reading) {
             buf.fill(s);
             if (buf.position() < sizeof(Frame)) { continue; }
-            auto frame = reinterpret_cast<Frame*>(buf.data());
-            if (buf.position() < frame->size) { continue; }
+            Frame frame{};
+            std::memcpy(&frame, buf.data(), sizeof(Frame));
+            if (buf.position() < frame.size) { continue; }
             buf.flip();
-            buf.read(frame, sizeof(Frame));
+            buf.read(&frame, sizeof(Frame));
             kernel->read(buf);
+            buf.compact();
             state = Finish;
         }
     }
     //s.shutdown(sys::shutdown_flag::read_write);
     s.close();
+    if (kernel->failed()) {
+        throw std::runtime_error("server error");
+    }
 }

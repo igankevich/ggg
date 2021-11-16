@@ -42,7 +42,7 @@ namespace ggg {
             sys::family_type _family;
             ggg::ip_address _ip_address;
         };
-        sys::byte_buffer _response{4096};
+        sys::byte_buffer _response;
 
     public:
         inline NSS_kernel() {}
