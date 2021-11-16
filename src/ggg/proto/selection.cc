@@ -197,16 +197,16 @@ namespace {
 }
 
 void ggg::NSS_kernel::log_request() {
-    log("> _ _ name=_,uid=_,gid=_,ethernet-address=_,family=_,ip-address=_",
-            this->_database, this->_operation, this->_name, this->_uid,
-            this->_gid, this->_ethernet_address, this->_family, this->_ip_address);
+    log("_ > _ _ name=_,uid=_,gid=_,ethernet-address=_,family=_,ip-address=_",
+        client_process_id(), this->_database, this->_operation, this->_name, this->_uid,
+        this->_gid, this->_ethernet_address, this->_family, this->_ip_address);
 }
 
 void ggg::NSS_kernel::log_response() {
-    log("< _ _ name=_,uid=_,gid=_,ethernet-address=_,family=_,ip-address=_,nbytes=_",
-            this->_database, this->_operation, this->_name, this->_uid,
-            this->_gid, this->_ethernet_address, this->_family, this->_ip_address,
-            this->_response.position());
+    log("_ < _ _ name=_,uid=_,gid=_,ethernet-address=_,family=_,ip-address=_,nbytes=_",
+        client_process_id(), this->_database, this->_operation, this->_name, this->_uid,
+        this->_gid, this->_ethernet_address, this->_family, this->_ip_address,
+        this->_response.position());
 }
 
 void ggg::NSS_kernel::run() {

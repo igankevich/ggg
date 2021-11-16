@@ -28,6 +28,9 @@ namespace ggg {
         inline void client_credentials(const sys::user_credentials& rhs) {
             this->_client_credentials = rhs;
         }
+        inline sys::pid_type client_process_id() const noexcept {
+            return this->_client_credentials.pid;
+        }
         virtual inline void log_request() {}
         virtual inline void log_response() {}
     };
