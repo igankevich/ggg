@@ -8,6 +8,7 @@
 #include <ggg/proto/pipeline.hh>
 #include <ggg/proto/protocol.hh>
 
+// TODO implement tcp server
 int main(int argc, char* argv[]) {
     using namespace ggg;
     int ret = EXIT_FAILURE;
