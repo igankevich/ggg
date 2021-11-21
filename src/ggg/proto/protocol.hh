@@ -66,6 +66,7 @@ namespace ggg {
     public:
         inline explicit Client_protocol(const sys::socket_address& server_socket_address):
         _server_socket_address(server_socket_address) {}
+        explicit Client_protocol(const char* client_conf_path);
 
         void process(Kernel* kernel, Command command);
 
@@ -75,7 +76,7 @@ namespace ggg {
             sys::log_message("client", message, args...);
         }
 
-        Client_protocol() = default;
+        //Client_protocol() = default;
         ~Client_protocol() = default;
         Client_protocol(const Client_protocol&) = default;
         Client_protocol& operator=(const Client_protocol&) = default;

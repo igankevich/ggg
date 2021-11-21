@@ -31,7 +31,7 @@ namespace ggg {
             nss_status ret = NSS_STATUS_SUCCESS;
             try {
                 NSS_kernel kernel(db, NSS_kernel::Get_all);
-                Client_protocol proto;
+                Client_protocol proto(GGG_CLIENT_CONF);
                 proto.process(&kernel, Protocol::Command::NSS_kernel);
                 this->_entities = kernel.response<value_type>();
                 this->_first = this->_entities.begin();

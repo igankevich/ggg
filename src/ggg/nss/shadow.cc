@@ -32,7 +32,7 @@ NSS_GETENTBY_R(GGG_MODULE_NAME, sp, nam)(
     try {
         NSS_kernel kernel(NSS_kernel::Shadow, NSS_kernel::Get_by_name);
         kernel.name(name);
-        Client_protocol proto;
+        Client_protocol proto(GGG_CLIENT_CONF);
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<account>();
         if (response.empty()) {

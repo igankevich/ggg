@@ -1,7 +1,7 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.11.2',
+	version: '1.11.3',
 	meson_version: '>=0.50',
 	default_options: ['cpp_std=c++11'],
 	license: ['gpl3+']
@@ -107,6 +107,7 @@ config.set('guile_load_compiled_path', site_ccache_directory)
 config.set('GGG_DEVELOPER_BUILD', developer)
 config.set('ggg_root', ggg_root)
 config.set('bind_address', '/tmp/.GGG')
+config.set('ggg_client_conf', '/etc/ggg/client.conf')
 visibility_main = '[[gnu::visibility("default")]] int func(); int main() {}'
 if cpp.has_argument('-fvisibility=hidden') and cpp.compiles(visibility_main)
     cpp_args_visibility = ['-fvisibility=hidden']

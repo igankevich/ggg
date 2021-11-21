@@ -33,7 +33,7 @@ NSS_GETENTBY_R(GGG_MODULE_NAME, pw, uid)(
     try {
         NSS_kernel kernel(NSS_kernel::Passwd, NSS_kernel::Get_by_id);
         kernel.uid(uid);
-        Client_protocol proto;
+        Client_protocol proto(GGG_CLIENT_CONF);
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<entity>();
         if (response.empty()) {
@@ -72,7 +72,7 @@ NSS_GETENTBY_R(GGG_MODULE_NAME, pw, nam)(
     try {
         NSS_kernel kernel(NSS_kernel::Passwd, NSS_kernel::Get_by_name);
         kernel.name(name);
-        Client_protocol proto;
+        Client_protocol proto(GGG_CLIENT_CONF);
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<entity>();
         if (response.empty()) {

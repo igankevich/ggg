@@ -43,7 +43,7 @@ NSS_FUNCTION(GGG_MODULE_NAME, gethostton_r)(
     try {
         NSS_kernel kernel(NSS_kernel::Ethers, NSS_kernel::Get_by_name);
         kernel.name(name);
-        Client_protocol proto;
+        Client_protocol proto(GGG_CLIENT_CONF);
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<host>();
         if (response.empty()) {
@@ -82,7 +82,7 @@ NSS_FUNCTION(GGG_MODULE_NAME, getntohost_r)(
     try {
         NSS_kernel kernel(NSS_kernel::Ethers, NSS_kernel::Get_by_id);
         kernel.ethernet_address(sys::ethernet_address(address->ether_addr_octet));
-        Client_protocol proto;
+        Client_protocol proto(GGG_CLIENT_CONF);
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<host>();
         if (response.empty()) {

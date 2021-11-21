@@ -43,6 +43,11 @@ namespace ggg {
 
         inline bool debug() const noexcept { return this->_debug; }
         inline double min_entropy() const noexcept { return this->_minentropy; }
+
+        inline const sys::socket_address& server() const noexcept {
+            return this->_server_socket_address;
+        }
+
         account* get_account();
         void set_account(const ggg::account& acc);
         Database* get_database();

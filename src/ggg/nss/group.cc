@@ -38,7 +38,7 @@ NSS_GETENTBY_R(GGG_MODULE_NAME, gr, gid)(
     try {
         NSS_kernel kernel(NSS_kernel::Group, NSS_kernel::Get_by_id);
         kernel.gid(gid);
-        Client_protocol proto;
+        Client_protocol proto(GGG_CLIENT_CONF);
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<::ggg::group>();
         if (response.empty()) {
@@ -77,7 +77,7 @@ NSS_GETENTBY_R(GGG_MODULE_NAME, gr, nam)(
     try {
         NSS_kernel kernel(NSS_kernel::Group, NSS_kernel::Get_by_name);
         kernel.name(name);
-        Client_protocol proto;
+        Client_protocol proto(GGG_CLIENT_CONF);
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<::ggg::group>();
         if (response.empty()) {
@@ -131,7 +131,7 @@ NSS_FUNCTION(GGG_MODULE_NAME, initgroups_dyn)(
         #endif
         NSS_kernel kernel(NSS_kernel::Group, NSS_kernel::Init_groups);
         kernel.name(user);
-        Client_protocol proto;
+        Client_protocol proto(GGG_CLIENT_CONF);
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<entity>();
         for (const auto& ent : response) {

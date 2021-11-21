@@ -1,9 +1,11 @@
 #include <array>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <thread>
 
+#include <unistdx/fs/file_status>
 #include <unistdx/io/poller>
 #include <unistdx/net/socket>
 
@@ -76,6 +78,24 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
             out.position(out_old_position);
             log("kernel write error: _", err.what());
         }
+    }
+}
+
+ggg::Client_protocol::Client_protocol(const char* client_conf_path) {
+    try {
+        sys::file_status status(client_conf_path);
+        if (status.owner() != 0 || status.group() != 0 ||
+            status.mode() != sys::file_mode(0444)) {
+            throw std::invalid_argument("bad client.conf permissions");
+        }
+        std::ifstream in(client_conf_path);
+        if (!(in >> this->_server_socket_address)) {
+            this->_server_socket_address = sys::socket_address{GGG_BIND_ADDRESS};
+        }
+        in.close();
+    } catch (const std::exception& err) {
+        log("error reading _: _", client_conf_path, err.what());
+        this->_server_socket_address = sys::socket_address{GGG_BIND_ADDRESS};
     }
 }
 

@@ -72,7 +72,7 @@ NSS_FUNCTION(GGG_MODULE_NAME, gethostbyname2_r)(
         NSS_kernel kernel(NSS_kernel::Hosts, NSS_kernel::Get_by_name);
         kernel.name(name);
         kernel.family(static_cast<sys::family_type>(af));
-        Client_protocol proto;
+        Client_protocol proto(GGG_CLIENT_CONF);
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<ip_address>();
         if (response.empty()) {
@@ -149,7 +149,7 @@ NSS_FUNCTION(GGG_MODULE_NAME, gethostbyaddr_r)(
             NSS_kernel kernel(NSS_kernel::Hosts, NSS_kernel::Get_by_id);
             kernel.address(address);
             kernel.family(family);
-            Client_protocol proto;
+            Client_protocol proto(GGG_CLIENT_CONF);
             proto.process(&kernel, Protocol::Command::NSS_kernel);
             const auto& response = kernel.response<std::string>();
             if (response.empty()) {

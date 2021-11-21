@@ -18,6 +18,7 @@
 #define GGG_GUILE_LOAD_PATH "@guile_load_path@"
 #define GGG_GUILE_LOAD_COMPILED_PATH "@guile_load_compiled_path@"
 #define GGG_BIND_ADDRESS "\0" "@bind_address@"
+#define GGG_CLIENT_CONF "@ggg_client_conf@"
 
 #mesondefine GGG_DEVELOPER_BUILD
 #mesondefine GGG_HAVE_VISIBILITY

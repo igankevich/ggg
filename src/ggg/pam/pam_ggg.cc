@@ -43,7 +43,7 @@ int pam_sm_authenticate(
         auth.min_entropy(pamh.min_entropy());
         auth.steps(PAM_kernel::Auth | PAM_kernel::Account | PAM_kernel::Open_session);
         auth.service(pamh.get_item(PAM_SERVICE));
-        Client_protocol proto;
+        Client_protocol proto(pamh.server());
         proto.process(&auth, Protocol::Command::PAM_kernel);
         pamh.set_scalar(ggg_steps, auth.steps());
         pamh.set_scalar(ggg_result, auth.steps_result());
@@ -87,7 +87,7 @@ int pam_sm_acct_mgmt(
             auth.min_entropy(pamh.min_entropy());
             auth.steps(PAM_kernel::Account | PAM_kernel::Open_session);
             auth.service(pamh.get_item(PAM_SERVICE));
-            Client_protocol proto;
+            Client_protocol proto(pamh.server());
             proto.process(&auth, Protocol::Command::PAM_kernel);
             result = auth.steps_result();
             pamh.set_scalar(ggg_steps, auth.steps());
@@ -145,7 +145,7 @@ int pam_sm_chauthtok(
             auth.password(pamh.password(errc::authtok_error));
             auth.steps(PAM_kernel::Password);
             auth.service(pamh.get_item(PAM_SERVICE));
-            Client_protocol proto;
+            Client_protocol proto(pamh.server());
             proto.process(&auth, Protocol::Command::PAM_kernel);
             if (auth.steps_result() & PAM_kernel::Password) {
                 pamh.debug("successfully changed password for user \"%s\"", user);
@@ -205,7 +205,7 @@ int pam_sm_open_session(
             auth.name(user);
             auth.steps(PAM_kernel::Open_session);
             auth.service(pamh.get_item(PAM_SERVICE));
-            Client_protocol proto;
+            Client_protocol proto(pamh.server());
             proto.process(&auth, Protocol::Command::PAM_kernel);
             result = auth.steps_result();
             pamh.set_scalar(ggg_steps, auth.steps());
@@ -248,7 +248,7 @@ int pam_sm_close_session(
             auth.name(user);
             auth.steps(PAM_kernel::Close_session);
             auth.service(pamh.get_item(PAM_SERVICE));
-            Client_protocol proto;
+            Client_protocol proto(pamh.server());
             proto.process(&auth, Protocol::Command::PAM_kernel);
             result = auth.steps_result();
         }

@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
         const char* name = argv[1];
         NSS_kernel kernel(NSS_kernel::Public_keys, NSS_kernel::Get_by_name);
         kernel.name(name);
-        Client_protocol proto;
+        Client_protocol proto(GGG_CLIENT_CONF);
         proto.process(&kernel, Protocol::Command::NSS_kernel);
         const auto& response = kernel.response<public_key>();
         for (const auto& pk : response) {
