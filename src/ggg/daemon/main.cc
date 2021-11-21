@@ -26,7 +26,8 @@ int main(int argc, char* argv[]) {
         }
     }
     int opt = 0;
-    while ((opt = ::getopt(argc, argv, "hv"))) {
+    while ((opt = ::getopt(argc, argv, "hv")) != -1) {
+        std::clog << "opt=" << opt << std::endl;
         switch (opt) {
             case 'h':
                 usage(std::cout, argv[0]);
