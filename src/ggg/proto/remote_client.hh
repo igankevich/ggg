@@ -11,7 +11,7 @@
 
 namespace ggg {
 
-    class Remote_client: public Connection {
+    class Remote_client: public Network_connection {
 
     private:
         sys::socket_address _address;
@@ -21,8 +21,9 @@ namespace ggg {
     public:
 
         inline explicit
-        Remote_client(sys::socket&& socket, const sys::socket_address& address):
-        _address(address) {
+        Remote_client(sys::socket&& socket, const sys::socket_address& address,
+                      Database& entities, Database& accounts):
+        _address(address), _protocol(entities, accounts) {
             this->_socket = std::move(socket);
         }
 

@@ -6,6 +6,8 @@
 #include <unistdx/base/types>
 #include <unistdx/net/socket>
 
+#include <ggg/config.hh>
+#include <ggg/core/database.hh>
 #include <ggg/proto/kernel.hh>
 
 namespace ggg {
@@ -33,10 +35,14 @@ namespace ggg {
     class Server_protocol: public Protocol {
 
     private:
+        Database& _entities;
+        Database& _accounts;
         bool _log_pam = true;
         bool _log_nss = true;
 
     public:
+        inline explicit Server_protocol(Database& entities, Database& accounts):
+        _entities(entities), _accounts(accounts) {}
         void process(sys::socket& sock, sys::byte_buffer& in, sys::byte_buffer& out);
 
         inline void log_pam(bool rhs) { this->_log_pam = rhs; }
@@ -48,11 +54,24 @@ namespace ggg {
             sys::log_message("server", message, args...);
         }
 
+        Server_protocol() = default;
+        ~Server_protocol() = default;
+        Server_protocol(const Server_protocol&) = delete;
+        Server_protocol& operator=(const Server_protocol&) = delete;
+        Server_protocol(Server_protocol&&) = delete;
+        Server_protocol& operator=(Server_protocol&&) = delete;
+
     };
 
     class Client_protocol: public Protocol {
 
+    private:
+        sys::socket_address _server_socket_address{GGG_BIND_ADDRESS};
+
     public:
+        inline explicit Client_protocol(const sys::socket_address& server_socket_address):
+        _server_socket_address(server_socket_address) {}
+
         void process(Kernel* kernel, Command command);
 
         template <class ... Args>
@@ -61,6 +80,12 @@ namespace ggg {
             sys::log_message("client", message, args...);
         }
 
+        Client_protocol() = default;
+        ~Client_protocol() = default;
+        Client_protocol(const Client_protocol&) = default;
+        Client_protocol& operator=(const Client_protocol&) = default;
+        Client_protocol(Client_protocol&&) = default;
+        Client_protocol& operator=(Client_protocol&&) = default;
     };
 
     struct buffer_guard {

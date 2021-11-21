@@ -4,6 +4,8 @@
 #include <unistdx/base/byte_buffer>
 #include <unistdx/net/socket>
 
+#include <ggg/core/database.hh>
+
 namespace ggg {
 
     class Kernel {
@@ -15,7 +17,7 @@ namespace ggg {
     public:
         Kernel() = default;
         virtual ~Kernel() = default;
-        virtual void run() = 0;
+        virtual void run(Database& entities, Database& accounts) = 0;
         virtual void read(sys::byte_buffer& buf) = 0;
         virtual void write(sys::byte_buffer& buf) = 0;
 

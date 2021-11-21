@@ -162,6 +162,7 @@ namespace {
     template <class T>
     void to_bytes(sys::byte_buffer& buf, sqlite::statement st) {
         for (const auto& entry : st.rows<T>()) {
+            sys::log_message("nss", "entity _", entry);
             ggg::Protocol_traits<T>::write(buf, entry);
         }
     }
@@ -184,16 +185,6 @@ namespace {
         return tmp;
     }
 
-    ggg::Database::File get_file(ggg::NSS_kernel::DB db) {
-        using T = ggg::NSS_kernel::DB;
-        using F = ggg::Database::File;
-        switch (db) {
-            case T::Shadow:      return F::Accounts;
-            case T::Public_keys: return F::All;
-            default:             return F::Entities;
-        }
-    }
-
 }
 
 void ggg::NSS_kernel::log_request() {
@@ -209,80 +200,79 @@ void ggg::NSS_kernel::log_response() {
         this->_response.position());
 }
 
-void ggg::NSS_kernel::run() {
+void ggg::NSS_kernel::run(Database& entities, Database& accounts) {
     try {
-        do_run();
+        do_run(entities, accounts);
     } catch (const std::exception& err) {
         result(1);
         this->_response.clear();
     }
 }
 
-void ggg::NSS_kernel::do_run() {
-    Database db(get_file(this->_database), Database::Flag::Read_only);
+void ggg::NSS_kernel::do_run(Database& entities, Database& accounts) {
     auto& resp = this->_response;
     auto* name = this->_name.data();
     switch (this->_database) {
         case Passwd:
             switch (this->_operation) {
-                case Get_all: to_bytes<entity>(resp, db.entities()); break;
-                case Get_by_name: to_bytes<entity>(resp, db.find_entity(name)); break;
-                case Get_by_id: to_bytes<entity>(resp, db.find_entity(this->_uid)); break;
+                case Get_all: to_bytes<entity>(resp, entities.entities()); break;
+                case Get_by_name: to_bytes<entity>(resp, entities.find_entity(name)); break;
+                case Get_by_id: to_bytes<entity>(resp, entities.find_entity(this->_uid)); break;
                 default: break;
             }
             break;
         case Group:
             switch (this->_operation) {
                 case Get_all:
-                    to_bytes<group>(resp, db.groups()); break;
+                    to_bytes<group>(resp, entities.groups()); break;
                 case Get_by_name: {
                     group gr;
-                    if (db.find_group(name, gr)) {
+                    if (entities.find_group(name, gr)) {
                         Protocol_traits<group>::write(resp, gr);
                     }
                     break;
                 }
                 case Get_by_id: {
                     group gr;
-                    if (db.find_group(this->_gid, gr)) {
+                    if (entities.find_group(this->_gid, gr)) {
                         Protocol_traits<group>::write(resp, gr);
                     }
                     break;
                 }
-                case Init_groups: to_bytes<entity>(resp, db.find_groups_by_user_name(name)); break;
+                case Init_groups: to_bytes<entity>(resp, entities.find_groups_by_user_name(name)); break;
                 default: break;
             }
             break;
         case Shadow:
             switch (this->_operation) {
                 case Get_all:
-                    to_bytes<account>(resp, db.accounts()); break;
+                    to_bytes<account>(resp, accounts.accounts()); break;
                 case Get_by_name:
-                    to_bytes<account>(resp, db.find_account(name)); break;
+                    to_bytes<account>(resp, accounts.find_account(name)); break;
                 case Get_by_id: break;
                 default: break;
             }
             break;
         case Ethers:
             switch (this->_operation) {
-                case Get_all: to_bytes<host>(resp, db.hosts()); break;
+                case Get_all: to_bytes<host>(resp, entities.hosts()); break;
                 case Get_by_name:
-                    to_bytes<host>(resp, db.find_host(name)); break;
+                    to_bytes<host>(resp, entities.find_host(name)); break;
                 case Get_by_id:
-                    to_bytes<host>(resp, db.find_host(this->_ethernet_address)); break;
+                    to_bytes<host>(resp, entities.find_host(this->_ethernet_address)); break;
                 default: break;
             }
             break;
         case Hosts:
             switch (this->_operation) {
                 case Get_all:
-                    to_bytes<host_address>(resp, db.host_addresses());
+                    to_bytes<host_address>(resp, entities.host_addresses());
                     break;
                 case Get_by_name:
-                    to_bytes<ip_address>(resp, db.find_ip_address(name, this->_family));
+                    to_bytes<ip_address>(resp, entities.find_ip_address(name, this->_family));
                     break;
                 case Get_by_id: {
-                    auto st = db.find_host_name(this->_ip_address);
+                    auto st = entities.find_host_name(this->_ip_address);
                     if (st.step() != sqlite::errc::done) {
                         sqlite::cstream cstr(st);
                         std::string name;
@@ -300,7 +290,7 @@ void ggg::NSS_kernel::do_run() {
                     {
                         bool valid = this->_client_credentials.uid == 0;
                         if (!valid) {
-                            auto st = db.find_entity(this->_client_credentials.uid);
+                            auto st = entities.find_entity(this->_client_credentials.uid);
                             ggg::entity ent;
                             if (st.step() != sqlite::errc::done) {
                                 st >> ent;
@@ -312,7 +302,7 @@ void ggg::NSS_kernel::do_run() {
                         if (!valid) { throw std::invalid_argument("permission denied"); }
                         #endif
                     }
-                    to_bytes<public_key>(resp, db.public_keys(name));
+                    to_bytes<public_key>(resp, accounts.public_keys(name));
                     break;
                 default: break;
             }

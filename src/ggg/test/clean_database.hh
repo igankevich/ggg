@@ -17,7 +17,11 @@ struct Clean_database: public ggg::Database {
             { Database(Database::File::Accounts, Database::Flag::Read_write); }
         } catch (...) {
             std::remove(GGG_ENTITIES_PATH);
+            std::remove(GGG_ENTITIES_PATH "-shm");
+            std::remove(GGG_ENTITIES_PATH "-wal");
             std::remove(GGG_ACCOUNTS_PATH);
+            std::remove(GGG_ACCOUNTS_PATH "-shm");
+            std::remove(GGG_ACCOUNTS_PATH "-wal");
             { Database(Database::File::Entities, Database::Flag::Read_write); }
             { Database(Database::File::Accounts, Database::Flag::Read_write); }
         }

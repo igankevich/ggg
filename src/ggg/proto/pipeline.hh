@@ -16,11 +16,11 @@ namespace ggg {
     class Pipeline {
 
     public:
-        using clock_type = Connection::clock_type;
-        using time_point = Connection::time_point;
-        using duration = Connection::duration;
+        using clock_type = Network_connection::clock_type;
+        using time_point = Network_connection::time_point;
+        using duration = Network_connection::duration;
         using lock_type = No_lock;
-        using connection_ptr = std::unique_ptr<Connection>;
+        using connection_ptr = std::unique_ptr<Network_connection>;
         using connection_table = std::unordered_map<sys::fd_type,connection_ptr>;
 
     private:
@@ -29,7 +29,7 @@ namespace ggg {
 
     public:
 
-        void add(Connection* connection, sys::event events=sys::event::in);
+        void add(Network_connection* connection, sys::event events=sys::event::in);
 
         inline void run() {
             lock_type lock;

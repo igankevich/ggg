@@ -6,6 +6,9 @@
 #include <security/pam_modules.h>
 #include <security/pam_ext.h>
 
+#include <unistdx/net/socket_address>
+
+#include <ggg/config.hh>
 #include <ggg/core/account.hh>
 #include <ggg/core/database.hh>
 #include <ggg/pam/call.hh>
@@ -28,6 +31,7 @@ namespace ggg {
         bool _debug = false;
         /// Minimal password entropy (as computed by zxcvbn library).
         double _minentropy = 30.0;
+        sys::socket_address _server_socket_address{GGG_BIND_ADDRESS};
 
     public:
 

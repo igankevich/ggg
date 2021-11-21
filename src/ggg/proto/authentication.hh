@@ -51,7 +51,7 @@ namespace ggg {
         inline void steps_result(sys::u32 rhs) { this->_steps_result = rhs; }
         std::string steps_string(sys::u32 steps) const;
 
-        void run() override;
+        void run(Database& entities, Database& accounts) override;
         void read(sys::byte_buffer& buf) override;
         void write(sys::byte_buffer& buf) override;
 

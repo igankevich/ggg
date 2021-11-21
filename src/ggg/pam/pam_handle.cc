@@ -83,6 +83,12 @@ ggg::pam_handle::parse_args(int argc, const char** argv) {
             this->_debug = true;
         } else if (arg.find("entropy=") == 0) {
             this->_minentropy = std::strtod(arg.data() + 8, nullptr);
+        } else if (arg.find("server=") == 0) {
+            std::stringstream tmp;
+            tmp << arg;
+            if (!(tmp >> this->_server_socket_address)) {
+                this->_server_socket_address = sys::socket_address(GGG_BIND_ADDRESS);
+            }
         } else {
             pam_syslog(*this, LOG_ERR, "unknown module argument \"%s\"", argv[i]);
         }

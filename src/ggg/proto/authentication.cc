@@ -28,13 +28,13 @@ void ggg::PAM_kernel::log_response() {
     log("_ < _ _", this->_service, this->_name, steps_string(steps_result()));
 }
 
-void ggg::PAM_kernel::run() {
+void ggg::PAM_kernel::run(Database& entities, Database& accounts) {
+    Transaction tr(accounts);
     const auto user = this->_name.data();
     account acc;
-    Database db(Database::File::Accounts, Database::Flag::Read_write);
-    db.prepare_message();
+    accounts.prepare_message();
     if (steps() & (Auth | Account | Password)) {
-        auto st = db.find_account(user);
+        auto st = accounts.find_account(user);
         if (st.step() == sqlite::errc::done) {
             std::stringstream msg;
             msg << "invalid user \"" << user << "\"";
@@ -48,11 +48,11 @@ void ggg::PAM_kernel::run() {
             msg << "permission denied for user \"" << user << "\"";
             throw std::invalid_argument(msg.str());
         }
-        db.message(user, "authenticated");
+        accounts.message(user, "authenticated");
         steps_result(steps_result() | Auth);
     }
     if (steps() & Account) {
-        const auto now = db.timestamp();
+        const auto now = accounts.timestamp();
         sys::u32 error = 0;
         if (acc.has_been_suspended()) { error |= Error::Suspended; }
         if (acc.has_expired(now)) { error |= Error::Expired; }
@@ -61,12 +61,12 @@ void ggg::PAM_kernel::run() {
         steps_result(steps_result() | error);
         if (error == 0) {
             acc.last_active(now);
-            db.set_last_active(acc, now);
+            accounts.set_last_active(acc, now);
             steps_result(steps_result() | Account);
         }
     }
     if (steps() & Password) {
-        const auto now = db.timestamp();
+        const auto now = accounts.timestamp();
         sys::u32 error = 0;
         if (acc.has_been_suspended()) { error |= Error::Suspended; }
         if (acc.has_expired(now)) { error |= Error::Expired; }
@@ -84,18 +84,19 @@ void ggg::PAM_kernel::run() {
             init_sodium();
             argon2_password_hash hash;
             acc.set_password(hash(this->_password));
-            db.set_password(acc);
+            accounts.set_password(acc);
             steps_result(steps_result() | Password);
         }
     }
     if (steps() & Open_session) {
-        db.message(user, "session opened for %s", this->_service.data());
+        accounts.message(user, "session opened for %s", this->_service.data());
         steps_result(steps_result() | Open_session);
     }
     if (steps() & Close_session) {
-        db.message(user, "session closed for %s", this->_service.data());
+        accounts.message(user, "session closed for %s", this->_service.data());
         steps_result(steps_result() | Close_session);
     }
+    tr.commit();
 }
 
 void ggg::PAM_kernel::read(sys::byte_buffer& buf) {

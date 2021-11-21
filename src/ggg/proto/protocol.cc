@@ -51,7 +51,12 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
                 (this->_log_nss && frame.command == Command::NSS_kernel)) {
                 kernel->log_request();
             }
-            kernel->run();
+            // TODO remove this when updates are also done through the daemon
+            this->_entities.close();
+            this->_entities.open(Database::File::Entities, Database::Flag::Read_only);
+            this->_accounts.close();
+            this->_accounts.open(Database::File::Accounts, Database::Flag::Read_write);
+            kernel->run(this->_entities, this->_accounts);
         } catch (const std::exception& err) {
             kernel->result(-1);
             log("kernel read/run error: _", err.what());
@@ -82,11 +87,10 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
 void
 ggg::Client_protocol::process(Kernel* kernel, Command command) {
     using namespace std::chrono;
-    sys::socket_address address(GGG_BIND_ADDRESS);
     sys::socket s(sys::family_type::unix);
     s.set(sys::socket::options::reuse_address);
     s.set(sys::socket::options::pass_credentials);
-    s.connect(address);
+    s.connect(this->_server_socket_address);
     sys::byte_buffer buf{4096};
     Frame frame;
     {

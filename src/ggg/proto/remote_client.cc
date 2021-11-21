@@ -5,7 +5,7 @@
 
 void
 ggg::Remote_client::process(const sys::epoll_event& event) {
-    Connection::process(event);
+    Network_connection::process(event);
     if (event.in()) {
         this->_in.fill(this->_socket);
         buffer_guard g1(this->_in);

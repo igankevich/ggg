@@ -12,9 +12,11 @@ void DaemonEnvironment::SetUp() {
     sys::sysv_semaphore sem;
     this->_daemon = sys::process([&sem] () {
         using namespace ggg;
+        Database entities(Database::File::Entities, Database::Flag::Read_only);
+        Database accounts(Database::File::Accounts, Database::Flag::Read_write);
         sys::socket_address bind_address(GGG_BIND_ADDRESS);
         Pipeline ppl;
-        ppl.add(new Local_server(bind_address));
+        ppl.add(new Local_server(bind_address, entities, accounts));
         sem.notify_one();
         ppl.run();
     });

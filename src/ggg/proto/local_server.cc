@@ -2,8 +2,10 @@
 #include <ggg/proto/pipeline.hh>
 #include <ggg/proto/remote_client.hh>
 
-ggg::Local_server::Local_server(const sys::socket_address& address):
-Connection(address.family()), _address(address) {
+ggg::Local_server::Local_server(const sys::socket_address& address,
+                                Database& entities, Database& accounts):
+Network_connection(address.family()),
+_address(address), _entities(entities), _accounts(accounts) {
     this->_socket.set(sys::socket::options::reuse_address);
     this->_socket.bind(this->_address);
     this->_socket.listen();
@@ -12,14 +14,15 @@ Connection(address.family()), _address(address) {
 
 void
 ggg::Local_server::process(const sys::epoll_event& event) {
-    Connection::process(event);
+    Network_connection::process(event);
     if (started() && event.in()) {
         sys::socket client_socket;
         sys::socket_address client_address;
         while (this->_socket.accept(client_socket, client_address)) {
             //log("add client fd _ address _", client_socket.fd(), client_address);
             this->parent()->add(
-                new Remote_client(std::move(client_socket), client_address),
+                new Remote_client(std::move(client_socket), client_address,
+                                  this->_entities, this->_accounts),
                 sys::event::inout);
         }
     }

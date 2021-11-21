@@ -11,7 +11,7 @@
 
 namespace ggg {
 
-    class Connection {
+    class Network_connection {
 
     public:
         using clock_type = std::chrono::system_clock;
@@ -30,9 +30,9 @@ namespace ggg {
 
     public:
 
-        Connection() = default;
-        inline explicit Connection(sys::family_type family): _socket(family) {}
-        virtual ~Connection() {}
+        Network_connection() = default;
+        inline explicit Network_connection(sys::family_type family): _socket(family) {}
+        virtual ~Network_connection() {}
 
         virtual void
         process(const sys::epoll_event& event);
@@ -65,8 +65,8 @@ namespace ggg {
 
     };
 
-    const char* state_to_string(Connection::State s);
-    std::ostream& operator<<(std::ostream& out, Connection::State rhs);
+    const char* state_to_string(Network_connection::State s);
+    std::ostream& operator<<(std::ostream& out, Network_connection::State rhs);
 
 }
 

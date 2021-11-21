@@ -1,7 +1,7 @@
 #include <ggg/proto/pipeline.hh>
 
 void
-ggg::Pipeline::add(Connection* connection, sys::event events) {
+ggg::Pipeline::add(Network_connection* connection, sys::event events) {
     if (!connection) { throw std::invalid_argument("bad connection"); }
     connection->parent(this);
     auto fd = connection->fd();
