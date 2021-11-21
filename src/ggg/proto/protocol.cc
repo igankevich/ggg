@@ -102,9 +102,11 @@ ggg::Client_protocol::Client_protocol(const char* client_conf_path) {
 void
 ggg::Client_protocol::process(Kernel* kernel, Command command) {
     using namespace std::chrono;
-    sys::socket s(sys::family_type::unix);
+    sys::socket s(this->_server_socket_address.family());
     s.set(sys::socket::options::reuse_address);
-    s.set(sys::socket::options::pass_credentials);
+    if (this->_server_socket_address.family() == sys::family_type::unix) {
+        s.set(sys::socket::options::pass_credentials);
+    }
     s.connect(this->_server_socket_address);
     sys::byte_buffer buf{4096};
     Frame frame;
