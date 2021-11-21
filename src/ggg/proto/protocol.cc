@@ -57,6 +57,8 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
             this->_accounts.close();
             this->_accounts.open(Database::File::Accounts, Database::Flag::Read_write);
             kernel->run(this->_entities, this->_accounts);
+            this->_entities.close();
+            this->_accounts.close();
         } catch (const std::exception& err) {
             kernel->result(-1);
             log("kernel read/run error: _", err.what());
