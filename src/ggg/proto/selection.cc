@@ -200,16 +200,17 @@ void ggg::NSS_kernel::log_response() {
         this->_response.position());
 }
 
-void ggg::NSS_kernel::run(Database& entities, Database& accounts) {
+void ggg::NSS_kernel::run() {
     try {
-        do_run(entities, accounts);
+        do_run();
     } catch (const std::exception& err) {
         result(1);
         this->_response.clear();
     }
 }
 
-void ggg::NSS_kernel::do_run(Database& entities, Database& accounts) {
+void ggg::NSS_kernel::do_run() {
+    Database entities(Database::File::All, Database::Flag::Read_only);
     auto& resp = this->_response;
     auto* name = this->_name.data();
     switch (this->_database) {
@@ -246,9 +247,9 @@ void ggg::NSS_kernel::do_run(Database& entities, Database& accounts) {
         case Shadow:
             switch (this->_operation) {
                 case Get_all:
-                    to_bytes<account>(resp, accounts.accounts()); break;
+                    to_bytes<account>(resp, entities.accounts()); break;
                 case Get_by_name:
-                    to_bytes<account>(resp, accounts.find_account(name)); break;
+                    to_bytes<account>(resp, entities.find_account(name)); break;
                 case Get_by_id: break;
                 default: break;
             }
@@ -302,7 +303,7 @@ void ggg::NSS_kernel::do_run(Database& entities, Database& accounts) {
                         if (!valid) { throw std::invalid_argument("permission denied"); }
                         #endif
                     }
-                    to_bytes<public_key>(resp, accounts.public_keys(name));
+                    to_bytes<public_key>(resp, entities.public_keys(name));
                     break;
                 default: break;
             }

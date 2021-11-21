@@ -60,7 +60,7 @@ namespace ggg {
 
         template <class T> std::vector<T> response();
 
-        void run(Database& entities, Database& accounts) override;
+        void run() override;
         void read(sys::byte_buffer& buf) override;
         void write(sys::byte_buffer& buf) override;
 
@@ -74,7 +74,7 @@ namespace ggg {
         void log_response() override;
 
     private:
-        void do_run(Database& entities, Database& accounts);
+        void do_run();
 
     };
 

@@ -7,7 +7,6 @@
 #include <unistdx/net/socket>
 
 #include <ggg/config.hh>
-#include <ggg/core/database.hh>
 #include <ggg/proto/kernel.hh>
 
 namespace ggg {
@@ -35,14 +34,10 @@ namespace ggg {
     class Server_protocol: public Protocol {
 
     private:
-        Database& _entities;
-        Database& _accounts;
         bool _log_pam = true;
         bool _log_nss = true;
 
     public:
-        inline explicit Server_protocol(Database& entities, Database& accounts):
-        _entities(entities), _accounts(accounts) {}
         void process(sys::socket& sock, sys::byte_buffer& in, sys::byte_buffer& out);
 
         inline void log_pam(bool rhs) { this->_log_pam = rhs; }

@@ -21,9 +21,8 @@ namespace ggg {
     public:
 
         inline explicit
-        Remote_client(sys::socket&& socket, const sys::socket_address& address,
-                      Database& entities, Database& accounts):
-        _address(address), _protocol(entities, accounts) {
+        Remote_client(sys::socket&& socket, const sys::socket_address& address):
+        _address(address) {
             this->_socket = std::move(socket);
         }
 

@@ -28,7 +28,8 @@ void ggg::PAM_kernel::log_response() {
     log("_ < _ _", this->_service, this->_name, steps_string(steps_result()));
 }
 
-void ggg::PAM_kernel::run(Database& entities, Database& accounts) {
+void ggg::PAM_kernel::run() {
+    Database accounts(Database::File::Accounts, Database::Flag::Read_write);
     Transaction tr(accounts);
     const auto user = this->_name.data();
     account acc;

@@ -4,7 +4,6 @@
 #include <unistdx/base/log_message>
 #include <unistdx/net/socket_address>
 
-#include <ggg/core/database.hh>
 #include <ggg/proto/connection.hh>
 
 namespace ggg {
@@ -13,11 +12,9 @@ namespace ggg {
 
     private:
         sys::socket_address _address;
-        Database& _entities;
-        Database& _accounts;
 
     public:
-        Local_server(const sys::socket_address& address, Database& entities, Database& accounts);
+        Local_server(const sys::socket_address& address);
         inline sys::fd_type fd() const { return this->_socket.fd(); }
         inline sys::port_type port() const {
             return sys::socket_address_cast<sys::ipv4_socket_address>(this->_address).port();

@@ -51,14 +51,7 @@ ggg::Server_protocol::process(sys::socket& sock, sys::byte_buffer& in, sys::byte
                 (this->_log_nss && frame.command == Command::NSS_kernel)) {
                 kernel->log_request();
             }
-            // TODO remove this when updates are also done through the daemon
-            this->_entities.close();
-            this->_entities.open(Database::File::Entities, Database::Flag::Read_only);
-            this->_accounts.close();
-            this->_accounts.open(Database::File::Accounts, Database::Flag::Read_write);
-            kernel->run(this->_entities, this->_accounts);
-            this->_entities.close();
-            this->_accounts.close();
+            kernel->run();
         } catch (const std::exception& err) {
             kernel->result(-1);
             log("kernel read/run error: _", err.what());

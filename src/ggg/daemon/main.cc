@@ -5,7 +5,6 @@
 #include <unistdx/net/socket_address>
 
 #include <ggg/config.hh>
-#include <ggg/core/database.hh>
 #include <ggg/proto/authentication.hh>
 #include <ggg/proto/local_server.hh>
 #include <ggg/proto/pipeline.hh>
@@ -47,16 +46,14 @@ int main(int argc, char* argv[]) {
     int ret = EXIT_FAILURE;
     sys::this_process::ignore_signal(sys::signal::broken_pipe);
     try {
-        Database entities(Database::File::Entities, Database::Flag::Read_only);
-        Database accounts(Database::File::Accounts, Database::Flag::Read_write);
         Pipeline ppl;
-        ppl.add(new Local_server(sys::socket_address(GGG_BIND_ADDRESS), entities, accounts));
+        ppl.add(new Local_server(sys::socket_address(GGG_BIND_ADDRESS)));
         for (int i=::optind; i<argc; ++i) {
             sys::socket_address address;
             std::stringstream tmp;
             tmp << argv[i];
             tmp >> address;
-            ppl.add(new Local_server(address, entities, accounts));
+            ppl.add(new Local_server(address));
         }
         ppl.run();
         ret = EXIT_SUCCESS;
