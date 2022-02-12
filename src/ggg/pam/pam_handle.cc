@@ -79,18 +79,38 @@ void
 ggg::pam_handle::parse_args(int argc, const char** argv) {
     for (int i=0; i<argc; ++i) {
         std::string arg(argv[i]);
-        if (arg == "debug") {
-            this->_debug = true;
-        } else if (arg.find("entropy=") == 0) {
-            this->_minentropy = std::strtod(arg.data() + 8, nullptr);
-        } else if (arg.find("server=") == 0) {
-            std::stringstream tmp;
-            tmp << arg;
-            if (!(tmp >> this->_server_socket_address)) {
-                this->_server_socket_address = sys::socket_address(GGG_BIND_ADDRESS);
+        auto pos = arg.find('=');
+        if (pos == std::string::npos) {
+            if (arg == "debug") {
+                this->_debug = true;
+            } else {
+                pam_syslog(*this, LOG_ERR, "unknown module argument \"%s\"", argv[i]);
             }
         } else {
-            pam_syslog(*this, LOG_ERR, "unknown module argument \"%s\"", argv[i]);
+            std::string name = arg.substr(0, pos);
+            std::string value = arg.substr(pos+1);
+            if (name == "entropy") {
+                std::stringstream tmp(value);
+                if (!(tmp >> this->_minentropy)) {
+                    pam_syslog(*this, LOG_ERR, "failed to parse entropy: \"%s\"", argv[i]);
+                }
+                if (this->_minentropy < 0) {
+                    this->_minentropy = default_min_entropy;
+                    pam_syslog(*this, LOG_ERR, "bad entropy \"%s\", using default value %f",
+                               argv[i], this->_minentropy);
+                }
+            } else if (name == "server") {
+                std::stringstream tmp(value);
+                if (!(tmp >> this->_server_socket_address)) {
+                    this->_server_socket_address = sys::socket_address(GGG_BIND_ADDRESS);
+                    static_assert(GGG_BIND_ADDRESS[0] == '\0', "bad bind address");
+                    pam_syslog(*this, LOG_ERR,
+                               "bad server address \"%s\", using default value @%s",
+                               argv[i], GGG_BIND_ADDRESS+1);
+                }
+            } else {
+                pam_syslog(*this, LOG_ERR, "unknown module argument \"%s\"", argv[i]);
+            }
         }
     }
 }

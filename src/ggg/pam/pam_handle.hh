@@ -17,6 +17,8 @@
 
 namespace ggg {
 
+    constexpr const double default_min_entropy = 30.0;
+
     class pam_handle: public pam::handle {
 
     public:
@@ -30,7 +32,7 @@ namespace ggg {
     private:
         bool _debug = false;
         /// Minimal password entropy (as computed by zxcvbn library).
-        double _minentropy = 30.0;
+        double _minentropy = default_min_entropy;
         sys::socket_address _server_socket_address{GGG_BIND_ADDRESS};
 
     public:
