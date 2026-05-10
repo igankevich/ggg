@@ -25,8 +25,8 @@ namespace ggg {
     public:
         typedef std::allocator<T> base_allocator;
         using typename base_allocator::value_type;
-        using typename base_allocator::pointer;
-        using typename base_allocator::const_pointer;
+        typedef T* pointer;
+        typedef const T* const_pointer;
         using typename base_allocator::size_type;
 
         secure_allocator() = default;

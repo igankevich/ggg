@@ -5,6 +5,6 @@
  (list
   linux-pam libsodium guile-3.0 zxcvbn-c unistdx sqlitex
   googletest pkg-config ninja meson gettext-minimal
-  (@ (gnu packages python-xyz) python-pre-commit)
+  (@ (gnu packages version-control) pre-commit)
   (list gcc "lib") gcc-toolchain pam-wrapper))
 

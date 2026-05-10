@@ -28,7 +28,10 @@ namespace ggg {
 
         inline char**
         array_ptr() {
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wcast-align"
             return reinterpret_cast<char**>(this->_buffer);
+            #pragma GCC diagnostic pop
         }
 
         inline void

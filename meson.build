@@ -1,9 +1,9 @@
 project(
 	'ggg',
 	'cpp',
-	version: '1.11.6',
+	version: '1.11.7',
 	meson_version: '>=0.50',
-	default_options: ['cpp_std=c++11'],
+	default_options: ['cpp_std=c++23'],
 	license: ['gpl3+']
 )
 
@@ -17,7 +17,9 @@ cpp_args = [
     '-Werror=return-local-addr',
     '-Werror=cast-align',
     '-Wcast-align=strict',
-    '-fvisibility-inlines-hidden'
+    '-fvisibility-inlines-hidden',
+    '-Wno-deprecated-declarations',
+    '-Wno-volatile',
 ]
 
 cpp_link_args = [
